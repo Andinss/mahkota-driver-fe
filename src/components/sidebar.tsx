@@ -24,7 +24,7 @@ const Sidebar = () => {
         <nav className="flex flex-col gap-2 mt-4">
           <a
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary transition-colors"
-            href="#"
+            href="/dashboard"
           >
             <span className="material-symbols-outlined">dashboard</span>
             <p className="text-sm font-medium leading-normal">Dashboard</p>
@@ -35,7 +35,7 @@ const Sidebar = () => {
             href="#"
           >
             <span className="material-symbols-outlined group-hover:text-primary transition-colors">
-              group
+              people
             </span>
             <p className="text-sm font-medium leading-normal">
               User Management
@@ -51,6 +51,30 @@ const Sidebar = () => {
             </span>
             <p className="text-sm font-medium leading-normal">
               Roles &amp; Permissions
+            </p>
+          </a>
+
+          <a
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+            href="#"
+          >
+            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
+              badge
+            </span>
+            <p className="text-sm font-medium leading-normal">
+              Driver Management
+            </p>
+          </a>
+
+          <a
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+            href="/dashboard/vehicle"
+          >
+            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
+              directions_car
+            </span>
+            <p className="text-sm font-medium leading-normal">
+              Vehicle Management
             </p>
           </a>
 
