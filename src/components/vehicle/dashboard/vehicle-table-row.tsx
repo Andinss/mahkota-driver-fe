@@ -1,4 +1,5 @@
-import { StatusBadge } from "./status-badge";
+import Link from "next/link";
+import { StatusBadge } from "../../status-badge";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 
 interface Vehicle {
@@ -17,9 +18,15 @@ interface VehicleTableRowProps {
   vehicle: Vehicle;
   onEdit?: (vehicle: Vehicle) => void;
   onDelete?: (vehicle: Vehicle) => void;
+  onDetails?: (vehicle: Vehicle) => void;
 }
 
-export const VehicleTableRow = ({ vehicle, onEdit, onDelete }: VehicleTableRowProps) => {
+export const VehicleTableRow = ({
+  vehicle,
+  onEdit,
+
+  onDetails,
+}: VehicleTableRowProps) => {
   return (
     <tr className="group hover:bg-[#f9fafb] dark:hover:bg-[#23303d] transition-colors">
       <td className="py-4 px-6">
@@ -63,12 +70,17 @@ export const VehicleTableRow = ({ vehicle, onEdit, onDelete }: VehicleTableRowPr
             </button>
           }
         >
-          <DropdownMenuItem onClick={() => onEdit?.(vehicle)} icon="edit">
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onDelete?.(vehicle)} icon="delete" danger>
+          <Link href={`/dashboard/vehicle/register?plate=${vehicle.plate}`}>
+            <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
+          </Link>
+
+          <DropdownMenuItem icon="delete" danger>
             Delete
           </DropdownMenuItem>
+
+          <Link href={`/dashboard/vehicle/detail/`}>
+            <DropdownMenuItem icon="details">Details</DropdownMenuItem>
+          </Link>
         </Dropdown>
       </td>
     </tr>

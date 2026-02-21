@@ -11,13 +11,23 @@ export const SearchFilters = () => {
           placeholder="Search by license plate, make, or model..."
         />
         <div className="flex gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-          <Select id="filter-status" label="" className="min-w-[140px]" defaultValue="">
+          <Select
+            id="filter-status"
+            label=""
+            className="min-w-[140px]"
+            defaultValue=""
+          >
             <option value="">All Statuses</option>
             <option value="available">Available</option>
             <option value="rented">Rented</option>
             <option value="maintenance">Maintenance</option>
           </Select>
-          <Select id="filter-type" label="" className="min-w-[140px]" defaultValue="">
+          <Select
+            id="filter-type"
+            label=""
+            className="min-w-[140px]"
+            defaultValue=""
+          >
             <option value="">All Types</option>
             <option value="sedan">Sedan</option>
             <option value="suv">SUV</option>

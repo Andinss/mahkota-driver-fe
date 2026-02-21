@@ -1,28 +1,78 @@
-import { SearchInput } from "@/components/ui/search-input";
+"use client";
+
+import { usePathname } from "next/navigation";
 import { IconButton } from "@/components/ui/icon-button";
 import { Avatar } from "@/components/ui/avatar";
 
-const Topbar = () => {
-  return (
-    <header className="flex flex-col gap-1 p-7">
-      <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
-        <div>
-          <h2 className="text-slate-900 dark:text-white text-3xl font-black leading-tight tracking-tight">
-            Dashboard
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 text-base font-normal mt-1">
-            Welcome back, Administrator. Here is an overview of user activity.
-          </p>
-        </div>
+// Mapping untuk path segment ke label yang readable
+const pathLabels: Record<string, string> = {
+  dashboard: "Dashboard",
+  vehicle: "Vehicles",
+  management: "Management",
+  driver: "Drivers",
+  detail: "Details",
+  history: "History",
+  register: "Register",
+};
 
-        <div className="flex items-center gap-3">
-          <div className="relative hidden sm:block">
-            <SearchInput
-              className="w-64 shadow-sm"
-              placeholder="Search users..."
-            />
+function generateBreadcrumbs(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+
+  return segments.map((segment, index) => {
+    const href = "/" + segments.slice(0, index + 1).join("/");
+    const label =
+      pathLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+    const isLast = index === segments.length - 1;
+
+    return { label, href, isLast };
+  });
+}
+
+const Topbar = () => {
+  const pathname = usePathname();
+  const breadcrumbs = generateBreadcrumbs(pathname);
+
+  return (
+    <header className="h-16 flex items-center justify-between border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shrink-0 z-10">
+      <button className="md:hidden mr-4 p-2 -ml-2 text-slate-500 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+        <span className="material-symbols-outlined">menu</span>
+      </button>
+
+      {/* Dynamic Breadcrumb */}
+      <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+        {breadcrumbs.length > 0 && (
+          <>
+            {breadcrumbs.map((crumb, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <span className="text-slate-300">/</span>
+                {crumb.isLast ? (
+                  <span className="text-slate-900 dark:text-white font-medium">
+                    {crumb.label}
+                  </span>
+                ) : (
+                  <a className="hover:text-primary" href={crumb.href}>
+                    {crumb.label}
+                  </a>
+                )}
+              </div>
+            ))}
+          </>
+        )}
+      </nav>
+
+      <div className="flex items-center gap-4 ml-auto">
+        <button className="sm:hidden p-2 text-slate-500 hover:text-primary transition-colors">
+          <span className="material-symbols-outlined">search</span>
+        </button>
+        <IconButton name="notifications" badge />
+        <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
+        <div className="flex items-center gap-3 cursor-pointer group">
+          <div className="text-right hidden sm:block">
+            <p className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors">
+              Sarah Jenkins
+            </p>
+            <p className="text-xs text-slate-500">Supervisor</p>
           </div>
-          <IconButton name="notifications" badge />
           <Avatar
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBWlskkdFoTQprusiYVu7an4AXhl_9-FDQvUqoV7CfJSu11thcCE5vg56M68qimVlCi6UKLy0TemBcJADCyasSX01GUoGRkbawpjU1ZmAMY-Q3l5L8MipeG8HQfoPZ7oLbMtatSz_6mnssWAwAAQC7qn7FDiraGFp_qcQ2JBGyR0Esxy0mOpcPFgg_qckqazyxa9aCAwYO9nZE9cDtkWMv81L4VX6zliMkx7Y5fj1RwV8KCuCKEGshMHI6DMr3a54zGOa8-eyg_jWH"
             alt="Admin user profile avatar"
@@ -32,4 +82,5 @@ const Topbar = () => {
     </header>
   );
 };
+
 export default Topbar;

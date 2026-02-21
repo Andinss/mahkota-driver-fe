@@ -1,28 +1,25 @@
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface PageHeaderProps {
   title: string;
   description: string;
   buttonText?: string;
-  onButtonClick?: () => void;
-  formId?: string;
+  buttonHref?: string;
 }
 
 export const PageHeader = ({
   title,
   description,
   buttonText,
-  onButtonClick,
-  formId,
+  buttonHref,
 }: PageHeaderProps) => {
+  const router = useRouter();
+
   const handleClick = () => {
-    if (formId) {
-      const form = document.getElementById(formId);
-      if (form) {
-        form.scrollIntoView({ behavior: "smooth" });
-      }
+    if (buttonHref) {
+      router.push(buttonHref);
     }
-    onButtonClick?.();
   };
 
   return (
@@ -35,7 +32,7 @@ export const PageHeader = ({
           {description}
         </p>
       </div>
-      {buttonText && (
+      {buttonText && buttonHref && (
         <Button icon="add" onClick={handleClick}>
           {buttonText}
         </Button>
