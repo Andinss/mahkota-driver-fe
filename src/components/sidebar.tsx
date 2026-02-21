@@ -29,31 +29,6 @@ const Sidebar = () => {
             <span className="material-symbols-outlined">dashboard</span>
             <p className="text-sm font-medium leading-normal">Dashboard</p>
           </a>
-
-          <a
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
-            href="#"
-          >
-            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
-              people
-            </span>
-            <p className="text-sm font-medium leading-normal">
-              User Management
-            </p>
-          </a>
-
-          <a
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
-            href="#"
-          >
-            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
-              verified_user
-            </span>
-            <p className="text-sm font-medium leading-normal">
-              Roles &amp; Permissions
-            </p>
-          </a>
-
           <a
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
             href="#"
@@ -75,6 +50,29 @@ const Sidebar = () => {
             </span>
             <p className="text-sm font-medium leading-normal">
               Vehicle Management
+            </p>
+          </a>
+          <a
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+            href="#"
+          >
+            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
+              people
+            </span>
+            <p className="text-sm font-medium leading-normal">
+              User Management
+            </p>
+          </a>
+
+          <a
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+            href="#"
+          >
+            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
+              finance
+            </span>
+            <p className="text-sm font-medium leading-normal">
+              Finance Management
             </p>
           </a>
 

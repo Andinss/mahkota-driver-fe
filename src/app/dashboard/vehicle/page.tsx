@@ -1,19 +1,71 @@
+"use client";
+
 import { VehicleStatsCard } from "@/components/vehicle/dashboard/vehicle-stats-card";
-import { VehicleHealthChart } from "@/components/vehicle/dashboard/vehicle-health-chart";
-import { MaintenanceTrendsChart } from "@/components/vehicle/dashboard/maintenance-trends-chart";
-import { StatusUpdatesTimeline } from "@/components/vehicle/dashboard/status-updates-timeline";
-import { RentalHistoryTable } from "@/components/vehicle/dashboard/rental-history-table";
-import { Breadcrumbs } from "@/components/vehicle/management/breadcrumbs";
+import { VehicleTable } from "@/components/vehicle/dashboard/vehicle-table";
+import { SearchFilters } from "@/components/search-filters";
+
+import { PageHeader } from "@/components/page-header";
 
 export default function DashboardVehiclePage() {
+  const vehicles = [
+    {
+      name: "Toyota Camry",
+      year: 2022,
+      transmission: "Automatic",
+      plate: "B 1234 XYZ",
+      type: "Sedan",
+      rate: "$50.00",
+      status: "available" as const,
+      image:
+        "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTPXl3_1Wdm0vfEBBNfPz34KYWfTwgk92FN-NMeG529KFX1AoOCF0Xw2rshR7QRnMz9NgkYRdicFT07sEO_JcpauYoriHK8_eSj9MUtTrPLMI4nq7V4pt9RyqLSOQu_XxaNcKRLLvf44b5LKMrGoWz02DfFtOSgNNBrtbgDz2_LYHpPi7pBRiWXfYRAubew-O4Taz0RqtGQoSh-bX7L_yBXpuryAqsPZ-DbGjaGKz3blYbCu4VMUoQ2PH_N3-Ht0OueyUHdE1JCDb",
+      imageAlt: "Silver Toyota Camry side view",
+    },
+    {
+      name: "Honda CR-V",
+      year: 2021,
+      transmission: "Automatic",
+      plate: "B 5678 ABC",
+      type: "SUV",
+      rate: "$65.00",
+      status: "rented" as const,
+      image:
+        "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTPXl3_1Wdm0vfEBBNfPz34KYWfTwgk92FN-NMeG529KFX1AoOCF0Xw2rshR7QRnMz9NgkYRdicFT07sEO_JcpauYoriHK8_eSj9MUtTrPLMI4nq7V4pt9RyqLSOQu_XxaNcKRLLvf44b5LKMrGoWz02DfFtOSgNNBrtbgDz2_LYHpPi7pBRiWXfYRAubew-O4Taz0RqtGQoSh-bX7L_yBXpuryAqsPZ-DbGjaGKz3blYbCu4VMUoQ2PH_N3-Ht0OueyUHdE1JCDb",
+      imageAlt: "White Honda CRV front view",
+    },
+    {
+      name: "Mercedes C-Class",
+      year: 2023,
+      transmission: "Automatic",
+      plate: "B 9988 MERC",
+      type: "Luxury",
+      rate: "$120.00",
+      status: "maintenance" as const,
+      image:
+        "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTPXl3_1Wdm0vfEBBNfPz34KYWfTwgk92FN-NMeG529KFX1AoOCF0Xw2PH_N3-Ht0OueyUHdE1JCDb",
+      imageAlt: "Black Mercedes C-Class side",
+    },
+    {
+      name: "Ford Transit",
+      year: 2020,
+      transmission: "Manual",
+      plate: "B 3322 TRK",
+      type: "Van",
+      rate: "$85.00",
+      status: "available" as const,
+      image:
+        "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTPXl3_1Wdm0vfEBBNfPz34KYWfTwgk92FN-NMeG529KFX1AoOCF0Xw2rshR7QRnMz9NgkYRdicFT07sEO_JcpauYoriHK8_eSj9MUtTrPLMI4nq7V4pt9RyqLSOQu_XxaNcKRLLvf44b5LKMrGoWz02DfFtOSgNNBrtbgDz2_LYHpPi7pBRiWXfYRAubew-O4Taz0RqtGQoSh-bX7L_yBXpuryAqsPZ-DbGjaGKz3blYbCu4VMUoQ2PH_N3-Ht0OueyUHdE1JCDb",
+      imageAlt: "Blue Ford Transit Van",
+    },
+  ];
+
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8">
       <div className="max-w-[1200px] mx-auto flex flex-col gap-6">
-        <Breadcrumbs
-          items={[
-            { label: "Home", href: "#" },
-            { label: "Vehicles", href: "/dashboard/vehicle" },
-          ]}
+        <PageHeader
+          title="Vehicle List Overview"
+          description="Manage your fleet, add new vehicles, and track their status."
+          buttonText="Add New Vehicle"
+          buttonHref="/dashboard/vehicle/register"
         />
         <section className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           <VehicleStatsCard
@@ -72,18 +124,12 @@ export default function DashboardVehiclePage() {
             }}
           />
         </section>
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          <VehicleHealthChart />
-          <MaintenanceTrendsChart />
+
+        <SearchFilters />
+        <section className="xl:col-span-2">
+          {/* Vehicle Table */}
+          <VehicleTable vehicles={vehicles} />
         </section>
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          <section className="xl:col-span-1">
-            <StatusUpdatesTimeline />
-          </section>
-          <section className="xl:col-span-2">
-            <RentalHistoryTable />
-          </section>
-        </div>
       </div>
     </div>
   );
