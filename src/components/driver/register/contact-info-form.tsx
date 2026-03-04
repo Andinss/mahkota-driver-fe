@@ -91,9 +91,10 @@ export function ContactInfoForm({
               id="emergencyContactRelationship"
               name="emergencyContactRelationship"
               label="Emergency Contact Relationship"
+              defaultValue=""
               required
             >
-              <option disabled selected value="">
+              <option disabled value="">
                 Select relationship
               </option>
               <option>Spouse</option>
