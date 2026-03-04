@@ -1,0 +1,239 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+
+export interface DriverReviewData {
+  personal: {
+    firstName: string;
+    lastName: string;
+    employeeId: string;
+    email: string;
+    phoneNumber: string;
+    dateOfBirth: string;
+    nationality: string;
+  };
+  documents: {
+    simFile?: File;
+    simExpiry: string;
+    ktpFile?: File;
+  };
+  photo?: string;
+}
+
+interface ReviewStepProps {
+  data: DriverReviewData;
+  onBack: () => void;
+  onSaveDraft?: () => void;
+  onSubmit: () => void;
+}
+
+export function ReviewStep({
+  data,
+  onBack,
+  onSaveDraft,
+  onSubmit,
+}: ReviewStepProps) {
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div className="p-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-primary rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined">rate_review</span>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+                Step 4: Review Registration
+              </h2>
+              <p className="text-sm text-slate-400">
+                Review all information before finalizing the registration.
+              </p>
+            </div>
+          </div>
+          <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-primary text-xs font-bold rounded-lg uppercase tracking-wider">
+            Draft Auto-saved
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-8">
+          {/* Personal & Contact Info Section */}
+          <div className="border border-slate-100 dark:border-slate-800 rounded-2xl p-6 bg-slate-50/50 dark:bg-slate-900/30">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
+                Personal &amp; Contact Info
+              </h3>
+              <button className="text-primary text-xs font-semibold flex items-center gap-1 hover:underline">
+                <span className="material-symbols-outlined text-sm">edit</span>{" "}
+                Edit
+              </button>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-8">
+              <div className="shrink-0">
+                {data.photo ? (
+                  <img
+                    alt="Driver Photo"
+                    className="w-32 h-32 rounded-2xl object-cover border-4 border-white dark:border-slate-800 shadow-sm"
+                    src={data.photo}
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-slate-300 text-4xl">
+                      person
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12 flex-1">
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Full Name</p>
+                  <p className="font-semibold text-slate-800 dark:text-white">
+                    {data.personal.firstName} {data.personal.lastName}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Employee ID</p>
+                  <p className="font-semibold text-primary">
+                    {data.personal.employeeId || "Auto-generated"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Email Address</p>
+                  <p className="font-semibold text-slate-800 dark:text-white">
+                    {data.personal.email}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Phone Number</p>
+                  <p className="font-semibold text-slate-800 dark:text-white">
+                    {data.personal.phoneNumber}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Date of Birth</p>
+                  <p className="font-semibold text-slate-800 dark:text-white">
+                    {data.personal.dateOfBirth}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Nationality</p>
+                  <p className="font-semibold text-slate-800 dark:text-white">
+                    {data.personal.nationality}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Technical Documents Section */}
+          <div className="border border-slate-100 dark:border-slate-800 rounded-2xl p-6 bg-slate-50/50 dark:bg-slate-900/30">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
+                Technical Documents
+              </h3>
+              <button className="text-primary text-xs font-semibold flex items-center gap-1 hover:underline">
+                <span className="material-symbols-outlined text-sm">edit</span>{" "}
+                Edit
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-slate-400 text-2xl">
+                    description
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400">Driver&apos;s License (SIM)</p>
+                  <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                    {data.documents.simFile?.name || "Not uploaded"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-slate-400 text-2xl">
+                    badge
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400">National ID Card (KTP)</p>
+                  <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                    {data.documents.ktpFile?.name || "Not uploaded"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-primary rounded-lg flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined">
+                    calendar_today
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400">License Expiry</p>
+                  <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                    {data.documents.simExpiry}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Checkbox Section */}
+          <div className="p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                className="mt-1 w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary dark:bg-slate-900 dark:border-slate-700"
+                type="checkbox"
+                required
+              />
+              <span className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                I hereby certify that the information provided above is true and
+                accurate to the best of my knowledge. I agree to Mahkota Drive&apos;s{" "}
+                <a
+                  className="text-primary font-semibold hover:underline"
+                  href="#"
+                >
+                  Terms of Service
+                </a>{" "}
+                and
+                <a
+                  className="text-primary font-semibold hover:underline"
+                  href="#"
+                >
+                  Privacy Policy
+                </a>{" "}
+                regarding driver management and data processing.
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {/* Footer Buttons */}
+        <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+          <Button variant="ghost" onClick={onBack} icon="arrow_back">
+            Back
+          </Button>
+
+          <div className="flex gap-4">
+            <Button variant="ghost" onClick={onSaveDraft}>
+              Save as Draft
+            </Button>
+            <Button
+              variant="primary"
+              onClick={onSubmit}
+              icon="how_to_reg"
+              iconPosition="right"
+            >
+              Complete Registration
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
