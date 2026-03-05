@@ -55,3 +55,26 @@
   fill: #137fec;
   transition: height 0.3s;
 }
+.tab-active {
+  border-bottom: 2px solid #1d76e2;
+  color: #1d76e2;
+}
+
+.stepper-line {
+  height: 2px;
+  background-color: #e2e8f0;
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  z-index: 0;
+}
+.stepper-segment {
+  flex: 1;
+  height: 2px;
+  background-color: #e2e8f0;
+  margin-top: 20px;
+}
+.stepper-segment-active {
+  background-color: #2563eb;
+}

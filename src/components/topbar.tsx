@@ -32,9 +32,16 @@ const Topbar = () => {
   const pathname = usePathname();
   const breadcrumbs = generateBreadcrumbs(pathname);
 
+  const handleToggleSidebar = () => {
+    window.dispatchEvent(new CustomEvent("sidebar:toggle"));
+  };
+
   return (
     <header className="h-16 flex items-center justify-between border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shrink-0 z-10">
-      <button className="md:hidden mr-4 p-2 -ml-2 text-slate-500 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+      <button
+        onClick={handleToggleSidebar}
+        className="md:hidden mr-4 p-2 -ml-2 text-slate-500 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+      >
         <span className="material-symbols-outlined">menu</span>
       </button>
 
