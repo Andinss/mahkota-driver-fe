@@ -89,20 +89,9 @@ export default function DriverRegisterPage() {
         return (
           <ReviewStep
             data={{
-              personal: {
-                firstName: formData.personal?.firstName || "",
-                lastName: formData.personal?.lastName || "",
-                employeeId: formData.personal?.employeeId || "",
-                email: formData.contact?.email || "",
-                phoneNumber: formData.contact?.phoneNumber || "",
-                dateOfBirth: formData.personal?.dateOfBirth || "",
-                nationality: formData.personal?.citizenship || "",
-              },
-              documents: {
-                simFile: formData.documents?.simFront,
-                simExpiry: formData.documents?.simExpiry || "",
-                ktpFile: formData.documents?.ktpFront,
-              },
+              personal: formData.personal || {} as PersonalDetailsData,
+              contact: formData.contact || {} as ContactInfoData,
+              documents: formData.documents || {} as DocumentsData,
               photo: formData.photo,
             }}
             onBack={handleBack}

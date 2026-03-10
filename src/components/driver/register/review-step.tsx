@@ -1,22 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { PersonalDetailsData } from "./personal-details-form";
+import { ContactInfoData } from "./contact-info-form";
+import { DocumentsData } from "./documents-form";
 
 export interface DriverReviewData {
-  personal: {
-    firstName: string;
-    lastName: string;
-    employeeId: string;
-    email: string;
-    phoneNumber: string;
-    dateOfBirth: string;
-    nationality: string;
-  };
-  documents: {
-    simFile?: File;
-    simExpiry: string;
-    ktpFile?: File;
-  };
+  personal: PersonalDetailsData;
+  contact: ContactInfoData;
+  documents: DocumentsData;
   photo?: string;
 }
 
@@ -101,13 +93,13 @@ export function ReviewStep({
                 <div>
                   <p className="text-xs text-slate-400 mb-1">Email Address</p>
                   <p className="font-semibold text-slate-800 dark:text-white">
-                    {data.personal.email}
+                    {data.contact.email}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-400 mb-1">Phone Number</p>
                   <p className="font-semibold text-slate-800 dark:text-white">
-                    {data.personal.phoneNumber}
+                    {data.contact.phoneNumber}
                   </p>
                 </div>
                 <div>
@@ -117,9 +109,45 @@ export function ReviewStep({
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 mb-1">Nationality</p>
+                  <p className="text-xs text-slate-400 mb-1">Gender</p>
                   <p className="font-semibold text-slate-800 dark:text-white">
-                    {data.personal.nationality}
+                    {data.personal.gender}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Citizenship</p>
+                  <p className="font-semibold text-slate-800 dark:text-white">
+                    {data.personal.citizenship}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">
+                    Emergency Contact
+                  </p>
+                  <p className="font-semibold text-slate-800 dark:text-white">
+                    {data.contact.emergencyContactName}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">
+                    Emergency Relationship
+                  </p>
+                  <p className="font-semibold text-slate-800 dark:text-white">
+                    {data.contact.emergencyContactRelationship}
+                  </p>
+                </div>
+                <div className="md:col-span-2 lg:col-span-3">
+                  <p className="text-xs text-slate-400 mb-1">
+                    Permanent Address
+                  </p>
+                  <p className="font-semibold text-slate-800 dark:text-white">
+                    {data.contact.permanentAddress}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Address Type</p>
+                  <p className="font-semibold text-slate-800 dark:text-white">
+                    {data.contact.addressType}
                   </p>
                 </div>
               </div>
@@ -138,7 +166,7 @@ export function ReviewStep({
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
                 <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                   <span className="material-symbols-outlined text-slate-400 text-2xl">
@@ -146,9 +174,11 @@ export function ReviewStep({
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400">Driver&apos;s License (SIM)</p>
+                  <p className="text-xs text-slate-400">
+                    Driver&apos;s License (SIM)
+                  </p>
                   <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                    {data.documents.simFile?.name || "Not uploaded"}
+                    {data.documents.simFront?.name || "Not uploaded"}
                   </p>
                 </div>
               </div>
@@ -160,23 +190,43 @@ export function ReviewStep({
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400">National ID Card (KTP)</p>
+                  <p className="text-xs text-slate-400">
+                    National ID Card (KTP)
+                  </p>
                   <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                    {data.documents.ktpFile?.name || "Not uploaded"}
+                    {data.documents.ktpFront?.name || "Not uploaded"}
                   </p>
                 </div>
               </div>
 
               <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
-                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-primary rounded-lg flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined">
-                    calendar_today
+                <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-slate-400 text-2xl">
+                    receipt_long
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400">License Expiry</p>
+                  <p className="text-xs text-slate-400">
+                    NPWP (Tax ID)
+                  </p>
                   <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                    {data.documents.simExpiry}
+                    {data.documents.npwpFront?.name || "Not uploaded"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-slate-400 text-2xl">
+                    home
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400">
+                    House &amp; Garage Photo
+                  </p>
+                  <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                    {data.documents.houseGaragePhoto?.name || "Not uploaded"}
                   </p>
                 </div>
               </div>
@@ -193,7 +243,8 @@ export function ReviewStep({
               />
               <span className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 I hereby certify that the information provided above is true and
-                accurate to the best of my knowledge. I agree to Mahkota Drive&apos;s{" "}
+                accurate to the best of my knowledge. I agree to Mahkota
+                Drive&apos;s{" "}
                 <a
                   className="text-primary font-semibold hover:underline"
                   href="#"
