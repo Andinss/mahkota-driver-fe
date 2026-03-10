@@ -106,11 +106,7 @@ export function PersonalDetailsForm({
             required
           />
 
-          <Select
-            id="gender"
-            name="gender"
-            label="Gender"
-          >
+          <Select id="gender" name="gender" label="Gender">
             <option>Male</option>
             <option>Female</option>
             <option>Other</option>
@@ -128,11 +124,7 @@ export function PersonalDetailsForm({
             </p>
           </div>
 
-          <Select
-            id="citizenship"
-            name="citizenship"
-            label="Citizenship"
-          >
+          <Select id="citizenship" name="citizenship" label="Citizenship">
             <option>Indonesian (WNI)</option>
             <option>Foreigner (WNA)</option>
           </Select>
@@ -186,8 +178,8 @@ export function PersonalDetailsForm({
                 )}
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed max-w-sm">
-                JPG, GIF or PNG. 1MB max. This photo will be used for the driver's
-                digital ID card.
+                JPG, GIF or PNG. 1MB max. This photo will be used for the
+                driver's digital ID card.
               </p>
             </div>
           </div>

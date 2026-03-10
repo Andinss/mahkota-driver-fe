@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Radio } from "@/components/ui/radio";
 
 export interface ContactInfoData {
   phoneNumber: string;
@@ -10,6 +11,7 @@ export interface ContactInfoData {
   emergencyContactName: string;
   emergencyContactRelationship: string;
   permanentAddress: string;
+  addressType: string;
 }
 
 interface ContactInfoFormProps {
@@ -30,8 +32,11 @@ export function ContactInfoForm({
       phoneNumber: formData.get("phoneNumber") as string,
       email: formData.get("email") as string,
       emergencyContactName: formData.get("emergencyContactName") as string,
-      emergencyContactRelationship: formData.get("emergencyContactRelationship") as string,
+      emergencyContactRelationship: formData.get(
+        "emergencyContactRelationship",
+      ) as string,
       permanentAddress: formData.get("permanentAddress") as string,
+      addressType: formData.get("addressType") as string,
     };
     onNext(data);
   };
@@ -78,7 +83,6 @@ export function ContactInfoForm({
               type="email"
               required
             />
-
             <Input
               id="emergencyContactName"
               name="emergencyContactName"
@@ -86,23 +90,65 @@ export function ContactInfoForm({
               placeholder="Name of emergency contact"
               required
             />
-
-            <Select
-              id="emergencyContactRelationship"
-              name="emergencyContactRelationship"
-              label="Emergency Contact Relationship"
-              defaultValue=""
+            <Input
+              id="emergencyContactNumber"
+              name="emergencyContactNumber"
+              label="Emergency Contact Number"
+              placeholder="Phone number of emergency contact"
               required
-            >
-              <option disabled value="">
-                Select relationship
-              </option>
-              <option>Spouse</option>
-              <option>Parent</option>
-              <option>Sibling</option>
-              <option>Friend</option>
-              <option>Other</option>
-            </Select>
+            />
+            <div className="md:col-span-2">
+              <div className="w-full">
+                <Select id="house" name="house" label="House">
+                  <option>Contract</option>
+                  <option>Property Parent</option>
+                  <option>Own Youself</option>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                Ready To Sign Contract <span className="text-red-500">*</span>
+              </label>
+              <div className="space-y-2">
+                <Radio
+                  id="true"
+                  name="decision"
+                  value="true"
+                  label="Yes"
+                  required
+                />
+                <Radio
+                  id="false"
+                  name="decision"
+                  value="false"
+                  label="No"
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                Willing To Be Surveyed<span className="text-red-500">*</span>
+              </label>
+              <div className="space-y-2">
+                <Radio
+                  id="true"
+                  name="decision"
+                  value="true"
+                  label="Yes"
+                  required
+                />
+                <Radio
+                  id="false"
+                  name="decision"
+                  value="false"
+                  label="No"
+                  required
+                />
+              </div>
+            </div>
 
             <div className="md:col-span-2">
               <label
