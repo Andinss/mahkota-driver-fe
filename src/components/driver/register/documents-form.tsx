@@ -393,7 +393,7 @@ export function DocumentsForm({
 
           <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center md:col-span-2">
             <Button variant="ghost" onClick={onBack} icon="arrow_back">
-              Previous Step
+              Back
             </Button>
             <div className="flex gap-4">
               <Button variant="ghost" onClick={onSaveDraft}>
