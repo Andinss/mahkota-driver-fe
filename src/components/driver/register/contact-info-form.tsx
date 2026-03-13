@@ -76,18 +76,18 @@ export function ContactInfoForm({
             />
 
             <Input
+              id="emergencyContactName"
+              name="emergencyContactName"
+              label="Emergency Contact Name"
+              placeholder="Name of emergency contact"
+              required
+            />
+            <Input
               id="email"
               name="email"
               label="Email Address"
               placeholder="e.g. driver@email.com"
               type="email"
-              required
-            />
-            <Input
-              id="emergencyContactName"
-              name="emergencyContactName"
-              label="Emergency Contact Name"
-              placeholder="Name of emergency contact"
               required
             />
             <Input
@@ -97,60 +97,7 @@ export function ContactInfoForm({
               placeholder="Phone number of emergency contact"
               required
             />
-            <div className="md:col-span-2">
-              <div className="w-full">
-                <Select id="house" name="house" label="House">
-                  <option>Contract</option>
-                  <option>Property Parent</option>
-                  <option>Own Youself</option>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                Ready To Sign Contract <span className="text-red-500">*</span>
-              </label>
-              <div className="space-y-2">
-                <Radio
-                  id="true"
-                  name="decision"
-                  value="true"
-                  label="Yes"
-                  required
-                />
-                <Radio
-                  id="false"
-                  name="decision"
-                  value="false"
-                  label="No"
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                Willing To Be Surveyed<span className="text-red-500">*</span>
-              </label>
-              <div className="space-y-2">
-                <Radio
-                  id="true"
-                  name="decision"
-                  value="true"
-                  label="Yes"
-                  required
-                />
-                <Radio
-                  id="false"
-                  name="decision"
-                  value="false"
-                  label="No"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="md:col-span-2">
+            <div>
               <label
                 className="block text-sm font-medium text-[#111418] dark:text-white mb-1.5"
                 htmlFor="permanentAddress"
@@ -164,6 +111,61 @@ export function ContactInfoForm({
                 id="permanentAddress"
                 required
               />
+            </div>
+
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                Ready To Sign Contract <span className="text-red-500">*</span>
+              </label>
+              <div className="space-y-2">
+                <Radio
+                  id="readyToSignYes"
+                  name="readyToSignContract"
+                  value="true"
+                  label="Yes"
+                  required
+                />
+                <Radio
+                  id="readyToSignNo"
+                  name="readyToSignContract"
+                  value="false"
+                  label="No"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <Select id="house" name="house" label="House">
+                <option>Contract</option>
+                <option>Property Parent</option>
+                <option>Own Youself</option>
+              </Select>
+            </div>
+
+            <div className="md:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Willing To Be Surveyed<span className="text-red-500">*</span>
+                  </label>
+                  <div className="space-y-2">
+                    <Radio
+                      id="willingToSurveyYes"
+                      name="willingToBeSurveyed"
+                      value="true"
+                      label="Yes"
+                      required
+                    />
+                    <Radio
+                      id="willingToSurveyNo"
+                      name="willingToBeSurveyed"
+                      value="false"
+                      label="No"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

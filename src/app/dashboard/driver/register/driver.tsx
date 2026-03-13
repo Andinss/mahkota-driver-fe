@@ -66,7 +66,7 @@ export default function DriverRegisterPage() {
         return (
           <PersonalDetailsForm
             onNext={handlePersonalNext}
-            onCancel={handleCancel}
+            // onCancel={handleCancel}
           />
         );
       case 2:
@@ -89,9 +89,9 @@ export default function DriverRegisterPage() {
         return (
           <ReviewStep
             data={{
-              personal: formData.personal || {} as PersonalDetailsData,
-              contact: formData.contact || {} as ContactInfoData,
-              documents: formData.documents || {} as DocumentsData,
+              personal: formData.personal || ({} as PersonalDetailsData),
+              contact: formData.contact || ({} as ContactInfoData),
+              documents: formData.documents || ({} as DocumentsData),
               photo: formData.photo,
             }}
             onBack={handleBack}

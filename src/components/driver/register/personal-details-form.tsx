@@ -1,34 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { DateInput } from "@/components/ui/date-input";
-import { Select } from "@/components/ui/select";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { DriverProfileUpload } from "./upload-profile";
+import {
+  PersonalDetailsForm as PersonalFormComponent,
+  PersonalFormData,
+} from "./form-personal";
 
-export interface PersonalDetailsData {
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  gender: string;
-  employeeId: string;
-  citizenship: string;
+export interface PersonalDetailsData extends PersonalFormData {
+  profilePhoto?: File;
 }
 
 interface PersonalDetailsFormProps {
   onNext: (data: PersonalDetailsData) => void;
-  onCancel?: () => void;
+  onBack?: () => void;
+  onSaveDraft?: () => void;
+  initialData?: Partial<PersonalDetailsData>;
+  initialProfilePhotoUrl?: string;
 }
 
 export function PersonalDetailsForm({
   onNext,
-  onCancel,
+  onBack,
+  onSaveDraft,
+  initialData,
+  initialProfilePhotoUrl,
 }: PersonalDetailsFormProps) {
-  const [profilePhoto, setProfilePhoto] = useState<File | undefined>();
-  const [photoPreview, setPhotoPreview] = useState<string>("");
+  const [profilePhoto, setProfilePhoto] = useState<File | undefined>(
+    initialData?.profilePhoto,
+  );
+  const [photoPreview, setPhotoPreview] = useState<string>(
+    initialProfilePhotoUrl || "",
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handlePhotoSelect = (file: File | null) => {
     if (file) {
       setProfilePhoto(file);
       const reader = new FileReader();
@@ -36,30 +44,19 @@ export function PersonalDetailsForm({
         setPhotoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    } else {
+      setProfilePhoto(undefined);
+      setPhotoPreview("");
     }
   };
 
-  const handleRemovePhoto = () => {
-    setProfilePhoto(undefined);
-    setPhotoPreview("");
-  };
-
-  const triggerPhotoUpload = () => {
-    document.getElementById("profilePhotoInput")?.click();
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data: PersonalDetailsData = {
-      firstName: formData.get("firstName") as string,
-      lastName: formData.get("lastName") as string,
-      dateOfBirth: formData.get("dateOfBirth") as string,
-      gender: formData.get("gender") as string,
-      employeeId: formData.get("employeeId") as string,
-      citizenship: formData.get("citizenship") as string,
+  const handleSubmit = (data: PersonalFormData) => {
+    setIsSubmitting(true);
+    const fullData: PersonalDetailsData = {
+      ...data,
+      profilePhoto: profilePhoto,
     };
-    onNext(data);
+    onNext(fullData);
   };
 
   return (
@@ -77,131 +74,44 @@ export function PersonalDetailsForm({
           Draft Auto-saved
         </span>
       </div>
-      <div className="px-8 pb-8">
-        <form
-          id="personalDetailsForm"
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
-        >
-          <Input
-            id="firstName"
-            name="firstName"
-            label="First Name"
-            placeholder="Enter first name"
-            required
+
+      <div className="flex flex-col md:flex-row">
+        <div className="w-full md:w-1/3 bg-gray-50/50 dark:bg-slate-800/50 p-8 border-r border-[#f0f2f4] dark:border-slate-800">
+          <DriverProfileUpload
+            onImageSelect={handlePhotoSelect}
+            initialImageUrl={initialProfilePhotoUrl}
+            acceptedFormats={["JPG", "PNG"]}
+            maxSizeMB={5}
           />
-
-          <Input
-            id="lastName"
-            name="lastName"
-            label="Last Name"
-            placeholder="Enter last name"
-            required
-          />
-
-          <DateInput
-            id="dateOfBirth"
-            name="dateOfBirth"
-            label="Date of Birth"
-            required
-          />
-
-          <Select id="gender" name="gender" label="Gender">
-            <option>Male</option>
-            <option>Female</option>
-            <option>Other</option>
-          </Select>
-
-          <div>
-            <Input
-              id="employeeId"
-              name="employeeId"
-              label="Employee ID"
-              placeholder="DRV-0000"
-            />
-            <p className="text-[11px] text-slate-400">
-              Leave blank to auto-generate.
-            </p>
-          </div>
-
-          <Select id="citizenship" name="citizenship" label="Citizenship">
-            <option>Indonesian (WNI)</option>
-            <option>Foreigner (WNA)</option>
-          </Select>
-        </form>
-
-        <div className="mt-10 pt-10 border-t border-slate-100 dark:border-slate-800">
-          <h3 className="text-sm font-bold mb-6 text-slate-800 dark:text-white">
-            Profile Photo
-          </h3>
-          <div className="flex items-center gap-6">
-            <div
-              className="w-24 h-24 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 dark:bg-slate-800 relative cursor-pointer overflow-hidden hover:border-primary transition-colors"
-              onClick={triggerPhotoUpload}
-            >
-              {photoPreview ? (
-                <img
-                  src={photoPreview}
-                  alt="Profile preview"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="material-symbols-outlined text-3xl text-slate-300">
-                  add_a_photo
-                </span>
-              )}
-              <input
-                id="profilePhotoInput"
-                type="file"
-                accept=".jpg,.jpeg,.png,.gif"
-                className="hidden"
-                onChange={handlePhotoUpload}
-              />
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  className="px-6 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
-                  onClick={triggerPhotoUpload}
-                >
-                  Choose File
-                </button>
-                {photoPreview && (
-                  <button
-                    type="button"
-                    className="text-sm font-bold text-red-500 hover:text-red-600 transition-colors"
-                    onClick={handleRemovePhoto}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed max-w-sm">
-                JPG, GIF or PNG. 1MB max. This photo will be used for the
-                driver's digital ID card.
-              </p>
-            </div>
-          </div>
         </div>
 
-        <div className="mt-12 flex items-center justify-end gap-6">
-          <button
-            type="button"
-            className="text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-            onClick={onCancel}
-          >
-            Cancel
-          </button>
-          <Button
-            variant="primary"
-            type="submit"
-            form="personalDetailsForm"
-            icon="arrow_forward"
-            iconPosition="right"
-          >
-            Next Step
-          </Button>
+        <div className="w-full md:w-2/3 p-8 flex flex-col justify-between">
+          <PersonalFormComponent
+            mode="add"
+            initialValues={initialData}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+          />
+
+          <div className="mt-12 flex items-center justify-end gap-6">
+            <Link href="/dashboard/driver">
+              <button
+                type="button"
+                className="text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+            </Link>
+            <Button
+              variant="primary"
+              type="submit"
+              form="personalForm"
+              icon="arrow_forward"
+              iconPosition="right"
+            >
+              Next Step
+            </Button>
+          </div>
         </div>
       </div>
     </div>
