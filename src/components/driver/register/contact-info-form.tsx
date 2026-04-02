@@ -76,10 +76,10 @@ export function ContactInfoForm({
             />
 
             <Input
-              id="emergencyContactName"
-              name="emergencyContactName"
-              label="Emergency Contact Name"
-              placeholder="Name of emergency contact"
+              id="emergencyContactNumber"
+              name="emergencyContactNumber"
+              label="Emergency Contact Number"
+              placeholder="Phone number of emergency contact"
               required
             />
             <Input
@@ -91,33 +91,26 @@ export function ContactInfoForm({
               required
             />
             <Input
-              id="emergencyContactNumber"
-              name="emergencyContactNumber"
-              label="Emergency Contact Number"
-              placeholder="Phone number of emergency contact"
+              id="emergencyContactEmail"
+              name="emergencyContactEmail"
+              label="Emergency Contact Email"
+              placeholder="Email address of emergency contact"
+              type="email"
               required
             />
             <div>
-              <label
-                className="block text-sm font-medium text-[#111418] dark:text-white mb-1.5"
-                htmlFor="permanentAddress"
-              >
-                Permanent Address <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                className="w-full rounded-lg border border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary min-h-[120px]"
-                placeholder="Enter full permanent address including city, state, and zip code"
-                name="permanentAddress"
-                id="permanentAddress"
-                required
-              />
+              <Select id="house" name="house" label="House">
+                <option>Contract</option>
+                <option>Property Parent</option>
+                <option>Own Youself</option>
+              </Select>
             </div>
 
             <div className="space-y-3">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Ready To Sign Contract <span className="text-red-500">*</span>
               </label>
-              <div className="space-y-2">
+              <div className="flex items-center gap-4">
                 <Radio
                   id="readyToSignYes"
                   name="readyToSignContract"
@@ -135,20 +128,29 @@ export function ContactInfoForm({
               </div>
             </div>
             <div>
-              <Select id="house" name="house" label="House">
-                <option>Contract</option>
-                <option>Property Parent</option>
-                <option>Own Youself</option>
-              </Select>
+              <label
+                className="block text-sm font-medium text-[#111418] dark:text-white mb-1.5"
+                htmlFor="permanentAddress"
+              >
+                Permanent Address <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                className="w-full rounded-lg border border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary h-auto"
+                placeholder="Enter full permanent address including city, state, and zip code"
+                name="permanentAddress"
+                id="permanentAddress"
+                rows={2}
+                required
+              />
             </div>
-
             <div className="md:col-span-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Willing To Be Surveyed<span className="text-red-500">*</span>
+                    Willing To Be Surveyed
+                    <span className="text-red-500">*</span>
                   </label>
-                  <div className="space-y-2">
+                  <div className="flex items-center gap-4">
                     <Radio
                       id="willingToSurveyYes"
                       name="willingToBeSurveyed"
