@@ -13,14 +13,17 @@ const steps = [
 
 export function Stepper({ currentStep }: StepperProps) {
   return (
-    <div className="mb-10 px-4">
+    <div className="mb-10 px-4  relative z-0">
       <div className="flex items-center justify-between relative">
         {steps.map((step, index) => {
           const isCompleted = currentStep > step.number;
           const isCurrent = currentStep === step.number;
 
           return (
-            <div key={step.number} className="flex flex-col items-center z-10 bg-[#f8f9fb] dark:bg-slate-900 px-2">
+            <div
+              key={step.number}
+              className="flex flex-col items-center z-10 bg-[#f8f9fb] dark:bg-slate-900 px-2"
+            >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
                   isCompleted || isCurrent
@@ -29,7 +32,9 @@ export function Stepper({ currentStep }: StepperProps) {
                 }`}
               >
                 {isCompleted ? (
-                  <span className="material-symbols-outlined text-sm">check</span>
+                  <span className="material-symbols-outlined text-sm">
+                    check
+                  </span>
                 ) : (
                   step.number
                 )}
