@@ -1,12 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, height: 0 });
+  const menuRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
   const isCollapsedRef = useRef(isCollapsed);
+  const router = useRouter();
+  const pathname = usePathname();
+  const [activeMenu, setActiveMenu] = useState(pathname);
 
-  // Update ref saat isCollapsed berubah
+  useEffect(() => {
+    setActiveMenu(pathname);
+  }, [pathname]);
+
   useEffect(() => {
     isCollapsedRef.current = isCollapsed;
   }, [isCollapsed]);
@@ -29,6 +38,51 @@ const Sidebar = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  const updateMenuPosition = () => {
+    const activeElement = menuRefs.current[activeMenu];
+    if (activeElement) {
+      const rect = activeElement.getBoundingClientRect();
+      const parentRect = activeElement.parentElement?.getBoundingClientRect();
+      if (parentRect) {
+        setMenuPosition({
+          top: rect.top - parentRect.top,
+          height: rect.height,
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      updateMenuPosition();
+    }, 50);
+    
+    return () => clearTimeout(timeout);
+  }, [activeMenu]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      updateMenuPosition();
+    }, 350); 
+    
+    return () => clearTimeout(timeout);
+  }, [isCollapsed]);
+
+  useEffect(() => {
+    const handleWindowResize = () => {
+      updateMenuPosition();
+    };
+    
+    window.addEventListener("resize", handleWindowResize);
+    return () => window.removeEventListener("resize", handleWindowResize);
+  }, [activeMenu, isCollapsed]);
+
+  const handleMenuClick = (path: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setActiveMenu(path);
+    router.push(path);
+  };
 
   return (
     <aside
@@ -62,16 +116,28 @@ const Sidebar = () => {
           )}
         </div>
 
-        <nav
-          className={`flex flex-col gap-2 mt-4 ${!isCollapsed ? "px-6" : ""}`}
-        >
+        <nav className={`flex flex-col gap-2 mt-4 relative ${!isCollapsed ? "px-6" : ""}`}>
+          <div
+            className="absolute bg-primary/10 rounded-lg transition-all duration-300 ease-in-out pointer-events-none"
+            style={{
+              top: menuPosition.top,
+              height: menuPosition.height,
+              left: isCollapsed ? "calc(50% - 24px)" : "12px",
+              right: isCollapsed ? "calc(50% - 24px)" : "12px",
+              width: isCollapsed ? "48px" : "auto",
+            }}
+          />
+          
           <a
-            className={`flex items-center rounded-lg bg-primary/10 text-primary transition-colors ${
+            ref={(el) => { menuRefs.current["/dashboard"] = el; }}
+            className={`flex items-center rounded-lg relative z-10 transition-colors cursor-pointer ${
+              activeMenu === "/dashboard" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
                 : "gap-3 px-3 py-2.5"
             }`}
-            href="/dashboard"
+            onClick={(e) => handleMenuClick("/dashboard", e)}
           >
             <span className="material-symbols-outlined">dashboard</span>
             {!isCollapsed && (
@@ -79,14 +145,17 @@ const Sidebar = () => {
             )}
           </a>
           <a
-            className={`flex items-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group ${
+            ref={(el) => { menuRefs.current["/dashboard/driver"] = el; }}
+            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
+              activeMenu === "/dashboard/driver" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
                 : "gap-3 px-3 py-2.5"
             }`}
-            href="/dashboard/driver"
+            onClick={(e) => handleMenuClick("/dashboard/driver", e)}
           >
-            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
+            <span className="material-symbols-outlined transition-colors">
               badge
             </span>
             {!isCollapsed && (
@@ -97,14 +166,17 @@ const Sidebar = () => {
           </a>
 
           <a
-            className={`flex items-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group ${
+            ref={(el) => { menuRefs.current["/dashboard/vehicle"] = el; }}
+            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
+              activeMenu === "/dashboard/vehicle" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
                 : "gap-3 px-3 py-2.5"
             }`}
-            href="/dashboard/vehicle"
+            onClick={(e) => handleMenuClick("/dashboard/vehicle", e)}
           >
-            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
+            <span className="material-symbols-outlined transition-colors">
               directions_car
             </span>
             {!isCollapsed && (
@@ -114,14 +186,37 @@ const Sidebar = () => {
             )}
           </a>
           <a
-            className={`flex items-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group ${
+            ref={(el) => { menuRefs.current["/dashboard/rent"] = el; }}
+            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
+              activeMenu === "/dashboard/rent" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
                 : "gap-3 px-3 py-2.5"
             }`}
-            href="#"
+            onClick={(e) => handleMenuClick("/dashboard/rent", e)}
           >
-            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
+            <span className="material-symbols-outlined transition-colors">
+              contract
+            </span>
+            {!isCollapsed && (
+              <p className="text-sm font-medium leading-normal">
+                Rentals
+              </p>
+            )}
+          </a>
+          <a
+            ref={(el) => { menuRefs.current["/user-management"] = el; }}
+            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
+              activeMenu === "/user-management" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            } ${
+              isCollapsed
+                ? "justify-center w-12 h-12 mx-auto"
+                : "gap-3 px-3 py-2.5"
+            }`}
+            onClick={(e) => handleMenuClick("/user-management", e)}
+          >
+            <span className="material-symbols-outlined transition-colors">
               people
             </span>
             {!isCollapsed && (
@@ -132,14 +227,17 @@ const Sidebar = () => {
           </a>
 
           <a
-            className={`flex items-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group ${
+            ref={(el) => { menuRefs.current["/finance"] = el; }}
+            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
+              activeMenu === "/finance" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
                 : "gap-3 px-3 py-2.5"
             }`}
-            href="#"
+            onClick={(e) => handleMenuClick("/finance", e)}
           >
-            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
+            <span className="material-symbols-outlined transition-colors">
               finance
             </span>
             {!isCollapsed && (
@@ -150,14 +248,17 @@ const Sidebar = () => {
           </a>
 
           <a
-            className={`flex items-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group ${
+            ref={(el) => { menuRefs.current["/settings"] = el; }}
+            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
+              activeMenu === "/settings" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
                 : "gap-3 px-3 py-2.5"
             }`}
-            href="#"
+            onClick={(e) => handleMenuClick("/settings", e)}
           >
-            <span className="material-symbols-outlined group-hover:text-primary transition-colors">
+            <span className="material-symbols-outlined transition-colors">
               settings
             </span>
             {!isCollapsed && (
@@ -171,12 +272,14 @@ const Sidebar = () => {
         className={`flex flex-col gap-1 border-t border-slate-200 dark:border-slate-800 pt-4 ${!isCollapsed ? "px-2" : ""}`}
       >
         <a
-          className={`flex items-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors ${
+          className={`flex items-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer ${
             isCollapsed
               ? "justify-center w-12 h-12 mx-auto"
               : "gap-3 px-6 py-2.5"
           }`}
-          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+          }}
         >
           <span className="material-symbols-outlined">logout</span>
           {!isCollapsed && (
