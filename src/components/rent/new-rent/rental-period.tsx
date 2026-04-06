@@ -1,4 +1,46 @@
-const Period = () => {
+"use client";
+
+import { DateInput } from "@/components/ui/date-input";
+import { useState, useEffect } from "react";
+
+interface PeriodProps {
+  onDataChange?: (data: {
+    startDate: string;
+    endDate: string;
+    duration: number;
+  }) => void;
+}
+
+const Period = ({ onDataChange }: PeriodProps) => {
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [duration, setDuration] = useState<number | null>(null);
+
+  const calculateDuration = (start: string, end: string) => {
+    if (start && end) {
+      const startObj = new Date(start);
+      const endObj = new Date(end);
+      const diffTime = endObj.getTime() - startObj.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 ? diffDays : 0;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const calculatedDuration = calculateDuration(startDate, endDate);
+    setDuration(calculatedDuration);
+
+    // Kirim data ke parent component
+    if (onDataChange && calculatedDuration !== null) {
+      onDataChange({
+        startDate,
+        endDate,
+        duration: calculatedDuration,
+      });
+    }
+  }, [startDate, endDate, onDataChange]);
+
   return (
     <div>
       <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -12,29 +54,33 @@ const Period = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Start Date
-            </label>
-            <input
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
-              type="date"
+            <DateInput
+              id="StartDate"
+              name="startDate"
+              label="Start Date"
+              required
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              End Date
-            </label>
-            <input
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
-              type="date"
+            <DateInput
+              id="EndDate"
+              name="endDate"
+              label="End Date"
+              required
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
             />
           </div>
           <div className="bg-primary/5 dark:bg-primary/10 rounded-lg p-4 flex flex-col items-center justify-center border border-primary/20 h-[50px]">
             <div className="text-xs text-primary font-bold uppercase tracking-widest">
               Total Duration
             </div>
-            <div className="text-xl font-black text-primary leading-none">
-              5 Days
+            <div className="text-xs font-black text-primary leading-none">
+              {duration !== null
+                ? `${duration} ${duration === 1 ? "Day" : "Days"}`
+                : "-"}
             </div>
           </div>
         </div>
@@ -42,4 +88,5 @@ const Period = () => {
     </div>
   );
 };
+
 export default Period;

@@ -47,12 +47,6 @@ export function VehicleHistoryFilters({
           <option>Current</option>
           <option>Previous</option>
         </Select>
-        <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-          <span className="material-symbols-outlined text-[18px]">
-            filter_list
-          </span>
-          More Filters
-        </button>
       </div>
     </div>
   );

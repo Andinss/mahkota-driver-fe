@@ -25,11 +25,7 @@ export const Input = ({
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      <input
-        className={`${defaultClasses} ${className}`}
-        id={id}
-        {...props}
-      />
+      <input className={`${defaultClasses} ${className}`} id={id} {...props} />
     </div>
   );
 };
