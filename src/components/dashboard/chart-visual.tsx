@@ -1,4 +1,23 @@
+"use client";
+import { useState } from "react";
+
+const dataPoints = [
+  { cx: 150, cy: 110, week: "Week 1", day: "Day 7",  value: 21 },
+  { cx: 300, cy: 70,  week: "Week 2", day: "Day 14", value: 32 },
+  { cx: 450, cy: 80,  week: "Week 3", day: "Day 21", value: 28 },
+  { cx: 600, cy: 50,  week: "Week 3", day: "Day 28", value: 45 },
+  { cx: 800, cy: 10,  week: "Week 4", day: "Day 35", value: 63 },
+];
+
+
 export const ChartVisual = () => {
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    value: number;
+    day: string;
+    week: string;
+  } | null>(null);
   return (
     <div className="flex-1 w-full min-h-[250px] relative mt-2">
       {/* SVG Chart Representation */}
@@ -56,47 +75,51 @@ export const ChartVisual = () => {
           strokeWidth="3"
         ></path>
         {/* Data Points */}
-        <circle
-          cx="150"
-          cy="110"
-          fill="white"
-          r="4"
-          stroke="#137fec"
-          strokeWidth="2"
-        ></circle>
-        <circle
-          cx="300"
-          cy="70"
-          fill="white"
-          r="4"
-          stroke="#137fec"
-          strokeWidth="2"
-        ></circle>
-        <circle
-          cx="450"
-          cy="80"
-          fill="white"
-          r="4"
-          stroke="#137fec"
-          strokeWidth="2"
-        ></circle>
-        <circle
-          cx="600"
-          cy="50"
-          fill="white"
-          r="4"
-          stroke="#137fec"
-          strokeWidth="2"
-        ></circle>
-        <circle
-          cx="800"
-          cy="10"
-          fill="white"
-          r="4"
-          stroke="#137fec"
-          strokeWidth="2"
-        ></circle>
+        {dataPoints.map((point, i) => (
+  <circle
+    key={i}
+    cx={point.cx}
+    cy={point.cy}
+    r="6"
+    fill="white"
+    stroke="#137fec"
+    strokeWidth="2"
+    className="cursor-pointer"
+    onMouseEnter={(e) => {
+      const svg = (e.target as SVGCircleElement).closest("svg")!;
+      const rect = svg.getBoundingClientRect();
+      const scaleX = rect.width / 800;
+      const scaleY = rect.height / 200;
+      setTooltip({
+        x: point.cx * scaleX,
+        y: point.cy * scaleY,
+        value: point.value,
+        day: point.day,
+        week: point.week,
+      });
+    }}
+    onMouseLeave={() => setTooltip(null)}
+  />
+))}
       </svg>
+      {tooltip && (
+  <div
+    className="absolute z-10 pointer-events-none"
+    style={{
+      left: tooltip.x,
+      top: tooltip.y - 60,
+      transform: "translateX(-50%)",
+    }}
+  >
+    <div className="bg-slate-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg whitespace-nowrap">
+      <div className="font-semibold text-blue-300">{tooltip.week} · {tooltip.day}</div>
+      <div className="mt-0.5">Users: <span className="font-bold text-white">{tooltip.value}</span></div>
+    </div>
+    <div className="flex justify-center">
+      <div className="w-2 h-2 bg-slate-800 rotate-45 -mt-1" />
+    </div>
+  </div>
+)}
     </div>
   );
 };

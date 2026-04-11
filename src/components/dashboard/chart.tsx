@@ -1,8 +1,19 @@
+"use client";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { QuickAction } from "./quick-action";
 import { ChartVisual } from "./chart-visual";
 
 const ChartCard = () => {
+  const [selectedPeriod, setSelectedPeriod] = useState("Last 30 Days");
+
+  const stats: Record<string, { count: string; label: string }> = {
+  "Last 30 Days": { count: "145", label: "New Users (Last 30 Days)" },
+  "Last 7 Days": { count: "21", label: "New Users (Last 7 Days)" },
+  "This Year": { count: "1.740", label: "New Users (This Year)" },
+};
+
+const currentStat = stats[selectedPeriod];
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-5">
       {/* Chart Section */}
@@ -12,17 +23,16 @@ const ChartCard = () => {
             <h3 className="text-slate-900 dark:text-white text-lg font-bold">
               User Registration Growth
             </h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-bold text-slate-900 dark:text-white">
-                145
-              </span>
-              <span className="text-slate-500 dark:text-slate-400 text-sm">
-                New Users (Last 30 Days)
-              </span>
-            </div>
+            <span className="text-2xl font-bold text-slate-900 dark:text-white">
+  {currentStat.count}
+    </span>
+    <span className="text-slate-500 dark:text-slate-400 text-sm">
+      {currentStat.label}
+    </span>
           </div>
           <div className="flex gap-2">
-            <select className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/50 outline-none">
+            <select  value={selectedPeriod}
+                     onChange={(e) => setSelectedPeriod(e.target.value)} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/50 outline-none">
               <option>Last 30 Days</option>
               <option>Last 7 Days</option>
               <option>This Year</option>
