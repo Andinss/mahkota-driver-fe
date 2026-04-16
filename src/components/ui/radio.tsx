@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -8,8 +8,9 @@ export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 export const Radio = forwardRef<HTMLInputElement, RadioProps>(
-  ({ className = "", label, description, error, required, id, ...props }, ref) => {
-    const radioId = id || `radio-${Math.random().toString(36).substr(2, 9)}`;
+  ({ className = "", label, description, error, required, id, checked, ...props }, ref) => {
+    const generatedId = useId();
+    const radioId = id || generatedId;
 
     return (
       <div className={`flex items-start gap-3 ${className}`}>
@@ -17,6 +18,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
           ref={ref}
           type="radio"
           id={radioId}
+          checked={checked ?? false}
           className={`
             mt-0.5 h-4 w-4 cursor-pointer appearance-none rounded-full border-2 border-slate-300 dark:border-slate-600
             checked:border-primary checked:bg-primary
