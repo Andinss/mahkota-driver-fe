@@ -1,7 +1,5 @@
 import { SearchInput } from "@/components/ui/search-input";
 import { Select } from "@/components/ui/select";
-import { IconButton } from "@/components/ui/icon-button";
-
 export const SearchFilters = () => {
   return (
     <div className="rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] bg-white dark:bg-[#1a2632] p-4 shadow-sm">
@@ -34,7 +32,6 @@ export const SearchFilters = () => {
             <option value="truck">Truck</option>
             <option value="van">Van</option>
           </Select>
-          <IconButton name="filter_list" variant="outline" />
         </div>
       </div>
     </div>
