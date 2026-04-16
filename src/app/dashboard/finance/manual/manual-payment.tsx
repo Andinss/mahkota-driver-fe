@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import PayerInfo from "@/components/payment/manual/payer-info";
-import Summary from "@/components/payment/manual/summary";
-import TransactionDetail from "@/components/payment/manual/transaction-detail";
+import PayerInfo from "@/components/finance/manual/payer-info";
+import Summary from "@/components/finance/manual/summary";
+import TransactionDetail from "@/components/finance/manual/transaction-detail";
 
 const ManualPaymentPage = () => {
   const [searchValue, setSearchValue] = useState("");
