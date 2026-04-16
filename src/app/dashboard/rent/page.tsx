@@ -2,8 +2,9 @@
 
 import { PageHeader } from "@/components/page-header";
 import { RentalCard } from "@/components/rent/dashboard/card";
+import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
 import { RentalTable } from "@/components/rent/dashboard/rent-table";
-import { SearchFilters } from "@/components/search-filters";
+
 
 export default function RentalManagementPage() {
 const rentalsData = [
@@ -145,7 +146,7 @@ const rentalsData = [
 
       </div>
 
-        <SearchFilters />
+        <FiltersSearch/>
         <RentalTable rentals={rentalsData} />
     </div>
   );

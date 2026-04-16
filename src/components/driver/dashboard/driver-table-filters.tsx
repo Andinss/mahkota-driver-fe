@@ -61,7 +61,6 @@ export function DriverTableFilters({
           <option>On Leave</option>
           <option>Inactive</option>
         </Select>
-        <IconButton name="filter_list" />
       </div>
     </div>
   );
