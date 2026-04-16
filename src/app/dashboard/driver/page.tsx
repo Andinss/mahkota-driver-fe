@@ -9,6 +9,7 @@ import {
 import { DriverTable } from "@/components/driver/dashboard/driver-table";
 import { DriverPagination } from "@/components/driver/dashboard/driver-pagination";
 import { Driver } from "@/components/driver/dashboard/driver-table-row";
+import { PageHeader } from "@/components/page-header";
 
 // Mock data
 const mockDrivers: Driver[] = [
@@ -82,26 +83,15 @@ export default function DriverPage() {
   };
 
   return (
-    <div className="p-7">
-      <div className="flex items-end justify-between mb-8">
-        <div>
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Driver List Overview
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Manage and monitor driver performance and attendance.
-          </p>
-        </div>
-        <a
-          href="/dashboard/driver/register"
-          className="bg-primary hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-semibold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-        >
-          <span className="material-icons-round text-sm">person_add</span>
-          Add New Driver
-        </a>
-      </div>
+    <div className="m-8">
+      <PageHeader
+        title="Rentals List Overview"
+        description="Monitor active rentals, handle pending and late payments, and review daily completed transactions."
+        buttonText="Add New Driver"
+        buttonHref="/dashboard/driver/register"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-5 mb-8">
         <DriverStatsCard
           title="Total Drivers"
           value="48"
@@ -149,7 +139,10 @@ export default function DriverPage() {
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <DriverTableFilters filters={filters} onFilterChange={handleFilterChange} />
+        <DriverTableFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
         <DriverTable drivers={mockDrivers} />
         <DriverPagination
           currentPage={currentPage}

@@ -1,30 +1,90 @@
+"use client";
+
+import { useState } from "react";
+import { PageHeader } from "@/components/page-header";
 import Advice from "@/components/role/new/advice";
 import GeneralInformation from "@/components/role/new/general";
 import RoleHierarchy from "@/components/role/new/hierarchy";
-import Permission from "@/components/role/new/permission";
+import Permission, { PermissionItem } from "@/components/role/new/permission";
+
+const initialPermissions: PermissionItem[] = [
+  {
+    id: "dashboard",
+    icon: "dashboard",
+    title: "Dashboard View",
+    description: "Access to analytics and real-time status updates.",
+    iconColor: "text-blue-700",
+    iconBg: "bg-blue-100",
+    type: "toggle",
+    checked: true,
+  },
+  {
+    id: "user-mgmt",
+    icon: "group",
+    title: "User Management",
+    description: "Control access for staff and system operators.",
+    iconColor: "text-purple-700",
+    iconBg: "bg-purple-100",
+    type: "checkbox-group",
+    options: [
+      { value: "add", label: "Add", checked: false },
+      { value: "edit", label: "Edit", checked: false },
+      { value: "view", label: "View/Read", checked: false },
+      { value: "delete", label: "Delete", checked: false },
+      { value: "all", label: "All/Full Access", checked: false },
+    ],
+  },
+  {
+    id: "vehicle-mgmt",
+    icon: "directions_car",
+    title: "Vehicle Management",
+    description: "Manage fleet inventory, maintenance, and tracking.",
+    iconColor: "text-blue-700",
+    iconBg: "bg-blue-100",
+    type: "radio-group",
+    options: [
+      { value: "readonly", label: "Read-only" },
+      { value: "full", label: "Full Access", checked: true },
+    ],
+  },
+  {
+    id: "rental-ops",
+    icon: "event_note",
+    title: "Rental Operations",
+    description: "Daily workflow for assignments and returns.",
+    iconColor: "text-green-700",
+    iconBg: "bg-green-100",
+    type: "checkbox-pills",
+    options: [
+      { value: "assign", label: "Assign", checked: true },
+      { value: "retrieval", label: "Retrieval", checked: true },
+    ],
+  },
+  {
+    id: "financial",
+    icon: "payments",
+    title: "Financial Reporting",
+    description: "View revenue reports, invoices, and payment logs.",
+    iconColor: "text-red-700",
+    iconBg: "bg-red-100",
+    type: "toggle",
+    checked: false,
+  },
+];
 
 const RolePage = () => {
+  const [permissions, setPermissions] =
+    useState<PermissionItem[]>(initialPermissions);
+
   return (
     <div className="m-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
-            Add New Role
-          </h1>
-          <p className="text-gray-500 mt-1">
-            Configure system-wide access levels and permissions for PT XYZ
-            staff.
-          </p>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-5">
         <div className="lg:col-span-8 space-y-6">
           <GeneralInformation />
-          <Permission />
+          <Permission permissions={permissions} onChange={setPermissions} />
         </div>
         <div className="lg:col-span-4 space-y-6">
-          <RoleHierarchy />
-
+          <RoleHierarchy permissions={permissions} />
           <Advice />
         </div>
       </div>
@@ -45,4 +105,5 @@ const RolePage = () => {
     </div>
   );
 };
+
 export default RolePage;
