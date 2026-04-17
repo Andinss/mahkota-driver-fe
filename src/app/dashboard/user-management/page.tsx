@@ -16,10 +16,10 @@ export default function UserList () {
 
 {/* Tabs */}
 <div className="flex gap-8">
-<a className="flex items-center justify-center border-b-[3px] border-primary text-[#111418] dark:text-white pb-3 px-1 cursor-pointer" href="#">
+<a className="flex items-center justify-center border-b-[3px] border-primary text-[#111418] dark:text-white pb-3 px-1 cursor-pointer" href="/dashboard/user-">
 <p className="text-sm font-bold leading-normal tracking-[0.015em]">User List</p>
 </a>
-<a className="flex items-center justify-center border-b-[3px] border-transparent text-[#617589] dark:text-gray-400 hover:text-primary transition-colors pb-3 px-1 cursor-pointer" href="#">
+<a className="flex items-center justify-center border-b-[3px] border-transparent text-[#617589] dark:text-gray-400 hover:text-primary transition-colors pb-3 px-1 cursor-pointer" href="/dashboard/role">
 <p className="text-sm font-medium leading-normal tracking-[0.015em]">Roles &amp; Permissions</p>
 </a>
 <a className="flex items-center justify-center border-b-[3px] border-transparent text-[#617589] dark:text-gray-400 hover:text-primary transition-colors pb-3 px-1 cursor-pointer" href="#">
