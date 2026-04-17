@@ -57,15 +57,15 @@ const Sidebar = () => {
     const timeout = setTimeout(() => {
       updateMenuPosition();
     }, 50);
-    
+
     return () => clearTimeout(timeout);
   }, [activeMenu]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       updateMenuPosition();
-    }, 350); 
-    
+    }, 350);
+
     return () => clearTimeout(timeout);
   }, [isCollapsed]);
 
@@ -73,12 +73,15 @@ const Sidebar = () => {
     const handleWindowResize = () => {
       updateMenuPosition();
     };
-    
+
     window.addEventListener("resize", handleWindowResize);
     return () => window.removeEventListener("resize", handleWindowResize);
   }, [activeMenu, isCollapsed]);
 
-  const handleMenuClick = (path: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleMenuClick = (
+    path: string,
+    e: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
     e.preventDefault();
     setActiveMenu(path);
     router.push(path);
@@ -116,7 +119,9 @@ const Sidebar = () => {
           )}
         </div>
 
-        <nav className={`flex flex-col gap-2 mt-4 relative ${!isCollapsed ? "px-6" : ""}`}>
+        <nav
+          className={`flex flex-col gap-2 mt-4 relative ${!isCollapsed ? "px-6" : ""}`}
+        >
           <div
             className="absolute bg-primary/10 rounded-lg transition-all duration-300 ease-in-out pointer-events-none"
             style={{
@@ -127,11 +132,15 @@ const Sidebar = () => {
               width: isCollapsed ? "48px" : "auto",
             }}
           />
-          
+
           <a
-            ref={(el) => { menuRefs.current["/dashboard"] = el; }}
+            ref={(el) => {
+              menuRefs.current["/dashboard"] = el;
+            }}
             className={`flex items-center rounded-lg relative z-10 transition-colors cursor-pointer ${
-              activeMenu === "/dashboard" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              activeMenu === "/dashboard"
+                ? "text-primary"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
@@ -145,9 +154,13 @@ const Sidebar = () => {
             )}
           </a>
           <a
-            ref={(el) => { menuRefs.current["/dashboard/driver"] = el; }}
+            ref={(el) => {
+              menuRefs.current["/dashboard/driver"] = el;
+            }}
             className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/driver" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              activeMenu === "/dashboard/driver"
+                ? "text-primary"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
@@ -166,9 +179,13 @@ const Sidebar = () => {
           </a>
 
           <a
-            ref={(el) => { menuRefs.current["/dashboard/vehicle"] = el; }}
+            ref={(el) => {
+              menuRefs.current["/dashboard/vehicle"] = el;
+            }}
             className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/vehicle" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              activeMenu === "/dashboard/vehicle"
+                ? "text-primary"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
@@ -186,9 +203,13 @@ const Sidebar = () => {
             )}
           </a>
           <a
-            ref={(el) => { menuRefs.current["/dashboard/rent"] = el; }}
+            ref={(el) => {
+              menuRefs.current["/dashboard/rent"] = el;
+            }}
             className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/rent" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              activeMenu === "/dashboard/rent"
+                ? "text-primary"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
@@ -200,21 +221,23 @@ const Sidebar = () => {
               contract
             </span>
             {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">
-                Rentals
-              </p>
+              <p className="text-sm font-medium leading-normal">Rentals</p>
             )}
           </a>
           <a
-            ref={(el) => { menuRefs.current["/dashboard/user-management"] = el; }}
+            ref={(el) => {
+              menuRefs.current["/dashboard/users"] = el;
+            }}
             className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/user-management" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              activeMenu === "/dashboard/user-management"
+                ? "text-primary"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
                 : "gap-3 px-3 py-2.5"
             }`}
-            onClick={(e) => handleMenuClick("/dashboard/user-management", e)}
+            onClick={(e) => handleMenuClick("/dashboard/users", e)}
           >
             <span className="material-symbols-outlined transition-colors">
               people
@@ -227,9 +250,13 @@ const Sidebar = () => {
           </a>
 
           <a
-            ref={(el) => { menuRefs.current["/dashboard/finance-management"] = el; }}
+            ref={(el) => {
+              menuRefs.current["/dashboard/finance-management"] = el;
+            }}
             className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/finance-management" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              activeMenu === "/dashboard/finance-management"
+                ? "text-primary"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
@@ -248,9 +275,13 @@ const Sidebar = () => {
           </a>
 
           <a
-            ref={(el) => { menuRefs.current["/settings"] = el; }}
+            ref={(el) => {
+              menuRefs.current["/settings"] = el;
+            }}
             className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/settings" ? "text-primary" : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              activeMenu === "/settings"
+                ? "text-primary"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             } ${
               isCollapsed
                 ? "justify-center w-12 h-12 mx-auto"
