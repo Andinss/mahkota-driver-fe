@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
@@ -52,14 +53,12 @@ export const PaymentTableRow = ({
 
   return (
     <tr className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group ${
-      isPending ? 'bg-primary/[0.02] dark:bg-primary/[0.05] border-l-2 border' : ''
+      isPending ? 'bg-primary/[0.02] dark:bg-primary/[0.05] border-l-2 border-l-primary' : ''
     }`}>
-      {/* Invoice ID */}
       <td className="px-6 py-4 font-medium text-[#111418] dark:text-white">
         {payment.invoiceId}
       </td>
 
-      {/* Customer Name */}
       <td className="px-6 py-4 text-[#111418] dark:text-gray-300">
         <div className="flex items-center gap-2">
           <div 
@@ -76,22 +75,18 @@ export const PaymentTableRow = ({
         </div>
       </td>
 
-      {/* Vehicle Plate */}
       <td className="px-6 py-4 text-[#617589] dark:text-gray-400">
         {payment.vehicle.plate}
       </td>
 
-      {/* Amount */}
       <td className="px-6 py-4 font-semibold text-[#111418] dark:text-white">
         {payment.amount}
       </td>
 
-      {/* Due Date */}
       <td className={`px-6 py-4 font-medium ${isLate ? 'text-[#e73908]' : 'text-[#617589] dark:text-gray-400'}`}>
         {payment.dueDate}
       </td>
 
-      {/* Status */}
       <td className="px-6 py-4">
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig[payment.status].className}`}>
           <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
@@ -99,41 +94,29 @@ export const PaymentTableRow = ({
         </span>
       </td>
 
-      {/* Method */}
       <td className="px-6 py-4 text-[#617589] dark:text-gray-400">
         {payment.method}
       </td>
 
-      {/* Actions */}
-      
       <td className="py-4 px-6 text-right">
         <Dropdown
           trigger={
             <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
-              <span className="material-symbols-outlined text-[20px]">
-                more_vert
-              </span>
+              <span className="material-symbols-outlined text-[20px]">more_vert</span>
             </button>
           }
         >
-          {/* <Link href={`/dashboard/vehicle/register?plate=${vehicle.plate}`}>
-            <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
-          </Link> */}
-           <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
-
-          <DropdownMenuItem icon="delete" danger>
+          <DropdownMenuItem icon="edit" onClick={() => onEdit?.(payment)}>
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(payment)}>
             Delete
           </DropdownMenuItem>
-
-          {/* <Link href={`/dashboard/vehicle/detail/`}>
-            <DropdownMenuItem
-             icon="details">Details</DropdownMenuItem>
-          </Link> */}
-          <DropdownMenuItem
-             icon="details">Details</DropdownMenuItem>
+          <DropdownMenuItem icon="visibility" onClick={() => onDetails?.(payment)}>
+            Details
+          </DropdownMenuItem>
         </Dropdown>
       </td>
-      
     </tr>
   );
 };

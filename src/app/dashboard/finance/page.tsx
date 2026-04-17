@@ -1,8 +1,9 @@
 "use client";
 
 import { PaymentCard } from "@/components/finance/payment-list/card";
-import PaymentFilters from "@/components/finance/payment-list/payment-filters";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
+import { PageHeader } from "@/components/page-header";
+import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
 
 export default function PaymentList() {
   const paymentsData = [
@@ -78,6 +79,14 @@ export default function PaymentList() {
   return (
     <div className="flex-1 overflow-y-auto px-6 py-6">
       <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 pb-10">
+
+    <PageHeader
+                      title="Finance Dashboard"
+                      description="Daily Payment Queue • October 26, 2023"
+                      buttonText="Manual Entry"
+                      buttonHref="/dashboard/finance/payment"
+                    />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <PaymentCard title="Total Collections Today" value="$12,450" icon="payments" iconColor="text-primary"
             trend={{ icon: "trending_up", value: "+12%", trendColor: "text-[#078838]", bgColor: "bg-green-100 dark:bg-green-900/30" }} />
@@ -89,8 +98,8 @@ export default function PaymentList() {
             trend={{ icon: "trending_up", value: "+8%", trendColor: "text-[#078838]", bgColor: "bg-green-100 dark:bg-green-900/30" }} />
         </div>
 
+          <FiltersSearch/>
         <div className="flex flex-col gap-4 bg-surface-light dark:bg-surface-dark border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-          <PaymentFilters onSearch={handleSearch} />
           <PaymentTable
             payment={paymentsData}
             onValidate={handleValidate}
@@ -101,6 +110,7 @@ export default function PaymentList() {
           />
         </div>
       </div>
+      
     </div>
   );
 }
