@@ -251,10 +251,10 @@ const Sidebar = () => {
 
           <a
             ref={(el) => {
-              menuRefs.current["/dashboard/finance-management"] = el;
+              menuRefs.current["/dashboard/finance"] = el;
             }}
             className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/finance-management"
+              activeMenu === "/dashboard/finance"
                 ? "text-primary"
                 : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             } ${
@@ -262,15 +262,13 @@ const Sidebar = () => {
                 ? "justify-center w-12 h-12 mx-auto"
                 : "gap-3 px-3 py-2.5"
             }`}
-            onClick={(e) => handleMenuClick("/dashboard/finance-management", e)}
+            onClick={(e) => handleMenuClick("/dashboard/finance", e)}
           >
             <span className="material-symbols-outlined transition-colors">
               finance
             </span>
             {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">
-                Finance Management
-              </p>
+              <p className="text-sm font-medium leading-normal">Finance</p>
             )}
           </a>
 
