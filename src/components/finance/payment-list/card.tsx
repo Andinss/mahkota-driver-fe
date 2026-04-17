@@ -1,4 +1,3 @@
-// components/finance/payment-list/card.tsx
 interface PaymentCardProps {
   title: string;
   value: string;
@@ -6,9 +5,9 @@ interface PaymentCardProps {
   iconColor: string;
   trend: {
     icon: string;
-    value: string;  // persentase seperti "+12%", "-5%"
-    trendColor: string;  // warna untuk persentase
-    bgColor: string;  // background color untuk badge
+    value: string;
+    trendColor: string;
+    bgColor: string;
   };
 }
 
@@ -21,8 +20,10 @@ export function PaymentCard({
 }: PaymentCardProps) {
   return (
     <div className="bg-surface-light dark:bg-surface-dark rounded-xl p-5 border border-[#dbe0e6] dark:border-gray-700 shadow-sm flex flex-col gap-2 relative overflow-hidden group">
-      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-        <span className="material-symbols-outlined text-4xl text-primary">{icon}</span>
+      <div className="absolute top-0 right-0 p-4">
+        <span className={`material-symbols-outlined text-4xl ${iconColor}`}>
+          {icon}
+        </span>
       </div>
       <p className="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal">
         {title}
