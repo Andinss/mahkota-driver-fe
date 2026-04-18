@@ -1,0 +1,120 @@
+"use client";
+import { RoleTableRow } from "./role-list-table-row";
+
+const roles = [
+  {
+    id: "1",
+    name: "Owner",
+    color: "bg-blue-500",
+    viewDashboards:  "full",
+    managePayments:  "full",
+    manageDrivers:   "full",
+    assignVehicles:  "full",
+    vehicleRetrieval:"full",
+    userManagement:  "full",
+  },
+  {
+    id: "2",
+    name: "Finance",
+    color: "bg-emerald-500",
+    viewDashboards:  "check",
+    managePayments:  "full",
+    manageDrivers:   "none",
+    assignVehicles:  "none",
+    vehicleRetrieval:"none",
+    userManagement:  "readonly",
+  },
+  {
+    id: "3",
+    name: "Supervisor",
+    color: "bg-amber-500",
+    viewDashboards:  "check",
+    managePayments:  "readonly",
+    manageDrivers:   "full",
+    assignVehicles:  "full",
+    vehicleRetrieval:"check",
+    userManagement:  "readonly",
+  },
+  {
+    id: "4",
+    name: "Field Officer",
+    color: "bg-purple-500",
+    viewDashboards:  "readonly",
+    managePayments:  "none",
+    manageDrivers:   "readonly",
+    assignVehicles:  "check",
+    vehicleRetrieval:"full",
+    userManagement:  "none",
+  },
+  {
+    id: "5",
+    name: "Administrator",
+    color: "bg-gray-900",
+    viewDashboards:  "full",
+    managePayments:  "full",
+    manageDrivers:   "full",
+    assignVehicles:  "full",
+    vehicleRetrieval:"full",
+    userManagement:  "full",
+  },
+] as const;
+
+
+const columns = [
+  "Role Name",
+  "View Dashboards",
+  "Manage Payments",
+  "Manage Drivers",
+  "Assign Vehicles",
+  "Vehicle Retrieval",
+  "User Management",
+  "Actions", 
+];
+
+
+export const RoleTable = () => {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 mt-5 overflow-hidden shadow-sm">
+      <div className="overflow-x-auto">
+         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+        <h2 className="font-bold text-lg text-slate-900 dark:text-white">
+          Role Management
+        </h2>
+        <button
+          className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline"
+        >
+          Export as CSV
+        </button>
+      </div>
+        <table className="w-full text-left border-collapse">
+
+          <thead>
+            <tr className="bg-gray-50/50">
+              {columns.map((col, i) => (
+                <th
+                  key={i}
+                  className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 first:text-left text-center"
+                >
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-gray-100">
+            {roles.map((role) => (
+              <RoleTableRow
+                key={role.id}
+                role={role}
+                onEdit={(r) => console.log("Edit", r.name)}
+                onDelete={(r) => console.log("Delete", r.name)}
+                onDetails={(r) => console.log("Details", r.name)}
+              />
+            ))}
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+  );
+};
