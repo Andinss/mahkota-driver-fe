@@ -221,7 +221,9 @@ const Sidebar = () => {
               contract
             </span>
             {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">Rentals</p>
+              <p className="text-sm font-medium leading-normal">
+                Rentals Management
+              </p>
             )}
           </a>
           <a
@@ -229,7 +231,7 @@ const Sidebar = () => {
               menuRefs.current["/dashboard/users"] = el;
             }}
             className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/user-management"
+              activeMenu === "/dashboard/users"
                 ? "text-primary"
                 : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             } ${
@@ -268,7 +270,9 @@ const Sidebar = () => {
               finance
             </span>
             {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">Finance</p>
+              <p className="text-sm font-medium leading-normal">
+                Finance Management
+              </p>
             )}
           </a>
 
