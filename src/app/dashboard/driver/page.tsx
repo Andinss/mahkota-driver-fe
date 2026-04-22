@@ -10,6 +10,7 @@ import { DriverTable } from "@/components/driver/dashboard/driver-table";
 import { DriverPagination } from "@/components/driver/dashboard/driver-pagination";
 import { Driver } from "@/components/driver/dashboard/driver-table-row";
 import { PageHeader } from "@/components/page-header";
+import { SearchFilters } from "@/components/search-filters";
 
 // Mock data
 const mockDrivers: Driver[] = [
@@ -138,11 +139,8 @@ export default function DriverPage() {
         />
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <DriverTableFilters
-          filters={filters}
-          onFilterChange={handleFilterChange}
-        />
+      <SearchFilters />
+      <div className="bg-white mt-5 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <DriverTable drivers={mockDrivers} />
         <DriverPagination
           currentPage={currentPage}
