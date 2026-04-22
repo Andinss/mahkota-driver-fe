@@ -78,3 +78,17 @@
 .stepper-segment-active {
   background-color: #2563eb;
 }
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+}
+.editorial-gradient {
+  background: linear-gradient(135deg, #004ac6 0%, #2563eb 100%);
+}
+.frosted-glass {
+  backdrop-filter: blur(20px);
+  background-color: rgba(255, 255, 255, 0.6);
+}
