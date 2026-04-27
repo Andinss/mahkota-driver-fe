@@ -1,32 +1,84 @@
 "use client";
 
 import { SelectSearch } from "@/components/ui/select-input-search";
+import { useEffect, useState } from "react";
+const driverDetails = [
+   { label: "Marco Polo", 
+     value: "889201",
+     image: "https://i.pravatar.cc/40?img=1" 
+    },   
+  { label: "Sarah Smith", 
+    value: "889205", 
+    image: "https://i.pravatar.cc/40?img=2" 
+  },   
+  { label: "Robert Chen", 
+    value: "889312", 
+    image: "https://i.pravatar.cc/40?img=3" 
+  },   
+  { label: "Anita Wijaya", 
+    value: "889410", 
+    image: "https://i.pravatar.cc/40?img=4" 
+  },  
+];
 
-const driverOptions = [
+const vehicleInfo = [
   {
-    label: "Budi Santoso",
-    value: "1",
-    image: "https://i.pravatar.cc/40?img=1",
+    label: "B 11234 XYZ - Toyota Avanza",
+    value: "B 11234 XYZ",
   },
   {
-    label: "Andi Wijaya",
-    value: "2",
-    image: "https://i.pravatar.cc/40?img=2",
+    label: "B 5678 ABC - Honda CR-V",
+    value: "B 5678 ABC",
+  },
+  {
+    label: "B 9910 DEF - Mitsubishi Pajero",
+    value: "B 9910 DEF",
+  },
+  {
+    label: "B 2233 GHI - Toyota Innova ",
+    value: "B 2233 GHI",
   },
 ];
 
-const vehicleOptions = [
-  {
-    label: "B 1234 XYZ - Toyota Avanza",
-    value: "1",
-  },
-  {
-    label: "D 5678 ABC - Honda Brio",
-    value: "2",
-  },
+const rentalPeriod = [
+  
 ];
 
-const SelectionForm = () => {
+  interface SelectionFormProps {
+  onDataChange?: (data: {
+    vehicleId?: string;
+    driverId?: string;
+    driverType?: string;
+  }) => void;
+  initialData?: {
+    vehicleId?: string;
+    driverId?: string;
+  };
+}
+
+
+const SelectionForm = ({ onDataChange, initialData}: SelectionFormProps) => {
+   const [selectedDriver, setSelectedDriver] = useState<string | undefined>(
+    initialData?.driverId
+  );
+  const [selectedVehicle, setSelectedVehicle] = useState<string | undefined>(
+    initialData?.vehicleId
+  );
+
+  useEffect(() => {
+    if (initialData?.driverId) setSelectedDriver(initialData.driverId);
+    if (initialData?.vehicleId) setSelectedVehicle(initialData.vehicleId);
+  }, [initialData]);
+
+  const handleDriverChange = (value: string) => {
+    setSelectedDriver(value);
+    onDataChange?.({ driverId: value, vehicleId: selectedVehicle });
+  };
+
+  const handleVehicleChange = (value: string) => {
+    setSelectedVehicle(value);
+    onDataChange?.({ vehicleId: value, driverId: selectedDriver });
+  };
   return (
     <div>
       <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border-2 border-primary/20 dark:border-primary/10 shadow-sm">
@@ -49,8 +101,10 @@ const SelectionForm = () => {
             </label>
 
             <SelectSearch
-              options={driverOptions}
+              options={driverDetails}
               placeholder="Search driver..."
+              value={selectedDriver}
+              onChange={handleDriverChange}
             />
           </div>
 
@@ -61,8 +115,10 @@ const SelectionForm = () => {
             </label>
 
             <SelectSearch
-              options={vehicleOptions}
+              options={vehicleInfo}
               placeholder="Search vehicle..."
+              value={selectedVehicle}
+              onChange={handleVehicleChange}
             />
           </div>
         </div>

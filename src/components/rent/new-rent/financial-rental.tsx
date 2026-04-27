@@ -5,21 +5,48 @@ import { Select } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 
 interface FinancialRentalProps {
-  onDataChange?: (data: { dailyRate: number; depositAmount: number }) => void;
-}
+  onDataChange?: (data: { 
+    dailyRate: number;
+    depositAmount: number;
+    methodPayment?: string;
+   }) => void;
+  initialData?: {
+    dailyRate?: number;
+    depositAmount?: number;
+    methodPayment?: string;
+  }
+} 
 
-const FinancialRental = ({ onDataChange }: FinancialRentalProps) => {
-  const [dailyRate, setDailyRate] = useState<number>(0);
-  const [depositAmount, setDepositAmount] = useState<number>(0);
+
+
+const FinancialRental = ({ onDataChange, initialData }: FinancialRentalProps) => {
+  const [dailyRate, setDailyRate] = useState<number>(initialData?.dailyRate || 0);
+  const [depositAmount, setDepositAmount] = useState<number>(initialData?.depositAmount || 0);
+  const [methodPayment, setMethodPayment] = useState<string>(initialData?.methodPayment || "Bank");
+
+  useEffect(() => {
+    console.log("Financial initialData:", initialData);
+
+    if (initialData?.dailyRate !== undefined) {
+      setDailyRate(initialData.dailyRate);
+    }
+    if (initialData?.depositAmount !== undefined) {
+      setDepositAmount(initialData.depositAmount);
+    }
+    if (initialData?.methodPayment !== undefined) {
+      setMethodPayment(initialData.methodPayment);
+    } 
+  }, [initialData]);
 
   useEffect(() => {
     if (onDataChange) {
       onDataChange({
         dailyRate,
         depositAmount,
+        methodPayment,
       });
     }
-  }, [dailyRate, depositAmount, onDataChange]);
+  }, [dailyRate, depositAmount, methodPayment, onDataChange]);
 
   const handleDailyRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, "");
@@ -83,10 +110,12 @@ const FinancialRental = ({ onDataChange }: FinancialRentalProps) => {
               id="methodPayment"
               name="methodPayment"
               label="Method Payment"
+              value={methodPayment}
+              onChange={(e) => setMethodPayment(e.target.value)}
             >
-              <option>Bank</option>
-              <option>Property Parent</option>
-              <option>Own Youself</option>
+              <option value="Bank">Bank</option>
+              <option value="Property Parent">Property Parent</option>
+              <option value="Own Yourself">Own Yourself</option>
             </Select>
           </div>
         </div>

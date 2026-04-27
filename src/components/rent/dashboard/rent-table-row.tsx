@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { StatusBadge } from "@/components/status-badge";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 
@@ -36,7 +37,7 @@ export const RentalTableRow = ({
   onDetails,
   onEndRental,
 }: RentalTableRowProps) => {
-
+const cleanTransactionId = rental.transactionId.replace("#", "");
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
       {/* Transaction ID */}
@@ -111,17 +112,17 @@ export const RentalTableRow = ({
             </button>
           }
         >
-          {/* <Link href={`/dashboard/vehicle/register?plate=${vehicle.plate}`}>
+                    <Link href={`/dashboard/rent/new?transactionId=${cleanTransactionId}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
-          </Link> */}
+          </Link>
 
           <DropdownMenuItem icon="delete" danger>
             Delete
           </DropdownMenuItem>
 
-          {/* <Link href={`/dashboard/vehicle/detail/`}>
+            <Link href={`/dashboard/rent/detail/${cleanTransactionId}`}>
             <DropdownMenuItem icon="details">Details</DropdownMenuItem>
-          </Link> */}
+          </Link>
         </Dropdown>
       </td>
     </tr>

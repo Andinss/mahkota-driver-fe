@@ -13,7 +13,7 @@ const rentalsData = [
     driver: {
       name: "Marco Polo",
       id: "889201",
-      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCW4gJf2eEO4EG8BFOazzdRRHee4-MomTnMV3WEGQ2Y8seVCyviB_eSctIejw8Js83uqHnt4TxkKMywWxkhJUO2KXohNsm3j98fZCqiS5qst8FxfTtrtae9MRFF2Pu8NauV6Ho_bBcUwWeQYUi1AQt2tPEagR7FS1Ph9g0jKqItqSxjkyTIIhOuC3iBiceqWvwhk91APC1xCREcN_sbBmJivy0buipqNPEjjKHq2EBGo8w44wo-aAbkEOoPcLp64gttI8Z7m87DwX3Z"
+      avatar: "https://i.pravatar.cc/40?img=1"
     },
     vehicle: {
       name: "Toyota Avanza",
@@ -32,7 +32,7 @@ const rentalsData = [
     driver: {
       name: "Sarah Smith",
       id: "889205",
-      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAAWTDU7YDSChhfxC9rbq344i1_ja75dg8lO8oKgEupt2okcD5RJMKo0mhAKO6gx9GdZ8g1QtB1xOWfM0y-daxhxi5MVJVezIXUJ3Oo-vA90Rt1fdY7hemxkBF9RKDxPeEYg1fhSZZW_yui3ROqTQoryZwF0urmyz22Wb0UufSnMCUPWybyP0z0VpKEMCedura_ou1BCeDWLpp8celzqhuLzk8tpGX5uFCjx1GZThyVSBb2q69fTF8ebLHLQuuZp-eHhZuYmOWB8sVk"
+      avatar: "https://i.pravatar.cc/40?img=2"
     },
     vehicle: {
       name: "Honda CR-V",
@@ -51,7 +51,7 @@ const rentalsData = [
     driver: {
       name: "Robert Chen",
       id: "889312",
-      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCwQxpzc53icY9jPe89tCLHEMP3dZ-mpN5AVfvfFReL0-UPGjrmDIvu7ywDO-33uMSssvcIlniIpsSzrNos1iW3-l88tvUbLP-3XTEk37R6-VfcTn7xRrLdw9w5HnfxrZFdjM6iJvkwyuOlhzeOimuyd0W9vezn-Zf0ilN4nQQWTFGIJmHrJxh09pkFKfe8Z-yYo3yDBagdNx_xfkWuXABk8RtjG5IzBoB-G40vbilXBMOu7qr1ZJ7_CnP3Rw2nQZPdB9WytVnKWr1o"
+      avatar: "https://i.pravatar.cc/40?img=3"
     },
     vehicle: {
       name: "Mitsubishi Pajero",
@@ -70,7 +70,7 @@ const rentalsData = [
     driver: {
       name: "Anita Wijaya",
       id: "889410",
-      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuC_JHe0vnoPqvs-TjRNdrF-gLxN33O6dKzDPp_VbRrAxXIbKggM3g4UlSyIEOnENnSNkLHbfXvoQZFid8MYLdvVtZt_QTcH3uHmGut8ecYPPM1rP1z0y9V_HfzkvczhSQ1BreHS9tmg6L9aJPFK7t-T_lapaM8Qv_vGbF_YZVmJvxkbQP95QC4btUgkR5r44aWX97_HoKs_Y241kbhSoV1Ingozfz67QncGXL6j0-vktGzezwFI-SX12-p1z2SDeoipOwWidA7qbTbZ"
+      avatar: "https://i.pravatar.cc/40?img=4"
     },
     vehicle: {
       name: "Toyota Innova",

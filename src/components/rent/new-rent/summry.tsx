@@ -13,9 +13,17 @@ interface SummaryProps {
   };
   onConfirm: () => void;
   onCancel: () => void;
+  isSubmitting?: boolean;  
+  mode?: "add" | "edit"; 
 }
 
-const Summary = ({ rentalData, onConfirm, onCancel }: SummaryProps) => {
+const Summary = ({
+   rentalData,
+    onConfirm, 
+    onCancel,
+    isSubmitting = false,
+    mode = "add" 
+  }: SummaryProps) => {
   const dailyRateTotal = rentalData.dailyRate * rentalData.duration;
   const totalRevenue =
     dailyRateTotal + rentalData.depositAmount + rentalData.serviceFee;
@@ -29,8 +37,16 @@ const Summary = ({ rentalData, onConfirm, onCancel }: SummaryProps) => {
     }).format(value);
   };
 
+    const buttonText = isSubmitting
+  ? "Processing..."
+  : mode === "add"
+  ? "Confirm Rental"
+  : "Update Rental";
+  
+
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
+
     const date = new Date(dateString);
     return date.toLocaleDateString("id-ID", {
       day: "numeric",
@@ -79,15 +95,17 @@ const Summary = ({ rentalData, onConfirm, onCancel }: SummaryProps) => {
         <div className="mt-8 space-y-3">
           <button
             onClick={onConfirm}
+            disabled={isSubmitting}
             className="w-full py-3 bg-primary text-white font-bold rounded-lg shadow-md hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-xl">
-              check_circle
+              {mode === "add" ? "check_circle" : "update"}
             </span>
-            Confirm Rental
+            {buttonText}
           </button>
           <button
             onClick={onCancel}
+            disabled={isSubmitting}
             className="w-full py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-[0.98]"
           >
             Cancel
