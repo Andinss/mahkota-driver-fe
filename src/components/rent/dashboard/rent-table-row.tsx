@@ -120,7 +120,7 @@ const cleanTransactionId = rental.transactionId.replace("#", "");
             Delete
           </DropdownMenuItem>
 
-            <Link href={`/dashboard/rent/detail/${cleanTransactionId}`}>
+            <Link href={`/dashboard/rent/detail/}`}>
             <DropdownMenuItem icon="details">Details</DropdownMenuItem>
           </Link>
         </Dropdown>

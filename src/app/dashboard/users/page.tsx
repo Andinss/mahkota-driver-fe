@@ -8,29 +8,24 @@ const users = [
     id: "1",
     name: "John Doe",
     email: "john.doe@example.com",
+    phone: "081234567890",
     avatar: "https://i.pravatar.cc/150?u=john",
     role: {
       name: "Administrator",
     },
     status: "active" as const,
-    lastLogin: {
-      date: "2023-10-01",
-      time: "10:30 AM",
-    },
+    
   },
   {
     id: "2",
     name: "Jane Smith",
     email: "jane.smith@example.com",
+    phone: "081298765432",
     avatar: "https://i.pravatar.cc/150?u=jane",
     role: {
       name: "Fleet Manager",
     },
     status: "inactive" as const,
-    lastLogin: {
-      date: "2023-09-28",
-      time: "02:15 PM",
-    },
   },
 ];
 
