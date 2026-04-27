@@ -1,5 +1,5 @@
-import NewRentPage from "./new-rent";
+import RentRegisterPage from "./new-rent";
 
 export default function NewRent() {
-  return <NewRentPage />;
+  return <RentRegisterPage />;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect  } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 
@@ -13,32 +13,67 @@ export interface UserFormData {
 }
 
 interface AddUserFormProps {
-  onNext?: (data: UserFormData) => void;
-  onCancel?: () => void;
-  onSaveDraft?: () => void;
+ mode?: "add" | "edit";
+ initialData?: UserFormData;
+ onSubmit?: (data: UserFormData) => void;
+ onCancel?: () => void;
+ onSaveDraft?: () => void;
+ isSubmitting?: boolean;
 }
 
 export function AddUserForm({
-  onNext,
+  mode = "add",
+  initialData,
+  onSubmit,
   onCancel,
   onSaveDraft,
+  isSubmitting = false,
 }: AddUserFormProps) {
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
+
+    const [formValues, setFormValues] = useState({
+    fullname: initialData?.fullname || "",
+    email: initialData?.email || "",
+    phone: initialData?.phone || "",
+    role: initialData?.role || "",
+  });
+
+   // Sync ketika initialData berubah (mode edit)
+  useEffect(() => {
+    if (initialData) {
+      setIsActive(initialData.isActive);
+      setFormValues({
+        fullname: initialData.fullname || "",
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        role: initialData.role || "",
+      });
+    }
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
+        
     const data: UserFormData = {
-      fullname: formData.get("fullname") as string,
-      email: formData.get("email") as string,
-      phone: formData.get("phone") as string,
-      role: formData.get("role") as string,
+      fullname: formValues.fullname,
+      email: formValues.email,
+      phone: formValues.phone,
+      role: formValues.role,
       isActive: isActive,
     };
     
-    onNext?.(data);
+    onSubmit?.(data);
   };
+
+  const handleInputChange = (field: keyof typeof formValues, value: string) => {
+    setFormValues((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const buttonText = isSubmitting
+    ? "Processing..."
+    : mode === "add"
+    ? "Create User"
+    : "Update User";
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
@@ -51,15 +86,15 @@ export function AddUserForm({
                 className="material-symbols-outlined text-white text-3xl"
                 style={{ fontVariationSettings: "'FILL' 1" }}
               >
-                person_add
+                {mode === "add" ? "person_add" : "edit"}
               </span>
             </div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-              User Onboarding
+              {mode === "add" ? "User Onboarding" : "Edit User"}
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Ensure the email address is correct as an invitation link
-              will be sent automatically to the new user.
+              {mode === "add" ? "Ensure the email address is correct as an invitation link will be sent automatically to the new user."
+              : "Update user information and permissions."}
             </p>
           </div>
           <div className="space-y-4">
@@ -98,6 +133,8 @@ export function AddUserForm({
                       label="Full Name"
                       placeholder="Enter full name"
                       required
+                      value={formValues.fullname}
+                      onChange={(e) => handleInputChange("fullname", e.target.value)}
                     />
 
                     <Input
@@ -107,6 +144,8 @@ export function AddUserForm({
                       placeholder="Enter email address"
                       type="email"
                       required
+                      value={formValues.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
                     />
 
                     <Input
@@ -116,9 +155,17 @@ export function AddUserForm({
                       placeholder="Enter phone number"
                       type="tel"
                       required
+                      value={formValues.phone}
+                onChange={(e) => handleInputChange("phone", e.target.value)}
                     />
 
-                    <Select id="role" name="role" label="Assign Role" required>
+                    <Select id="role" 
+                    name="role" 
+                    label="Assign Role" 
+                    required
+                    value={formValues.role}
+                    onChange={(e) => handleInputChange("role", e.target.value)}
+                    >
                       <option value="">Select a role</option>
                       <option value="administrator">Administrator</option>
                       <option value="fleet_manager">Fleet Manager</option>
@@ -169,24 +216,29 @@ export function AddUserForm({
                       type="button"
                       className="px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
                       onClick={onCancel}
+                      disabled={isSubmitting}
                     >
                       Cancel
                     </button>
-                    {onSaveDraft && (
-                      <button
-                        type="button"
-                        className="px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
-                        onClick={onSaveDraft}
-                      >
-                        Save Draft
+                      {mode === "add" && onSaveDraft && (
+                <button
+                  type="button"
+                  className="px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                  onClick={onSaveDraft}
+                  disabled={isSubmitting}
+                >
+                  Save Draft
                       </button>
                     )}
                     <button
                       type="submit"
+                      disabled={isSubmitting}
                       className="px-8 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2"
                     >
-                      <span>Create User</span>
-                      <span className="material-symbols-outlined text-sm">send</span>
+                      <span>{buttonText}</span>
+                      <span className="material-symbols-outlined text-sm">
+                        {mode === "add" ? "send" : "save"}
+                      </span>
                     </button>
                   </div>
                 </form>

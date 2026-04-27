@@ -1,20 +1,19 @@
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 
 interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   avatar?: string;
   role: {
     name: string;
     color?: string;
   };
   status: "active" | "inactive";
-  lastLogin: {
-    date: string;
-    time: string;
-  };
+  
 }
 
 interface UserTableRowProps {
@@ -61,6 +60,8 @@ export const UserTableRow = ({
         </div>
       </td>
 
+      
+
       <td className="py-4 px-6 align-middle">
         <Badge
           variant={
@@ -75,17 +76,16 @@ export const UserTableRow = ({
           {user.role.name}
         </Badge>
       </td>
-
       <td className="py-4 px-6 align-middle">
         <Badge variant={user.status === "active" ? "success" : "neutral"}>
           {user.status === "active" ? "Active" : "Inactive"}
         </Badge>
       </td>
 
-      <td className="py-4 px-6 align-middle">
-        <p className="text-sm text-gray-900">{user.lastLogin.date}</p>
-        <p className="text-xs text-gray-500">{user.lastLogin.time}</p>
+          <td className="py-4 px-6 align-middle">
+        <p className="text-sm text-gray-900">{user.phone || "-"}</p>
       </td>
+      
 
       <td className="py-4 px-6 align-middle text-right">
         <Dropdown
@@ -97,17 +97,16 @@ export const UserTableRow = ({
             </button>
           }
         >
-          {/* <Link href={`/dashboard/vehicle/register?plate=${vehicle.plate}`}>
+          <Link href={`/dashboard/users/new?id=${user.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
-          </Link> */}
+          </Link>
 
           <DropdownMenuItem icon="delete" danger>
             Delete
           </DropdownMenuItem>
 
-          {/* <Link href={`/dashboard/vehicle/detail/`}>
             <DropdownMenuItem icon="details">Details</DropdownMenuItem>
-          </Link> */}
+          
         </Dropdown>
       </td>
     </tr>

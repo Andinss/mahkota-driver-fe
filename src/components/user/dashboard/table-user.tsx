@@ -10,10 +10,6 @@ interface User {
     color?: string;
   };
   status: "active" | "inactive";
-  lastLogin: {
-    date: string;
-    time: string;
-  };
 }
 
 interface UserTableProps {
@@ -67,7 +63,7 @@ export const UserTable = ({
               <th className="px-6 py-4">User</th>
               <th className="px-6 py-4">Role</th>
               <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Last Login</th>
+              <th className="px-6 py-4">Phone Number</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>

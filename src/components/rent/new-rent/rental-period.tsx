@@ -9,12 +9,27 @@ interface PeriodProps {
     endDate: string;
     duration: number;
   }) => void;
+  initialData?: {
+    startDate?: string;
+    endDate?: string;
+  };
 }
 
-const Period = ({ onDataChange }: PeriodProps) => {
+const Period = ({ onDataChange, initialData }: PeriodProps) => {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [duration, setDuration] = useState<number | null>(null);
+
+  useEffect(() => {
+    console.log("Period initialData:", initialData);
+
+    if (initialData?.startDate) {
+      setStartDate(initialData.startDate);
+    }
+    if (initialData?.endDate) {
+      setEndDate(initialData.endDate);
+    } 
+  }, [initialData]);
 
   const calculateDuration = (start: string, end: string) => {
     if (start && end) {
@@ -40,7 +55,6 @@ const Period = ({ onDataChange }: PeriodProps) => {
       });
     }
   }, [startDate, endDate, onDataChange]);
-
   return (
     <div>
       <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
