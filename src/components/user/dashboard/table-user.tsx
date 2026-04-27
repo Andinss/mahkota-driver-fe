@@ -39,7 +39,7 @@ export const UserTable = ({
   const endEntry = Math.min(currentPage * resultsPerPage, totalResults);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+    <div>
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="font-bold text-lg text-gray-900">User Management</h2>
         <button
@@ -79,40 +79,6 @@ export const UserTable = ({
             ))}
           </tbody>
         </table>
-      </div>
-
-      <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          Showing {startEntry} to {endEntry} of {totalResults} users
-        </p>
-        <div className="flex items-center gap-2">
-          <button
-            className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(
-            (page) => (
-              <button
-                key={page}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === page
-                    ? "bg-blue-600 text-white"
-                    : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                {page}
-              </button>
-            ),
-          )}
-          <button
-            className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
-        </div>
       </div>
     </div>
   );

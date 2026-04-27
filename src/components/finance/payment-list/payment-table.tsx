@@ -1,8 +1,7 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { PaymentTableRow } from './payment-table-row';
+import { useState } from "react";
+import { PaymentTableRow } from "./payment-table-row";
 
 interface Payment {
   invoiceId: string;
@@ -15,7 +14,7 @@ interface Payment {
   };
   amount: string;
   dueDate: string;
-  status: 'Late' | 'Pending Review' | 'Paid';
+  status: "Late" | "Pending Review" | "Paid";
   method: string;
 }
 
@@ -53,21 +52,21 @@ export function PaymentTable({
   if (totalResults === 0) {
     return (
       <div className="bg-surface-light dark:bg-surface-dark border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden p-8 text-center">
-        <p className="text-[#617589] dark:text-gray-400">No payment data available</p>
+        <p className="text-[#617589] dark:text-gray-400">
+          No payment data available
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-surface-light dark:bg-surface-dark border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+    <div>
       {/* Table */}
       <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
         <h2 className="font-bold text-lg text-slate-900 dark:text-white">
           Finance Dashboard
         </h2>
-        <button
-          className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline"
-        >
+        <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
           Export as CSV
         </button>
       </div>
@@ -100,46 +99,6 @@ export function PaymentTable({
           </tbody>
         </table>
       </div>
-
-      {/* Pagination */}
-      {totalResults > 0 && (
-        <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Showing {startEntry} to {endEntry} of {totalResults} entries
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => goToPage(currentPage - 1)}
-              className="w-9 h-9 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors"
-              disabled={currentPage === 1}
-            >
-              <span className="material-symbols-outlined text-sm text-slate-500">chevron_left</span>
-            </button>
-
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => goToPage(page)}
-                className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === page
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-
-            <button
-              onClick={() => goToPage(currentPage + 1)}
-              className="w-9 h-9 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors"
-              disabled={currentPage === totalPages}
-            >
-              <span className="material-symbols-outlined text-sm text-slate-500">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

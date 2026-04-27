@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { PaymentCard } from "@/components/finance/payment-list/card";
+import { FinancePagination } from "@/components/finance/payment-list/finance-pagination";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
 import { PageHeader } from "@/components/page-header";
 import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
@@ -137,6 +139,46 @@ export default function PaymentList() {
     },
   ];
 
+  // Calculate real stats from data
+  const totalCollectionsToday = paymentsData
+    .filter((p) => p.dueDate === "Oct 26, 2023")
+    .reduce(
+      (sum, p) => sum + parseFloat(p.amount.replace(/[^0-9.-]+/g, "")),
+      0,
+    );
+
+  const pendingPayments = paymentsData.filter(
+    (p) => p.status === "Pending Review",
+  ).length;
+  const overdueAmount = paymentsData
+    .filter((p) => p.status === "Late")
+    .reduce(
+      (sum, p) => sum + parseFloat(p.amount.replace(/[^0-9.-]+/g, "")),
+      0,
+    );
+
+  const validatedTransactions = paymentsData.filter(
+    (p) => p.status === "Paid",
+  ).length;
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalResults = paymentsData.length;
+  const totalPages = Math.ceil(totalResults / itemsPerPage);
+
+  // Get current page payments
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPayments = paymentsData.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   const handleValidate = (payment: any) => console.log("Validate:", payment);
   const handleDetails = (payment: any) => console.log("Details:", payment);
   const handleDownload = (payment: any) => console.log("Download:", payment);
@@ -158,7 +200,7 @@ export default function PaymentList() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <PaymentCard
               title="Total Collections Today"
-              value="$12,450"
+              value={`$${totalCollectionsToday.toLocaleString()}`}
               icon="payments"
               iconColor="text-primary"
               trend={{
@@ -170,7 +212,7 @@ export default function PaymentList() {
             />
             <PaymentCard
               title="Pending Payments"
-              value="8"
+              value={pendingPayments.toString()}
               icon="pending_actions"
               iconColor="text-[#d97706]"
               trend={{
@@ -182,7 +224,7 @@ export default function PaymentList() {
             />
             <PaymentCard
               title="Overdue Amount"
-              value="$3,200"
+              value={`$${overdueAmount.toLocaleString()}`}
               icon="warning"
               iconColor="text-[#e73908]"
               trend={{
@@ -194,7 +236,7 @@ export default function PaymentList() {
             />
             <PaymentCard
               title="Validated Transactions"
-              value="45"
+              value={validatedTransactions.toString()}
               icon="verified"
               iconColor="text-[#078838]"
               trend={{
@@ -209,13 +251,22 @@ export default function PaymentList() {
           <FiltersSearch />
           <div className="flex flex-col gap-4 bg-surface-light dark:bg-surface-dark border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
             <PaymentTable
-              payment={paymentsData}
+              payment={currentPayments}
               onValidate={handleValidate}
               onDetails={handleDetails}
               onDownload={handleDownload}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
+            <div className="border-t border-[#dbe0e6] dark:border-gray-700">
+              <FinancePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalResults={totalResults}
+                resultsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+              />
+            </div>
           </div>
         </div>
       </div>
