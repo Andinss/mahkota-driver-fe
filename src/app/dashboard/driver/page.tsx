@@ -60,6 +60,16 @@ const mockDrivers: Driver[] = [
   },
 ];
 
+// Calculate real stats from mock data
+const totalDrivers = mockDrivers.length;
+const activeDrivers = mockDrivers.filter((d) => d.status === "Active").length;
+const onLeaveDrivers = mockDrivers.filter(
+  (d) => d.status === "On Leave",
+).length;
+const inactiveDrivers = mockDrivers.filter(
+  (d) => d.status === "Inactive",
+).length;
+
 export default function DriverPage() {
   const [filters, setFilters] = useState<DriverFilters>({
     search: "",
@@ -68,9 +78,26 @@ export default function DriverPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 5;
-  const totalResults = 48;
-  const resultsPerPage = 10;
+  const itemsPerPage = 2; // Adjust how many rows per page
+
+  // Filter drivers based on search and status
+  const filteredDrivers = mockDrivers.filter((driver) => {
+    const matchesSearch =
+      driver.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      driver.employeeId.toLowerCase().includes(filters.search.toLowerCase());
+    const matchesStatus =
+      filters.status === "All Statuses" || driver.status === filters.status;
+    return matchesSearch && matchesStatus;
+  });
+
+  // Calculate pagination based on filtered data
+  const totalResults = filteredDrivers.length;
+  const totalPages = Math.ceil(totalResults / itemsPerPage);
+
+  // Get current page drivers
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentDrivers = filteredDrivers.slice(startIndex, endIndex);
 
   const handleFilterChange = (newFilters: DriverFilters) => {
     setFilters(newFilters);
@@ -86,8 +113,8 @@ export default function DriverPage() {
   return (
     <div className="m-8">
       <PageHeader
-        title="Rentals List Overview"
-        description="Monitor active rentals, handle pending and late payments, and review daily completed transactions."
+        title="Driver List Overview"
+        description="Manage your drivers, track their performance, and monitor their status."
         buttonText="Add New Driver"
         buttonHref="/dashboard/driver/register"
       />
@@ -95,7 +122,7 @@ export default function DriverPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-5 mb-8">
         <DriverStatsCard
           title="Total Drivers"
-          value="48"
+          value={totalDrivers.toString()}
           icon="groups"
           iconColor="text-primary"
           trend={{
@@ -106,7 +133,7 @@ export default function DriverPage() {
         />
         <DriverStatsCard
           title="Active"
-          value="32"
+          value={activeDrivers.toString()}
           icon="check_circle"
           iconColor="text-emerald-500"
           trend={{
@@ -117,7 +144,7 @@ export default function DriverPage() {
         />
         <DriverStatsCard
           title="On Leave"
-          value="6"
+          value={onLeaveDrivers.toString()}
           icon="event_busy"
           iconColor="text-amber-500"
           trend={{
@@ -128,7 +155,7 @@ export default function DriverPage() {
         />
         <DriverStatsCard
           title="Inactive"
-          value="10"
+          value={inactiveDrivers.toString()}
           icon="person_off"
           iconColor="text-rose-500"
           trend={{
@@ -141,14 +168,17 @@ export default function DriverPage() {
 
       <SearchFilters />
       <div className="bg-white mt-5 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <DriverTable drivers={mockDrivers} />
-        <DriverPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalResults={totalResults}
-          resultsPerPage={resultsPerPage}
-          onPageChange={handlePageChange}
-        />
+        <DriverTable drivers={currentDrivers} />
+        {/* Add separator line between table and pagination */}
+        <div className="border-t border-slate-200 dark:border-slate-800">
+          <DriverPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalResults={totalResults}
+            resultsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+          />
+        </div>
       </div>
     </div>
   );

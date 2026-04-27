@@ -16,7 +16,7 @@ interface Rental {
     end: string;
     duration: number;
   };
-  deposit:string;
+  deposit: string;
   paymentStatus: string;
 }
 
@@ -49,7 +49,7 @@ export const RentalTable = ({
   const endEntry = Math.min(currentPage * resultsPerPage, totalResults);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+    <div>
       <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
         <h2 className="font-bold text-lg text-slate-900 dark:text-white">
           Rental Transactions
@@ -88,43 +88,6 @@ export const RentalTable = ({
             ))}
           </tbody>
         </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Showing {startEntry} to {endEntry} of {totalResults} entries
-        </p>
-        <div className="flex items-center gap-2">
-          <button
-            className="px-3 py-1 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
-            disabled={currentPage === 1}
-          >
-            <span className="material-symbols-outlined text-sm">chevron_left</span>
-          </button>
-          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(
-            (page) => (
-              <button
-                key={page}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === page
-                    ? "bg-blue-600 text-white"
-                    : "border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                }`}
-              >
-                {page}
-              </button>
-            )
-          )}
-          <button
-            className="px-3 py-1 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            disabled={currentPage === totalPages}
-          >
-            <span className="material-symbols-outlined text-sm">
-              chevron_right
-            </span>
-          </button>
-        </div>
       </div>
     </div>
   );
