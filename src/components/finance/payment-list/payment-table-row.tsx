@@ -129,7 +129,7 @@ export const PaymentTableRow = ({
           <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(payment)}>
             Delete
           </DropdownMenuItem>
-          <DropdownMenuItem icon="details" onClick={() => onDetails?.(payment)}>
+          <DropdownMenuItem icon="visibility" onClick={() => onDetails?.(payment)}>
             Details
           </DropdownMenuItem>
         </Dropdown>

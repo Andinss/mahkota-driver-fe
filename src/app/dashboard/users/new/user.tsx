@@ -13,6 +13,7 @@ const mockUsers: Record<string, any> = {
     phone: "081234567890",
     role: "administrator",
     isActive: true,
+    avatar: "https://i.pravatar.cc/150?u=john", 
   },
   "2": {
     id: "2",
@@ -21,6 +22,16 @@ const mockUsers: Record<string, any> = {
     phone: "081298765432",
     role: "fleet_manager",
     isActive: false,
+    avatar: "https://i.pravatar.cc/150?u=jane",
+  },
+  "3": {
+    id: "3",
+    fullname: "Bob Johnson",
+    email: "bob.johnson@example.com",
+    phone: "081298765432",
+    role: "fleet_manager",
+    isActive: false,
+   avatar: "https://i.pravatar.cc/150?u=bob",
   },
 };
 
@@ -43,6 +54,7 @@ export default function AddNewUserPage() {
         phone: user.phone,
         role: user.role,
         isActive: user.isActive,
+        avatar: user.avatar,
       });
     } else {
       setMode("add");
