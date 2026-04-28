@@ -79,7 +79,7 @@ export const VehicleTableRow = ({
           </DropdownMenuItem>
 
           <Link href={`/dashboard/vehicle/detail/`}>
-            <DropdownMenuItem icon="details">Details</DropdownMenuItem>
+            <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>
       </td>
