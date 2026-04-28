@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 
 type PermissionLevel = "full" | "readonly" | "none" | "check";
@@ -91,13 +92,13 @@ export const RoleTableRow = ({
             </button>
           }
         >
-          <DropdownMenuItem icon="edit" onClick={() => onEdit?.(role)}>
-            Edit
-          </DropdownMenuItem>
+          <Link href={`/dashboard/role/new?id=${role.id}`}>
+            <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
+          </Link>
           <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(role)}>
             Delete
           </DropdownMenuItem>
-          <DropdownMenuItem icon="visibility" onClick={() => onDetails?.(role)}>
+          <DropdownMenuItem icon="details" onClick={() => onDetails?.(role)}>
             Details
           </DropdownMenuItem>
         </Dropdown>

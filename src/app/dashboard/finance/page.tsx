@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PaymentCard } from "@/components/finance/payment-list/card";
 import { FinancePagination } from "@/components/finance/payment-list/finance-pagination";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
@@ -185,12 +186,21 @@ export default function PaymentList() {
     }
   };
 
+   const handleEdit = (payment: any) => {
+    // Redirect ke halaman edit dengan parameter id
+    window.location.href = `/dashboard/finance/payment?id=${payment.invoiceId.replace("#", "")}`;
+  };
+
+  const handleDetails = (payment: any) => {
+    // Redirect ke halaman detail
+    window.location.href = `/dashboard/finance/detail?id=${payment.invoiceId.replace("#", "")}`;
+  };
+
   const handleValidate = (payment: any) => console.log("Validate:", payment);
-  const handleDetails = (payment: any) => console.log("Details:", payment);
   const handleDownload = (payment: any) => console.log("Download:", payment);
-  const handleEdit = (payment: any) => console.log("Edit:", payment);
   const handleDelete = (payment: any) => console.log("Delete:", payment);
   const handleSearch = (value: string) => console.log("Search:", value);
+
 
   return (
     <div className="m-8">
@@ -206,7 +216,7 @@ export default function PaymentList() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <PaymentCard
               title="Total Collections Today"
-              value={`$${totalCollectionsToday.toLocaleString()}`}
+              value={`$${totalCollectionsToday.toLocaleString('id-ID')}`}
               icon="payments"
               iconColor="text-primary"
               trend={{
@@ -230,7 +240,7 @@ export default function PaymentList() {
             />
             <PaymentCard
               title="Overdue Amount"
-              value={`$${overdueAmount.toLocaleString()}`}
+              value={`$${overdueAmount.toLocaleString('id-ID')}`}
               icon="warning"
               iconColor="text-[#e73908]"
               trend={{

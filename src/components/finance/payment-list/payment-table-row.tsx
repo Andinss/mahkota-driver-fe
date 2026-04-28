@@ -123,19 +123,15 @@ export const PaymentTableRow = ({
             </button>
           }
         >
-          <DropdownMenuItem icon="edit" onClick={() => onEdit?.(payment)}>
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            icon="delete"
-            danger
-            onClick={() => onDelete?.(payment)}
-          >
+          <Link href={`/dashboard/finance/payment?id=${payment.invoiceId.replace("#", "")}`}>
+  <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
+</Link>
+          <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(payment)}>
             Delete
           </DropdownMenuItem>
-          <Link href={`/dashboard/finance/detail/ `}>
-            <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
-          </Link>
+          <DropdownMenuItem icon="details" onClick={() => onDetails?.(payment)}>
+            Details
+          </DropdownMenuItem>
         </Dropdown>
       </td>
     </tr>

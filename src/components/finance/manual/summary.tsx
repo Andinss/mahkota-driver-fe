@@ -7,6 +7,11 @@ interface SummaryProps {
   paymentMethod?: string;
   amount?: string;
   currentBalance?: number;
+  onSubmit?: () => void;
+  onCancel?: () => void;
+  onClear?: () => void;
+  isSubmitting?: boolean;
+  mode?: "add" | "edit";
 }
 
 const methodIconMap: Record<string, string> = {
@@ -44,9 +49,20 @@ const Summary = ({
   paymentMethod = "",
   amount = "",
   currentBalance = -200,
+  onSubmit,
+  onCancel,
+  onClear,
+  isSubmitting = false,
+  mode = "add",
 }: SummaryProps) => {
   const parsedAmount = parseFloat(amount.replace(/[^\d.]/g, "")) || 0;
   const newBalance = currentBalance + parsedAmount;
+
+  const buttonText = isSubmitting
+    ? "Processing..."
+    : mode === "add"
+    ? "Confirm & Post Payment"
+    : "Update Payment";
 
   return (
     <div className="lg:col-span-1 flex flex-col gap-6">
@@ -117,12 +133,30 @@ const Summary = ({
               .
             </p>
           </div>
+
           <div className="flex flex-col gap-3 mt-4">
-            <button className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-blue-600 text-white rounded-lg h-12 font-semibold shadow-md shadow-blue-500/20 transition-all">
-              <span className="material-symbols-outlined">check</span>
-              Confirm &amp; Post Payment
+             <button 
+              onClick={onSubmit}
+              disabled={isSubmitting}
+              className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-blue-600 text-white rounded-lg h-12 font-semibold shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined">
+                {mode === "add" ? "check" : "save"}
+              </span>
+              {buttonText}
             </button>
-            <button className="flex items-center justify-center w-full bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-[#617589] dark:text-gray-300 rounded-lg h-10 text-sm font-medium transition-colors">
+            <button 
+              onClick={onCancel}
+              disabled={isSubmitting}
+              className="flex items-center justify-center w-full bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-[#617589] dark:text-gray-300 rounded-lg h-10 text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={onClear}
+              disabled={isSubmitting}
+              className="flex items-center justify-center w-full bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-[#617589] dark:text-gray-300 rounded-lg h-10 text-sm font-medium transition-colors disabled:opacity-50"
+            >
               Clear Form
             </button>
           </div>
