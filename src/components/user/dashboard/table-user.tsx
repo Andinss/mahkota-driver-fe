@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { UserTableRow } from "./table-row-user";
-import { ModalExport, ExportOptions, ExportColumn } from "@/components/ui/export";
 
 interface User {
   id: string;
@@ -23,19 +21,8 @@ interface UserTableProps {
   onEdit?: (user: User) => void;
   onDelete?: (user: User) => void;
   onResetPassword?: (user: User) => void;
-  onExport?: (options: ExportOptions) => void;
+  onExport?: () => void;
 }
-
-// Columns khusus untuk user
-const userColumns: ExportColumn[] = [
-  { id: "name", label: "Name", defaultChecked: true },
-  { id: "email", label: "Email", defaultChecked: true },
-  { id: "role", label: "Role", defaultChecked: true },
-  { id: "status", label: "Status", defaultChecked: true },
-  { id: "lastLogin", label: "Last Login", defaultChecked: true },
-  { id: "id", label: "User ID", defaultChecked: false },
-  { id: "avatar", label: "Avatar", defaultChecked: false },
-];
 
 export const UserTable = ({
   users,
@@ -48,20 +35,8 @@ export const UserTable = ({
   onResetPassword,
   onExport,
 }: UserTableProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const startEntry = (currentPage - 1) * resultsPerPage + 1;
   const endEntry = Math.min(currentPage * resultsPerPage, totalResults);
-
-  const handleExportClick = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleExport = (options: ExportOptions) => {
-    console.log("Export options from modal:", options);
-    if (onExport) {
-      onExport(options);
-    }
-  };
 
   return (
     <div>

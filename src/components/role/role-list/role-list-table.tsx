@@ -1,7 +1,5 @@
 "use client";
-import { useState } from "react";
 import { RoleTableRow } from "./role-list-table-row";
-import { ModalExport, ExportOptions, ExportColumn } from "@/components/ui/export";
 
 const roles = [
   {
@@ -61,6 +59,7 @@ const roles = [
   },
 ] as const;
 
+
 const columns = [
   "Role Name",
   "View Dashboards",
@@ -72,85 +71,50 @@ const columns = [
   "Actions", 
 ];
 
-const roleColumns: ExportColumn[] = [
-  { id: "name", label: "Role Name", defaultChecked: true },
-  { id: "viewDashboards", label: "View Dashboards", defaultChecked: true },
-  { id: "managePayments", label: "Manage Payments", defaultChecked: true },
-  { id: "manageDrivers", label: "Manage Drivers", defaultChecked: true },
-  { id: "assignVehicles", label: "Assign Vehicles", defaultChecked: true },
-  { id: "vehicleRetrieval", label: "Vehicle Retrieval", defaultChecked: true },
-  { id: "userManagement", label: "User Management", defaultChecked: true },
-];
 
-interface RoleTableProps {
-  onExport?: (options: ExportOptions) => void;
-}
-
-export const RoleTable = ({ onExport }: RoleTableProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleExportClick = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleExport = (options: ExportOptions) => {
-    console.log("Export options from role modal:", options);
-    if (onExport) {
-      onExport(options);
-    }
-  };
-
+export const RoleTable = () => {
   return (
-    <>
-      <div className="bg-white rounded-2xl border border-gray-200 mt-5 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-            <h2 className="font-bold text-lg text-slate-900 dark:text-white">
-              Role Management
-            </h2>
-            <button
-              onClick={handleExportClick}
-              className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
-              Export Data
-            </button>
-          </div>
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50/50">
-                {columns.map((col, i) => (
-                  <th
-                    key={i}
-                    className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 first:text-left text-center">
-                    {col}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {roles.map((role) => (
-                <RoleTableRow
-                  key={role.id}
-                  role={role}
-                  onEdit={(r) => console.log("Edit", r.name)}
-                  onDelete={(r) => console.log("Delete", r.name)}
-                  onDetails={(r) => console.log("Details", r.name)}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+    <div className="bg-white rounded-2xl border border-gray-200 mt-5 overflow-hidden shadow-sm">
+      <div className="overflow-x-auto">
+         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+        <h2 className="font-bold text-lg text-slate-900 dark:text-white">
+          Role Management
+        </h2>
+        <button
+          className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline"
+        >
+          Export as CSV
+        </button>
       </div>
+        <table className="w-full text-left border-collapse">
 
-      {/* Modal Export */}
-      <ModalExport
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onExport={handleExport}
-        totalRows={roles.length}
-        title="Export Role Data"
-        description="Generate role and permission reports."
-        columns={roleColumns}
-        defaultSelectedColumns={["name", "viewDashboards", "managePayments", "manageDrivers", "assignVehicles", "vehicleRetrieval", "userManagement"]}/>
-    </>
+          <thead>
+            <tr className="bg-gray-50/50">
+              {columns.map((col, i) => (
+                <th
+                  key={i}
+                  className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 first:text-left text-center"
+                >
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-gray-100">
+            {roles.map((role) => (
+              <RoleTableRow
+                key={role.id}
+                role={role}
+                onEdit={(r) => console.log("Edit", r.name)}
+                onDelete={(r) => console.log("Delete", r.name)}
+                onDetails={(r) => console.log("Details", r.name)}
+              />
+            ))}
+          </tbody>
+
+        </table>
+      </div>
+    </div>
   );
 };
