@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export const DropdownNotif = () => {
   return (
     <div className="absolute right-0 top-12 mt-2 w-80 md:w-96 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -58,9 +60,11 @@ export const DropdownNotif = () => {
           </div>
         </div>
       </div>
-      <button className="w-full py-3 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary bg-slate-50 dark:bg-slate-800/30 transition-colors">
-        View All Notifications
-      </button>
+      <Link href="/dashboard/notification">
+        <button className="w-full py-3 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary bg-slate-50 dark:bg-slate-800/30 transition-colors">
+          View All Notifications
+        </button>
+      </Link>
     </div>
   );
 };

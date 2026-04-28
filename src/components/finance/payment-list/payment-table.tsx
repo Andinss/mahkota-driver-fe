@@ -1,9 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { PaymentTableRow } from './payment-table-row';
-import { ModalExport, ExportOptions, ExportColumn } from '@/components/ui/export';
+import { useState } from "react";
+import { PaymentTableRow } from "./payment-table-row";
 
 interface Payment {
   invoiceId: string;
@@ -16,7 +14,7 @@ interface Payment {
   };
   amount: string;
   dueDate: string;
-  status: 'Late' | 'Pending Review' | 'Paid';
+  status: "Late" | "Pending Review" | "Paid";
   method: string;
 }
 
@@ -79,7 +77,9 @@ export function PaymentTable({
   if (totalResults === 0) {
     return (
       <div className="bg-surface-light dark:bg-surface-dark border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden p-8 text-center">
-        <p className="text-[#617589] dark:text-gray-400">No payment data available</p>
+        <p className="text-[#617589] dark:text-gray-400">
+          No payment data available
+        </p>
       </div>
     );
   }

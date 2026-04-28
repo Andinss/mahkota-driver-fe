@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { StatusBadge } from "@/components/status-badge";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 
@@ -17,7 +18,7 @@ interface Rental {
     end: string;
     duration: number;
   };
-  deposit:string;
+  deposit: string;
   paymentStatus: string;
 }
 
@@ -36,7 +37,7 @@ export const RentalTableRow = ({
   onDetails,
   onEndRental,
 }: RentalTableRowProps) => {
-
+  const cleanTransactionId = rental.transactionId.replace("#", "");
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
       {/* Transaction ID */}
@@ -93,7 +94,7 @@ export const RentalTableRow = ({
 
       {/* Deposit */}
       <td className="px-6 py-4">
-         <StatusBadge status={rental.deposit} />
+        <StatusBadge status={rental.deposit} />
       </td>
 
       {/* Payment Status */}
@@ -111,17 +112,19 @@ export const RentalTableRow = ({
             </button>
           }
         >
-          {/* <Link href={`/dashboard/vehicle/register?plate=${vehicle.plate}`}>
+          <Link
+            href={`/dashboard/rent/new?transactionId=${cleanTransactionId}`}
+          >
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
-          </Link> */}
+          </Link>
 
           <DropdownMenuItem icon="delete" danger>
             Delete
           </DropdownMenuItem>
 
-          {/* <Link href={`/dashboard/vehicle/detail/`}>
-            <DropdownMenuItem icon="details">Details</DropdownMenuItem>
-          </Link> */}
+          <Link href={`/dashboard/rent/detail/`}>
+            <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
+          </Link>
         </Dropdown>
       </td>
     </tr>

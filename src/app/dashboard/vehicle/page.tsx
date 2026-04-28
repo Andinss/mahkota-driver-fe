@@ -1,12 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { VehicleStatsCard } from "@/components/vehicle/dashboard/vehicle-stats-card";
 import { VehicleTable } from "@/components/vehicle/dashboard/vehicle-table";
 import { SearchFilters } from "@/components/search-filters";
-
 import { PageHeader } from "@/components/page-header";
+import { VehiclePagination } from "@/components/vehicle/dashboard/vehicle-pagination";
 
 export default function DashboardVehiclePage() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 2; // Adjust based on your preference
+
   const vehicles = [
     {
       name: "Toyota Camry",
@@ -57,6 +61,19 @@ export default function DashboardVehiclePage() {
       imageAlt: "Blue Ford Transit Van",
     },
   ];
+
+  // Calculate pagination
+  const totalResults = vehicles.length;
+  const totalPages = Math.ceil(totalResults / itemsPerPage);
+
+  // Get current page vehicles
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentVehicles = vehicles.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-8">
@@ -127,8 +144,17 @@ export default function DashboardVehiclePage() {
 
         <SearchFilters />
         <section className="xl:col-span-2">
-          {/* Vehicle Table */}
-          <VehicleTable vehicles={vehicles} />
+          <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] shadow-sm overflow-hidden">
+            {/* Vehicle Table */}
+            <VehicleTable vehicles={currentVehicles} />
+            <VehiclePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalResults={totalResults}
+              resultsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+            />
+          </div>
         </section>
       </div>
     </div>

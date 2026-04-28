@@ -72,7 +72,7 @@ export const RentalTable = ({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+    <div>
       <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
         <h2 className="font-bold text-lg text-slate-900 dark:text-white">
           Rental Transactions
