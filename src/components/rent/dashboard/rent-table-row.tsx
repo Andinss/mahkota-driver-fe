@@ -18,7 +18,7 @@ interface Rental {
     end: string;
     duration: number;
   };
-  deposit:string;
+  deposit: string;
   paymentStatus: string;
 }
 
@@ -37,7 +37,7 @@ export const RentalTableRow = ({
   onDetails,
   onEndRental,
 }: RentalTableRowProps) => {
-const cleanTransactionId = rental.transactionId.replace("#", "");
+  const cleanTransactionId = rental.transactionId.replace("#", "");
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
       {/* Transaction ID */}
@@ -94,7 +94,7 @@ const cleanTransactionId = rental.transactionId.replace("#", "");
 
       {/* Deposit */}
       <td className="px-6 py-4">
-         <StatusBadge status={rental.deposit} />
+        <StatusBadge status={rental.deposit} />
       </td>
 
       {/* Payment Status */}
@@ -112,7 +112,9 @@ const cleanTransactionId = rental.transactionId.replace("#", "");
             </button>
           }
         >
-                    <Link href={`/dashboard/rent/new?transactionId=${cleanTransactionId}`}>
+          <Link
+            href={`/dashboard/rent/new?transactionId=${cleanTransactionId}`}
+          >
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
 
@@ -120,8 +122,8 @@ const cleanTransactionId = rental.transactionId.replace("#", "");
             Delete
           </DropdownMenuItem>
 
-            <Link href={`/dashboard/rent/detail/}`}>
-            <DropdownMenuItem icon="details">Details</DropdownMenuItem>
+          <Link href={`/dashboard/rent/detail/`}>
+            <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>
       </td>
