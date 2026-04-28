@@ -106,7 +106,7 @@ export function DriverTableRow({ driver }: DriverTableRowProps) {
             Delete
           </DropdownMenuItem>
           <Link href={`/dashboard/driver/detail/`}>
-            <DropdownMenuItem icon="details">Details</DropdownMenuItem>
+            <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>
       </td>

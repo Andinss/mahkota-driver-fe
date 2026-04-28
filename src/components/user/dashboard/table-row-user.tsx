@@ -13,7 +13,6 @@ interface User {
     color?: string;
   };
   status: "active" | "inactive";
-  
 }
 
 interface UserTableRowProps {
@@ -60,8 +59,6 @@ export const UserTableRow = ({
         </div>
       </td>
 
-      
-
       <td className="py-4 px-6 align-middle">
         <Badge
           variant={
@@ -82,10 +79,9 @@ export const UserTableRow = ({
         </Badge>
       </td>
 
-          <td className="py-4 px-6 align-middle">
+      <td className="py-4 px-6 align-middle">
         <p className="text-sm text-gray-900">{user.phone || "-"}</p>
       </td>
-      
 
       <td className="py-4 px-6 align-middle text-right">
         <Dropdown
@@ -104,9 +100,9 @@ export const UserTableRow = ({
           <DropdownMenuItem icon="delete" danger>
             Delete
           </DropdownMenuItem>
-
-            <DropdownMenuItem icon="details">Details</DropdownMenuItem>
-          
+          <Link href={`/dashboard/users/detail/`}>
+            <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
+          </Link>
         </Dropdown>
       </td>
     </tr>

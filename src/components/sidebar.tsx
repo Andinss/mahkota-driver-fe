@@ -278,7 +278,7 @@ const Sidebar = () => {
 
           <a
             ref={(el) => {
-              menuRefs.current["/settings"] = el;
+              menuRefs.current["/dashboard/setting"] = el;
             }}
             className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
               activeMenu === "/settings"
@@ -289,7 +289,7 @@ const Sidebar = () => {
                 ? "justify-center w-12 h-12 mx-auto"
                 : "gap-3 px-3 py-2.5"
             }`}
-            onClick={(e) => handleMenuClick("/settings", e)}
+            onClick={(e) => handleMenuClick("/dashboard/setting", e)}
           >
             <span className="material-symbols-outlined transition-colors">
               settings

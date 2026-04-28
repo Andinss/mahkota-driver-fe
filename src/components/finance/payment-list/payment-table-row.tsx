@@ -1,5 +1,4 @@
-
-'use client';
+"use client";
 
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 import Link from "next/link";
@@ -15,7 +14,7 @@ interface Payment {
   };
   amount: string;
   dueDate: string;
-  status: 'Late' | 'Pending Review' | 'Paid';
+  status: "Late" | "Pending Review" | "Paid";
   method: string;
 }
 
@@ -30,13 +29,16 @@ interface PaymentTableRowProps {
 
 const statusConfig = {
   Late: {
-    className: "bg-red-100 text-[#e73908] dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900/50",
+    className:
+      "bg-red-100 text-[#e73908] dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900/50",
   },
   "Pending Review": {
-    className: "bg-orange-100 text-[#d97706] dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50",
+    className:
+      "bg-orange-100 text-[#d97706] dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50",
   },
   Paid: {
-    className: "bg-green-100 text-[#078838] dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-900/50",
+    className:
+      "bg-green-100 text-[#078838] dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-900/50",
   },
 };
 
@@ -48,23 +50,31 @@ export const PaymentTableRow = ({
   onEdit,
   onDelete,
 }: PaymentTableRowProps) => {
-  const isPending = payment.status === 'Pending Review';
-  const isLate = payment.status === 'Late';
-  const isPaid = payment.status === 'Paid';
+  const isPending = payment.status === "Pending Review";
+  const isLate = payment.status === "Late";
+  const isPaid = payment.status === "Paid";
 
   return (
-    <tr className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group ${
-      isPending ? 'bg-primary/[0.02] dark:bg-primary/[0.05] border-l-2 border-l-primary' : ''
-    }`}>
+    <tr
+      className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group ${
+        isPending
+          ? "bg-primary/[0.02] dark:bg-primary/[0.05] border-l-2 border-l-primary"
+          : ""
+      }`}
+    >
       <td className="px-6 py-4 font-medium text-[#111418] dark:text-white">
         {payment.invoiceId}
       </td>
 
       <td className="px-6 py-4 text-[#111418] dark:text-gray-300">
         <div className="flex items-center gap-2">
-          <div 
+          <div
             className="w-6 h-6 rounded-full bg-cover bg-center bg-slate-200 dark:bg-slate-700"
-            style={payment.customer.avatar ? { backgroundImage: `url("${payment.customer.avatar}")` } : {}}
+            style={
+              payment.customer.avatar
+                ? { backgroundImage: `url("${payment.customer.avatar}")` }
+                : {}
+            }
           >
             {!payment.customer.avatar && (
               <div className="w-full h-full flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -84,12 +94,16 @@ export const PaymentTableRow = ({
         {payment.amount}
       </td>
 
-      <td className={`px-6 py-4 font-medium ${isLate ? 'text-[#e73908]' : 'text-[#617589] dark:text-gray-400'}`}>
+      <td
+        className={`px-6 py-4 font-medium ${isLate ? "text-[#e73908]" : "text-[#617589] dark:text-gray-400"}`}
+      >
         {payment.dueDate}
       </td>
 
       <td className="px-6 py-4">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig[payment.status].className}`}>
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig[payment.status].className}`}
+        >
           <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
           {payment.status}
         </span>
@@ -103,7 +117,9 @@ export const PaymentTableRow = ({
         <Dropdown
           trigger={
             <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
-              <span className="material-symbols-outlined text-[20px]">more_vert</span>
+              <span className="material-symbols-outlined text-[20px]">
+                more_vert
+              </span>
             </button>
           }
         >
