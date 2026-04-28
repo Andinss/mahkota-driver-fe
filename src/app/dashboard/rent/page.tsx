@@ -132,11 +132,11 @@ const handlePageChange = (page: number) => {
         buttonText="Add New Rentals"
         buttonHref="/dashboard/rent/new"
       />
-
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <RentalCard
           title="Active Rentals"
-          value={activeRentals.toString()}
+          value="142"
           icon="key"
           iconColor="text-primary"
           trend={{
@@ -145,10 +145,9 @@ const handlePageChange = (page: number) => {
             icon: "trending_up",
           }}
         />
-
         <RentalCard
           title="Pending Payments"
-          value={pendingPayments.toString()}
+          value="28"
           icon="pending_actions"
           iconColor="text-amber-600"
           trend={{
@@ -157,10 +156,9 @@ const handlePageChange = (page: number) => {
             icon: "trending_down",
           }}
         />
-
         <RentalCard
           title="Late Payments"
-          value={latePayments.toString()}
+          value="12"
           icon="error"
           iconColor="text-rose-600"
           trend={{
@@ -169,10 +167,9 @@ const handlePageChange = (page: number) => {
             icon: "trending_up",
           }}
         />
-
         <RentalCard
           title="Completed Today"
-          value={completedToday.toString()}
+          value="45"
           icon="task_alt"
           iconColor="text-emerald-600"
           trend={{
@@ -184,20 +181,11 @@ const handlePageChange = (page: number) => {
       </div>
 
       <FiltersSearch />
-
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-        <RentalTable rentals={currentRentals} />
-        {/* Add separator line */}
-        <div className="border-t border-slate-200 dark:border-slate-800">
-          <RentPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalResults={totalResults}
-            resultsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-          />
-        </div>
-      </div>
+      
+      <RentalTable 
+        rentals={rentalsData} 
+        onExport={handleExport} 
+      />
     </div>
   );
 }
