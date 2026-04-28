@@ -3,16 +3,10 @@ import { PageHeader } from "@/components/page-header";
 import { RoleCard } from "@/components/role/role-list/card";
 import { RoleBanner } from "@/components/role/role-list/role-banner";
 import { RoleTable } from "@/components/role/role-list/role-list-table";
-import { ExportOptions } from "@/components/ui/export";
 
 
 
 const RolePage = () => {
-  const handleExport = (options: ExportOptions) => {
-    console.log("Export options from role page:", options);
-    alert(`Exporting role data as ${options.format} with ${options.type} data`);
-  };
-
   return (
     <div className="m-8">
       <PageHeader
@@ -23,7 +17,7 @@ const RolePage = () => {
       />
 
       {/* table */}
-      <RoleTable onExport={handleExport} />
+      <RoleTable />
 
       <div className="mt-12 grid grid-cols-12 gap-6">
         {/*banner biru */}
@@ -60,5 +54,4 @@ const RolePage = () => {
     </div>
   );
 };
-
 export default RolePage;
