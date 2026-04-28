@@ -13,7 +13,10 @@ interface ConfirmDialogProps {
   variant?: "danger" | "warning" | "info";
 }
 
-const variantStyles: Record<"danger" | "warning" | "info", { icon: string; color: string }> = {
+const variantStyles: Record<
+  "danger" | "warning" | "info",
+  { icon: string; color: string }
+> = {
   danger: { icon: "warning", color: "text-red-500" },
   warning: { icon: "warning", color: "text-amber-500" },
   info: { icon: "info", color: "text-blue-500" },
@@ -34,8 +37,12 @@ export const ConfirmDialog = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" size="sm">
       <div className="p-6 text-center">
-        <div className={`mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800`}>
-          <span className={`material-symbols-outlined text-2xl ${styles.color}`}>
+        <div
+          className={`mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800`}
+        >
+          <span
+            className={`material-symbols-outlined text-2xl ${styles.color}`}
+          >
             {styles.icon}
           </span>
         </div>
