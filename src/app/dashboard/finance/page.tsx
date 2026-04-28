@@ -8,7 +8,16 @@ import { PaymentTable } from "@/components/finance/payment-list/payment-table";
 import { PageHeader } from "@/components/page-header";
 import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
 
+import { ExportOptions } from "@/components/ui/export";
+
 export default function PaymentList() {
+  const handleExport = (options: ExportOptions) => {
+    console.log("Export options from finance page:", options);
+    alert(
+      `Exporting payment data as ${options.format} with ${options.type} data`,
+    );
+  };
+
   const paymentsData = [
     {
       invoiceId: "#INV-4023",
@@ -180,7 +189,7 @@ export default function PaymentList() {
     }
   };
 
-   const handleEdit = (payment: any) => {
+  const handleEdit = (payment: any) => {
     // Redirect ke halaman edit dengan parameter id
     window.location.href = `/dashboard/finance/payment?id=${payment.invoiceId.replace("#", "")}`;
   };
@@ -194,7 +203,6 @@ export default function PaymentList() {
   const handleDownload = (payment: any) => console.log("Download:", payment);
   const handleDelete = (payment: any) => console.log("Delete:", payment);
   const handleSearch = (value: string) => console.log("Search:", value);
-
 
   return (
     <div className="m-8">
@@ -210,7 +218,7 @@ export default function PaymentList() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <PaymentCard
               title="Total Collections Today"
-              value={`$${totalCollectionsToday.toLocaleString('id-ID')}`}
+              value={`$${totalCollectionsToday.toLocaleString("id-ID")}`}
               icon="payments"
               iconColor="text-primary"
               trend={{
@@ -234,7 +242,7 @@ export default function PaymentList() {
             />
             <PaymentCard
               title="Overdue Amount"
-              value={`$${overdueAmount.toLocaleString('id-ID')}`}
+              value={`$${overdueAmount.toLocaleString("id-ID")}`}
               icon="warning"
               iconColor="text-[#e73908]"
               trend={{
@@ -267,6 +275,7 @@ export default function PaymentList() {
               onDownload={handleDownload}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onExport={handleExport}
             />
             <div className="border-t border-[#dbe0e6] dark:border-gray-700">
               <FinancePagination
