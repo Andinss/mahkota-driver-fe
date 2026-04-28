@@ -2,6 +2,7 @@
 'use client';
 
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
+import Link from "next/link";
 
 interface Payment {
   invoiceId: string;
@@ -106,13 +107,13 @@ export const PaymentTableRow = ({
             </button>
           }
         >
-          <DropdownMenuItem icon="edit" onClick={() => onEdit?.(payment)}>
-            Edit
-          </DropdownMenuItem>
+          <Link href={`/dashboard/finance/payment?id=${payment.invoiceId.replace("#", "")}`}>
+  <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
+</Link>
           <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(payment)}>
             Delete
           </DropdownMenuItem>
-          <DropdownMenuItem icon="visibility" onClick={() => onDetails?.(payment)}>
+          <DropdownMenuItem icon="details" onClick={() => onDetails?.(payment)}>
             Details
           </DropdownMenuItem>
         </Dropdown>
