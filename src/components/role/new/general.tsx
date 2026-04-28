@@ -1,6 +1,19 @@
+"use client";
 import { Input } from "@/components/ui/input";
 
-const GeneralInformation = () => {
+interface GeneralInformationProps {
+  roleName: string;
+  setRoleName: (value: string) => void;
+  roleDescription: string;
+  setRoleDescription: (value: string) => void;
+}
+
+const GeneralInformation = ({
+  roleName,
+  setRoleName,
+  roleDescription,
+  setRoleDescription
+}: GeneralInformationProps) => {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden p-6">
       <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -13,13 +26,15 @@ const GeneralInformation = () => {
             className="block text-sm font-medium text-gray-700 mb-1.5"
             htmlFor="role-name"
           >
-            Role Name
+            Role Name <span className="text-red-500">*</span>
           </label>
           <Input
             className="w-full bg-gray-50 border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg py-2.5 px-4 text-sm transition-all"
             id="role-name"
             placeholder="e.g. Senior Supervisor"
             type="text"
+            value={roleName}
+            onChange={(e) => setRoleName(e.target.value)}
           />
         </div>
         <div>
@@ -32,10 +47,10 @@ const GeneralInformation = () => {
           <textarea
             className="w-full rounded-lg border border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary h-auto"
             placeholder="Enter full permanent address including city, state, and zip code"
-            name="permanentAddress"
-            id="permanentAddress"
+            id="role-desc"
             rows={2}
-            required
+            value={roleDescription}
+            onChange={(e) => setRoleDescription(e.target.value)}
           />
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import Advice from "@/components/role/new/advice";
 import GeneralInformation from "@/components/role/new/general";
@@ -72,15 +73,217 @@ const initialPermissions: PermissionItem[] = [
   },
 ];
 
+// MOCK DATA UNTUK EDIT
+const mockRoles: Record<string, any> = {
+   "1": {  
+    id: "1",
+    name: "Owner",
+    description: "Full access to all system features and settings.",
+    permissions: [
+      { ...initialPermissions[0], checked: true },  
+      { 
+        ...initialPermissions[1], 
+        options: initialPermissions[1].options?.map(opt => ({ ...opt, checked: true }))
+      },
+      { 
+        ...initialPermissions[2], 
+        options: initialPermissions[2].options?.map(opt => ({ ...opt, checked: opt.value === "full" }))
+      },
+      { 
+        ...initialPermissions[3], 
+        options: initialPermissions[3].options?.map(opt => ({ ...opt, checked: true }))
+      },
+      { ...initialPermissions[4], checked: true },
+    ]
+  },
+  "2": {  
+    id: "2",
+    name: "Finance",
+    description: "Manage financial reports and payments.",
+    permissions: [
+      { ...initialPermissions[0], checked: true }, 
+      { 
+        ...initialPermissions[1], 
+        options: initialPermissions[1].options?.map(opt => ({ 
+          ...opt, 
+          checked: opt.value === "view" 
+        }))
+      },
+      { 
+        ...initialPermissions[2], 
+        options: initialPermissions[2].options?.map(opt => ({ 
+          ...opt, 
+          checked: opt.value === "readonly" 
+        }))
+      },
+      { 
+        ...initialPermissions[3], 
+        options: initialPermissions[3].options?.map(opt => ({ ...opt, checked: false }))
+      },
+      { ...initialPermissions[4], checked: true },
+    ]
+  },
+  "3": {  
+    id: "3",
+    name: "Supervisor",
+    description: "Supervise daily operations.",
+    permissions: [
+      { ...initialPermissions[0], checked: true },  
+      { 
+        ...initialPermissions[1], 
+        options: initialPermissions[1].options?.map(opt => ({ 
+          ...opt, 
+          checked: opt.value === "view" 
+        }))
+      },
+      { 
+        ...initialPermissions[2], 
+        options: initialPermissions[2].options?.map(opt => ({ 
+          ...opt, 
+          checked: opt.value === "full" 
+        }))
+      },
+      { 
+        ...initialPermissions[3], 
+        options: initialPermissions[3].options?.map(opt => ({ ...opt, checked: true }))
+      },
+      { ...initialPermissions[4], checked: false },
+    ]
+  },
+  "4": {  
+    id: "4",
+    name: "Field Officer",
+    description: "Field operations and vehicle retrieval.",
+    permissions: [
+      { ...initialPermissions[0], checked: false },
+      { 
+        ...initialPermissions[1], 
+        options: initialPermissions[1].options?.map(opt => ({ 
+          ...opt, 
+          checked: false 
+        }))
+      },
+      { 
+        ...initialPermissions[2], 
+        options: initialPermissions[2].options?.map(opt => ({ 
+          ...opt, 
+          checked: opt.value === "full" 
+        }))
+      },
+      { 
+        ...initialPermissions[3], 
+        options: initialPermissions[3].options?.map(opt => ({ ...opt, checked: true }))
+      },
+      { ...initialPermissions[4], checked: false },
+    ]
+  },
+  "5": {  
+    id: "5",
+    name: "Administrator",
+    description: "System administrator with full access.",
+    permissions: [
+      { ...initialPermissions[0], checked: true }, 
+      { 
+        ...initialPermissions[1], 
+        options: initialPermissions[1].options?.map(opt => ({ ...opt, checked: true }))
+      },
+      { 
+        ...initialPermissions[2], 
+        options: initialPermissions[2].options?.map(opt => ({ ...opt, checked: opt.value === "full" }))
+      },
+      { 
+        ...initialPermissions[3], 
+        options: initialPermissions[3].options?.map(opt => ({ ...opt, checked: true }))
+      },
+      { ...initialPermissions[4], checked: true },
+    ]
+  },
+};
+
 const RolePage = () => {
-  const [permissions, setPermissions] =
-    useState<PermissionItem[]>(initialPermissions);
+  const searchParams = useSearchParams();
+  const roleIdParam = searchParams.get("id");
+
+  const [mode, setMode] = useState<"add" | "edit">("add");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [roleName, setRoleName] = useState("");
+  const [roleDescription, setRoleDescription] = useState("");
+  const [permissions, setPermissions] = useState<PermissionItem[]>(initialPermissions);
+  const [lastSaved, setLastSaved] = useState<string>("Never (Draft)");
+
+  // Load data when in edit mode
+  useEffect(() => {
+    if (roleIdParam && mockRoles[roleIdParam]) {
+      const role = mockRoles[roleIdParam];
+      setMode("edit");
+      setRoleName(role.name);
+      setRoleDescription(role.description);
+      setPermissions(role.permissions);
+      setLastSaved("Draft saved");
+    } else {
+      setMode("add");
+      setRoleName("");
+      setRoleDescription("");
+      setPermissions(initialPermissions);
+      setLastSaved("Never (Draft)");
+    }
+  }, [roleIdParam]);
+
+  const handleSave = async () => {
+    if (!roleName.trim()) {
+      alert("Please enter role name");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const roleData = {
+      id: roleIdParam || undefined,
+      name: roleName,
+      description: roleDescription,
+      permissions: permissions,
+    };
+
+    console.log("Role Data:", roleData);
+
+    if (mode === "edit") {
+      console.log("Updating role:", roleIdParam);
+      alert(`Role "${roleName}" updated successfully!`);
+    } else {
+      console.log("Creating new role");
+      alert(`Role "${roleName}" created successfully!`);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsSubmitting(false);
+    window.location.href = "/dashboard/role";
+  };
+
+  const handleCancel = () => {
+    if (confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
+      window.location.href = "/dashboard/role";
+    }
+  };
 
   return (
     <div className="m-8">
+      <PageHeader
+        title={mode === "add" ? "Create New Role" : "Edit Role"}
+        description={mode === "add" 
+          ? "Define a new role and configure its permissions."
+          : "Update role information and permissions."}
+        buttonText="Back to Roles"
+        buttonHref="/dashboard/role"
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-5">
         <div className="lg:col-span-8 space-y-6">
-          <GeneralInformation />
+          <GeneralInformation 
+            roleName={roleName}
+            setRoleName={setRoleName}
+            roleDescription={roleDescription}
+            setRoleDescription={setRoleDescription}
+          />
           <Permission permissions={permissions} onChange={setPermissions} />
         </div>
         <div className="lg:col-span-4 space-y-6">
@@ -91,14 +294,25 @@ const RolePage = () => {
 
       <div className="mt-12 mb-8 flex items-center justify-between p-6 bg-white border border-gray-200 rounded-xl shadow-lg sticky bottom-8 z-10">
         <div className="hidden sm:block">
-          <p className="text-xs text-gray-500">Last saved: Never (Draft)</p>
+          <p className="text-xs text-gray-500">Last saved: {lastSaved}</p>
         </div>
         <div className="flex items-center gap-4 w-full sm:w-auto">
-          <button className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg border border-gray-300 font-semibold text-gray-700 hover:bg-gray-50 transition-colors active:opacity-80">
+          <button 
+            onClick={handleCancel}
+            disabled={isSubmitting}
+            className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg border border-gray-300 font-semibold text-gray-700 hover:bg-gray-50 transition-colors active:opacity-80 disabled:opacity-50"
+          >
             Cancel
           </button>
-          <button className="flex-1 sm:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20 hover:opacity-90 transition-all active:scale-[0.98]">
-            Save Role
+          <button
+            onClick={handleSave}
+            disabled={isSubmitting}
+            className="flex-1 sm:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20 hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-sm">
+              {mode === "add" ? "add" : "save"}
+            </span>
+            {isSubmitting ? "Saving..." : mode === "add" ? "Create Role" : "Update Role"}
           </button>
         </div>
       </div>
