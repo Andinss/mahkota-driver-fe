@@ -4,8 +4,14 @@ import { PaymentCard } from "@/components/finance/payment-list/card";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
 import { PageHeader } from "@/components/page-header";
 import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
+import { ExportOptions } from "@/components/ui/export";
 
 export default function PaymentList() {
+  const handleExport = (options: ExportOptions) => {
+    console.log("Export options from finance page:", options);
+    alert(`Exporting payment data as ${options.format} with ${options.type} data`);
+  };
+
   const paymentsData = [
     {
       invoiceId: "#INV-4023",
@@ -215,6 +221,7 @@ export default function PaymentList() {
               onDownload={handleDownload}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onExport={handleExport}
             />
           </div>
         </div>

@@ -2,6 +2,7 @@
 import { PageHeader } from "@/components/page-header";
 import SearchBar from "@/components/user/dashboard/search-bar-user";
 import { UserTable } from "@/components/user/dashboard/table-user";
+import { ExportOptions } from "@/components/ui/export";
 
 const users = [
   {
@@ -35,6 +36,11 @@ const users = [
 ];
 
 export default function UserList() {
+  const handleExport = (options: ExportOptions) => {
+    console.log("Export options from user page:", options);
+    alert(`Exporting user data as ${options.format} with ${options.type} data`);
+  };
+
   return (
     <div className="m-8">
       <PageHeader
@@ -44,9 +50,10 @@ export default function UserList() {
         buttonHref="/dashboard/users/new"
       />
       <SearchBar />
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <UserTable users={users} />
-      </div>
+      <UserTable 
+        users={users} 
+        onExport={handleExport}
+      />
     </div>
   );
 }
