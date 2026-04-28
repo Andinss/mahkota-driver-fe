@@ -98,7 +98,7 @@ export const RoleTableRow = ({
           <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(role)}>
             Delete
           </DropdownMenuItem>
-          <DropdownMenuItem icon="details" onClick={() => onDetails?.(role)}>
+          <DropdownMenuItem icon="visibility" onClick={() => onDetails?.(role)}>
             Details
           </DropdownMenuItem>
         </Dropdown>
