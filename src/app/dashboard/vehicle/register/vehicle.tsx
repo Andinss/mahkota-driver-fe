@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { VehicleMediaUpload } from "@/components/vehicle/register/vehicle-media-upload";
 import {
   StatusSelect,
@@ -53,6 +54,11 @@ export default function VehicleRegisterPage() {
   const [initialValues, setInitialValues] = useState<Partial<VehicleFormData> | undefined>();
   const [initialImageUrl, setInitialImageUrl] = useState<string | undefined>();
 
+  // state confirm dialog
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [pendingData, setPendingData] = useState<VehicleFormData | null>(null);
+
+
   useEffect(() => {
     if (plateParam && mockVehicles[plateParam]) {
       // Jika ada parameter plate dan data ditemukan
@@ -79,25 +85,34 @@ export default function VehicleRegisterPage() {
   }, [plateParam]);
 
   const handleSubmit = async (data: VehicleFormData) => {
+    setPendingData(data);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    if (!pendingData) return;
+    
     setIsSubmitting(true);
+    setIsConfirmOpen(false);
 
-    console.log("Form data:", { ...data, status, imageFile, mode });
+    console.log("Form data:", { ...pendingData, status, imageFile, mode });
 
-    // TODO: Integrate with API endpoint
     if (mode === "edit") {
       console.log("Updating vehicle:", plateParam);
+      alert(`Vehicle ${pendingData.make} ${pendingData.model} updated successfully!`);
     } else {
       console.log("Creating new vehicle");
+      alert(`Vehicle ${pendingData.make} ${pendingData.model} created successfully!`);
     }
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSubmitting(false);
+    window.location.href = "/dashboard/vehicle";
   };
 
   const handleCancel = () => {
-    console.log("Form cancelled");
+    window.location.href = "/dashboard/vehicle";
   };
-
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl m-7 shadow-sm border border-[#f0f2f4] dark:border-slate-800 overflow-hidden">
       <div className="flex flex-col md:flex-row min-h-[600px]">
@@ -119,6 +134,24 @@ export default function VehicleRegisterPage() {
           isSubmitting={isSubmitting}
         />
       </div>
+
+     {/* CONFIRM DIALOG */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmSubmit}
+        title={mode === "add" ? "Confirm Registration" : "Confirm Update"}
+        message={
+          mode === "add"
+            ? `Are you sure you want to register this new vehicle? Please review all information carefully. This action cannot be undone.`
+            : `Are you sure you want to update this vehicle? Please review all information carefully.`
+        }
+        confirmText={mode === "add" ? "Yes, Complete Registration" : "Yes, Update Vehicle"}
+        cancelText="Review Again"
+        variant="info"
+      />
+
+
     </div>
   );
 }

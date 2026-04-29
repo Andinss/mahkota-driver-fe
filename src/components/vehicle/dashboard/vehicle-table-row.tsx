@@ -24,7 +24,7 @@ interface VehicleTableRowProps {
 export const VehicleTableRow = ({
   vehicle,
   onEdit,
-
+  onDelete,
   onDetails,
 }: VehicleTableRowProps) => {
   return (
@@ -74,7 +74,7 @@ export const VehicleTableRow = ({
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
 
-          <DropdownMenuItem icon="delete" danger>
+            <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(vehicle)}>
             Delete
           </DropdownMenuItem>
 
