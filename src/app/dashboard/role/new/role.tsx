@@ -7,6 +7,7 @@ import Advice from "@/components/role/new/advice";
 import GeneralInformation from "@/components/role/new/general";
 import RoleHierarchy from "@/components/role/new/hierarchy";
 import Permission, { PermissionItem } from "@/components/role/new/permission";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const initialPermissions: PermissionItem[] = [
   {
@@ -211,6 +212,8 @@ const RolePage = () => {
   const [permissions, setPermissions] = useState<PermissionItem[]>(initialPermissions);
   const [lastSaved, setLastSaved] = useState<string>("Never (Draft)");
 
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
   // Load data when in edit mode
   useEffect(() => {
     if (roleIdParam && mockRoles[roleIdParam]) {
@@ -229,13 +232,17 @@ const RolePage = () => {
     }
   }, [roleIdParam]);
 
-  const handleSave = async () => {
-    if (!roleName.trim()) {
-      alert("Please enter role name");
-      return;
-    }
+  
 
+
+  const handleSaveClick = () => {
+    setIsConfirmOpen(true);
+  };
+
+
+  const handleConfirmSave = async () => {
     setIsSubmitting(true);
+    setIsConfirmOpen(false);    
 
     const roleData = {
       id: roleIdParam || undefined,
@@ -260,9 +267,7 @@ const RolePage = () => {
   };
 
   const handleCancel = () => {
-    if (confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
       window.location.href = "/dashboard/role";
-    }
   };
 
   return (
@@ -305,7 +310,7 @@ const RolePage = () => {
             Cancel
           </button>
           <button
-            onClick={handleSave}
+            onClick={handleSaveClick}
             disabled={isSubmitting}
             className="flex-1 sm:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20 hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center gap-2"
           >
@@ -316,6 +321,21 @@ const RolePage = () => {
           </button>
         </div>
       </div>
+      {/* confirm dialog */}
+             <ConfirmDialog
+              isOpen={isConfirmOpen}
+              onClose={() => setIsConfirmOpen(false)}
+              onConfirm={handleConfirmSave}
+              title={mode === "add" ? "Confirm Registration" : "Confirm Update"}
+              message={
+              mode === "add"
+                          ? `Are you sure you want to create this role? Please review all information carefully. This action cannot be undone.`
+                          : `Are you sure you want to update this role? Please review all information carefully.`
+                          }
+              confirmText={mode === "add" ? "Yes, Create Role" : "Yes, Update Role"}
+              cancelText="Review Again"
+              variant="info"
+            />
     </div>
   );
 };

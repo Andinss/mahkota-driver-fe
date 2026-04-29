@@ -97,7 +97,7 @@ export const UserTableRow = ({
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
 
-          <DropdownMenuItem icon="delete" danger>
+          <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(user)}>
             Delete
           </DropdownMenuItem>
           <Link href={`/dashboard/users/detail/`}>

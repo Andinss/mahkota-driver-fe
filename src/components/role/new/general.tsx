@@ -35,6 +35,7 @@ const GeneralInformation = ({
             type="text"
             value={roleName}
             onChange={(e) => setRoleName(e.target.value)}
+            required
           />
         </div>
         <div>

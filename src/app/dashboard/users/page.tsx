@@ -1,5 +1,6 @@
 "use client";
 import { PageHeader } from "@/components/page-header";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import SearchBar from "@/components/user/dashboard/search-bar-user";
 import { UserTable } from "@/components/user/dashboard/table-user";
 import { UserPagination } from "@/components/user/dashboard/user-pagination";
@@ -49,6 +50,10 @@ export default function UserList() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2;
 
+  // State confirm delete
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+
   // Calculate pagination values
   const totalResults = users.length;
   const totalPages = Math.ceil(totalResults / itemsPerPage);
@@ -62,6 +67,18 @@ export default function UserList() {
     setCurrentPage(page);
   };
 
+  const handleDeleteClick = (user: any) => {
+    setSelectedUser(user);
+    setIsConfirmDeleteOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    console.log("Deleted user:", selectedUser);
+     alert(`User ${selectedUser?.name} deleted successfully!`);
+    setIsConfirmDeleteOpen(false);
+    setSelectedUser(null);
+  };
+
   return (
     <div className="m-8">
       <PageHeader
@@ -72,7 +89,10 @@ export default function UserList() {
       />
       <SearchBar />
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <UserTable users={currentUsers} />
+        <UserTable 
+        users={currentUsers} 
+        onDelete={handleDeleteClick}
+        />
         <UserPagination
           currentPage={currentPage}
           totalPages={totalPages}
@@ -81,6 +101,17 @@ export default function UserList() {
           onPageChange={handlePageChange}
         />
       </div>
+      <ConfirmDialog
+      isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete User"
+        message={`Are you sure you want to delete ${selectedUser?.name}? This action cannot be undone.`}
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+        variant="danger"
+      
+      />
     </div>
   );
 }

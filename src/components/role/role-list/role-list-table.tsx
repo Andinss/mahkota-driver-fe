@@ -71,8 +71,11 @@ const columns = [
   "Actions", 
 ];
 
+interface RoleTableProps {
+  onDelete?: (role: any) => void;
+}
 
-export const RoleTable = () => {
+export const RoleTable = ({ onDelete}: RoleTableProps) => {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 mt-5 overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
@@ -107,7 +110,7 @@ export const RoleTable = () => {
                 key={role.id}
                 role={role}
                 onEdit={(r) => console.log("Edit", r.name)}
-                onDelete={(r) => console.log("Delete", r.name)}
+                onDelete={onDelete} 
                 onDetails={(r) => console.log("Details", r.name)}
               />
             ))}

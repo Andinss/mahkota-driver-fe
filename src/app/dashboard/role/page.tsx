@@ -1,12 +1,30 @@
 "use client";
 import { PageHeader } from "@/components/page-header";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { RoleCard } from "@/components/role/role-list/card";
 import { RoleBanner } from "@/components/role/role-list/role-banner";
 import { RoleTable } from "@/components/role/role-list/role-list-table";
+import { useState } from "react";
 
 
 
 const RolePage = () => {
+
+  const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+
+  const handleDeleteClick = (role: any) => {
+    setSelectedRole(role);
+    setIsConfirmDeleteOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    console.log("Deleted role:", selectedRole);
+     alert(`Role ${selectedRole?.name} deleted successfully!`);
+    setIsConfirmDeleteOpen(false);
+    setSelectedRole(null);
+  };
+
   return (
     <div className="m-8">
       <PageHeader
@@ -17,7 +35,7 @@ const RolePage = () => {
       />
 
       {/* table */}
-      <RoleTable />
+      <RoleTable onDelete={handleDeleteClick} />
 
       <div className="mt-12 grid grid-cols-12 gap-6">
         {/*banner biru */}
@@ -51,6 +69,16 @@ const RolePage = () => {
           />
         </div>
       </div>
+      <ConfirmDialog
+      isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Role"
+        message={`Are you sure you want to delete ${selectedRole?.name}? This action cannot be undone.`}
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 };
