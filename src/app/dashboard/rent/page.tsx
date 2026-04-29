@@ -6,8 +6,15 @@ import { RentalCard } from "@/components/rent/dashboard/card";
 import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
 import { RentPagination } from "@/components/rent/dashboard/rent-pagination";
 import { RentalTable } from "@/components/rent/dashboard/rent-table";
+import { ExportOptions } from "@/components/ui/export";
 
 export default function RentalManagementPage() {
+
+  const handleExport = (options?: ExportOptions) => {
+      if (!options) return;
+      console.log("Export options from rental page:", options);
+      alert(`Exporting rental data as ${options.format} with ${options.type} data`);
+    };
 
  const rentalsData = [
   {
@@ -186,7 +193,11 @@ const handlePageChange = (page: number) => {
       <FiltersSearch />
 
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-        <RentalTable rentals={currentRentals} />
+        <RentalTable 
+          rentals={currentRentals} 
+          onExport={handleExport}
+        />
+        
         {/* Add separator line */}
         <div className="border-t border-slate-200 dark:border-slate-800">
           <RentPagination
