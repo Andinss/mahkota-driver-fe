@@ -11,7 +11,7 @@ const Dashboard = () => {
             <ChartCard />
 
             <footer className="mt-4 pb-8 text-center mt-5 text-sm text-slate-500 dark:text-slate-400">
-              <p>© 2023 PT XYZ Rental System. All rights reserved.</p>
+              <p>© 2026 Mahkota Drive. All rights reserved.</p>
             </footer>
           </div>
         </main>
