@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { RentalCard } from "@/components/rent/dashboard/card";
 import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
@@ -15,6 +16,11 @@ export default function RentalManagementPage() {
       console.log("Export options from rental page:", options);
       alert(`Exporting rental data as ${options.format} with ${options.type} data`);
     };
+  // State Confirm dialog Delete
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [selectedRental, setSelectedRental] = useState<any>(null);
+
+
 
  const rentalsData = [
   {
@@ -131,6 +137,20 @@ const handlePageChange = (page: number) => {
   }
 };
 
+// Handler Delete
+   const handleDeleteClick = (rental: any) => {
+    setSelectedRental(rental);
+    setIsConfirmDeleteOpen(true);
+  };
+
+   const handleConfirmDelete = () => {
+    console.log("Deleted rental:", selectedRental);
+    alert(`Rental ${selectedRental?.transactionId} deleted successfully!`);
+    setIsConfirmDeleteOpen(false);
+    setSelectedRental(null);
+  };
+
+
   return (
     <div className="p-8 space-y-8">
       <PageHeader
@@ -194,10 +214,13 @@ const handlePageChange = (page: number) => {
 
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
         <RentalTable 
+
           rentals={currentRentals} 
           onExport={handleExport}
+               
+        onDelete={handleDeleteClick}
         />
-        
+
         {/* Add separator line */}
         <div className="border-t border-slate-200 dark:border-slate-800">
           <RentPagination
@@ -209,6 +232,19 @@ const handlePageChange = (page: number) => {
           />
         </div>
       </div>
+
+          {/* Confirm dialog delete */}
+          <ConfirmDialog
+        isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Rental"
+        message={`Are you sure you want to delete ${selectedRental?.transactionId}? This action cannot be undone.`}
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
+
     </div>
   );
 }
