@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 import { useState } from "react";
 
 const LoginPage = () => {
@@ -50,10 +51,11 @@ const LoginPage = () => {
               Lupa Kata Sandi?
             </a>
           </div>
-
-          <Button icon="login" className="editorial-gradient">
-            Masuk Ke Sistem
-          </Button>
+          <Link href="/dashboard">
+            <Button icon="login" className="editorial-gradient w-full">
+              Masuk Ke Sistem
+            </Button>
+          </Link>
         </form>
         <Button className="w-full mt-2 border border-outline-variant/30 rounded-lg hover:bg-surface-container-low transition-colors duration-200">
           <div className="flex items-center justify-center gap-3 w-full h-full">
