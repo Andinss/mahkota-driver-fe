@@ -1,3 +1,5 @@
+import { ExportColumn, ModalExport } from "@/components/ui/export";
+import { useState } from "react";
 import { RentalTableRow } from "./rent-table-row";
 
 interface Rental {
@@ -30,8 +32,21 @@ interface RentalTableProps {
   onDelete?: (rental: Rental) => void;
   onDetails?: (rental: Rental) => void;
   onEndRental?: (rental: Rental) => void;
-  onExport?: () => void;
+  onExport?: (options?: any) => void;
 }
+
+const rentalColumns: ExportColumn[] = [
+  { id: "transactionId", label: "Transaction ID", defaultChecked: true },
+  { id: "driverName", label: "Driver Name", defaultChecked: true },
+  { id: "driverId", label: "Driver ID", defaultChecked: true },
+  { id: "vehicleName", label: "Vehicle Name", defaultChecked: true },
+  { id: "vehiclePlate", label: "Vehicle Plate", defaultChecked: true },
+  { id: "rentalPeriod", label: "Rental Period", defaultChecked: true },
+  { id: "duration", label: "Duration (Days)", defaultChecked: true },
+  { id: "deposit", label: "Deposit", defaultChecked: true },
+  { id: "paymentStatus", label: "Payment Status", defaultChecked: true },
+];
+
 
 export const RentalTable = ({
   rentals,
@@ -45,6 +60,7 @@ export const RentalTable = ({
   onEndRental,
   onExport,
 }: RentalTableProps) => {
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const startEntry = (currentPage - 1) * resultsPerPage + 1;
   const endEntry = Math.min(currentPage * resultsPerPage, totalResults);
 
@@ -55,10 +71,10 @@ export const RentalTable = ({
           Rental Transactions
         </h2>
         <button
-          onClick={onExport}
+          onClick={() => setIsExportModalOpen(true)}
           className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline"
         >
-          Export as CSV
+          Export Data
         </button>
       </div>
 
@@ -89,6 +105,19 @@ export const RentalTable = ({
           </tbody>
         </table>
       </div>
+
+      <ModalExport
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={(options) => {
+          setIsExportModalOpen(false);
+          onExport?.(options);
+        }}
+        totalRows={totalResults}
+        title="Export Rental Data"
+        description="Generate rental transaction reports."
+        columns={rentalColumns}
+      />
     </div>
   );
 };

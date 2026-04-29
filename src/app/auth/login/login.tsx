@@ -15,7 +15,7 @@ const LoginPage = () => {
             Sign In
           </h1>
           <p className="text-gray-700 text-base">
-            Silakan masuk untuk mengelola armada kendaraan PT XYZ.
+            Silakan masuk untuk mengelola armada kendaraan.
           </p>
         </div>
         <form className="flex flex-col gap-4">
@@ -46,7 +46,7 @@ const LoginPage = () => {
             </label>
             <a
               className="text-sm font-bold text-primary-container hover:text-primary transition-colors"
-              href="#"
+              href="/auth/forgot"
             >
               Lupa Kata Sandi?
             </a>
