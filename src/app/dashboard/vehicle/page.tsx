@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { VehicleStatsCard } from "@/components/vehicle/dashboard/vehicle-stats-card";
 import { VehicleTable } from "@/components/vehicle/dashboard/vehicle-table";
 import { SearchFilters } from "@/components/search-filters";
@@ -10,6 +11,10 @@ import { VehiclePagination } from "@/components/vehicle/dashboard/vehicle-pagina
 export default function DashboardVehiclePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2; // Adjust based on your preference
+
+  // State Confirm Dialog
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
 
   const vehicles = [
     {
@@ -62,11 +67,25 @@ export default function DashboardVehiclePage() {
     },
   ];
 
+  // Handler untuk Delete
+  const handleDeleteClick = (vehicle: any) => {
+    setSelectedVehicle(vehicle);
+    setIsConfirmOpen(true);
+  }
+
+  const handleConfirmDelete = () => {
+    console.log("Deleted vehicle:", selectedVehicle);
+    // TODO: Panggil API delete di sini
+    alert(`Vehicle ${selectedVehicle?.name} deleted successfully!`);
+    setIsConfirmOpen(false);
+    setSelectedVehicle(null);
+  };
+
+
+
   // Calculate pagination
   const totalResults = vehicles.length;
   const totalPages = Math.ceil(totalResults / itemsPerPage);
-
-  // Get current page vehicles
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentVehicles = vehicles.slice(startIndex, endIndex);
@@ -146,7 +165,10 @@ export default function DashboardVehiclePage() {
         <section className="xl:col-span-2">
           <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] shadow-sm overflow-hidden">
             {/* Vehicle Table */}
-            <VehicleTable vehicles={currentVehicles} />
+            <VehicleTable 
+            vehicles={currentVehicles}
+            onDelete={handleDeleteClick} 
+            />
             <VehiclePagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -157,6 +179,17 @@ export default function DashboardVehiclePage() {
           </div>
         </section>
       </div>
+      {/* Confirm Dialog untuk Delete */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Vehicle"
+        message={`Are you sure you want to delete ${selectedVehicle?.name} (${selectedVehicle?.plate})? This action cannot be undone.`}
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }

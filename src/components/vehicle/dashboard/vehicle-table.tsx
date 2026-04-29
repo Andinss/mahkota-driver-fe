@@ -14,20 +14,12 @@ interface Vehicle {
 
 interface VehicleTableProps {
   vehicles: Vehicle[];
-  currentPage?: number;
-  totalPages?: number;
-  totalResults?: number;
-  resultsPerPage?: number;
   onEdit?: (vehicle: Vehicle) => void;
   onDelete?: (vehicle: Vehicle) => void;
 }
 
 export const VehicleTable = ({
   vehicles,
-  currentPage = 1,
-  totalPages = 6,
-  totalResults = 24,
-  resultsPerPage = 4,
   onEdit,
   onDelete,
 }: VehicleTableProps) => {
