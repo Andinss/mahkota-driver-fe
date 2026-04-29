@@ -1,4 +1,7 @@
+"use client";
 import { Icon } from "@/components/ui/icon";
+import { useState } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface SummaryProps {
   payerName?: string;
@@ -55,6 +58,9 @@ const Summary = ({
   isSubmitting = false,
   mode = "add",
 }: SummaryProps) => {
+
+   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
   const parsedAmount = parseFloat(amount.replace(/[^\d.]/g, "")) || 0;
   const newBalance = currentBalance + parsedAmount;
 
@@ -63,6 +69,11 @@ const Summary = ({
     : mode === "add"
     ? "Confirm & Post Payment"
     : "Update Payment";
+
+    const handleConfirmSubmit = () => {
+    setIsConfirmOpen(false);
+    onSubmit?.();
+  };
 
   return (
     <div className="lg:col-span-1 flex flex-col gap-6">
@@ -136,7 +147,7 @@ const Summary = ({
 
           <div className="flex flex-col gap-3 mt-4">
              <button 
-              onClick={onSubmit}
+              onClick={() => setIsConfirmOpen(true)}
               disabled={isSubmitting}
               className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-blue-600 text-white rounded-lg h-12 font-semibold shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -209,6 +220,22 @@ const Summary = ({
           </div>
         </div>
       </div>
+
+       {/* CONFIRM DIALOG */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmSubmit}
+        title={mode === "add" ? "Confirm Payment" : "Confirm Update"}
+        message={
+    mode === "add"
+      ? `Are you sure you want to post this payment for ${payerName} (${payerId})? Total amount: ${formatCurrency(amount)}. This action cannot be undone.`
+      : `Are you sure you want to update this payment for ${payerName} (${payerId})? Total amount: ${formatCurrency(amount)}?`
+  }
+  confirmText={mode === "add" ? "Yes, Post Payment" : "Yes, Update Payment"}
+  cancelText="Review Again"
+  variant="info"
+      />
     </div>
   );
 };
