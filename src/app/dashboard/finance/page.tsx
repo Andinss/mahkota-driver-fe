@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Modal } from "@/components/ui/modal";           
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PaymentCard } from "@/components/finance/payment-list/card";
 import { FinancePagination } from "@/components/finance/payment-list/finance-pagination";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
@@ -148,6 +150,10 @@ export default function PaymentList() {
       0,
     );
 
+  const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
   const pendingPayments = paymentsData.filter(
     (p) => p.status === "Pending Review",
   ).length;
@@ -180,10 +186,21 @@ export default function PaymentList() {
     }
   };
 
-   const handleEdit = (payment: any) => {
-    // Redirect ke halaman edit dengan parameter id
-    window.location.href = `/dashboard/finance/payment?id=${payment.invoiceId.replace("#", "")}`;
+  const handleEdit = (payment: any) => {
+    setSelectedPayment(payment);
+    setIsModalOpen(true);
   };
+
+   const handleDeleteClick = (payment: any) => {
+    setSelectedPayment(payment);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+  console.log("Deleted:", selectedPayment);
+  // TODO: Panggil API delete di sini
+  setIsConfirmOpen(false);
+};
 
   const handleDetails = (payment: any) => {
     // Redirect ke halaman detail
@@ -192,7 +209,6 @@ export default function PaymentList() {
 
   const handleValidate = (payment: any) => console.log("Validate:", payment);
   const handleDownload = (payment: any) => console.log("Download:", payment);
-  const handleDelete = (payment: any) => console.log("Delete:", payment);
   const handleSearch = (value: string) => console.log("Search:", value);
 
 
@@ -266,7 +282,7 @@ export default function PaymentList() {
               onDetails={handleDetails}
               onDownload={handleDownload}
               onEdit={handleEdit}
-              onDelete={handleDelete}
+              onDelete={handleDeleteClick}
             />
             <div className="border-t border-[#dbe0e6] dark:border-gray-700">
               <FinancePagination
@@ -280,6 +296,32 @@ export default function PaymentList() {
           </div>
         </div>
       </div>
+
+        <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Edit Payment"
+      >
+        <div className="p-6">
+          <p className="text-slate-600 dark:text-slate-400">
+            Edit payment: <span className="font-bold">{selectedPayment?.invoiceId}</span>
+          </p>
+          {/* form edit payment di sini */}
+        </div>
+      </Modal>
+
+      {/* Confirm Dialog untuk Delete */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Payment"
+        message={`Are you sure you want to delete ${selectedPayment?.invoiceId}?`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />      
+
     </div>
   );
 }
