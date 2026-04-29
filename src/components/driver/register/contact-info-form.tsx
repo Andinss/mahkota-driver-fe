@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -25,19 +26,34 @@ export function ContactInfoForm({
   onBack,
   onSaveDraft,
 }: ContactInfoFormProps) {
+  // Tambahkan state untuk radio buttons
+  const [readyToSignContract, setReadyToSignContract] = useState<string>("");
+  const [willingToBeSurveyed, setWillingToBeSurveyed] = useState<string>("");
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data: ContactInfoData = {
       phoneNumber: formData.get("phoneNumber") as string,
       email: formData.get("email") as string,
-      emergencyContactName: formData.get("emergencyContactName") as string,
+      emergencyContactName: formData.get("emergencyContactNumber") as string,
       emergencyContactRelationship: formData.get(
-        "emergencyContactRelationship",
+        "emergencyContactEmail",
       ) as string,
       permanentAddress: formData.get("permanentAddress") as string,
-      addressType: formData.get("addressType") as string,
+      addressType: formData.get("house") as string,
     };
+
+    // Tambahkan validasi untuk radio buttons
+    if (!readyToSignContract) {
+      alert("Please select if you are ready to sign contract");
+      return;
+    }
+    if (!willingToBeSurveyed) {
+      alert("Please select if you are willing to be surveyed");
+      return;
+    }
+
     onNext(data);
   };
 
@@ -82,6 +98,7 @@ export function ContactInfoForm({
               placeholder="Phone number of emergency contact"
               required
             />
+
             <Input
               id="email"
               name="email"
@@ -90,6 +107,7 @@ export function ContactInfoForm({
               type="email"
               required
             />
+
             <Input
               id="emergencyContactEmail"
               name="emergencyContactEmail"
@@ -98,11 +116,13 @@ export function ContactInfoForm({
               type="email"
               required
             />
+
             <div>
               <Select id="house" name="house" label="House">
-                <option>Contract</option>
-                <option>Property Parent</option>
-                <option>Own Youself</option>
+                <option value="">Select house type</option>
+                <option value="contract">Contract</option>
+                <option value="property_parent">Property Parent</option>
+                <option value="own_yourself">Own Yourself</option>
               </Select>
             </div>
 
@@ -117,6 +137,8 @@ export function ContactInfoForm({
                   value="true"
                   label="Yes"
                   required
+                  checked={readyToSignContract === "true"}
+                  onChange={(e) => setReadyToSignContract(e.target.value)}
                 />
                 <Radio
                   id="readyToSignNo"
@@ -124,9 +146,12 @@ export function ContactInfoForm({
                   value="false"
                   label="No"
                   required
+                  checked={readyToSignContract === "false"}
+                  onChange={(e) => setReadyToSignContract(e.target.value)}
                 />
               </div>
             </div>
+
             <div>
               <label
                 className="block text-sm font-medium text-[#111418] dark:text-white mb-1.5"
@@ -143,6 +168,7 @@ export function ContactInfoForm({
                 required
               />
             </div>
+
             <div className="md:col-span-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
@@ -157,6 +183,8 @@ export function ContactInfoForm({
                       value="true"
                       label="Yes"
                       required
+                      checked={willingToBeSurveyed === "true"}
+                      onChange={(e) => setWillingToBeSurveyed(e.target.value)}
                     />
                     <Radio
                       id="willingToSurveyNo"
@@ -164,6 +192,8 @@ export function ContactInfoForm({
                       value="false"
                       label="No"
                       required
+                      checked={willingToBeSurveyed === "false"}
+                      onChange={(e) => setWillingToBeSurveyed(e.target.value)}
                     />
                   </div>
                 </div>

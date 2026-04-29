@@ -60,17 +60,8 @@ const mockDrivers: Driver[] = [
   },
 ];
 
-// Calculate real stats from mock data
-const totalDrivers = mockDrivers.length;
-const activeDrivers = mockDrivers.filter((d) => d.status === "Active").length;
-const onLeaveDrivers = mockDrivers.filter(
-  (d) => d.status === "On Leave",
-).length;
-const inactiveDrivers = mockDrivers.filter(
-  (d) => d.status === "Inactive",
-).length;
-
 export default function DriverPage() {
+  const [drivers, setDrivers] = useState<Driver[]>(mockDrivers);
   const [filters, setFilters] = useState<DriverFilters>({
     search: "",
     performance: "Performance: All",
@@ -78,10 +69,16 @@ export default function DriverPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 2; // Adjust how many rows per page
+  const itemsPerPage = 5; // Change to 5 untuk tampilan lebih baik
+
+  // Calculate real stats from current drivers data
+  const totalDrivers = drivers.length;
+  const activeDrivers = drivers.filter((d) => d.status === "Active").length;
+  const onLeaveDrivers = drivers.filter((d) => d.status === "On Leave").length;
+  const inactiveDrivers = drivers.filter((d) => d.status === "Inactive").length;
 
   // Filter drivers based on search and status
-  const filteredDrivers = mockDrivers.filter((driver) => {
+  const filteredDrivers = drivers.filter((driver) => {
     const matchesSearch =
       driver.name.toLowerCase().includes(filters.search.toLowerCase()) ||
       driver.employeeId.toLowerCase().includes(filters.search.toLowerCase());
@@ -108,6 +105,26 @@ export default function DriverPage() {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
+  };
+
+  // Handle delete driver
+  const handleDeleteDriver = (driverId: string) => {
+    // Filter out the deleted driver
+    const updatedDrivers = drivers.filter(
+      (driver) => driver.employeeId !== driverId,
+    );
+    setDrivers(updatedDrivers);
+
+    // Adjust current page if needed
+    const newTotalPages = Math.ceil(
+      filteredDrivers.filter((d) => d.employeeId !== driverId).length /
+        itemsPerPage,
+    );
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(newTotalPages);
+    }
+
+    console.log(`Driver ${driverId} deleted successfully`);
   };
 
   return (
@@ -168,7 +185,10 @@ export default function DriverPage() {
 
       <SearchFilters />
       <div className="bg-white mt-5 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <DriverTable drivers={currentDrivers} />
+        <DriverTable
+          drivers={currentDrivers}
+          onDeleteDriver={handleDeleteDriver}
+        />
         {/* Add separator line between table and pagination */}
         <div className="border-t border-slate-200 dark:border-slate-800">
           <DriverPagination

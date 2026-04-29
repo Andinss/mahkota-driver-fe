@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { PaymentTableRow } from "./payment-table-row";
+import { ModalExport } from "@/components/ui/export";
+import type { ExportOptions } from "@/components/ui/export";
 
 interface Payment {
   invoiceId: string;
@@ -25,6 +27,7 @@ interface PaymentTableProps {
   onDownload?: (payment: Payment) => void;
   onEdit?: (payment: Payment) => void;
   onDelete?: (payment: Payment) => void;
+  onExport?: (options: ExportOptions) => void;
 }
 
 export function PaymentTable({
@@ -34,8 +37,10 @@ export function PaymentTable({
   onDownload,
   onEdit,
   onDelete,
+  onExport,
 }: PaymentTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const itemsPerPage = 5;
 
   const totalResults = payment.length;
@@ -66,7 +71,10 @@ export function PaymentTable({
         <h2 className="font-bold text-lg text-slate-900 dark:text-white">
           Finance Dashboard
         </h2>
-        <button className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
+        <button
+          onClick={() => setIsExportModalOpen(true)}
+          className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline"
+        >
           Export as CSV
         </button>
       </div>
@@ -99,6 +107,17 @@ export function PaymentTable({
           </tbody>
         </table>
       </div>
+      <ModalExport
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={(options) => {
+          setIsExportModalOpen(false);
+          onExport?.(options);
+        }}
+        totalRows={payment.length}
+        title="Export Payment Data"
+        description="Generate payment reports."
+      />
     </div>
   );
 }

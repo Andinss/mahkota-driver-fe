@@ -16,6 +16,7 @@ export interface Driver {
 
 interface DriverTableRowProps {
   driver: Driver;
+  onDeleteClick?: (driver: Driver) => void; // Ubah dari driverId ke driver object
 }
 
 const statusStyles: Record<
@@ -39,7 +40,7 @@ const statusStyles: Record<
   },
 };
 
-export function DriverTableRow({ driver }: DriverTableRowProps) {
+export function DriverTableRow({ driver, onDeleteClick }: DriverTableRowProps) {
   const statusStyle = statusStyles[driver.status];
 
   return (
@@ -102,10 +103,14 @@ export function DriverTableRow({ driver }: DriverTableRowProps) {
           <Link href={`/dashboard/driver/register?id=${driver.employeeId}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
-          <DropdownMenuItem icon="delete" danger>
+          <DropdownMenuItem
+            icon="delete"
+            danger
+            onClick={() => onDeleteClick?.(driver)}
+          >
             Delete
           </DropdownMenuItem>
-          <Link href={`/dashboard/driver/detail/`}>
+          <Link href={`/dashboard/driver/detail/${driver.employeeId}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>
