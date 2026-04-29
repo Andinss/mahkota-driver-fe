@@ -118,7 +118,7 @@ export const RentalTableRow = ({
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
 
-          <DropdownMenuItem icon="delete" danger>
+          <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(rental)}>
             Delete
           </DropdownMenuItem>
 
