@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"; 
 import { useSearchParams } from "next/navigation";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import FinancialRental from "@/components/rent/new-rent/financial-rental";
 import Period from "@/components/rent/new-rent/rental-period";
 import SelectionForm from "@/components/rent/new-rent/selection";
@@ -107,6 +108,10 @@ const NewRentPage = () => {
     serviceFee: 25000, // Default service fee
   });
 
+  // state confirm dialog
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+
   // Load data when in edit mode
   useEffect(() => {
     if (transactionParam && mockRentals[transactionParam]) {
@@ -183,18 +188,22 @@ const NewRentPage = () => {
     }));
   };
 
-  // Handler untuk confirm rental/update rental
-   const handleConfirmRental = async () => {
+  const handleConfirmRental = () => {
+    setIsConfirmOpen(true);
+  };
+
+   const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
+    setIsConfirmOpen(false);
 
     console.log("Rental Data:", rentalData);
 
     if (mode === "edit") {
       console.log("Updating rental:", transactionParam);
-      // TODO: await api.updateRental(transactionParam, rentalData);
+      alert(`Rental ${rentalData.transactionId} updated successfully!`);
     } else {
       console.log("Creating new rental");
-      // TODO: await api.createRental(rentalData);
+      alert("Rental created successfully!");
     }
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -202,14 +211,13 @@ const NewRentPage = () => {
     window.location.href = "/dashboard/rent";
   };
 
-
-  // Handler untuk cancel
+  // ✅ TAMBAHKAN: Handler untuk cancel
   const handleCancel = () => {
     if (confirm("Are you sure you want to cancel?")) {
-      // Reset form atau redirect
       window.location.href = "/dashboard/rent";
     }
   };
+
 
   return (
     <div className="p-8">
@@ -252,6 +260,21 @@ const NewRentPage = () => {
           mode={mode}
         />
       </div>
+
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmSubmit}
+        title={mode === "add" ? "Confirm Rental" : "Confirm Update"}
+        message={
+          mode === "add"
+            ? `Are you sure you want to create this rental? Please review all information carefully. This action cannot be undone.`
+            : `Are you sure you want to update this rental? Please review all information carefully.`
+        }
+        confirmText={mode === "add" ? "Yes, Create Rental" : "Yes, Update Rental"}
+        cancelText="Review Again"
+        variant="info"
+      />
     </div>
   );
 };
