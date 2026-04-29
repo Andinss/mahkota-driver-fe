@@ -100,20 +100,19 @@ const Sidebar = () => {
           className={`flex gap-3 ${isCollapsed ? "justify-center py-4" : "p-6"}`}
         >
           <div
-            className="bg-center bg-no-repeat bg-cover rounded-full size-10 shrink-0 bg-primary/10 flex items-center justify-center text-primary"
+            className="bg-center bg-white bg-no-repeat bg-cover rounded-full size-10 shrink-0 bg-primary/10 flex items-center justify-center text-primary"
             data-alt="Abstract geometric logo in blue"
             style={{
-              backgroundImage:
-                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCayM1M4BEeHDgBMWOgZ-6uVXx5vWpf8Q0WTsKUzvldl1p7wGBhz8LOrA1xzQNa269xSDgExCrWIrwoyLvM_3e_4BQCB9or-J0tXoN1CKS_9V60GlgcOacU_zYTvYR9QisxOJcc87ZQ43di2V_uNl_S_n_zIBHNpjR2aerjOR1V_O5YVIRFBfStuhKBHCVFmWao5vX2Jlskc_9f6q9bh5nf8656za2up0uFQRefaGYj9lwf6wFRS_3wSLaM4QeNLnrsqR1SoqmWGGQ4")',
+              backgroundImage: 'url("/logo.png")',
             }}
           ></div>
           {!isCollapsed && (
             <div className="flex flex-col justify-center">
               <h1 className="text-slate-900 dark:text-white text-base font-bold leading-normal">
-                PT XYZ Admin
+                Mahkota Drive
               </h1>
               <p className="text-slate-500 dark:text-slate-400 text-xs font-normal leading-normal">
-                Rental System
+                Fleet Rental System
               </p>
             </div>
           )}
