@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import FinancialRental from "@/components/rent/new-rent/financial-rental";
@@ -111,7 +111,6 @@ const NewRentPage = () => {
   // state confirm dialog
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-
   // Load data when in edit mode
   useEffect(() => {
     if (transactionParam && mockRentals[transactionParam]) {
@@ -147,7 +146,7 @@ const NewRentPage = () => {
   // Handler untuk Selection form
   const handleSelectionChange = (data: {
     vehicleId?: string;
-    driverId?: string; 
+    driverId?: string;
     driverType?: string;
   }) => {
     setRentalData((prev) => ({
@@ -192,7 +191,7 @@ const NewRentPage = () => {
     setIsConfirmOpen(true);
   };
 
-   const handleConfirmSubmit = async () => {
+  const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
     setIsConfirmOpen(false);
 
@@ -211,13 +210,11 @@ const NewRentPage = () => {
     window.location.href = "/dashboard/rent";
   };
 
-  // ✅ TAMBAHKAN: Handler untuk cancel
   const handleCancel = () => {
     if (confirm("Are you sure you want to cancel?")) {
       window.location.href = "/dashboard/rent";
     }
   };
-
 
   return (
     <div className="p-8">
@@ -225,27 +222,32 @@ const NewRentPage = () => {
         {/* Form Sections */}
         <div className="flex-1 space-y-8 pb-20">
           {/* Section 1: Selection */}
-          <SelectionForm onDataChange={handleSelectionChange}
-          initialData={{
-  vehicleId: rentalData.vehicleId,
-  driverId: rentalData.driverId,
-}}/>
+          <SelectionForm
+            onDataChange={handleSelectionChange}
+            initialData={{
+              vehicleId: rentalData.vehicleId,
+              driverId: rentalData.driverId,
+            }}
+          />
 
           {/* Section 2: Period */}
-          <Period onDataChange={handlePeriodChange}
-          initialData={{ 
-            startDate: rentalData.startDate,
-            endDate: rentalData.endDate,
-           }} />
+          <Period
+            onDataChange={handlePeriodChange}
+            initialData={{
+              startDate: rentalData.startDate,
+              endDate: rentalData.endDate,
+            }}
+          />
 
           {/* Section 3: Financials */}
-          <FinancialRental 
-          onDataChange={handleFinancialChange}
-          initialData={{
+          <FinancialRental
+            onDataChange={handleFinancialChange}
+            initialData={{
               dailyRate: rentalData.dailyRate,
               depositAmount: rentalData.depositAmount,
               methodPayment: rentalData.methodPayment,
-           }} />
+            }}
+          />
 
           {/* Section 4: Documentation */}
           <DocumentsForm onDataChange={handleDocumentsChange} />
@@ -256,7 +258,7 @@ const NewRentPage = () => {
           rentalData={rentalData}
           onConfirm={handleConfirmRental}
           onCancel={handleCancel}
-           isSubmitting={isSubmitting}
+          isSubmitting={isSubmitting}
           mode={mode}
         />
       </div>
@@ -271,7 +273,9 @@ const NewRentPage = () => {
             ? `Are you sure you want to create this rental? Please review all information carefully. This action cannot be undone.`
             : `Are you sure you want to update this rental? Please review all information carefully.`
         }
-        confirmText={mode === "add" ? "Yes, Create Rental" : "Yes, Update Rental"}
+        confirmText={
+          mode === "add" ? "Yes, Create Rental" : "Yes, Update Rental"
+        }
         cancelText="Review Again"
         variant="info"
       />

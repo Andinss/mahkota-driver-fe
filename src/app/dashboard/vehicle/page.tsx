@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { AlertDialog } from "@/components/ui/alert";
 import { VehicleStatsCard } from "@/components/vehicle/dashboard/vehicle-stats-card";
 import { VehicleTable } from "@/components/vehicle/dashboard/vehicle-table";
 import { SearchFilters } from "@/components/search-filters";
@@ -9,12 +11,36 @@ import { PageHeader } from "@/components/page-header";
 import { VehiclePagination } from "@/components/vehicle/dashboard/vehicle-pagination";
 
 export default function DashboardVehiclePage() {
+  const searchParams = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2; // Adjust based on your preference
 
   // State Confirm Dialog
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
+
+  // State Alert Dialog
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState<"success" | "error">("success");
+
+  // Tampilkan alert jika ada success param di URL
+  useEffect(() => {
+    const success = searchParams.get("success");
+    const vehicle = searchParams.get("vehicle");
+
+    if (success && vehicle) {
+      const action = success === "updated" ? "Update" : "Registration";
+      setAlertTitle(`${action} Successful`);
+      setAlertMessage(`Vehicle ${decodeURIComponent(vehicle)} has been ${success} successfully.`);
+      setAlertType("success");
+      setIsAlertOpen(true);
+
+      // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
+      window.history.replaceState({}, "", "/dashboard/vehicle");
+    }
+  }, [searchParams]);
 
   const vehicles = [
     {
@@ -76,9 +102,16 @@ export default function DashboardVehiclePage() {
   const handleConfirmDelete = () => {
     console.log("Deleted vehicle:", selectedVehicle);
     // TODO: Panggil API delete di sini
-    alert(`Vehicle ${selectedVehicle?.name} deleted successfully!`);
     setIsConfirmOpen(false);
+    setAlertTitle("Delete Successful");
+    setAlertMessage(`Vehicle ${selectedVehicle?.name} has been deleted successfully.`);
+    setAlertType("success");
+    setIsAlertOpen(true);
     setSelectedVehicle(null);
+  };
+
+  const handleAlertClose = () => {
+    setIsAlertOpen(false);
   };
 
 
@@ -189,6 +222,16 @@ export default function DashboardVehiclePage() {
         confirmText="Yes, Delete"
         cancelText="Cancel"
         variant="danger"
+      />
+
+      {/* Alert Dialog */}
+      <AlertDialog
+        isOpen={isAlertOpen}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
+        type={alertType}
+        confirmText="OK"
       />
     </div>
   );
