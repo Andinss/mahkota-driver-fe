@@ -17,7 +17,13 @@ const sizeStyles: Record<"sm" | "md" | "lg" | "xl", string> = {
   xl: "max-w-6xl",
 };
 
-export const Modal = ({ isOpen, onClose, title, children, size = "md" }: ModalProps) => {
+export const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = "md",
+}: ModalProps) => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -35,12 +41,14 @@ export const Modal = ({ isOpen, onClose, title, children, size = "md" }: ModalPr
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className={`relative ${sizeStyles[size]} w-full mx-4 bg-white dark:bg-[#1a2632] rounded-xl shadow-xl overflow-hidden`}>
+      <div
+        className={`relative ${sizeStyles[size]} w-full mx-4 bg-white dark:bg-[#1a2632] rounded-xl shadow-xl overflow-hidden animate-modalIn`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e5e7eb] dark:border-[#2a3845]">
           <h2 className="text-lg font-bold text-[#111418] dark:text-white">
@@ -49,7 +57,7 @@ export const Modal = ({ isOpen, onClose, title, children, size = "md" }: ModalPr
           <IconButton
             name="close"
             size="sm"
-            variant="ghost"
+            variant="default"
             onClick={onClose}
           />
         </div>

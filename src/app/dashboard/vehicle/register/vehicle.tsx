@@ -91,23 +91,19 @@ export default function VehicleRegisterPage() {
 
   const handleConfirmSubmit = async () => {
     if (!pendingData) return;
-    
+
     setIsSubmitting(true);
     setIsConfirmOpen(false);
 
     console.log("Form data:", { ...pendingData, status, imageFile, mode });
 
-    if (mode === "edit") {
-      console.log("Updating vehicle:", plateParam);
-      alert(`Vehicle ${pendingData.make} ${pendingData.model} updated successfully!`);
-    } else {
-      console.log("Creating new vehicle");
-      alert(`Vehicle ${pendingData.make} ${pendingData.model} created successfully!`);
-    }
-
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSubmitting(false);
-    window.location.href = "/dashboard/vehicle";
+
+    const action = mode === "edit" ? "updated" : "registered";
+    const vehicleName = `${pendingData.make} ${pendingData.model}`;
+
+    window.location.href = `/dashboard/vehicle?success=${action}&vehicle=${encodeURIComponent(vehicleName)}`;
   };
 
   const handleCancel = () => {
@@ -150,7 +146,6 @@ export default function VehicleRegisterPage() {
         cancelText="Review Again"
         variant="info"
       />
-
 
     </div>
   );
