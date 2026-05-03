@@ -94,8 +94,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes modalPop {
@@ -122,4 +126,37 @@
 
 .animate-modalIn {
   animation: modalPop 0.4s ease-out;
+}
+
+/* Swiper Vehicle Photo - Smaller Navigation & Pagination */
+.vehicle-photo-swiper .swiper-button-next,
+.vehicle-photo-swiper .swiper-button-prev {
+  width: 28px !important;
+  height: 28px !important;
+  margin-top: -14px !important;
+  background: #004ac6 !important;
+  border-radius: 50% !important;
+  color: #fff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.vehicle-photo-swiper .swiper-button-next svg,
+.vehicle-photo-swiper .swiper-button-prev svg {
+  width: 10px !important;
+  height: 10px !important;
+}
+.vehicle-photo-swiper .swiper-pagination-bullet {
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.6);
+  opacity: 1;
+}
+.vehicle-photo-swiper .swiper-pagination-bullet-active {
+  background: #fff;
+  width: 18px;
+  border-radius: 3px;
+}
+.vehicle-photo-swiper .swiper-pagination {
+  bottom: 8px !important;
 }

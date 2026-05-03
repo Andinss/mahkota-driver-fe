@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { RadioCard } from "@/components/ui/radio-card";
+import { Icon } from "@/components/ui/icon";
 import { Textarea } from "@/components/ui/textarea";
+import { Modal } from "@/components/ui/modal";
 
 interface TransactionDetailProps {
   paymentDate?: string;
@@ -27,6 +30,64 @@ const TransactionDetail = ({
   onAmountChange,
   onNotesChange,
 }: TransactionDetailProps) => {
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showEwalletModal, setShowEwalletModal] = useState(false);
+
+  const banks = [
+    {
+      name: "BCA",
+      logo: "https://www.bca.co.id/-/media/Feature/Card/List-Card/Tentang-BCA/Brand-Assets/Logo-BCA/Logo-BCA_Biru.png",
+    },
+    {
+      name: "Mandiri",
+      logo: "https://wp.logos-download.com/wp-content/uploads/2016/06/Mandiri_logo-700x220.png",
+    },
+    {
+      name: "BNI",
+      logo: "https://iconlogovector.com/uploads/images/2023/04/lg-19ba1de69f8fd8354b05a023cd71ff8572.jpg",
+    },
+    {
+      name: "BRI",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/BANK_BRI_logo_%28vertical%29.svg/960px-BANK_BRI_logo_%28vertical%29.svg.png",
+    },
+    {
+      name: "CIMB Niaga",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/CIMB_Niaga_logo.svg/960px-CIMB_Niaga_logo.svg.png",
+    },
+    {
+      name: "Danamon",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Danamon.svg/960px-Danamon.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20200318085308",
+    },
+    {
+      name: "Permata",
+      logo: "https://upload.wikimedia.org/wikipedia/id/thumb/4/48/PermataBank_logo.svg/330px-PermataBank_logo.svg.png?_=20161021185145",
+    },
+    {
+      name: "BSI",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Bank_Syariah_Indonesia.svg/960px-Bank_Syariah_Indonesia.svg.png",
+    },
+  ];
+
+  const ewallets = [
+    {
+      name: "GoPay",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Logo_Gopay.svg/960px-Logo_Gopay.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20240815061050",
+    },
+    {
+      name: "OVO",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Logo_ovo_purple.svg/960px-Logo_ovo_purple.svg.png",
+    },
+    {
+      name: "DANA",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_dana_blue.svg/960px-Logo_dana_blue.svg.png",
+    },
+
+    {
+      name: "QRIS",
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/QRIS_Logo.svg/960px-QRIS_Logo.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20250310160237",
+    },
+  ];
+
   return (
     <div className="bg-white dark:bg-[#1e2732] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-800 p-6">
       <h3 className="text-base font-semibold text-[#111418] dark:text-white mb-6">
@@ -72,22 +133,75 @@ const TransactionDetail = ({
               checked={paymentMethod === "Cash"}
               onChange={() => onPaymentMethodChange?.("Cash")}
             />
-            <RadioCard
-              icon="account_balance"
-              label="Transfer"
-              name="payment_method"
-              value="Transfer"
-              checked={paymentMethod === "Transfer"}
-              onChange={() => onPaymentMethodChange?.("Transfer")}
-            />
-            <RadioCard
-              icon="account_balance_wallet"
-              label="E-Wallet"
-              name="payment_method"
-              value="E-Wallet"
-              checked={paymentMethod === "E-Wallet"}
-              onChange={() => onPaymentMethodChange?.("E-Wallet")}
-            />
+            <button
+              type="button"
+              onClick={() => setShowTransferModal(true)}
+              className="cursor-pointer relative group"
+            >
+              <div
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border h-24 transition-all hover:border-gray-400 dark:hover:border-gray-500 ${
+                  paymentMethod !== "Cash" &&
+                  !paymentMethod.startsWith("E-Wallet")
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800"
+                }`}
+              >
+                <Icon
+                  name="account_balance"
+                  size="lg"
+                  className={`mb-2 ${paymentMethod !== "Cash" && !paymentMethod.startsWith("E-Wallet") ? "text-primary" : "text-[#617589] dark:text-gray-400"}`}
+                />
+                <span
+                  className={`text-sm font-medium ${
+                    paymentMethod !== "Cash" &&
+                    !paymentMethod.startsWith("E-Wallet")
+                      ? "text-primary"
+                      : "text-[#111418] dark:text-gray-200"
+                  }`}
+                >
+                  Transfer
+                </span>
+              </div>
+              {paymentMethod !== "Cash" &&
+                !paymentMethod.startsWith("E-Wallet") && (
+                  <div className="absolute top-2 right-2 text-primary">
+                    <Icon name="check_circle" size="md" />
+                  </div>
+                )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowEwalletModal(true)}
+              className="cursor-pointer relative group"
+            >
+              <div
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border h-24 transition-all hover:border-gray-400 dark:hover:border-gray-500 ${
+                  paymentMethod.startsWith("E-Wallet")
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800"
+                }`}
+              >
+                <Icon
+                  name="account_balance_wallet"
+                  size="lg"
+                  className={`mb-2 ${paymentMethod.startsWith("E-Wallet") ? "text-primary" : "text-[#617589] dark:text-gray-400"}`}
+                />
+                <span
+                  className={`text-sm font-medium ${
+                    paymentMethod.startsWith("E-Wallet")
+                      ? "text-primary"
+                      : "text-[#111418] dark:text-gray-200"
+                  }`}
+                >
+                  E-Wallet
+                </span>
+              </div>
+              {paymentMethod.startsWith("E-Wallet") && (
+                <div className="absolute top-2 right-2 text-primary">
+                  <Icon name="check_circle" size="md" />
+                </div>
+              )}
+            </button>
           </div>
         </div>
 
@@ -104,7 +218,7 @@ const TransactionDetail = ({
             <Input
               className="w-full h-10 pl-10 pr-4 rounded-lg border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800 text-[#111418] dark:text-white text-3xl font-bold tracking-tight focus:ring-primary focus:border-primary placeholder:text-gray-300 dark:placeholder:text-gray-600"
               placeholder="0.00"
-              type="text"
+              type="number"
               value={amount}
               onChange={(e) => onAmountChange?.(e.target.value)}
             />
@@ -122,6 +236,72 @@ const TransactionDetail = ({
           rows={2}
         />
       </form>
+
+      <Modal
+        isOpen={showTransferModal}
+        onClose={() => setShowTransferModal(false)}
+        title="Select Bank"
+      >
+        <div className="p-6">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+            {banks.map((bank) => (
+              <button
+                key={bank.name}
+                type="button"
+                onClick={() => {
+                  onPaymentMethodChange?.(`Transfer - ${bank.name}`);
+                  setShowTransferModal(false);
+                }}
+                className="group flex items-center justify-center p-4 rounded-xl border-2 border-[#e5e7eb] dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+              >
+                <div className="w-20 h-20 flex items-center justify-center p-2 rounded-xl bg-gray-50 dark:bg-gray-700 group-hover:bg-primary/5 transition-colors">
+                  <img
+                    src={bank.logo}
+                    alt={bank.name}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showEwalletModal}
+        onClose={() => setShowEwalletModal(false)}
+        title="Select E-Wallet"
+      >
+        <div className="p-6">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+            {ewallets.map((wallet) => (
+              <button
+                key={wallet.name}
+                type="button"
+                onClick={() => {
+                  onPaymentMethodChange?.(`E-Wallet - ${wallet.name}`);
+                  setShowEwalletModal(false);
+                }}
+                className="group flex items-center justify-center p-4 rounded-xl border-2 border-[#e5e7eb] dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+              >
+                <div className="w-20 h-20 flex items-center justify-center p-2 rounded-xl bg-gray-50 dark:bg-gray-700 group-hover:bg-primary/5 transition-colors">
+                  <img
+                    src={wallet.logo}
+                    alt={wallet.name}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
