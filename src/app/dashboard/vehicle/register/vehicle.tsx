@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { VehicleMediaUpload } from "@/components/vehicle/register/vehicle-media-upload";
+import { VehicleMediaUpload, UploadedImage } from "@/components/vehicle/register/vehicle-media-upload";
 import {
   StatusSelect,
   VehicleStatus,
@@ -49,7 +49,7 @@ export default function VehicleRegisterPage() {
 
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [status, setStatus] = useState<VehicleStatus>("available");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialValues, setInitialValues] = useState<Partial<VehicleFormData> | undefined>();
   const [initialImageUrl, setInitialImageUrl] = useState<string | undefined>();
@@ -95,7 +95,7 @@ export default function VehicleRegisterPage() {
     setIsSubmitting(true);
     setIsConfirmOpen(false);
 
-    console.log("Form data:", { ...pendingData, status, imageFile, mode });
+    console.log("Form data:", { ...pendingData, status, imageFiles, mode });
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSubmitting(false);
@@ -114,8 +114,8 @@ export default function VehicleRegisterPage() {
       <div className="flex flex-col md:flex-row min-h-[600px]">
         <div className="w-full md:w-1/3 bg-gray-50/50 dark:bg-slate-800/50 p-8 border-r border-[#f0f2f4] dark:border-slate-800 flex flex-col gap-8">
           <VehicleMediaUpload
-            onImageSelect={setImageFile}
-            initialImageUrl={initialImageUrl}
+            onImagesSelect={setImageFiles}
+            initialImageUrls={initialImageUrl ? [initialImageUrl] : undefined}
             acceptedFormats={["JPG", "PNG"]}
             maxSizeMB={5}
           />
