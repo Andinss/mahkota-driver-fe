@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { UserTableRow } from "./table-row-user";
+import { ExportColumn, ModalExport } from "@/components/ui/export";
 
 interface User {
   id: string;
@@ -21,8 +23,17 @@ interface UserTableProps {
   onEdit?: (user: User) => void;
   onDelete?: (user: User) => void;
   onResetPassword?: (user: User) => void;
-  onExport?: () => void;
+  onExport?: (options: any) => void;
 }
+
+const userColumns: ExportColumn[] = [
+  { id: "name", label: "Name", defaultChecked: true },
+  { id: "email", label: "Email", defaultChecked: true },
+  { id: "phone", label: "Phone Number", defaultChecked: true },
+  { id: "role", label: "Role", defaultChecked: true },
+  { id: "status", label: "Status", defaultChecked: true },
+  { id: "id", label: "User ID", defaultChecked: false },
+];
 
 export const UserTable = ({
   users,
@@ -35,6 +46,7 @@ export const UserTable = ({
   onResetPassword,
   onExport,
 }: UserTableProps) => {
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const startEntry = (currentPage - 1) * resultsPerPage + 1;
   const endEntry = Math.min(currentPage * resultsPerPage, totalResults);
 
@@ -43,10 +55,9 @@ export const UserTable = ({
       <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 className="font-bold text-lg text-gray-900">User Management</h2>
         <button
-          onClick={onExport}
-          className="text-blue-600 text-sm font-medium hover:underline"
-        >
-          Export as CSV
+          onClick={() => setIsExportModalOpen(true)}
+          className="text-blue-600 text-sm font-medium hover:underline">
+          Export Data
         </button>
       </div>
 
@@ -80,6 +91,19 @@ export const UserTable = ({
           </tbody>
         </table>
       </div>
+
+      <ModalExport
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={(options) => {
+          setIsExportModalOpen(false);
+          onExport?.(options);
+        }}
+        totalRows={totalResults}
+        title="Export User Data"
+        description="Generate user reports."
+        columns={userColumns}
+      />
     </div>
   );
 };

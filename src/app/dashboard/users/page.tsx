@@ -5,6 +5,7 @@ import SearchBar from "@/components/user/dashboard/search-bar-user";
 import { UserTable } from "@/components/user/dashboard/table-user";
 import { UserPagination } from "@/components/user/dashboard/user-pagination";
 import { useState } from "react";
+import { ExportOptions } from "@/components/ui/export";
 
 const users = [
   {
@@ -47,6 +48,11 @@ const users = [
 ];
 
 export default function UserList() {
+  const handleExport = (options: ExportOptions) => {
+    console.log("Export options from user page:", options);
+    alert(`Exporting user data as ${options.format} with ${options.type} data`);
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2;
 
@@ -90,8 +96,9 @@ export default function UserList() {
       <SearchBar />
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <UserTable 
-        users={currentUsers} 
-        onDelete={handleDeleteClick}
+          users={currentUsers} 
+          onDelete={handleDeleteClick}
+          onExport={handleExport}
         />
         <UserPagination
           currentPage={currentPage}
@@ -110,7 +117,6 @@ export default function UserList() {
         confirmText="Yes, Delete"
         cancelText="Cancel"
         variant="danger"
-      
       />
     </div>
   );

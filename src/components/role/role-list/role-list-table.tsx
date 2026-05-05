@@ -1,5 +1,7 @@
 "use client";
+import { useState } from "react";
 import { RoleTableRow } from "./role-list-table-row";
+import { ModalExport, ExportOptions, ExportColumn } from "@/components/ui/export";
 
 const roles = [
   {
@@ -73,9 +75,23 @@ const columns = [
 
 interface RoleTableProps {
   onDelete?: (role: any) => void;
+  onExport?: (options: ExportOptions) => void;
 }
 
-export const RoleTable = ({ onDelete}: RoleTableProps) => {
+const roleColumns: ExportColumn[] = [
+  { id: "name", label: "Role Name", defaultChecked: true },
+  { id: "viewDashboards", label: "View Dashboards", defaultChecked: true },
+  { id: "managePayments", label: "Manage Payments", defaultChecked: true },
+  { id: "manageDrivers", label: "Manage Drivers", defaultChecked: true },
+  { id: "assignVehicles", label: "Assign Vehicles", defaultChecked: true },
+  { id: "vehicleRetrieval", label: "Vehicle Retrieval", defaultChecked: true },
+  { id: "userManagement", label: "User Management", defaultChecked: true },
+];
+
+export const RoleTable = ({ onDelete, onExport }: RoleTableProps) => {
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const totalResults = roles.length;
+  
   return (
     <div className="bg-white rounded-2xl border border-gray-200 mt-5 overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
@@ -84,9 +100,9 @@ export const RoleTable = ({ onDelete}: RoleTableProps) => {
           Role Management
         </h2>
         <button
-          className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline"
-        >
-          Export as CSV
+          onClick={() => setIsExportModalOpen(true)}
+          className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
+          Export Data
         </button>
       </div>
         <table className="w-full text-left border-collapse">
@@ -118,6 +134,19 @@ export const RoleTable = ({ onDelete}: RoleTableProps) => {
 
         </table>
       </div>
+
+      <ModalExport
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          onExport={(options) => {
+            setIsExportModalOpen(false);
+            onExport?.(options);
+          }}
+          totalRows={totalResults}
+          title="Export Role Data"
+          description="Generate role and permission reports."
+          columns={roleColumns}
+        />
     </div>
   );
 };

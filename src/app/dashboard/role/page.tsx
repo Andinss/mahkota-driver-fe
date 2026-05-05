@@ -5,10 +5,14 @@ import { RoleCard } from "@/components/role/role-list/card";
 import { RoleBanner } from "@/components/role/role-list/role-banner";
 import { RoleTable } from "@/components/role/role-list/role-list-table";
 import { useState } from "react";
-
-
+import { ExportOptions } from "@/components/ui/export";
 
 const RolePage = () => {
+
+  const handleExport = (options: ExportOptions) => {
+    console.log("Export options from role page:", options);
+    alert(`Exporting role data as ${options.format} with ${options.type} data`);
+  };
 
   const [selectedRole, setSelectedRole] = useState<any>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
@@ -35,7 +39,10 @@ const RolePage = () => {
       />
 
       {/* table */}
-      <RoleTable onDelete={handleDeleteClick} />
+      <RoleTable 
+        onDelete={handleDeleteClick}
+        onExport={handleExport}
+      />
 
       <div className="mt-12 grid grid-cols-12 gap-6">
         {/*banner biru */}
@@ -69,6 +76,7 @@ const RolePage = () => {
           />
         </div>
       </div>
+
       <ConfirmDialog
       isOpen={isConfirmDeleteOpen}
         onClose={() => setIsConfirmDeleteOpen(false)}
@@ -82,4 +90,5 @@ const RolePage = () => {
     </div>
   );
 };
+
 export default RolePage;
