@@ -133,30 +133,13 @@ const ManualPaymentPage = () => {
     }
   }, [paymentIdParam]);
 
-  const handleSubmit = async () => {
-    if (!selectedPayer) {
-      alert("Please select a payer");
-      return;
-    }
-    if (!paymentDate) {
-      alert("Please select payment date");
-      return;
-    }
-    if (!paymentMethod) {
-      alert("Please select payment method");
-      return;
-    }
-    if (!amount) {
-      alert("Please enter amount");
-      return;
-    }
-
+   const handleSubmit = async () => {
     setIsSubmitting(true);
 
     const paymentData = {
       id: paymentIdParam || undefined,
-      payerName: selectedPayer.name,
-      payerId: selectedPayer.id,
+      payerName: selectedPayer?.name || "",
+      payerId: selectedPayer?.id || "",
       paymentDate,
       referenceNumber,
       paymentMethod,
@@ -167,23 +150,17 @@ const ManualPaymentPage = () => {
 
     console.log("Payment Data:", paymentData);
 
-    if (mode === "edit") {
-      console.log("Updating payment:", paymentIdParam);
-      alert(`Payment for ${selectedPayer.name} updated successfully!`);
-    } else {
-      console.log("Creating new payment");
-      alert(`Payment for ${selectedPayer.name} created successfully!`);
-    }
-
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSubmitting(false);
-    window.location.href = "/dashboard/finance";
+
+    const action = mode === "edit" ? "updated" : "registered";
+    const financeName = paymentData.payerName || "New Payment";
+
+    window.location.href = `/dashboard/finance?success=${action}&finance=${encodeURIComponent(financeName)}`;
   };
 
   const handleCancel = () => {
-    if (confirm("Are you sure you want to cancel? All unsaved changes will be lost.")) {
       window.location.href = "/dashboard/finance";
-    }
   };
 
   const handleClear = () => {
@@ -196,7 +173,7 @@ const ManualPaymentPage = () => {
     setNotes("");
   };
 
-  // UBAH INI (update selected payer)
+  //  update selected payer
   const handlePayerSelect = (name: string, id: string) => {
     setSelectedPayer({ name, id });
   };
@@ -232,11 +209,11 @@ const ManualPaymentPage = () => {
           paymentMethod={paymentMethod}
           amount={amount}
           currentBalance={-3500000}
-          onSubmit={handleSubmit}  // TAMBAHKAN INI
-          onCancel={handleCancel}   // TAMBAHKAN INI
-          onClear={handleClear}      // TAMBAHKAN INI
-          isSubmitting={isSubmitting} // TAMBAHKAN INI
-          mode={mode}                // TAMBAHKAN INI
+          onSubmit={handleSubmit}  
+          onCancel={handleCancel}   
+          onClear={handleClear}      
+          isSubmitting={isSubmitting} 
+          mode={mode}                
         />
       </div>
     </div>

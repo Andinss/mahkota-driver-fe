@@ -201,7 +201,7 @@ const mockRoles: Record<string, any> = {
   },
 };
 
-const RolePage = () => {
+const RoleFormPage = () => {
   const searchParams = useSearchParams();
   const roleIdParam = searchParams.get("id");
 
@@ -252,19 +252,16 @@ const RolePage = () => {
     };
 
     console.log("Role Data:", roleData);
-
-    if (mode === "edit") {
-      console.log("Updating role:", roleIdParam);
-      alert(`Role "${roleName}" updated successfully!`);
-    } else {
-      console.log("Creating new role");
-      alert(`Role "${roleName}" created successfully!`);
-    }
-
+    console.log("roleName value:", roleName);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSubmitting(false);
-    window.location.href = "/dashboard/role";
+
+    const action = mode === "edit" ? "updated" : "registered";
+     const roleNameForRedirect = roleName || "New Role";
+
+    window.location.href = `/dashboard/role?success=${action}&role=${encodeURIComponent(roleNameForRedirect)}`;
   };
+
 
   const handleCancel = () => {
       window.location.href = "/dashboard/role";
@@ -340,4 +337,4 @@ const RolePage = () => {
   );
 };
 
-export default RolePage;
+export default RoleFormPage;

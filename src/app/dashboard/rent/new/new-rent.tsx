@@ -197,23 +197,17 @@ const NewRentPage = () => {
 
     console.log("Rental Data:", rentalData);
 
-    if (mode === "edit") {
-      console.log("Updating rental:", transactionParam);
-      alert(`Rental ${rentalData.transactionId} updated successfully!`);
-    } else {
-      console.log("Creating new rental");
-      alert("Rental created successfully!");
-    }
-
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSubmitting(false);
-    window.location.href = "/dashboard/rent";
+
+    const action = mode === "edit" ? "updated" : "registered";
+    const rentName = rentalData.transactionId || "New Rental";
+
+    window.location.href = `/dashboard/rent?success=${action}&rent=${encodeURIComponent(rentName)}`;
   };
 
   const handleCancel = () => {
-    if (confirm("Are you sure you want to cancel?")) {
       window.location.href = "/dashboard/rent";
-    }
   };
 
   return (

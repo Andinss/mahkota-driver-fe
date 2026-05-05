@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Modal } from "@/components/ui/modal";           
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -9,16 +9,42 @@ import { FinancePagination } from "@/components/finance/payment-list/finance-pag
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
 import { PageHeader } from "@/components/page-header";
 import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
-
+import { AlertDialog } from "@/components/ui/alert";
+import { useSearchParams } from "next/navigation";
 import { ExportOptions } from "@/components/ui/export";
 
 export default function PaymentList() {
+  const searchParams = useSearchParams();
+
   const handleExport = (options: ExportOptions) => {
     console.log("Export options from finance page:", options);
     alert(
       `Exporting payment data as ${options.format} with ${options.type} data`,
     );
   };
+
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState<"success" | "error">("success");
+
+
+  // Tampilkan alert jika ada success param di url
+  useEffect(() => {
+    const success = searchParams.get("success");
+    const finance = searchParams.get("finance");
+
+    if (success && finance) {
+      const action = success === "updated" ? "Update" : "Registration";
+      setAlertTitle(`${action} Successful`);
+      setAlertMessage(`Finance ${decodeURIComponent(finance)} has been ${success} successfully.`);
+      setAlertType("success");
+      setIsAlertOpen(true);
+
+      // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
+      window.history.replaceState({}, "", "/dashboard/finance");
+    }
+  }, [searchParams]);
 
   const paymentsData = [
     {
@@ -210,7 +236,16 @@ export default function PaymentList() {
   console.log("Deleted:", selectedPayment);
   // TODO: Panggil API delete di sini
   setIsConfirmOpen(false);
+  setAlertTitle("Delete Successful");
+  setAlertMessage(`Finance ${selectedPayment?.invoiceId} has been deleted successfully`);
+  setAlertType("success");
+  setIsAlertOpen(true);
+  setSelectedPayment(null);
 };
+
+  const handleAlertClose = () => {
+    setIsAlertOpen(false);
+  }
 
   const handleDetails = (payment: any) => {
     // Redirect ke halaman detail
@@ -327,10 +362,20 @@ export default function PaymentList() {
         onConfirm={handleConfirmDelete}
         title="Delete Payment"
         message={`Are you sure you want to delete ${selectedPayment?.invoiceId}?`}
-        confirmText="Delete"
+        confirmText="Yes, Delete"
         cancelText="Cancel"
         variant="danger"
       />      
+
+      {/* Alert Dialog */}
+      <AlertDialog 
+        isOpen={isAlertOpen}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
+        type={alertType}
+        confirmText="OK"
+      />
 
     </div>
   );
