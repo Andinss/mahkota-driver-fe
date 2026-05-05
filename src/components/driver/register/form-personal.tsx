@@ -68,6 +68,7 @@ export function PersonalDetailsForm({
           name="firstName"
           label="First Name"
           placeholder="Enter first name"
+          defaultValue={initialValues?.firstName}
           required
         />
 
@@ -76,6 +77,7 @@ export function PersonalDetailsForm({
           name="lastName"
           label="Last Name"
           placeholder="Enter last name"
+          defaultValue={initialValues?.lastName}
           required
         />
 
@@ -83,13 +85,16 @@ export function PersonalDetailsForm({
           id="dateOfBirth"
           name="dateOfBirth"
           label="Date of Birth"
+          defaultValue={initialValues?.dateOfBirth}
           required
         />
 
-        <Select id="gender" name="gender" label="Gender">
-          <option>Male</option>
-          <option>Female</option>
-          <option>Other</option>
+        <Select id="gender" name="gender" label="Gender"
+         defaultValue={initialValues?.gender}>
+          <option value="">Select Gender</option> 
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
         </Select>
 
         <div>
@@ -98,15 +103,18 @@ export function PersonalDetailsForm({
             name="employeeId"
             label="Employee ID"
             placeholder="DRV-0000"
+            defaultValue={initialValues?.employeeId}
           />
           <p className="text-[11px] text-slate-400">
             Leave blank to auto-generate.
           </p>
         </div>
 
-        <Select id="citizenship" name="citizenship" label="Citizenship">
-          <option>Indonesian (WNI)</option>
-          <option>Foreigner (WNA)</option>
+        <Select id="citizenship" name="citizenship" label="Citizenship"
+        defaultValue={initialValues?.citizenship}>
+          <option value="">Select Citizenship</option>
+          <option value="Indonesian (WNI)">Indonesian (WNI)</option>
+          <option value="Foreigner (WNA)">Foreigner (WNA)</option>
         </Select>
       </form>
     </div>

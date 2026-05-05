@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -19,16 +19,25 @@ interface ContactInfoFormProps {
   onNext: (data: ContactInfoData) => void;
   onBack: () => void;
   onSaveDraft?: () => void;
+  initialData?: ContactInfoData;
 }
 
 export function ContactInfoForm({
   onNext,
   onBack,
   onSaveDraft,
+  initialData,
 }: ContactInfoFormProps) {
   // Tambahkan state untuk radio buttons
   const [readyToSignContract, setReadyToSignContract] = useState<string>("");
   const [willingToBeSurveyed, setWillingToBeSurveyed] = useState<string>("");
+
+  useEffect(() => {
+    if (initialData) {
+      // Isi radio buttons jika diperlukan
+      // Untuk input text, nilai default akan diambil dari defaultValue di form
+    }
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -88,6 +97,7 @@ export function ContactInfoForm({
               label="Phone Number"
               placeholder="e.g. +62 812 3456 7890"
               type="tel"
+              defaultValue={initialData?.phoneNumber}
               required
             />
 
@@ -96,6 +106,7 @@ export function ContactInfoForm({
               name="emergencyContactNumber"
               label="Emergency Contact Number"
               placeholder="Phone number of emergency contact"
+              defaultValue={initialData?.emergencyContactName}
               required
             />
 
@@ -105,6 +116,7 @@ export function ContactInfoForm({
               label="Email Address"
               placeholder="e.g. driver@email.com"
               type="email"
+              defaultValue={initialData?.email}
               required
             />
 
@@ -114,6 +126,7 @@ export function ContactInfoForm({
               label="Emergency Contact Email"
               placeholder="Email address of emergency contact"
               type="email"
+              defaultValue={initialData?.emergencyContactRelationship}
               required
             />
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { RentalCard } from "@/components/rent/dashboard/card";
@@ -8,8 +8,11 @@ import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
 import { RentPagination } from "@/components/rent/dashboard/rent-pagination";
 import { RentalTable } from "@/components/rent/dashboard/rent-table";
 import { ExportOptions } from "@/components/ui/export";
+import { AlertDialog } from "@/components/ui/alert";
+import { useSearchParams } from "next/navigation";
 
 export default function RentalManagementPage() {
+const searchParams = useSearchParams();
 
   const handleExport = (options?: ExportOptions) => {
       if (!options) return;
@@ -20,7 +23,28 @@ export default function RentalManagementPage() {
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [selectedRental, setSelectedRental] = useState<any>(null);
 
+  const  [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const  [alertMessage, setAlertMessage] = useState("");
+  const  [alertType, setAlertType] = useState<"success" | "error">("success");
 
+  // Tampilkan alert jika ada succes param di url
+  useEffect(() => {
+    const success = searchParams.get("success");
+    const rent = searchParams.get("rent");
+
+    if (success && rent) {
+      const action = success === "updated" ? "Update" : "Registration";
+      setAlertTitle(`${action} Successful`);
+      setAlertMessage(`Rent ${decodeURIComponent(rent)} has been ${success} successfully.`);
+      setAlertType("success");
+      setIsAlertOpen(true);
+
+      // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
+      window.history.replaceState({}, "", "/dashboard/rent");
+    }
+
+  }, [searchParams]);
 
  const rentalsData = [
   {
@@ -145,10 +169,17 @@ const handlePageChange = (page: number) => {
 
    const handleConfirmDelete = () => {
     console.log("Deleted rental:", selectedRental);
-    alert(`Rental ${selectedRental?.transactionId} deleted successfully!`);
     setIsConfirmDeleteOpen(false);
+    setAlertTitle("Delete Successful");
+    setAlertMessage(`Rent ${selectedRental?.transactionId} has been deleted successfully`);
+    setAlertType("success");
+    setIsAlertOpen(true);
     setSelectedRental(null);
   };
+
+  const handleAlertClose = () => {
+    setIsAlertOpen(false);
+  }
 
 
   return (
@@ -243,6 +274,16 @@ const handlePageChange = (page: number) => {
         confirmText="Yes, Delete"
         cancelText="Cancel"
         variant="danger"
+      />
+
+      {/* Alert Dialog */}
+      <AlertDialog
+        isOpen={isAlertOpen}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
+        type={alertType}
+        confirmText="OK"
       />
 
     </div>

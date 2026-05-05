@@ -19,6 +19,7 @@ interface ReviewStepProps {
   onBack: () => void;
   onSaveDraft?: () => void;
   onSubmit: () => void;
+  mode?: "add" | "edit"; 
 }
 
 export function ReviewStep({
@@ -26,12 +27,20 @@ export function ReviewStep({
   onBack,
   onSaveDraft,
   onSubmit,
+  mode = "add",
 }: ReviewStepProps) {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-  const handleConfirmSubmit = () => {
+  const handleConfirmSubmit = async () => {
     setIsConfirmDialogOpen(false);
-    onSubmit();
+
+    // simulasi loading
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+     const driverName = `${data.personal.firstName} ${data.personal.lastName}`;
+     const action = mode === "edit" ? "updated" : "registered";
+
+  window.location.href = `/dashboard/driver?success=${action}&driver=${encodeURIComponent(driverName)}`;
   };
 
   return (
