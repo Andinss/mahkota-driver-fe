@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { StatusBadge } from "@/components/status-badge";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
+import { Badge } from "@/components/ui/badge";
 
 interface Rental {
   transactionId: string;
@@ -18,8 +19,9 @@ interface Rental {
     end: string;
     duration: number;
   };
-  deposit: string;
+  deposit: string;     
   paymentStatus: string;
+
 }
 
 interface RentalTableRowProps {
@@ -37,6 +39,7 @@ export const RentalTableRow = ({
   onDetails,
   onEndRental,
 }: RentalTableRowProps) => {
+  
   const cleanTransactionId = rental.transactionId.replace("#", "");
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
@@ -92,15 +95,42 @@ export const RentalTableRow = ({
         </p>
       </td>
 
-      {/* Deposit */}
-      <td className="px-6 py-4">
-        <StatusBadge status={rental.deposit} />
-      </td>
 
-      {/* Payment Status */}
-      <td className="px-6 py-4">
-        <StatusBadge status={rental.paymentStatus} />
-      </td>
+       <td className="px-6 py-4">
+  <Badge 
+    variant={
+      rental.deposit === "held" 
+        ? "success"      
+        : rental.deposit === "pending"
+        ? "warning"
+        : rental.deposit === "waiting"
+        ? "info"
+        : "neutral" 
+    }
+    dot
+  >
+    {rental.deposit}
+  </Badge>
+</td>
+
+<td className="px-6 py-4">
+  <Badge 
+    variant={
+      rental.paymentStatus === "paid" 
+        ? "success"      
+        : rental.paymentStatus === "partial"
+        ? "warning"
+        : rental.paymentStatus === "late" 
+        ? "danger"
+        : rental.paymentStatus === "unpaid"
+        ? "neutral"
+        : "neutral" 
+    }
+    dot
+  >
+    {rental.paymentStatus}
+  </Badge>
+</td>
 
       <td className="py-4 px-6 text-right">
         <Dropdown
