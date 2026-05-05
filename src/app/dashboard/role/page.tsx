@@ -71,7 +71,10 @@ const RolePage = () => {
       />
 
       {/* table */}
-      <RoleTable onDelete={handleDeleteClick} />
+      <RoleTable 
+        onDelete={handleDeleteClick}
+        onExport={handleExport}
+      />
 
       <div className="mt-12 grid grid-cols-12 gap-6">
         {/*banner biru */}
@@ -130,4 +133,5 @@ const RolePage = () => {
     </div>
   );
 };
+
 export default RolePage;

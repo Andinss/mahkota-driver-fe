@@ -15,21 +15,21 @@ const LoginPage = () => {
             Sign In
           </h1>
           <p className="text-gray-700 text-base">
-            Silakan masuk untuk mengelola armada kendaraan.
+            Please sign in to manage your vehicle fleet.
           </p>
         </div>
         <form className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Input
-              label="ID Karyawan / Email"
-              placeholder="ID Karyawan / Email"
+              label="Employee ID / Email"
+              placeholder="Enter your email or employee ID"
             />
           </div>
 
           <div className="flex flex-col gap-2">
             <Input
-              label="Kata Sandi"
-              placeholder="Kata Sandi"
+              label="Password"
+              placeholder="Enter your password"
               type="password"
             />
           </div>
@@ -38,7 +38,7 @@ const LoginPage = () => {
             <label className="flex items-center gap-3 cursor-pointer group">
               <div className="relative flex items-center">
                 <Checkbox
-                  label="Ingat Saya"
+                  label="Remember Me"
                   checked={checked}
                   onChange={(e) => setChecked(e.target.checked)}
                 />
@@ -48,12 +48,12 @@ const LoginPage = () => {
               className="text-sm font-bold text-primary-container hover:text-primary transition-colors"
               href="/auth/forgot"
             >
-              Lupa Kata Sandi?
+              Forgot Password?
             </a>
           </div>
           <Link href="/dashboard">
             <Button icon="login" className="editorial-gradient w-full">
-              Masuk Ke Sistem
+              Sign In
             </Button>
           </Link>
         </form>
@@ -71,7 +71,7 @@ const LoginPage = () => {
             </svg>
 
             <span className="text-sm font-semibold text-on-surface">
-              Lanjutkan dengan Google
+              Continue with Google
             </span>
           </div>
         </Button>

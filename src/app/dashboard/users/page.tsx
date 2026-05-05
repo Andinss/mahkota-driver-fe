@@ -123,8 +123,9 @@ export default function UserList() {
       <SearchBar />
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <UserTable 
-        users={currentUsers} 
-        onDelete={handleDeleteClick}
+          users={currentUsers} 
+          onDelete={handleDeleteClick}
+          onExport={handleExport}
         />
         <UserPagination
           currentPage={currentPage}
@@ -143,7 +144,6 @@ export default function UserList() {
         confirmText="Yes, Delete"
         cancelText="Cancel"
         variant="danger"
-      
       />
 
     {/* Alert Dialog */}

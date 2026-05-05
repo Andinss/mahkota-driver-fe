@@ -15,21 +15,20 @@ const ForgotPasswordPage = () => {
             </span>
           </div>
           <h1 className="text-on-surface text-[2rem] font-black leading-tight tracking-tight mb-4">
-            Lupa Kata Sandi
+            Forgot Password?
           </h1>
           <p className="text-on-surface-variant text-base leading-relaxed max-w-sm">
-            Masukkan email Anda untuk menerima instruksi pengaturan ulang kata
-            sandi.
+            Enter your email to receive password reset instructions.
           </p>
         </div>
 
         <form className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Input label="Email" placeholder="Email" />
+            <Input label="Email" placeholder="Enter your email" />
           </div>
 
           <Button icon="lock_reset" className="editorial-gradient">
-            Kirim Instruksi
+            Send Instructions
           </Button>
         </form>
       </div>
