@@ -5,9 +5,12 @@ export interface DocumentsData {
   contractFile?: File | null;
 }
 
-interface DocumentsFormProps {}
+interface DocumentsFormProps {
+  onDataChange?: (data: { documents?: File[] }) => void;
+}
 
-export function DocumentsForm({}: DocumentsFormProps) {
+
+export function DocumentsForm({onDataChange}: DocumentsFormProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [contractFile, setContractFile] = useState<File | null>(null);
@@ -22,6 +25,11 @@ export function DocumentsForm({}: DocumentsFormProps) {
         setContractPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // onDataChange ketika file diupload
+      if (onDataChange) {
+        onDataChange({ documents: [file] });
+      }
     }
   };
 
@@ -30,6 +38,9 @@ export function DocumentsForm({}: DocumentsFormProps) {
     setContractPreview("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+     if (onDataChange) {
+      onDataChange({ documents: [] });
     }
   };
 

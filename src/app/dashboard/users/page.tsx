@@ -1,11 +1,12 @@
 "use client";
 import { PageHeader } from "@/components/page-header";
+import { AlertDialog } from "@/components/ui/alert";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import SearchBar from "@/components/user/dashboard/search-bar-user";
 import { UserTable } from "@/components/user/dashboard/table-user";
 import { UserPagination } from "@/components/user/dashboard/user-pagination";
-import { useState } from "react";
-import { ExportOptions } from "@/components/ui/export";
+import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const users = [
   {
@@ -48,10 +49,7 @@ const users = [
 ];
 
 export default function UserList() {
-  const handleExport = (options: ExportOptions) => {
-    console.log("Export options from user page:", options);
-    alert(`Exporting user data as ${options.format} with ${options.type} data`);
-  };
+  const searchParams = useSearchParams();
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 2;
@@ -59,6 +57,28 @@ export default function UserList() {
   // State confirm delete
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState<"success" | "error">("success");
+
+  // Tampilkan alert jika ada success param di URL
+    useEffect(() => {
+      const success = searchParams.get("success");
+      const user = searchParams.get("user");
+
+      if (success && user) {
+        const action = success === "updated" ? "Updated" : "Registration";
+        setAlertTitle(`${action} Successsful`);
+        setAlertMessage(`User ${decodeURIComponent(user)} has been ${success} successfully.`);
+        setAlertType("success");
+        setIsAlertOpen(true);
+
+        window.history.replaceState({}, "", "/dashboard/users");
+      }
+      
+    }, [searchParams]);
 
   // Calculate pagination values
   const totalResults = users.length;
@@ -80,10 +100,17 @@ export default function UserList() {
 
   const handleConfirmDelete = () => {
     console.log("Deleted user:", selectedUser);
-     alert(`User ${selectedUser?.name} deleted successfully!`);
     setIsConfirmDeleteOpen(false);
+    setAlertTitle("Delete Succesful");
+    setAlertMessage(`User ${selectedUser?.name} has been deleted successfully`);
+    setAlertType("success");
+    setIsAlertOpen(true);
     setSelectedUser(null);
   };
+
+  const handleAlertClose = () => {
+    setIsAlertOpen(false);
+  }
 
   return (
     <div className="m-8">
@@ -118,6 +145,17 @@ export default function UserList() {
         cancelText="Cancel"
         variant="danger"
       />
+
+    {/* Alert Dialog */}
+    <AlertDialog 
+      isOpen={isAlertOpen}
+      onClose={handleAlertClose}
+      title={alertTitle}
+      message={alertMessage}
+      type={alertType}
+      confirmText="OK"
+    />
+
     </div>
   );
 }

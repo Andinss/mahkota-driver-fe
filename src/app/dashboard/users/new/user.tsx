@@ -79,19 +79,22 @@ export default function AddNewUserPage() {
 
     console.log("User Data:", pendingData);
 
-    if (mode === "edit") {
-      console.log("Updating user:", userIdParam);
-      alert(`User ${pendingData.fullname} updated successfully`);
-    } else {
-      console.log("creating new user");
-      alert(`User ${pendingData.fullname} created successfully`);
-    }
+    // if (mode === "edit") {
+    //   console.log("Updating user:", userIdParam);
+    //   alert(`User ${pendingData.fullname} updated successfully`);
+    // } else {
+    //   console.log("creating new user");
+    //   alert(`User ${pendingData.fullname} created successfully`);
+    // }
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSubmitting(false);
-    window.location.href = "/dashboard/users";
-   };
 
+      const action = mode === "edit" ? "updated" : "registered";
+      const userName = pendingData?.fullname || "New User";
+
+    window.location.href = `/dashboard/users?success=${action}&user=${encodeURIComponent(userName)}`;
+   };
    const handleCancel = () => {
     window.location.href = "/dashboard/users";
    };

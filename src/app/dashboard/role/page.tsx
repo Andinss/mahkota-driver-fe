@@ -4,18 +4,43 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { RoleCard } from "@/components/role/role-list/card";
 import { RoleBanner } from "@/components/role/role-list/role-banner";
 import { RoleTable } from "@/components/role/role-list/role-list-table";
-import { useState } from "react";
-import { ExportOptions } from "@/components/ui/export";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { AlertDialog } from "@/components/ui/alert";
+
+
 
 const RolePage = () => {
 
-  const handleExport = (options: ExportOptions) => {
-    console.log("Export options from role page:", options);
-    alert(`Exporting role data as ${options.format} with ${options.type} data`);
-  };
+  const searchParams = useSearchParams();
 
+  // confirm dialog delete
   const [selectedRole, setSelectedRole] = useState<any>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+
+  // Alert 
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState<"success" | "error">("success");
+
+  // Tampilkan alert jika ada success di param URL
+  useEffect(() => {
+    const success = searchParams.get("success");
+    const role = searchParams.get("role");
+
+    if (success && role) {
+      const action = success === "updated" ? "Update" : "Registration";
+      setAlertTitle(`${action} Successful`);
+      setAlertMessage(`Role ${decodeURIComponent(role)} has been ${success} successfully.`);
+      setAlertType("success");
+      setIsAlertOpen(true);
+
+      // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
+      window.history.replaceState({}, "", "/dashboard/role");
+    }
+
+  }, [searchParams]);
 
   const handleDeleteClick = (role: any) => {
     setSelectedRole(role);
@@ -24,10 +49,17 @@ const RolePage = () => {
 
   const handleConfirmDelete = () => {
     console.log("Deleted role:", selectedRole);
-     alert(`Role ${selectedRole?.name} deleted successfully!`);
     setIsConfirmDeleteOpen(false);
+    setAlertTitle("Delete Successful");
+    setAlertMessage(`Role ${selectedRole?.name} has been deleted successfully`);
+    setAlertType("success");
+    setIsAlertOpen(true);
     setSelectedRole(null);
   };
+
+  const handleAlertClose = () => {
+    setIsAlertOpen(false);
+  }
 
   return (
     <div className="m-8">
@@ -76,7 +108,7 @@ const RolePage = () => {
           />
         </div>
       </div>
-
+      {/* Confirm dialog delete */}
       <ConfirmDialog
       isOpen={isConfirmDeleteOpen}
         onClose={() => setIsConfirmDeleteOpen(false)}
@@ -87,6 +119,17 @@ const RolePage = () => {
         cancelText="Cancel"
         variant="danger"
       />
+
+      {/* Alert Dialog */}
+      <AlertDialog 
+        isOpen={isAlertOpen}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
+        type={alertType}
+        confirmText="OK"
+      />
+
     </div>
   );
 };
