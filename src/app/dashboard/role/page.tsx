@@ -7,10 +7,13 @@ import { RoleTable } from "@/components/role/role-list/role-list-table";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertDialog } from "@/components/ui/alert";
-
-
+import { ExportOptions } from "@/components/ui/export";
 
 const RolePage = () => {
+  const handleExport = (options: ExportOptions) => {
+    console.log("Export options from role page:", options);
+    alert(`Exporting role data as ${options.format} with ${options.type} data`);
+  };
 
   const searchParams = useSearchParams();
 
@@ -18,7 +21,7 @@ const RolePage = () => {
   const [selectedRole, setSelectedRole] = useState<any>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
-  // Alert 
+  // Alert
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
@@ -32,14 +35,15 @@ const RolePage = () => {
     if (success && role) {
       const action = success === "updated" ? "Update" : "Registration";
       setAlertTitle(`${action} Successful`);
-      setAlertMessage(`Role ${decodeURIComponent(role)} has been ${success} successfully.`);
+      setAlertMessage(
+        `Role ${decodeURIComponent(role)} has been ${success} successfully.`,
+      );
       setAlertType("success");
       setIsAlertOpen(true);
 
       // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
       window.history.replaceState({}, "", "/dashboard/role");
     }
-
   }, [searchParams]);
 
   const handleDeleteClick = (role: any) => {
@@ -59,7 +63,7 @@ const RolePage = () => {
 
   const handleAlertClose = () => {
     setIsAlertOpen(false);
-  }
+  };
 
   return (
     <div className="m-8">
@@ -71,10 +75,7 @@ const RolePage = () => {
       />
 
       {/* table */}
-      <RoleTable 
-        onDelete={handleDeleteClick}
-        onExport={handleExport}
-      />
+      <RoleTable onDelete={handleDeleteClick} onExport={handleExport} />
 
       <div className="mt-12 grid grid-cols-12 gap-6">
         {/*banner biru */}
@@ -110,7 +111,7 @@ const RolePage = () => {
       </div>
       {/* Confirm dialog delete */}
       <ConfirmDialog
-      isOpen={isConfirmDeleteOpen}
+        isOpen={isConfirmDeleteOpen}
         onClose={() => setIsConfirmDeleteOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Role"
@@ -121,7 +122,7 @@ const RolePage = () => {
       />
 
       {/* Alert Dialog */}
-      <AlertDialog 
+      <AlertDialog
         isOpen={isAlertOpen}
         onClose={handleAlertClose}
         title={alertTitle}
@@ -129,7 +130,6 @@ const RolePage = () => {
         type={alertType}
         confirmText="OK"
       />
-
     </div>
   );
 };
