@@ -87,6 +87,14 @@ const Sidebar = () => {
     router.push(path);
   };
 
+  const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  e.preventDefault();
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  sessionStorage.clear();
+  router.push("/auth/login");
+};
+
   return (
     <aside
       className={`flex h-screen flex-col justify-between border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 transition-all duration-300 ${
@@ -309,15 +317,13 @@ const Sidebar = () => {
               ? "justify-center w-12 h-12 mx-auto"
               : "gap-3 px-6 py-2.5"
           }`}
-          onClick={(e) => {
-            e.preventDefault();
-          }}
+          onClick={handleLogout}
         >
           <span className="material-symbols-outlined">logout</span>
           {!isCollapsed && (
             <p className="text-sm font-medium leading-normal">Logout</p>
           )}
-        </a>
+      </a>
       </div>
     </aside>
   );
