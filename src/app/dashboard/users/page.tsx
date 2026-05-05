@@ -2,6 +2,7 @@
 import { PageHeader } from "@/components/page-header";
 import { AlertDialog } from "@/components/ui/alert";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ExportOptions } from "@/components/ui/export";
 import SearchBar from "@/components/user/dashboard/search-bar-user";
 import { UserTable } from "@/components/user/dashboard/table-user";
 import { UserPagination } from "@/components/user/dashboard/user-pagination";
@@ -19,7 +20,6 @@ const users = [
       name: "Administrator",
     },
     status: "active" as const,
-    
   },
   {
     id: "2",
@@ -49,6 +49,11 @@ const users = [
 ];
 
 export default function UserList() {
+  const handleExport = (options: ExportOptions) => {
+    console.log("Export options from user page:", options);
+    alert(`Exporting user data as ${options.format} with ${options.type} data`);
+  };
+
   const searchParams = useSearchParams();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,21 +69,22 @@ export default function UserList() {
   const [alertType, setAlertType] = useState<"success" | "error">("success");
 
   // Tampilkan alert jika ada success param di URL
-    useEffect(() => {
-      const success = searchParams.get("success");
-      const user = searchParams.get("user");
+  useEffect(() => {
+    const success = searchParams.get("success");
+    const user = searchParams.get("user");
 
-      if (success && user) {
-        const action = success === "updated" ? "Updated" : "Registration";
-        setAlertTitle(`${action} Successsful`);
-        setAlertMessage(`User ${decodeURIComponent(user)} has been ${success} successfully.`);
-        setAlertType("success");
-        setIsAlertOpen(true);
+    if (success && user) {
+      const action = success === "updated" ? "Updated" : "Registration";
+      setAlertTitle(`${action} Successsful`);
+      setAlertMessage(
+        `User ${decodeURIComponent(user)} has been ${success} successfully.`,
+      );
+      setAlertType("success");
+      setIsAlertOpen(true);
 
-        window.history.replaceState({}, "", "/dashboard/users");
-      }
-      
-    }, [searchParams]);
+      window.history.replaceState({}, "", "/dashboard/users");
+    }
+  }, [searchParams]);
 
   // Calculate pagination values
   const totalResults = users.length;
@@ -110,7 +116,7 @@ export default function UserList() {
 
   const handleAlertClose = () => {
     setIsAlertOpen(false);
-  }
+  };
 
   return (
     <div className="m-8">
@@ -122,8 +128,8 @@ export default function UserList() {
       />
       <SearchBar />
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <UserTable 
-          users={currentUsers} 
+        <UserTable
+          users={currentUsers}
           onDelete={handleDeleteClick}
           onExport={handleExport}
         />
@@ -136,7 +142,7 @@ export default function UserList() {
         />
       </div>
       <ConfirmDialog
-      isOpen={isConfirmDeleteOpen}
+        isOpen={isConfirmDeleteOpen}
         onClose={() => setIsConfirmDeleteOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete User"
@@ -146,16 +152,15 @@ export default function UserList() {
         variant="danger"
       />
 
-    {/* Alert Dialog */}
-    <AlertDialog 
-      isOpen={isAlertOpen}
-      onClose={handleAlertClose}
-      title={alertTitle}
-      message={alertMessage}
-      type={alertType}
-      confirmText="OK"
-    />
-
+      {/* Alert Dialog */}
+      <AlertDialog
+        isOpen={isAlertOpen}
+        onClose={handleAlertClose}
+        title={alertTitle}
+        message={alertMessage}
+        type={alertType}
+        confirmText="OK"
+      />
     </div>
   );
 }
