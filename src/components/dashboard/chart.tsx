@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 import { QuickAction } from "./quick-action";
 import { ChartVisual } from "./chart-visual";
 
 const ChartCard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("Last 30 Days");
+  const router = useRouter();
 
   const stats: Record<string, { count: string; label: string }> = {
   "Last 30 Days": { count: "145", label: "New Users (Last 30 Days)" },
@@ -14,6 +16,22 @@ const ChartCard = () => {
 };
 
 const currentStat = stats[selectedPeriod];
+const handleAddUser = () => {
+  router.push("/dashboard/users/new");
+};
+
+const handleResetPassword = () => {
+  router.push("/auth/reset");
+};
+
+const handleEditRoles = () => {
+  router.push("/dashboard/role");
+};
+
+const handleViewAuditLogs = () => {
+  router.push("/dashboard/audit");
+};
+
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-5">
       {/* Chart Section */}
@@ -63,24 +81,28 @@ const currentStat = stats[selectedPeriod];
               title="Add New User"
               description="Register manually"
               variant="primary"
+              onClick={handleAddUser}
             />
             <QuickAction
               icon="lock_reset"
               title="Reset Password"
               description="Send recovery email"
               variant="amber"
+              onClick={handleResetPassword}
             />
             <QuickAction
               icon="manage_accounts"
               title="Edit Roles"
               description="Manage permissions"
               variant="indigo"
+              onClick={handleEditRoles}
             />
             <QuickAction
               icon="summarize"
               title="View Audit Logs"
               description="Track system changes"
               variant="slate"
+              onClick={handleViewAuditLogs}
             />
           </div>
         </Card>

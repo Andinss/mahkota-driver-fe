@@ -14,15 +14,12 @@ const NotificationPage = () => {
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
-            <span className="text-[0.7rem] font-bold text-blue-600 uppercase tracking-[0.2em] mb-3 block">
-              Communications
-            </span>
             <h2 className="text-4xl font-black text-gray-900 tracking-tight leading-none">
               Notification Center
             </h2>
             <p className="text-gray-600 mt-4 max-w-lg leading-relaxed">
-              Real-time operational alerts and institutional updates for PT XYZ
-              Fleet Management.
+              Real-time operational alerts and institutional updates for PT Mahkota Drive
+              Fleet Rental Management System.
             </p>
           </div>
           <Button icon="done_all">Mark All as Read</Button>

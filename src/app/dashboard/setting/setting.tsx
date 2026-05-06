@@ -18,7 +18,7 @@ const SettingPage = () => {
         <PageHeader
           title="Setting Overview"
           description="Monitor active rentals, handle pending and late payments, and review daily completed transactions."
-          buttonText="Add New Rentals"
+          buttonText="Save Changes"
           buttonHref="/save"
         />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-5">
