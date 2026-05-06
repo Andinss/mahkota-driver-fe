@@ -132,26 +132,20 @@ export function DocumentsForm({
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-primary rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined">description</span>
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-                Step 3: Document Upload
-              </h2>
-              <p className="text-sm text-slate-400">
-                Provide legal identification and permit documents.
-              </p>
-            </div>
+      <div className="px-8 py-6 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center text-primary">
+            <span className="material-symbols-outlined text-2xl">badge</span>
           </div>
-          <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-primary text-xs font-bold rounded-lg uppercase tracking-wider">
-            Draft Auto-saved
-          </span>
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+            Step 3: Document Upload
+          </h2>
         </div>
-
+        <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-primary text-[10px] font-bold rounded-full border border-blue-100 dark:border-blue-800 uppercase tracking-widest">
+          Draft Auto-saved
+        </span>
+      </div>
+      <div className="ms-8 me-8 mb-6 mt-6">
         <form
           id="documentsForm"
           onSubmit={handleSubmit}

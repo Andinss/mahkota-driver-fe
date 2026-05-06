@@ -19,7 +19,7 @@ interface ReviewStepProps {
   onBack: () => void;
   onSaveDraft?: () => void;
   onSubmit: () => void;
-  mode?: "add" | "edit"; 
+  mode?: "add" | "edit";
 }
 
 export function ReviewStep({
@@ -37,31 +37,28 @@ export function ReviewStep({
     // simulasi loading
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-     const driverName = `${data.personal.firstName} ${data.personal.lastName}`;
-     const action = mode === "edit" ? "updated" : "registered";
+    const driverName = `${data.personal.firstName} ${data.personal.lastName}`;
+    const action = mode === "edit" ? "updated" : "registered";
 
-  window.location.href = `/dashboard/driver?success=${action}&driver=${encodeURIComponent(driverName)}`;
+    window.location.href = `/dashboard/driver?success=${action}&driver=${encodeURIComponent(driverName)}`;
   };
 
   return (
     <>
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
         <div className="p-8">
-          <div className="flex items-center justify-between mb-8">
+          <div className="px-8 py-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-primary rounded-xl flex items-center justify-center">
-                <span className="material-symbols-outlined">rate_review</span>
+              <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center text-primary">
+                <span className="material-symbols-outlined text-2xl">
+                  badge
+                </span>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-                  Step 4: Review Registration
-                </h2>
-                <p className="text-sm text-slate-400">
-                  Review all information before finalizing the registration.
-                </p>
-              </div>
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+                Step 4: Review
+              </h2>
             </div>
-            <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-primary text-xs font-bold rounded-lg uppercase tracking-wider">
+            <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-primary text-[10px] font-bold rounded-full border border-blue-100 dark:border-blue-800 uppercase tracking-widest">
               Draft Auto-saved
             </span>
           </div>

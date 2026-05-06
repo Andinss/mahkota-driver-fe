@@ -68,20 +68,18 @@ export function ContactInfoForm({
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-      <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <span className="material-symbols-outlined text-primary">
-              contact_mail
-            </span>
+      <div className="px-8 py-6 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center text-primary">
+            <span className="material-symbols-outlined text-2xl">badge</span>
           </div>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white">
             Step 2: Contact Information
           </h2>
         </div>
-        <div className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg font-medium">
+        <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-primary text-[10px] font-bold rounded-full border border-blue-100 dark:border-blue-800 uppercase tracking-widest">
           Draft Auto-saved
-        </div>
+        </span>
       </div>
 
       <div className="p-8">
