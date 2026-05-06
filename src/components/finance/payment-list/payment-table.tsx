@@ -86,13 +86,15 @@ export function PaymentTable({
         {/* Button Late Payment */}
         <Link
           href="/dashboard/finance/late"
-          className="text-red-600 dark:text-red-400 text-sm font-medium hover:underline transition-colors">
+          className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
+          <span className="material-symbols-outlined text-base">warning</span>
           Late Payment
         </Link>
         {/* Button Export Data */}
         <button
           onClick={() => setIsExportModalOpen(true)}
-          className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline">
+          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300">
+          <span className="material-symbols-outlined text-base">download</span>
           Export Data
         </button>
       </div>

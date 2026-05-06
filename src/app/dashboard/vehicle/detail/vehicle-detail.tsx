@@ -14,6 +14,7 @@ import {
   RentalFilters,
 } from "@/components/vehicle/detail/rental-history-filters";
 import { RentalHistoryTable } from "@/components/vehicle/detail/rental-history-table";
+import { ModalExport, ExportOptions, ExportColumn } from "@/components/ui/export";
 
 const VehicleDetail = () => {
   const [activeTab, setActiveTab] = useState<"information" | "rental">(
@@ -23,6 +24,8 @@ const VehicleDetail = () => {
     dateRange: "",
     driver: "",
   });
+
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Mock data - ini nanti diganti dengan fetch dari API
   const vehicleData: VehicleHeaderData = {
@@ -88,6 +91,15 @@ const VehicleDetail = () => {
     },
   ];
 
+  const rentalHistoryColumns: ExportColumn[] = [
+    { id: "dateRange", label: "Date Range", defaultChecked: true },
+    { id: "tripDuration", label: "Trip Duration", defaultChecked: true },
+    { id: "driverName", label: "Driver Name", defaultChecked: true },
+    { id: "dailyRate", label: "Daily Rate", defaultChecked: true },
+    { id: "totalFee", label: "Total Fee", defaultChecked: true },
+    { id: "status", label: "Status", defaultChecked: true },
+  ];
+
   const handleFilterChange = (filters: RentalFilters) => {
     setCurrentFilters(filters);
     console.log("Filters changed:", filters);
@@ -99,11 +111,13 @@ const VehicleDetail = () => {
   };
 
   const handleExport = () => {
-    console.log("Exporting rental history...");
+    setIsExportModalOpen(true);
   };
 
-  const handleNewRental = () => {
-    console.log("Creating new rental...");
+  const handleExportConfirm = (options: ExportOptions) => {
+    console.log("Export options:", options);
+    alert(`Exporting rental history as ${options.format}`);
+    setIsExportModalOpen(false);
   };
 
   return (
@@ -130,13 +144,22 @@ const VehicleDetail = () => {
                 onFilterChange={handleFilterChange}
                 onClearFilters={handleClearFilters}
                 onExport={handleExport}
-                onNewRental={handleNewRental}
               />
               <RentalHistoryTable rentals={rentalHistory} />
             </div>
           )}
         </div>
       </div>
+
+      <ModalExport
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handleExportConfirm}
+        totalRows={rentalHistory.length}
+        title="Export Rental History"
+        description="Generate rental history reports."
+        columns={rentalHistoryColumns}
+      />
     </div>
   );
 };

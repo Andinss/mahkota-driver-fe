@@ -12,14 +12,12 @@ export interface RentalFilters {
 interface RentalHistoryFiltersProps {
   onClearFilters?: () => void;
   onExport?: () => void;
-  onNewRental?: () => void;
   onFilterChange?: (filters: RentalFilters) => void;
 }
 
 export function RentalHistoryFilters({
   onClearFilters,
   onExport,
-  onNewRental,
   onFilterChange,
 }: RentalHistoryFiltersProps) {
   const [dateRange, setDateRange] = useState("");
@@ -81,10 +79,7 @@ export function RentalHistoryFilters({
       </div>
       <div className="flex items-center gap-3">
         <Button variant="secondary" onClick={onExport} icon="download">
-          Export CSV
-        </Button>
-        <Button variant="primary" onClick={onNewRental} icon="add">
-          New Rental
+          Export Data
         </Button>
       </div>
     </div>

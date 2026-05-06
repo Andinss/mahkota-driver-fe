@@ -328,15 +328,6 @@ export function ModalExport({
             );
           })}
         </div>
-
-        <div className="flex justify-end mt-4 pt-2 border-t border-slate-200 dark:border-slate-700">
-          <button
-            onClick={closeCalendar}
-            className="px-3 py-1 text-sm text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            Cancel
-          </button>
-        </div>
       </div>
     );
   };
@@ -347,7 +338,7 @@ export function ModalExport({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-[2px]">
       {/* Modal Container - dengan max-h dan scroll */}
       <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[90vh]">
-        {/* Modal Header - FIXED */}
+        {/* Modal Header */}
         <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 shrink-0">
           <div>
             <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
@@ -365,7 +356,7 @@ export function ModalExport({
           </button>
         </div>
 
-        {/* Modal Body - SCROLLABLE */}
+        {/* Modal Body */}
         <div className="p-4 space-y-3 overflow-y-auto flex-1">
           {/* Selection Tabs */}
           <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
@@ -532,7 +523,7 @@ export function ModalExport({
           </div>
         </div>
 
-        {/* Modal Footer - FIXED dengan button Cancel yang punya border */}
+        {/* Modal Footer */}
         <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 flex justify-end items-center gap-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
           <button
             onClick={onClose}
