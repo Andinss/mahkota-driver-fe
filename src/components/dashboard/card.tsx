@@ -42,7 +42,7 @@ const DashboardCards = () => {
         title="Total Users"
         value="1,240"
         icon="group"
-        iconColor="text-primary"
+        iconColor="text-blue-500"
         trend={{ value: "12%", direction: "up" }}
       />
       <StatCard
@@ -56,14 +56,14 @@ const DashboardCards = () => {
         title="Pending Approvals"
         value="12"
         icon="pending_actions"
-        iconColor="text-amber-500"
+        iconColor="text-yellow-500"
         trend={{ value: "Requires Action", direction: "neutral" }}
       />
       <StatCard
         title="New Signups Today"
         value="5"
         icon="how_to_reg"
-        iconColor="text-primary"
+        iconColor="text-blue-500"
         trend={{ value: "1%", direction: "up" }}
       />
     </section>
