@@ -78,27 +78,34 @@ export function PaymentTable({
   return (
     <div>
       {/* Table */}
+
       <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
         <h2 className="font-bold text-lg text-slate-900 dark:text-white">
           Finance Dashboard
         </h2>
         <div className="flex items-center gap-3">
-        {/* Button Late Payment */}
-        <Link
-          href="/dashboard/finance/late"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
-          <span className="material-symbols-outlined text-base">warning</span>
-          Late Payment
-        </Link>
-        {/* Button Export Data */}
-        <button
-          onClick={() => setIsExportModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300">
-          <span className="material-symbols-outlined text-base">download</span>
-          Export Data
-        </button>
+          {/* Button Late Payment */}
+          <Link
+            href="/dashboard/finance/late"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+          >
+            <span className="material-symbols-outlined text-base">warning</span>
+            Late Payment
+          </Link>
+          {/* Button Export Data */}
+          <button
+            onClick={() => setIsExportModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
+          >
+            <span className="material-symbols-outlined text-base">
+              download
+            </span>
+            Export Data
+          </button>
+        </div>
       </div>
-      <div>
+
+      <div className="overflow-x-auto ">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
@@ -137,7 +144,7 @@ export function PaymentTable({
         totalRows={payment.length}
         title="Export Payment Data"
         description="Generate payment reports."
-        columns={paymentColumns} 
+        columns={paymentColumns}
       />
     </div>
   );
