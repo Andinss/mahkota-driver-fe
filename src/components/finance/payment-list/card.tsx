@@ -4,10 +4,9 @@ interface PaymentCardProps {
   icon: string;
   iconColor: string;
   trend: {
-    icon: string;
     value: string;
-    trendColor: string;
-    bgColor: string;
+    color: string;
+    icon: string;
   };
 }
 
@@ -19,23 +18,24 @@ export function PaymentCard({
   trend,
 }: PaymentCardProps) {
   return (
-    <div className="bg-surface-light dark:bg-surface-dark rounded-xl p-5 border border-[#dbe0e6] dark:border-gray-700 shadow-sm flex flex-col gap-2 relative overflow-hidden group">
-      <div className="absolute top-0 right-0 p-4">
+    <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        {title}
+      </p>
         <span className={`material-symbols-outlined text-4xl ${iconColor}`}>
           {icon}
         </span>
       </div>
-      <p className="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal">
-        {title}
-      </p>
-      <div className="flex items-end gap-2">
-        <p className="text-[#111418] dark:text-white text-2xl font-bold leading-tight">
+        <p className="text-3xl font-bold dark:text-white">
           {value}
         </p>
-        <span className={`${trend.trendColor} ${trend.bgColor} px-1.5 py-0.5 rounded text-xs font-semibold`}>
-          {trend.value}
-        </span>
-      </div>
+        <p className={`text-xs font-medium ${trend.color} mt-2 flex items-center gap-1`}>
+        <span className="material-symbols-outlined text-sm">
+          {trend.icon}
+        </span>{" "}
+        {trend.value}
+        </p>
     </div>
   );
 }
