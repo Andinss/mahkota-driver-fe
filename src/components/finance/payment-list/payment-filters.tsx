@@ -7,7 +7,7 @@ export const PaymentFilters = () => {
       <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
         <SearchInput
           className="w-full md:max-w-md"
-          placeholder=""
+          placeholder="Search Invoice # or Customer..."
         />
         <div className="flex gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
           <Select
@@ -16,9 +16,7 @@ export const PaymentFilters = () => {
             className="min-w-[140px]"
             defaultValue=""
           >
-            <option value="">All Drivers</option>
-            <option value="available">Internal</option>
-            <option value="rented">Customer</option>
+            <option value="">Date Range</option>
           </Select>
           <Select
             id="filter-type"
@@ -26,10 +24,16 @@ export const PaymentFilters = () => {
             className="min-w-[140px]"
             defaultValue=""
           >
-            <option value="">All Status</option>
-            <option value="sedan">Paid</option>
-            <option value="suv">Pending</option>
-            <option value="truck">Overdue</option>
+            <option value="">Status: All</option>
+          </Select>
+          
+          <Select
+            id="filter-type"
+            label=""
+            className="min-w-[140px]"
+            defaultValue=""
+          >
+            <option value="">Vehicle Type</option>
           </Select>
         </div>
       </div>

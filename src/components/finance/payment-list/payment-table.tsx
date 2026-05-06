@@ -67,8 +67,8 @@ export function PaymentTable({
 
   if (totalResults === 0) {
     return (
-      <div className="bg-surface-light dark:bg-surface-dark border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden p-8 text-center">
-        <p className="text-[#617589] dark:text-gray-400">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 text-center">
+        <p className="text-slate-500 dark:text-slate-400">
           No payment data available
         </p>
       </div>
@@ -96,10 +96,9 @@ export function PaymentTable({
           Export Data
         </button>
       </div>
-      </div>
-      <div className="overflow-x-auto">
+      <div>
         <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-gray-50 dark:bg-gray-800/50 text-[#617589] dark:text-gray-400 font-medium border-b border-[#dbe0e6] dark:border-gray-700">
+          <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
               <th className="px-6 py-4">Invoice ID</th>
               <th className="px-6 py-4">Customer Name</th>
@@ -107,11 +106,11 @@ export function PaymentTable({
               <th className="px-6 py-4">Amount</th>
               <th className="px-6 py-4">Due Date</th>
               <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Method</th>
-              <th className="px-6 py-4 text-right">Actions</th>
+              <th className="px-2 py-4">Method</th>
+              <th className="pe-6 py-4 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#dbe0e6] dark:divide-gray-700">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
             {paginatedPayment.map((item, index) => (
               <PaymentTableRow
                 key={item.invoiceId || index}

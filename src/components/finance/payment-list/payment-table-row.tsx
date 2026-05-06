@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 import Link from "next/link";
 
@@ -7,6 +8,7 @@ interface Payment {
   invoiceId: string;
   customer: {
     name: string;
+    id?: string;
     avatar?: string;
   };
   vehicle: {
@@ -27,20 +29,6 @@ interface PaymentTableRowProps {
   onDelete?: (payment: Payment) => void;
 }
 
-const statusConfig = {
-  Late: {
-    className:
-      "bg-red-100 text-[#e73908] dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900/50",
-  },
-  "Pending Review": {
-    className:
-      "bg-orange-100 text-[#d97706] dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50",
-  },
-  Paid: {
-    className:
-      "bg-green-100 text-[#078838] dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-900/50",
-  },
-};
 
 export const PaymentTableRow = ({
   payment,
@@ -56,33 +44,38 @@ export const PaymentTableRow = ({
 
   return (
     <tr
-      className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group ${
-        isPending
-          ? "bg-primary/[0.02] dark:bg-primary/[0.05] border-l-2 border-l-primary"
-          : ""
-      }`}
-    >
+      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
       <td className="px-6 py-4 font-medium text-[#111418] dark:text-white">
         {payment.invoiceId}
       </td>
 
-      <td className="px-6 py-4 text-[#111418] dark:text-gray-300">
-        <div className="flex items-center gap-2">
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-3">
           <div
-            className="w-6 h-6 rounded-full bg-cover bg-center bg-slate-200 dark:bg-slate-700"
-            style={
-              payment.customer.avatar
-                ? { backgroundImage: `url("${payment.customer.avatar}")` }
-                : {}
-            }
-          >
-            {!payment.customer.avatar && (
-              <div className="w-full h-full flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-300">
+            className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
+              {payment.customer.avatar ? (
+              <img
+                alt={payment.customer.name}
+                src={payment.customer.avatar}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+
+              <div className="w-full h-full flex items-center justify-center bg-slate-300 dark:bg-slate-600 text-xs font-medium">
                 {payment.customer.name.charAt(0)}
               </div>
             )}
           </div>
+          <div>
+          <p className="font-semibold text-slate-900 dark:text-white">
           {payment.customer.name}
+          </p>
+          {payment.customer.id && (
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+                ID: {payment.customer.id}
+              </p>
+            )}
+        </div>
         </div>
       </td>
 
@@ -101,15 +94,21 @@ export const PaymentTableRow = ({
       </td>
 
       <td className="px-6 py-4">
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig[payment.status].className}`}
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-          {payment.status}
-        </span>
-      </td>
+  <Badge 
+    variant={
+      payment.status === "Late" 
+        ? "danger"     
+        : payment.status === "Pending Review" 
+          ? "warning" 
+          : "success"
+    }
+    dot
+  >
+    {payment.status}
+  </Badge>
+</td>
 
-      <td className="px-6 py-4 text-[#617589] dark:text-gray-400">
+      <td className="px-2 py-4 text-[#617589] dark:text-gray-400">
         {payment.method}
       </td>
 

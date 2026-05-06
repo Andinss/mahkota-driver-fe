@@ -18,8 +18,8 @@ interface Rental {
     end: string;
     duration: number;
   };
-  deposit: string;
-  paymentStatus: string;
+  deposit: string;        
+  paymentStatus: string; 
 }
 
 interface RentalTableProps {
