@@ -1,0 +1,87 @@
+import { ExportColumn, ModalExport } from "@/components/ui/export";
+import { useState } from "react";
+import { AuditTableRow } from "./audit-table-row";
+
+interface AuditLog {
+  id: number;
+  timestamp: {
+    date: string;
+    time: string;
+  };
+  user: {
+    name: string;
+    role: string;
+    avatar?: string | null;
+    isSystem?: boolean;
+  };
+  action: string;
+  target: string;
+  status: "success" | "failed" | "pending";
+}
+
+interface AuditTableProps {
+  logs: AuditLog[];
+  onExport?: (options?: any) => void;
+}
+
+const auditColumns: ExportColumn[] = [
+  { id: "timestamp", label: "Timestamp", defaultChecked: true },
+  { id: "user", label: "User", defaultChecked: true },
+  { id: "action", label: "Action", defaultChecked: true },
+  { id: "target", label: "Target", defaultChecked: true },
+  { id: "status", label: "Status", defaultChecked: true },
+];
+
+export const AuditLogTable = ({ logs, onExport }: AuditTableProps) => {
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  return (
+    <div>
+      <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+        <h2 className="font-bold text-lg text-slate-900 dark:text-white">
+          Audit Logs Entries
+        </h2>
+        <button
+          onClick={() => setIsExportModalOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
+        >
+          <span className="material-symbols-outlined text-base">download</span>
+          Export
+        </button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
+            <tr>
+              <th className="px-6 py-4">Timestamp</th>
+              <th className="px-6 py-4">User</th>
+              <th className="px-6 py-4">Action</th>
+              <th className="px-6 py-4">Target</th>
+              <th className="px-6 py-4 text-center">Status</th>
+              <th className="px-6 py-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+            {logs.map((log) => (
+              <AuditTableRow key={log.id} log={log} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <ModalExport
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={(options) => {
+          setIsExportModalOpen(false);
+          onExport?.(options);
+        }}
+        totalRows={logs.length}
+        title="Export Audit Logs"
+        description="Generate audit log reports."
+        columns={auditColumns}
+      />
+    </div>
+  );
+};

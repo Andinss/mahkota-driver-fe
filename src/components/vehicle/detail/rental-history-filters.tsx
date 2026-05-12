@@ -79,7 +79,7 @@ export function RentalHistoryFilters({
       </div>
       <div className="flex items-center gap-3">
         <Button variant="secondary" onClick={onExport} icon="download">
-          Export Data
+          Export
         </Button>
       </div>
     </div>

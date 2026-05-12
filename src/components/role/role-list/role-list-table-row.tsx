@@ -19,7 +19,6 @@ interface RoleTableRowProps {
   role: Role;
   onEdit?: (role: Role) => void;
   onDelete?: (role: Role) => void;
-  onDetails?: (role: Role) => void;
 }
 
 function PermissionCell({ level }: { level: PermissionLevel }) {
@@ -52,7 +51,6 @@ export const RoleTableRow = ({
   role,
   onEdit,
   onDelete,
-  onDetails,
 }: RoleTableRowProps) => {
   const permissions: { label: string; value: PermissionLevel }[] = [
     { label: "viewDashboards",   value: role.viewDashboards   },
@@ -97,9 +95,6 @@ export const RoleTableRow = ({
           </Link>
           <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(role)}>
             Delete
-          </DropdownMenuItem>
-          <DropdownMenuItem icon="visibility" onClick={() => onDetails?.(role)}>
-            Details
           </DropdownMenuItem>
         </Dropdown>
       </td>
