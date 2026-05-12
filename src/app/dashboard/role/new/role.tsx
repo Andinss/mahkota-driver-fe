@@ -269,15 +269,6 @@ const RoleFormPage = () => {
 
   return (
     <div className="m-8">
-      <PageHeader
-        title={mode === "add" ? "Create New Role" : "Edit Role"}
-        description={mode === "add" 
-          ? "Define a new role and configure its permissions."
-          : "Update role information and permissions."}
-        buttonText="Back to Roles"
-        buttonHref="/dashboard/role"
-      />
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-5">
         <div className="lg:col-span-8 space-y-6">
           <GeneralInformation 

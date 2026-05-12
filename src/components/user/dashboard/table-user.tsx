@@ -58,7 +58,7 @@ export const UserTable = ({
           onClick={() => setIsExportModalOpen(true)}
           className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300">
           <span className="material-symbols-outlined text-base">download</span>
-          Export Data
+          Export
         </button>
       </div>
 

@@ -29,7 +29,7 @@ const handleEditRoles = () => {
 };
 
 const handleViewAuditLogs = () => {
-  router.push("/dashboard/audit");
+  router.push("/dashboard/audit-logs");
 };
 
   return (

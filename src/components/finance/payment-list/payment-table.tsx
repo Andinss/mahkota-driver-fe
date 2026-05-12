@@ -81,7 +81,7 @@ export function PaymentTable({
 
       <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
         <h2 className="font-bold text-lg text-slate-900 dark:text-white">
-          Finance Dashboard
+          Finance Management
         </h2>
         <div className="flex items-center gap-3">
           {/* Button Late Payment */}
@@ -100,7 +100,7 @@ export function PaymentTable({
             <span className="material-symbols-outlined text-base">
               download
             </span>
-            Export Data
+            Export
           </button>
         </div>
       </div>
