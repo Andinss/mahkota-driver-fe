@@ -1,3 +1,6 @@
+import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
+import Link from "next/link";
+
 type RentalStatus = "PAID" | "LATE" | "PENDING";
 
 interface RentalRecord {
@@ -106,9 +109,21 @@ export function RentalHistoryTable({ rentals }: RentalHistoryTableProps) {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right">
-                  <button className="material-symbols-outlined text-slate-300 hover:text-primary transition-colors p-1">
-                    more_horiz
-                  </button>
+                  <Dropdown
+                    trigger={
+                      <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
+                        <span className="material-symbols-outlined text-[20px]">
+                          more_vert
+                        </span>
+                      </button>
+                    }
+                  >
+                    <Link href={`/dashboard/rent/detail/`}>
+                      <DropdownMenuItem icon="visibility">
+                        Details
+                      </DropdownMenuItem>
+                    </Link>
+                  </Dropdown>
                 </td>
               </tr>
             );
