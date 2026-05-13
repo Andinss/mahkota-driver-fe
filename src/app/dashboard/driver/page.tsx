@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Suspense } from "react";
 import { DriverStatsCard } from "@/components/driver/dashboard/driver-stats-card";
 import {
   DriverTableFilters,
@@ -10,7 +11,6 @@ import { DriverTable } from "@/components/driver/dashboard/driver-table";
 import { DriverPagination } from "@/components/driver/dashboard/driver-pagination";
 import { Driver } from "@/components/driver/dashboard/driver-table-row";
 import { PageHeader } from "@/components/page-header";
-import { SearchFilters } from "@/components/search-filters";
 
 // Mock data
 const mockDrivers: Driver[] = [
@@ -183,7 +183,12 @@ export default function DriverPage() {
         />
       </div>
 
-      <SearchFilters />
+       <Suspense fallback={<div className="rounded-xl border p-4 text-center">Loading filters...</div>}>
+        <DriverTableFilters 
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+      </Suspense>
       <div className="bg-white mt-5 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <DriverTable
           drivers={currentDrivers}

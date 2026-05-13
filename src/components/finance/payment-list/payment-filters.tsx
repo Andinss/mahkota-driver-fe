@@ -17,6 +17,10 @@ export const PaymentFilters = () => {
             defaultValue=""
           >
             <option value="">Date Range</option>
+            <option value="today">Today</option>        
+            <option value="this_week">This Week</option>
+            <option value="this_month">This Month</option> 
+            <option value="last_month">Last Month</option>
           </Select>
           <Select
             id="filter-type"
@@ -25,6 +29,9 @@ export const PaymentFilters = () => {
             defaultValue=""
           >
             <option value="">Status: All</option>
+            <option value="paid">Paid</option>
+            <option value="pending_review">Pending Review</option>
+            <option value="late">Late</option> 
           </Select>
           
           <Select
@@ -34,6 +41,10 @@ export const PaymentFilters = () => {
             defaultValue=""
           >
             <option value="">Vehicle Type</option>
+            <option value="sedan">Sedan</option>
+            <option value="suv">SUV</option>
+            <option value="truck">Truck</option>
+            <option value="minivan">Minivan</option>
           </Select>
         </div>
       </div>

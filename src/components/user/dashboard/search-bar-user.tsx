@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Select } from "@/components/ui/select";
 import Link from "next/link";
 
@@ -12,7 +12,8 @@ const SearchBar = () => {
             Search Users
           </p>
           <div className="relative">
-            <Input
+            <SearchInput
+              className="w-full md:max-w-md"
               placeholder="Search by name, email, or ID..."
               defaultValue=""
             />
