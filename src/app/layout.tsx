@@ -11,6 +11,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Mahkota Drive",
   description: "Fleet Rental Management System",
+  icons: {
+    icon: "/logo.ico",
+  },
 };
 
 export default function RootLayout({

@@ -1,5 +1,10 @@
 "use client";
 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+
 interface CardDetailProps {
   driverId: string;
   name: string;
@@ -39,8 +44,32 @@ export function CardDetail({
   onApprove,
   onViewProfile,
 }: CardDetailProps) {
+  const [showRejectConfirm, setShowRejectConfirm] = useState(false);
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+
   return (
-    <div className="flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
+    <>
+      <ConfirmDialog
+        isOpen={showRejectConfirm}
+        onClose={() => setShowRejectConfirm(false)}
+        onConfirm={onReject ?? (() => {})}
+        title="Reject Request?"
+        message="This action cannot be undone. The driver will be notified of the rejection."
+        confirmText="Yes, Reject"
+        cancelText="Cancel"
+        variant="danger"
+      />
+      <ConfirmDialog
+        isOpen={showApproveConfirm}
+        onClose={() => setShowApproveConfirm(false)}
+        onConfirm={onApprove ?? (() => {})}
+        title="Approve Request?"
+        message="This will mark the late payment as resolved. A confirmation will be sent to the driver."
+        confirmText="Yes, Approve"
+        cancelText="Cancel"
+        variant="info"
+      />
+      <div className="flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
       {/* Detail Header */}
       <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
         <div className="flex items-center gap-4">
@@ -50,7 +79,9 @@ export function CardDetail({
             src={imageUrl}
           />
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{name}</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              {name}
+            </h2>
             <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
               <span className="material-icons-round text-lg">badge</span>
               <span>Driver ID: {driverId}</span>
@@ -63,7 +94,9 @@ export function CardDetail({
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
             Review Required
           </span>
-          <p className="text-[11px] text-slate-400 mt-1">Submitted {submittedTime}</p>
+          <p className="text-[11px] text-slate-400 mt-1">
+            Submitted {submittedTime}
+          </p>
         </div>
       </div>
 
@@ -72,27 +105,45 @@ export function CardDetail({
         {/* Transaction Info Grid */}
         <div className="mb-8">
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span className="material-icons-round text-primary text-lg">receipt_long</span>
+            <span className="material-icons-round text-primary text-lg">
+              receipt_long
+            </span>
             Transaction Details
           </h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">Vehicle</p>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">{vehicle}</p>
+              <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+                Vehicle
+              </p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">
+                {vehicle}
+              </p>
               <p className="text-[11px] text-slate-400">{plate}</p>
             </div>
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">Due Date</p>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">{dueDate}</p>
+              <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+                Due Date
+              </p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">
+                {dueDate}
+              </p>
               <p className="text-[11px] text-slate-400">14:00 PM</p>
             </div>
             <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20">
-              <p className="text-[11px] text-rose-600 dark:text-rose-400 uppercase font-bold tracking-tight mb-1">Payment Date</p>
-              <p className="text-sm font-bold text-rose-700 dark:text-rose-300">{paymentDate}</p>
-              <p className="text-[11px] text-rose-500 font-medium">+2 Days Late</p>
+              <p className="text-[11px] text-rose-600 dark:text-rose-400 uppercase font-bold tracking-tight mb-1">
+                Payment Date
+              </p>
+              <p className="text-sm font-bold text-rose-700 dark:text-rose-300">
+                {paymentDate}
+              </p>
+              <p className="text-[11px] text-rose-500 font-medium">
+                +2 Days Late
+              </p>
             </div>
             <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
-              <p className="text-[11px] text-primary uppercase font-bold tracking-tight mb-1">Total Amount</p>
+              <p className="text-[11px] text-primary uppercase font-bold tracking-tight mb-1">
+                Total Amount
+              </p>
               <p className="text-lg font-black text-primary">{amount}</p>
             </div>
           </div>
@@ -102,7 +153,9 @@ export function CardDetail({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="material-icons-round text-primary text-lg">chat_bubble_outline</span>
+              <span className="material-icons-round text-primary text-lg">
+                chat_bubble_outline
+              </span>
               Driver Justification
             </h4>
             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-100 dark:border-slate-800">
@@ -116,7 +169,9 @@ export function CardDetail({
           </div>
           <div>
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="material-icons-round text-primary text-lg">image</span>
+              <span className="material-icons-round text-primary text-lg">
+                image
+              </span>
               Proof of Issue
             </h4>
             <div className="group relative bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 h-48 w-full overflow-hidden flex items-center justify-center cursor-zoom-in">
@@ -126,7 +181,8 @@ export function CardDetail({
               ></div>
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
               <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1">
-                <span className="material-icons-round text-sm">visibility</span> Click to view
+                <span className="material-icons-round text-sm">visibility</span>{" "}
+                Click to view
               </div>
             </div>
           </div>
@@ -136,7 +192,9 @@ export function CardDetail({
         <div>
           <div className="flex justify-between items-center mb-4">
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <span className="material-icons-round text-primary text-lg">history</span>
+              <span className="material-icons-round text-primary text-lg">
+                history
+              </span>
               Recent History
             </h4>
             <button
@@ -158,52 +216,57 @@ export function CardDetail({
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 <tr className="bg-white dark:bg-slate-900">
-                  <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">Sep 01, 2023</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">Vehicle Return</td>
-                  <td className="px-4 py-3"><span className="text-emerald-500 font-bold">On Time</span></td>
-                  <td className="px-4 py-3 text-right text-slate-900 dark:text-white">{amount}</td>
+                  <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">
+                    Sep 01, 2023
+                  </td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    Vehicle Return
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-emerald-500 font-bold">On Time</span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-slate-900 dark:text-white">
+                    {amount}
+                  </td>
                 </tr>
                 <tr className="bg-white dark:bg-slate-900">
-                  <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">Aug 15, 2023</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">Vehicle Return</td>
-                  <td className="px-4 py-3"><span className="text-emerald-500 font-bold">On Time</span></td>
-                  <td className="px-4 py-3 text-right text-slate-900 dark:text-white">{amount}</td>
+                  <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">
+                    Aug 15, 2023
+                  </td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    Vehicle Return
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-emerald-500 font-bold">On Time</span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-slate-900 dark:text-white">
+                    {amount}
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
-
       {/* Detail Footer Actions */}
       <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col gap-4">
         <div>
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-            Note for Driver (Optional)
-          </label>
-          <input
-            className="w-full rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary shadow-sm"
+          <Input
+            label="Note for Driver (Optional)"
             placeholder="e.g., Waiving fee due to system outage verified..."
           />
         </div>
         <div className="flex items-center justify-end gap-3">
-          <button
-            className="px-6 py-2.5 rounded-lg border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-sm hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center gap-2"
-            onClick={onReject}
-          >
-            <span className="material-icons-round text-lg">close</span>
+          <Button icon="close" onClick={() => setShowRejectConfirm(true)}>
             Reject
-          </button>
-          <button
-            className="px-6 py-2.5 rounded-lg bg-primary text-white font-bold text-sm shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-2"
-            onClick={onApprove}
-          >
-            <span className="material-icons-round text-lg">check</span>
+          </Button>
+          <Button icon="check" onClick={() => setShowApproveConfirm(true)}>
             Approve Request
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
