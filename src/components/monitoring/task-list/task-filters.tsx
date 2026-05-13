@@ -17,9 +17,9 @@ export const TaskFilters = () => {
             defaultValue=""
           >
             <option value="">All Task</option>
-            <option>Retrievals</option>
-            <option>Maintenance</option>
-            <option>Completed</option>
+            <option value="Retrievals">Retrievals</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Completed">Completed</option>
           </Select> 
           <Select
             id="task-filters"
@@ -28,9 +28,10 @@ export const TaskFilters = () => {
             defaultValue=""
           >
             <option value="">All Status</option>
-            <option>Pending</option>
-            <option>In Progress</option>
-            <option>Completed</option>
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Scheduled">Scheduled</option>
           </Select>
         </div>
       </div>

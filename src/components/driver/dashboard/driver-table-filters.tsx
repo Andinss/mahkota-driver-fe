@@ -1,6 +1,7 @@
-import { Input } from "@/components/ui/input";
+
 import { Select } from "@/components/ui/select";
 import { IconButton } from "@/components/ui/icon-button";
+import { SearchInput } from "@/components/ui/search-input";
 
 export interface DriverFilters {
   search: string;
@@ -18,9 +19,10 @@ export function DriverTableFilters({
   onFilterChange,
 }: DriverTableFiltersProps) {
   return (
-    <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center">
-      <div className="relative w-full md:w-96">
-        <Input
+    <div className="rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] bg-white dark:bg-[#1a2632] p-4 shadow-sm">
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+        <SearchInput
+          className="w-full md:max-w-md"
           id="driverSearch"
           name="driverSearch"
           placeholder="Search by name, ID, or phone..."
@@ -28,39 +30,37 @@ export function DriverTableFilters({
           onChange={(e) =>
             onFilterChange({ ...filters, search: e.target.value })
           }
-          className="pl-10"
         />
-        <span className="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl leading-none pointer-events-none">
-          search
-        </span>
-      </div>
-      <div className="flex gap-3 w-full md:w-auto">
+      <div className="flex gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
         <Select
           id="performance"
           name="performance"
+          className="min-w-[140px]"
           value={filters.performance}
           onChange={(e) =>
             onFilterChange({ ...filters, performance: e.target.value })
           }
         >
-          <option>Performance: All</option>
-          <option>Top Performer</option>
-          <option>Average</option>
-          <option>Needs Improvement</option>
+          <option value="">Performance: All</option>
+          <option value="Top Performer">Top Performer</option>
+          <option value="Average">Average</option>
+          <option value="Needs Improvement">Needs Improvement</option>
         </Select>
         <Select
           id="status"
           name="status"
+          className="min-w-[140px]"
           value={filters.status}
           onChange={(e) =>
             onFilterChange({ ...filters, status: e.target.value })
           }
         >
-          <option>All Statuses</option>
-          <option>Active</option>
-          <option>On Leave</option>
-          <option>Inactive</option>
+          <option value="">All Statuses</option>
+          <option value="Active">Active</option>
+          <option value="On Leave">On Leave</option>
+          <option value="Inactive">Inactive</option>
         </Select>
+      </div>
       </div>
     </div>
   );
