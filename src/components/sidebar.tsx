@@ -285,6 +285,31 @@ const Sidebar = () => {
 
           <a
             ref={(el) => {
+              menuRefs.current["/dashboard/monitoring"] = el;
+            }}
+            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
+              activeMenu === "/dashboard/monitoring"
+                ? "text-primary"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            } ${
+              isCollapsed
+                ? "justify-center w-12 h-12 mx-auto"
+                : "gap-3 px-3 py-2.5"
+            }`}
+            onClick={(e) => handleMenuClick("/dashboard/monitoring", e)}
+          >
+            <span className="material-symbols-outlined transition-colors">
+              monitoring
+            </span>
+            {!isCollapsed && (
+              <p className="text-sm font-medium leading-normal">
+                Monitoring
+              </p>
+            )}
+          </a>
+
+          <a
+            ref={(el) => {
               menuRefs.current["/dashboard/setting"] = el;
             }}
             className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
