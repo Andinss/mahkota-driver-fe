@@ -108,44 +108,25 @@ export const TaskTableRow = ({
       </td>
 
       {/* Actions */}
-      <td className="px-6 py-4 text-right">
-        {isInProgress ? (
-          <div className="flex justify-end gap-2">
-            <button
-              onClick={() => onViewMap?.(task)}
-              className="text-primary hover:text-blue-700 font-medium text-sm px-3 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-            >
-              View Map
-            </button>
-            <button
-              onClick={() => onComplete?.(task)}
-              className="bg-primary text-white font-medium text-sm px-3 py-1 rounded hover:bg-blue-600 transition-colors shadow-sm"
-            >
-              Complete
-            </button>
-          </div>
-        ) : (
-          <Dropdown
-            trigger={
-              <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
-                <span className="material-symbols-outlined text-[20px]">
-                  more_vert
-                </span>
-              </button>
-            }
-          >
-            <DropdownMenuItem icon="edit" onClick={() => onEdit?.(task)}>
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(task)}>
-              Delete
-            </DropdownMenuItem>
-            <DropdownMenuItem icon="visibility" onClick={() => onDetails?.(task)}>
-              Details
-            </DropdownMenuItem>
-          </Dropdown>
-        )}
-      </td>
+     <td className="px-6 py-4 text-right">
+  <Dropdown
+    trigger={
+      <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
+        <span className="material-symbols-outlined text-[20px]">more_vert</span>
+      </button>
+    }
+  >
+    <DropdownMenuItem icon="location_on" onClick={() => onViewMap?.(task)}>
+      View Map
+    </DropdownMenuItem>
+    <DropdownMenuItem icon="check_circle"  onClick={() => onComplete?.(task)}>
+      Complete
+    </DropdownMenuItem>
+    <DropdownMenuItem icon="visibility" onClick={() => onDetails?.(task)}>
+      Details
+    </DropdownMenuItem>
+  </Dropdown>
+</td>
     </tr>
   );
 };
