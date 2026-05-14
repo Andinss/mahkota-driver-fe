@@ -9,6 +9,7 @@ import { TaskTable } from "@/components/monitoring/task-list/task-table";
 import { useRouter } from "next/navigation";
 import { Task } from "@/components/monitoring/task-list/task-table-row";
 import { TaskPagination } from "@/components/monitoring/task-list/task-pagination";
+import { AlertDialog } from "@/components/ui/alert";
 
 // All tasks data 
 const allTasks: Task[] = [
@@ -82,6 +83,13 @@ const allTasks: Task[] = [
 
 export default function TaskList() {
    const router = useRouter();
+
+   // Alert state
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState<"success" | "error">("success");
+
   //  PAGINATION STATE 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
@@ -106,11 +114,15 @@ export default function TaskList() {
   };
 
   const handleViewMap = (task: Task) => {
-    console.log("View Map:", task);
+    router.push(`/dashboard/monitoring/real-time`)
   };
 
-  const handleComplete = (task: Task) => {
+   const handleComplete = (task: Task) => {
     console.log("Complete:", task);
+    setAlertTitle("Task Completed");
+    setAlertMessage(`Successfully completed retrieval for ${task.vehicleInfo.name} (${task.vehicleInfo.plate})`);
+    setAlertType("success");
+    setIsAlertOpen(true);
   };
 
   const handleEdit = (task: Task) => {
@@ -193,6 +205,15 @@ export default function TaskList() {
           onPageChange={handlePageChange}
         />
       </div>
+      <AlertDialog
+        isOpen={isAlertOpen}
+        onClose={() => setIsAlertOpen(false)}
+        title={alertTitle}
+        message={alertMessage}
+        type={alertType}
+        confirmText="OK"
+        autoCloseDelay={3000}
+      />
     </div>
   );
 }
