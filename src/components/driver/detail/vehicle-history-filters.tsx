@@ -1,6 +1,20 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { IconButton } from "@/components/ui/icon-button";
+import { Button } from "@/components/ui/button";
+import { ModalExport, ExportColumn } from "@/components/ui/export";
+
+const vehicleHistoryColumns: ExportColumn[] = [
+  { id: "vehicleName", label: "Vehicle Name", defaultChecked: true },
+  { id: "plateNumber", label: "Plate Number", defaultChecked: true },
+  { id: "period", label: "Period", defaultChecked: true },
+  { id: "totalDistance", label: "Total Distance", defaultChecked: true },
+  { id: "fuelEfficiency", label: "Fuel Efficiency", defaultChecked: true },
+  { id: "maintenance", label: "Maintenance", defaultChecked: true },
+  { id: "status", label: "Status", defaultChecked: true },
+];
+
 
 export interface VehicleHistoryFilters {
   search: string;
@@ -9,13 +23,27 @@ export interface VehicleHistoryFilters {
 
 interface VehicleHistoryFiltersProps {
   filters: VehicleHistoryFilters;
+  onExport?: (options?: any) => void;
   onFilterChange: (filters: VehicleHistoryFilters) => void;
+  totalRows?: number;
 }
 
 export function VehicleHistoryFilters({
   filters,
+  onExport,
   onFilterChange,
+  totalRows = 0,
 }: VehicleHistoryFiltersProps) {
+   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+   const handleExportClick = () => {
+    setIsExportModalOpen(true);
+  };
+
+  const handleConfirmExport = (options?: any) => {
+    setIsExportModalOpen(false);
+    onExport?.(options);
+  };
   return (
     <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
       <div className="relative w-full md:w-96">
@@ -48,6 +76,24 @@ export function VehicleHistoryFilters({
           <option>Previous</option>
         </Select>
       </div>
+      <div className="flex items-center gap-3">
+               <Button 
+            variant="secondary" 
+            onClick={handleExportClick}  
+            icon="download"
+          >
+            Export
+          </Button>
+            </div>
+            <ModalExport
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handleConfirmExport}
+        totalRows={totalRows}  // ← Ganti dengan total data
+        title="Export Vehicle History"
+        description="Generate vehicle history reports."
+        columns={vehicleHistoryColumns}
+      />
     </div>
   );
 }

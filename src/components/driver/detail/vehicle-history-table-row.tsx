@@ -1,4 +1,5 @@
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
+import Link from "next/link";
 
 export type VehicleStatus = "Current" | "Previous";
 
@@ -106,7 +107,14 @@ export function VehicleHistoryTableRow({ vehicle }: VehicleHistoryTableRowProps)
             </button>
           }
         >
+          {/* <Link>
           <DropdownMenuItem icon="visibility">View Details</DropdownMenuItem>
+          </Link> */}
+          <Link href={`/dashboard/vehicle/detail/`}>
+                      <DropdownMenuItem icon="visibility">
+                        View Details
+                      </DropdownMenuItem>
+                    </Link>
           <DropdownMenuItem icon="download">Download Report</DropdownMenuItem>
         </Dropdown>
       </td>
