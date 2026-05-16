@@ -113,8 +113,9 @@ const Summary = ({
         </div>
         <div className="mt-6 flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-100 dark:border-amber-900/40">
           <span className="material-symbols-outlined text-amber-500 text-lg">
-            info
+            info 
           </span>
+          Make sure your deposit is not minus
         </div>
       </div>
     </aside>
