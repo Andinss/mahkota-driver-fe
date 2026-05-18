@@ -88,8 +88,39 @@ const DriverDetailPage = () => {
     status: "All Status",
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+   // Filter vehicles based on search and status
+  const filteredVehicles = mockVehicles.filter((vehicle) => {
+    const matchesSearch = filters.search === "" || 
+      vehicle.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      vehicle.plateNumber.toLowerCase().includes(filters.search.toLowerCase());
+    const matchesStatus = filters.status === "All Status" || 
+      vehicle.status.toLowerCase() === filters.status.toLowerCase();
+    return matchesSearch && matchesStatus;
+  });
+
+  // Pagination
+  const totalResults = filteredVehicles.length;
+  const totalPages = Math.ceil(totalResults / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentVehicles = filteredVehicles.slice(startIndex, endIndex);
+
   const handleFilterChange = (newFilters: FilterType) => {
     setFilters(newFilters);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+   const handleExport = (options?: any) => {
+    if (!options) return;
+    console.log("Export options from driver detail:", options);
+    alert(`Exporting vehicle history as ${options.format} with ${options.type} data`);
   };
 
   return (
@@ -144,10 +175,12 @@ const DriverDetailPage = () => {
           <VehicleHistoryFilters
             filters={filters}
             onFilterChange={handleFilterChange}
+            onExport={handleExport}
+            totalRows={totalResults}
           />
-          <VehicleHistoryTable vehicles={mockVehicles} />
+          <VehicleHistoryTable vehicles={currentVehicles} />
           <VehicleHistoryPagination
-            totalVehicles={mockVehicles.length}
+            totalVehicles={totalResults}
             currentPage={1}
           />
         </div>

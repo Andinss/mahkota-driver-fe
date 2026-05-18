@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { AlertDialog } from "@/components/ui/alert";
 
 export interface UserFormData {
   fullname: string;
@@ -40,6 +41,9 @@ export function AddUserForm({
   const [avatar, setAvatar] = useState<string>(initialData?.avatar || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [isDraftAlertOpen, setIsDraftAlertOpen] = useState(false);
+
+
   // Sync ketika initialData berubah (mode edit)
   useEffect(() => {
     if (initialData) {
@@ -67,6 +71,26 @@ export function AddUserForm({
     };
 
     onSubmit?.(data);
+  };
+
+  const handleSaveDraft = () => {
+    const draftData: UserFormData = {
+      fullname: formValues.fullname,
+      email: formValues.email,
+      phone: formValues.phone,
+      role: formValues.role,
+      isActive: isActive,
+      avatar: avatar,
+    };
+
+     // Simpan ke localStorage
+    localStorage.setItem("user_draft", JSON.stringify(draftData));
+    setIsDraftAlertOpen(true);
+    onSaveDraft?.();
+  };
+
+  const handleDraftAlertClose = () => {
+    setIsDraftAlertOpen(false);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -343,7 +367,7 @@ export function AddUserForm({
                 <button
                   type="button"
                   className="px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
-                  onClick={onSaveDraft}
+                  onClick={handleSaveDraft}
                   disabled={isSubmitting}
                 >
                   Save Draft
@@ -363,6 +387,15 @@ export function AddUserForm({
           </form>
         </div>
       </div>
+       <AlertDialog
+        isOpen={isDraftAlertOpen}
+        onClose={handleDraftAlertClose}
+        title="Draft Saved Successfully"
+        message="Your user data has been saved as draft. You can continue later."
+        type="success"
+        confirmText="OK"
+        autoCloseDelay={3000}
+      />
     </div>
   );
 }   
