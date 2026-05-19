@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
 
@@ -10,6 +10,13 @@ export interface DocumentsData {
   ktpFront?: File;
   npwpFront?: File;
   houseGaragePhoto?: File;
+}
+
+interface FormErrors {
+  simFront?: string;
+  simExpiry?: string;
+  ktpFront?: string;
+  npwpFront?: string;
 }
 
 interface DocumentsFormProps {
@@ -27,16 +34,24 @@ export function DocumentsForm({
   const [ktpFile, setKtpFile] = useState<File | undefined>();
   const [npwpFile, setNpwpFile] = useState<File | undefined>();
   const [houseGarageFile, setHouseGarageFile] = useState<File | undefined>();
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const [simPreview, setSimPreview] = useState<string>("");
   const [ktpPreview, setKtpPreview] = useState<string>("");
   const [npwpPreview, setNpwpPreview] = useState<string>("");
   const [houseGaragePreview, setHouseGaragePreview] = useState<string>("");
 
+  const formRef = useRef<HTMLFormElement>(null);
+
   const handleSimUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setErrors(prev => ({ ...prev, simFront: "File size must be less than 2MB" }));
+        return;
+      }
       setSimFile(file);
+      setErrors(prev => ({ ...prev, simFront: undefined }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setSimPreview(reader.result as string);
@@ -48,7 +63,12 @@ export function DocumentsForm({
   const handleKtpUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setErrors(prev => ({ ...prev, ktpFront: "File size must be less than 2MB" }));
+        return;
+      }
       setKtpFile(file);
+      setErrors(prev => ({ ...prev, ktpFront: undefined }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setKtpPreview(reader.result as string);
@@ -60,7 +80,12 @@ export function DocumentsForm({
   const handleNpwpUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setErrors(prev => ({ ...prev, npwpFront: "File size must be less than 2MB" }));
+        return;
+      }
       setNpwpFile(file);
+      setErrors(prev => ({ ...prev, npwpFront: undefined }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setNpwpPreview(reader.result as string);
@@ -72,6 +97,9 @@ export function DocumentsForm({
   const handleHouseGarageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        return;
+      }
       setHouseGarageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -117,8 +145,44 @@ export function DocumentsForm({
     document.getElementById("houseGarageFileInput")?.click();
   };
 
+  const validateForm = (): boolean => {
+    const formData = new FormData(formRef.current || undefined);
+    const newErrors: FormErrors = {};
+    const simExpiry = formData.get("simExpiry") as string;
+
+    if (!simFile) {
+      newErrors.simFront = "Driver's License (SIM) is required";
+    }
+
+    if (!simExpiry) {
+      newErrors.simExpiry = "SIM expiry date is required";
+    } else {
+      const expiryDate = new Date(simExpiry);
+      const today = new Date();
+      if (expiryDate < today) {
+        newErrors.simExpiry = "SIM has expired. Please renew your license.";
+      }
+    }
+
+    if (!ktpFile) {
+      newErrors.ktpFront = "National ID Card (KTP) is required";
+    }
+
+    if (!npwpFile) {
+      newErrors.npwpFront = "NPWP is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
     const data: DocumentsData = {
       simFront: simFile,
@@ -147,6 +211,7 @@ export function DocumentsForm({
       </div>
       <div className="ms-8 me-8 mb-6 mt-6">
         <form
+          ref={formRef}
           id="documentsForm"
           onSubmit={handleSubmit}
           className="grid grid-cols-1 md:grid-cols-2 gap-10"
@@ -154,8 +219,11 @@ export function DocumentsForm({
           {/* SIM Upload */}
           <div className="space-y-4">
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Driver&apos;s License (SIM)
+              Driver&apos;s License (SIM) <span className="text-red-500">*</span>
             </label>
+            {errors.simFront && (
+              <p className="text-xs text-red-500">{errors.simFront}</p>
+            )}
             {simPreview ? (
               <div className="border-2 border-solid border-primary bg-primary/5 rounded-2xl p-4 relative">
                 <img
@@ -207,11 +275,24 @@ export function DocumentsForm({
             )}
           </div>
 
+          <div className="space-y-4">
+            <DateInput
+              id="simExpiry"
+              name="simExpiry"
+              label="SIM Expiry Date"
+              required
+              error={errors.simExpiry}
+            />
+          </div>
+
           {/* KTP Upload */}
           <div className="space-y-4">
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-              National ID Card (KTP)
+              National ID Card (KTP) <span className="text-red-500">*</span>
             </label>
+            {errors.ktpFront && (
+              <p className="text-xs text-red-500">{errors.ktpFront}</p>
+            )}
             {ktpPreview ? (
               <div className="border-2 border-solid border-primary bg-primary/5 rounded-2xl p-4 relative">
                 <img
@@ -265,8 +346,11 @@ export function DocumentsForm({
 
           <div className="space-y-4">
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Driver&apos;s NPWP
+              Driver&apos;s NPWP <span className="text-red-500">*</span>
             </label>
+            {errors.npwpFront && (
+              <p className="text-xs text-red-500">{errors.npwpFront}</p>
+            )}
             {npwpPreview ? (
               <div className="border-2 border-solid border-primary bg-primary/5 rounded-2xl p-4 relative">
                 <img

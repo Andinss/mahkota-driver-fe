@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Select } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 
@@ -18,22 +18,19 @@ interface FinancialRentalProps {
 } 
 
 
-
 const FinancialRental = ({ onDataChange, initialData }: FinancialRentalProps) => {
-  const [dailyRate, setDailyRate] = useState<number>(initialData?.dailyRate || 0);
-  const [depositAmount, setDepositAmount] = useState<number>(initialData?.depositAmount || 0);
+  const [dailyRate, setDailyRate] = useState<string>("");
+  const [depositAmount, setDepositAmount] = useState<string>("");
   const [methodPayment, setMethodPayment] = useState<string>(initialData?.methodPayment || "Bank");
 
   useEffect(() => {
-    console.log("Financial initialData:", initialData);
-
-    if (initialData?.dailyRate !== undefined) {
-      setDailyRate(initialData.dailyRate);
+    if (initialData?.dailyRate) {
+      setDailyRate(initialData.dailyRate.toString());
     }
-    if (initialData?.depositAmount !== undefined) {
-      setDepositAmount(initialData.depositAmount);
+    if (initialData?.depositAmount) {
+      setDepositAmount(initialData.depositAmount.toString());
     }
-    if (initialData?.methodPayment !== undefined) {
+    if (initialData?.methodPayment) {
       setMethodPayment(initialData.methodPayment);
     } 
   }, [initialData]);
@@ -41,26 +38,12 @@ const FinancialRental = ({ onDataChange, initialData }: FinancialRentalProps) =>
   useEffect(() => {
     if (onDataChange) {
       onDataChange({
-        dailyRate,
-        depositAmount,
+        dailyRate: dailyRate ? parseInt(dailyRate.replace(/\./g, ""), 10) : 0,
+        depositAmount: depositAmount ? parseInt(depositAmount.replace(/\./g, ""), 10) : 0,
         methodPayment,
       });
     }
   }, [dailyRate, depositAmount, methodPayment, onDataChange]);
-
-  const handleDailyRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-    setDailyRate(Number(value));
-  };
-
-  const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-    setDepositAmount(Number(value));
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("id-ID").format(value);
-  };
 
   return (
     <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -74,35 +57,27 @@ const FinancialRental = ({ onDataChange, initialData }: FinancialRentalProps) =>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="space-y-2">
-          <div className="relative">
-            <Input
-              id="dailyRate"
-              name="dailyRate"
-              label="Daily Rate (IDR)"
-              placeholder="Enter daily rate"
-              className="uppercase"
-              required
-              value={dailyRate ? formatCurrency(dailyRate) : ""}
-              onChange={handleDailyRateChange}
-            />
-          </div>
+          <CurrencyInput
+            id="dailyRate"
+            name="dailyRate"
+            label="Daily Rate"
+            placeholder="0"
+            value={dailyRate}
+            onChange={setDailyRate}
+          />
           <p className="text-[10px] text-slate-500 italic">
             *Auto-filled from vehicle data
           </p>
         </div>
         <div className="space-y-2">
-          <div className="relative">
-            <Input
-              id="depositAmount"
-              name="depositAmount"
-              label="Deposit Amount (IDR)"
-              placeholder="Enter deposit amount"
-              className="uppercase"
-              required
-              value={depositAmount ? formatCurrency(depositAmount) : ""}
-              onChange={handleDepositChange}
-            />
-          </div>
+          <CurrencyInput
+            id="depositAmount"
+            name="depositAmount"
+            label="Deposit Amount"
+            placeholder="0"
+            value={depositAmount}
+            onChange={setDepositAmount}
+          />
         </div>
         <div className="space-y-2">
           <div>

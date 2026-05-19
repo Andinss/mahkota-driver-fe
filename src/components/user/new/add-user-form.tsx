@@ -22,6 +22,13 @@ interface AddUserFormProps {
   isSubmitting?: boolean;
 }
 
+interface FormErrors {
+  fullname?: string;
+  email?: string;
+  phone?: string;
+  role?: string;
+}
+
 export function AddUserForm({
   mode = "add",
   initialData,
@@ -37,10 +44,10 @@ export function AddUserForm({
     phone: initialData?.phone || "",
     role: initialData?.role || "",
   });
+  const [errors, setErrors] = useState<FormErrors>({});
   const [avatar, setAvatar] = useState<string>(initialData?.avatar || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync ketika initialData berubah (mode edit)
   useEffect(() => {
     if (initialData) {
       setIsActive(initialData.isActive);
@@ -54,8 +61,41 @@ export function AddUserForm({
     }
   }, [initialData]);
 
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formValues.fullname.trim()) {
+      newErrors.fullname = "Full name is required";
+    } else if (formValues.fullname.trim().length < 2) {
+      newErrors.fullname = "Full name must be at least 2 characters";
+    }
+
+    if (!formValues.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!formValues.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^\d{10,15}$/.test(formValues.phone.replace(/\D/g, ""))) {
+      newErrors.phone = "Phone number must be 10-15 digits";
+    }
+
+    if (!formValues.role) {
+      newErrors.role = "Please select a role";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
 
     const data: UserFormData = {
       fullname: formValues.fullname,
@@ -253,6 +293,7 @@ export function AddUserForm({
                 required
                 value={formValues.fullname}
                 onChange={(e) => handleInputChange("fullname", e.target.value)}
+                error={errors.fullname}
               />
 
               <Input
@@ -264,6 +305,7 @@ export function AddUserForm({
                 required
                 value={formValues.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
+                error={errors.email}
               />
 
               <Input
@@ -275,6 +317,7 @@ export function AddUserForm({
                 required
                 value={formValues.phone}
                 onChange={(e) => handleInputChange("phone", e.target.value)}
+                error={errors.phone}
               />
 
               <Select
@@ -284,6 +327,7 @@ export function AddUserForm({
                 required
                 value={formValues.role}
                 onChange={(e) => handleInputChange("role", e.target.value)}
+                error={errors.role}
               >
                 <option value="">Select a role</option>
                 <option value="administrator">Administrator</option>
