@@ -17,6 +17,7 @@ export interface Driver {
 interface DriverTableRowProps {
   driver: Driver;
   onDeleteClick?: (driver: Driver) => void; // Ubah dari driverId ke driver object
+  onDetailsClick?: (driver: Driver) => void;
 }
 
 const statusStyles: Record<
@@ -40,7 +41,7 @@ const statusStyles: Record<
   },
 };
 
-export function DriverTableRow({ driver, onDeleteClick }: DriverTableRowProps) {
+export function DriverTableRow({ driver, onDeleteClick, onDetailsClick }: DriverTableRowProps) {
   const statusStyle = statusStyles[driver.status];
 
   return (

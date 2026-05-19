@@ -3,14 +3,28 @@ import { DriverTableRow, Driver } from "./driver-table-row";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useSearchParams } from "next/navigation";
 import { AlertDialog } from "@/components/ui/alert";
+import { ExportColumn, ModalExport } from "@/components/ui/export";
 
+const driverColumns: ExportColumn[] = [
+  { id: "name", label: "Driver Name", defaultChecked: true },
+  { id: "employeeId", label: "Employee ID", defaultChecked: true },
+  { id: "phoneNumber", label: "Phone Number", defaultChecked: true },
+  { id: "licenseType", label: "License Type", defaultChecked: true },
+  { id: "totalTrips", label: "Total Trips", defaultChecked: true },
+  { id: "status", label: "Status", defaultChecked: true },
+  { id: "joinedDate", label: "Joined Date", defaultChecked: true },
+];
 interface DriverTableProps {
   drivers: Driver[];
   onDeleteDriver?: (driverId: string) => void;
+  onExport?: (options?: any) => void;
+  onDetailsDriver?: (driver: Driver) => void;
 }
 
-export function DriverTable({ drivers, onDeleteDriver }: DriverTableProps) {
+export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver }: DriverTableProps) {
   const searchParams = useSearchParams();
+
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<any>(null);
@@ -60,6 +74,17 @@ export function DriverTable({ drivers, onDeleteDriver }: DriverTableProps) {
 
   return (
     <>
+    <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+        <h2 className="font-bold text-lg text-slate-900 dark:text-white">
+          Driver Management
+        </h2>
+        <button
+          onClick={() => setIsExportModalOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300">
+          <span className="material-symbols-outlined text-base">download</span>
+          Export
+        </button>
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
@@ -79,6 +104,7 @@ export function DriverTable({ drivers, onDeleteDriver }: DriverTableProps) {
                 key={driver.employeeId}
                 driver={driver}
                 onDeleteClick={setDriverToDelete}
+                onDetailsClick={onDetailsDriver}
               />
             ))}
           </tbody>
@@ -110,6 +136,19 @@ export function DriverTable({ drivers, onDeleteDriver }: DriverTableProps) {
           type={alertType}
           confirmText="OK"
         />
+
+        <ModalExport
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                onExport={(options) => {
+                  setIsExportModalOpen(false);
+                  onExport?.(options);
+                }}
+                totalRows={drivers.length}
+                title="Export Driver Data"
+                description="Generate driver reports and performance data."
+                columns={driverColumns}
+              />
 
     </>
   );

@@ -11,6 +11,8 @@ import { DriverTable } from "@/components/driver/dashboard/driver-table";
 import { DriverPagination } from "@/components/driver/dashboard/driver-pagination";
 import { Driver } from "@/components/driver/dashboard/driver-table-row";
 import { PageHeader } from "@/components/page-header";
+import { useRouter } from "next/navigation";
+import { ExportOptions } from "@/components/ui/export";
 
 // Mock data
 const mockDrivers: Driver[] = [
@@ -61,6 +63,7 @@ const mockDrivers: Driver[] = [
 ];
 
 export default function DriverPage() {
+  const router = useRouter(); 
   const [drivers, setDrivers] = useState<Driver[]>(mockDrivers);
   const [filters, setFilters] = useState<DriverFilters>({
     search: "",
@@ -106,6 +109,18 @@ export default function DriverPage() {
       setCurrentPage(page);
     }
   };
+
+  const handleExport = (options?: ExportOptions) => {
+        if (!options) return;
+        console.log("Export options from driver page:", options);
+        alert(`Exporting driver data as ${options.format} with ${options.type} data`);
+      };
+
+   //  HANDLERS detail driver
+    const handleDetails = (driver: Driver) => {
+      console.log("Details:", driver);
+     router.push(`/dashboard/driver/detail`);
+    };
 
   // Handle delete driver
   const handleDeleteDriver = (driverId: string) => {
@@ -193,6 +208,8 @@ export default function DriverPage() {
         <DriverTable
           drivers={currentDrivers}
           onDeleteDriver={handleDeleteDriver}
+          onExport={handleExport}
+          onDetailsDriver={handleDetails} 
         />
         {/* Add separator line between table and pagination */}
         <div className="border-t border-slate-200 dark:border-slate-800">

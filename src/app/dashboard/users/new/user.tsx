@@ -101,7 +101,6 @@ export default function AddNewUserPage() {
 
    const handleSaveDraft = () => {
     console.log("Save draft:", initialData);
-    alert("Draft saved!");
    };
   
   return (

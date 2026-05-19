@@ -9,6 +9,7 @@ import { VehicleTable } from "@/components/vehicle/dashboard/vehicle-table";
 import { SearchFilters } from "@/components/search-filters";
 import { PageHeader } from "@/components/page-header";
 import { VehiclePagination } from "@/components/vehicle/dashboard/vehicle-pagination";
+import { ExportOptions } from "@/components/ui/export";
 
 export default function DashboardVehiclePage() {
   const searchParams = useSearchParams();
@@ -110,6 +111,13 @@ export default function DashboardVehiclePage() {
     setSelectedVehicle(null);
   };
 
+  const handleExport = (options?: ExportOptions) => {
+    if (!options) return;
+    console.log("Export options from vehicle page:", options);
+    alert(`Exporting vehicle data as ${options.format} with ${options.type} data`);
+  };
+
+
   const handleAlertClose = () => {
     setIsAlertOpen(false);
   };
@@ -201,6 +209,7 @@ export default function DashboardVehiclePage() {
             <VehicleTable 
             vehicles={currentVehicles}
             onDelete={handleDeleteClick} 
+            onExport={handleExport}
             />
             <VehiclePagination
               currentPage={currentPage}

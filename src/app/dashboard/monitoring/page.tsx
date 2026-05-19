@@ -125,13 +125,7 @@ export default function TaskList() {
     setIsAlertOpen(true);
   };
 
-  const handleEdit = (task: Task) => {
-    console.log("Edit:", task);
-  };
 
-  const handleDelete = (task: Task) => {
-    console.log("Delete:", task);
-  };
 
   const handleExport = (options?: any) => {
     console.log("Export with options:", options);
@@ -191,8 +185,6 @@ export default function TaskList() {
           onDetails={handleDetails}
           onViewMap={handleViewMap}
           onComplete={handleComplete}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
           onExport={handleExport}
         />
 
