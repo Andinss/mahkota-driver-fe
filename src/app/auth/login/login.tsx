@@ -2,11 +2,80 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+
+interface FormErrors {
+  email?: string;
+  password?: string;
+}
 
 const LoginPage = () => {
+  const router = useRouter();
   const [checked, setChecked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [formValues, setFormValues] = useState({
+    email: "",
+    password: ""
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  useEffect(() => {
+    setErrors({});
+  }, []);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormValues(prev => ({ ...prev, [field]: value }));
+    if (hasSubmitted && errors[field as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    let isValid = true;
+
+    const emailValue = formValues.email.trim();
+    const passwordValue = formValues.password;
+
+    if (!emailValue) {
+      newErrors.email = "Email or Employee ID is required";
+      isValid = false;
+    } else if (emailValue.length < 3) {
+      newErrors.email = "Email or Employee ID must be at least 3 characters";
+      isValid = false;
+    }
+
+    if (!passwordValue) {
+      newErrors.password = "Password is required";
+      isValid = false;
+    } else if (passwordValue.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setHasSubmitted(true);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      router.push("/dashboard");
+    }, 500);
+  };
+
   return (
     <div className="bg-white rounded-xl p-[1px]">
       <div className="bg-white rounded-xl p-5 sm:p-12 flex flex-col">
@@ -18,21 +87,30 @@ const LoginPage = () => {
             Please sign in to manage your vehicle fleet.
           </p>
         </div>
-        <form className="flex flex-col gap-4">
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
-            <Input
+<Input
+              id="email"
+              name="email"
               label="Employee ID / Email"
               placeholder="Enter your email or employee ID"
+              value={formValues.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              error={hasSubmitted ? errors.email : undefined}
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <Input
+            <PasswordInput
+              id="password"
+              name="password"
               label="Password"
               placeholder="Enter your password"
-              type="password"
+              value={formValues.password}
+              onChange={(e) => handleInputChange("password", e.target.value)}
+              error={hasSubmitted ? errors.password : undefined}
             />
-          </div>
+</div>
 
           <div className="flex items-center justify-between mt-1">
             <label className="flex items-center gap-3 cursor-pointer group">
@@ -51,11 +129,14 @@ const LoginPage = () => {
               Forgot Password?
             </a>
           </div>
-          <Link href="/dashboard">
-            <Button icon="login" className="editorial-gradient w-full">
-              Sign In
-            </Button>
-          </Link>
+          <Button
+            type="submit"
+            icon="login"
+            className="editorial-gradient w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Signing in..." : "Sign In"}
+          </Button>
         </form>
         <Button className="w-full mt-2 border border-outline-variant/30 rounded-lg hover:bg-surface-container-low transition-colors duration-200">
           <div className="flex items-center justify-center gap-3 w-full h-full">

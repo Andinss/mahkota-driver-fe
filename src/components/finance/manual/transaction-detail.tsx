@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { RadioCard } from "@/components/ui/radio-card";
 import { Icon } from "@/components/ui/icon";
 import { Textarea } from "@/components/ui/textarea";
 import { Modal } from "@/components/ui/modal";
+
+interface FormErrors {
+  paymentDate?: string;
+  referenceNumber?: string;
+  paymentMethod?: string;
+  amount?: string;
+}
 
 interface TransactionDetailProps {
   paymentDate?: string;
@@ -32,6 +39,63 @@ const TransactionDetail = ({
 }: TransactionDetailProps) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showEwalletModal, setShowEwalletModal] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!paymentDate) {
+      newErrors.paymentDate = "Payment date is required";
+    }
+
+    if (!referenceNumber?.trim()) {
+      newErrors.referenceNumber = "Reference number is required";
+    } else if (referenceNumber.length < 3) {
+      newErrors.referenceNumber = "Reference number must be at least 3 characters";
+    }
+
+    if (!paymentMethod) {
+      newErrors.paymentMethod = "Please select a payment method";
+    }
+
+    if (!amount) {
+      newErrors.amount = "Amount is required";
+    } else if (parseFloat(amount) <= 0) {
+      newErrors.amount = "Amount must be greater than 0";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleAmountChange = (value: string) => {
+    onAmountChange?.(value);
+    if (errors.amount && value) {
+      setErrors(prev => ({ ...prev, amount: undefined }));
+    }
+  };
+
+  const handlePaymentDateChange = (value: string) => {
+    onPaymentDateChange?.(value);
+    if (errors.paymentDate && value) {
+      setErrors(prev => ({ ...prev, paymentDate: undefined }));
+    }
+  };
+
+  const handleReferenceNumberChange = (value: string) => {
+    onReferenceNumberChange?.(value);
+    if (errors.referenceNumber && value) {
+      setErrors(prev => ({ ...prev, referenceNumber: undefined }));
+    }
+  };
+
+  const handlePaymentMethodChange = (value: string) => {
+    onPaymentMethodChange?.(value);
+    if (errors.paymentMethod && value) {
+      setErrors(prev => ({ ...prev, paymentMethod: undefined }));
+    }
+  };
 
   const banks = [
     {
@@ -93,37 +157,42 @@ const TransactionDetail = ({
       <h3 className="text-base font-semibold text-[#111418] dark:text-white mb-6">
         Transaction Details
       </h3>
-      <form className="flex flex-col gap-6">
+      <form ref={formRef} className="flex flex-col gap-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-[#111418] dark:text-gray-200">
-              Payment Date
+              Payment Date <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <Input
                 type="date"
                 value={paymentDate}
-                onChange={(e) => onPaymentDateChange?.(e.target.value)}
+                onChange={(e) => handlePaymentDateChange(e.target.value)}
+                error={errors.paymentDate}
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-[#111418] dark:text-gray-200">
-              Reference Number
+              Reference Number <span className="text-red-500">*</span>
             </label>
             <Input
               type="text"
               value={referenceNumber}
-              onChange={(e) => onReferenceNumberChange?.(e.target.value)}
+              onChange={(e) => handleReferenceNumberChange(e.target.value)}
+              error={errors.referenceNumber}
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-3">
           <label className="text-sm font-medium text-[#111418] dark:text-gray-200">
-            Payment Method
+            Payment Method <span className="text-red-500">*</span>
           </label>
+          {errors.paymentMethod && (
+            <p className="text-xs text-red-500">{errors.paymentMethod}</p>
+          )}
           <div className="grid grid-cols-3 gap-3">
             <RadioCard
               icon="payments"
@@ -207,22 +276,14 @@ const TransactionDetail = ({
 
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-[#111418] dark:text-gray-200">
-            Amount Received
+            Amount Received <span className="text-red-500">*</span>
           </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">
-                Rp
-              </span>
-            </div>
-            <Input
-              className="w-full h-10 pl-10 pr-4 rounded-lg border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800 text-[#111418] dark:text-white text-3xl font-bold tracking-tight focus:ring-primary focus:border-primary placeholder:text-gray-300 dark:placeholder:text-gray-600"
-              placeholder="0.00"
-              type="number"
-              value={amount}
-              onChange={(e) => onAmountChange?.(e.target.value)}
-            />
-          </div>
+          <CurrencyInput
+            placeholder="0"
+            value={amount}
+            onChange={(value) => handleAmountChange(value)}
+            error={errors.amount}
+          />
           <p className="text-xs text-[#617589] dark:text-gray-400">
             Enter amount in IDR. Ensure currency is correct before submitting.
           </p>

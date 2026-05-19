@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,17 @@ export interface ContactInfoData {
   emergencyContactRelationship: string;
   permanentAddress: string;
   addressType: string;
+}
+
+interface FormErrors {
+  phoneNumber?: string;
+  email?: string;
+  emergencyContactNumber?: string;
+  emergencyContactEmail?: string;
+  house?: string;
+  readyToSignContract?: string;
+  permanentAddress?: string;
+  willingToBeSurveyed?: string;
 }
 
 interface ContactInfoFormProps {
@@ -28,19 +39,80 @@ export function ContactInfoForm({
   onSaveDraft,
   initialData,
 }: ContactInfoFormProps) {
-  // Tambahkan state untuk radio buttons
   const [readyToSignContract, setReadyToSignContract] = useState<string>("");
   const [willingToBeSurveyed, setWillingToBeSurveyed] = useState<string>("");
+  const [errors, setErrors] = useState<FormErrors>({});
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (initialData) {
-      // Isi radio buttons jika diperlukan
-      // Untuk input text, nilai default akan diambil dari defaultValue di form
     }
   }, [initialData]);
 
+  const validateForm = (): boolean => {
+    const formData = new FormData(formRef.current || undefined);
+    const newErrors: FormErrors = {};
+
+    const phoneNumber = formData.get("phoneNumber") as string;
+    const email = formData.get("email") as string;
+    const emergencyContactNumber = formData.get("emergencyContactNumber") as string;
+    const emergencyContactEmail = formData.get("emergencyContactEmail") as string;
+    const house = formData.get("house") as string;
+    const permanentAddress = formData.get("permanentAddress") as string;
+
+    if (!phoneNumber?.trim()) {
+      newErrors.phoneNumber = "Phone number is required";
+    } else if (!/^\d{10,15}$/.test(phoneNumber.replace(/\D/g, ""))) {
+      newErrors.phoneNumber = "Phone number must be 10-15 digits";
+    }
+
+    if (!email?.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!emergencyContactNumber?.trim()) {
+      newErrors.emergencyContactNumber = "Emergency contact number is required";
+    } else if (!/^\d{10,15}$/.test(emergencyContactNumber.replace(/\D/g, ""))) {
+      newErrors.emergencyContactNumber = "Emergency contact number must be 10-15 digits";
+    }
+
+    if (!emergencyContactEmail?.trim()) {
+      newErrors.emergencyContactEmail = "Emergency contact email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emergencyContactEmail)) {
+      newErrors.emergencyContactEmail = "Please enter a valid email address";
+    }
+
+    if (!house) {
+      newErrors.house = "Please select house type";
+    }
+
+    if (!readyToSignContract) {
+      newErrors.readyToSignContract = "Please select if you are ready to sign contract";
+    }
+
+    if (!permanentAddress?.trim()) {
+      newErrors.permanentAddress = "Permanent address is required";
+    } else if (permanentAddress.trim().length < 10) {
+      newErrors.permanentAddress = "Please enter a complete address";
+    }
+
+    if (!willingToBeSurveyed) {
+      newErrors.willingToBeSurveyed = "Please select if you are willing to be surveyed";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
     const data: ContactInfoData = {
       phoneNumber: formData.get("phoneNumber") as string,
@@ -52,16 +124,6 @@ export function ContactInfoForm({
       permanentAddress: formData.get("permanentAddress") as string,
       addressType: formData.get("house") as string,
     };
-
-    // Tambahkan validasi untuk radio buttons
-    if (!readyToSignContract) {
-      alert("Please select if you are ready to sign contract");
-      return;
-    }
-    if (!willingToBeSurveyed) {
-      alert("Please select if you are willing to be surveyed");
-      return;
-    }
 
     onNext(data);
   };
@@ -84,6 +146,7 @@ export function ContactInfoForm({
 
       <div className="p-8">
         <form
+          ref={formRef}
           id="contactInfoForm"
           onSubmit={handleSubmit}
           className="space-y-8"
@@ -97,6 +160,7 @@ export function ContactInfoForm({
               type="tel"
               defaultValue={initialData?.phoneNumber}
               required
+              error={errors.phoneNumber}
             />
 
             <Input
@@ -106,6 +170,7 @@ export function ContactInfoForm({
               placeholder="Phone number of emergency contact"
               defaultValue={initialData?.emergencyContactName}
               required
+              error={errors.emergencyContactNumber}
             />
 
             <Input
@@ -116,6 +181,7 @@ export function ContactInfoForm({
               type="email"
               defaultValue={initialData?.email}
               required
+              error={errors.email}
             />
 
             <Input
@@ -126,10 +192,11 @@ export function ContactInfoForm({
               type="email"
               defaultValue={initialData?.emergencyContactRelationship}
               required
+              error={errors.emergencyContactEmail}
             />
 
             <div>
-              <Select id="house" name="house" label="House">
+              <Select id="house" name="house" label="House" error={errors.house}>
                 <option value="">Select house type</option>
                 <option value="contract">Contract</option>
                 <option value="property_parent">Property Parent</option>
@@ -147,7 +214,6 @@ export function ContactInfoForm({
                   name="readyToSignContract"
                   value="true"
                   label="Yes"
-                  required
                   checked={readyToSignContract === "true"}
                   onChange={(e) => setReadyToSignContract(e.target.value)}
                 />
@@ -156,11 +222,13 @@ export function ContactInfoForm({
                   name="readyToSignContract"
                   value="false"
                   label="No"
-                  required
                   checked={readyToSignContract === "false"}
                   onChange={(e) => setReadyToSignContract(e.target.value)}
                 />
               </div>
+              {errors.readyToSignContract && (
+                <p className="text-xs text-red-500">{errors.readyToSignContract}</p>
+              )}
             </div>
 
             <div>
@@ -171,13 +239,16 @@ export function ContactInfoForm({
                 Permanent Address <span className="text-red-500">*</span>
               </label>
               <textarea
-                className="w-full rounded-lg border border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary h-auto"
+                className={`w-full rounded-lg border bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary h-auto ${errors.permanentAddress ? "border-red-500" : "border-[#dbe0e6] dark:border-[#4b5563]"}`}
                 placeholder="Enter full permanent address including city, state, and zip code"
                 name="permanentAddress"
                 id="permanentAddress"
                 rows={2}
                 required
               />
+              {errors.permanentAddress && (
+                <p className="text-xs text-red-500 mt-1">{errors.permanentAddress}</p>
+              )}
             </div>
 
             <div className="md:col-span-2">
@@ -193,7 +264,6 @@ export function ContactInfoForm({
                       name="willingToBeSurveyed"
                       value="true"
                       label="Yes"
-                      required
                       checked={willingToBeSurveyed === "true"}
                       onChange={(e) => setWillingToBeSurveyed(e.target.value)}
                     />
@@ -202,11 +272,13 @@ export function ContactInfoForm({
                       name="willingToBeSurveyed"
                       value="false"
                       label="No"
-                      required
                       checked={willingToBeSurveyed === "false"}
                       onChange={(e) => setWillingToBeSurveyed(e.target.value)}
                     />
                   </div>
+                  {errors.willingToBeSurveyed && (
+                    <p className="text-xs text-red-500">{errors.willingToBeSurveyed}</p>
+                  )}
                 </div>
               </div>
             </div>
