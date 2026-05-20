@@ -201,41 +201,86 @@ const mockRoles: Record<string, any> = {
   },
 };
 
+interface FormErrors {
+  roleName?: string;
+}
+
 const RoleFormPage = () => {
   const searchParams = useSearchParams();
   const roleIdParam = searchParams.get("id");
 
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [roleName, setRoleName] = useState("");
-  const [roleDescription, setRoleDescription] = useState("");
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [formValues, setFormValues] = useState({
+    roleName: "",
+    roleDescription: ""
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
   const [permissions, setPermissions] = useState<PermissionItem[]>(initialPermissions);
   const [lastSaved, setLastSaved] = useState<string>("Never (Draft)");
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    setErrors({});
+  }, []);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormValues(prev => ({ ...prev, [field]: value }));
+    if (hasSubmitted && errors[field as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    let isValid = true;
+
+    const roleNameValue = formValues.roleName.trim();
+
+    if (!roleNameValue) {
+      newErrors.roleName = "Role name is required";
+      isValid = false;
+    } else if (roleNameValue.length < 2) {
+      newErrors.roleName = "Role name must be at least 2 characters";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   // Load data when in edit mode
   useEffect(() => {
     if (roleIdParam && mockRoles[roleIdParam]) {
       const role = mockRoles[roleIdParam];
       setMode("edit");
-      setRoleName(role.name);
-      setRoleDescription(role.description);
+      setFormValues({
+        roleName: role.name,
+        roleDescription: role.description
+      });
       setPermissions(role.permissions);
       setLastSaved("Draft saved");
     } else {
       setMode("add");
-      setRoleName("");
-      setRoleDescription("");
+      setFormValues({
+        roleName: "",
+        roleDescription: ""
+      });
       setPermissions(initialPermissions);
       setLastSaved("Never (Draft)");
     }
   }, [roleIdParam]);
 
   
-
-
   const handleSaveClick = () => {
+    setHasSubmitted(true);
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsConfirmOpen(true);
   };
 
@@ -246,18 +291,18 @@ const RoleFormPage = () => {
 
     const roleData = {
       id: roleIdParam || undefined,
-      name: roleName,
-      description: roleDescription,
+      name: formValues.roleName,
+      description: formValues.roleDescription,
       permissions: permissions,
     };
 
     console.log("Role Data:", roleData);
-    console.log("roleName value:", roleName);
+    console.log("roleName value:", formValues.roleName);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSubmitting(false);
 
     const action = mode === "edit" ? "updated" : "registered";
-     const roleNameForRedirect = roleName || "New Role";
+     const roleNameForRedirect = formValues.roleName || "New Role";
 
     window.location.href = `/dashboard/role?success=${action}&role=${encodeURIComponent(roleNameForRedirect)}`;
   };
@@ -272,10 +317,11 @@ const RoleFormPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-5">
         <div className="lg:col-span-8 space-y-6">
           <GeneralInformation 
-            roleName={roleName}
-            setRoleName={setRoleName}
-            roleDescription={roleDescription}
-            setRoleDescription={setRoleDescription}
+            roleName={formValues.roleName}
+            setRoleName={(value) => handleInputChange("roleName", value)}
+            roleDescription={formValues.roleDescription}
+            setRoleDescription={(value) => handleInputChange("roleDescription", value)}
+            error={hasSubmitted ? errors.roleName : undefined}
           />
           <Permission permissions={permissions} onChange={setPermissions} />
         </div>
@@ -299,8 +345,8 @@ const RoleFormPage = () => {
           </button>
           <button
             onClick={handleSaveClick}
-            disabled={isSubmitting}
-            className="flex-1 sm:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20 hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center gap-2"
+            disabled={isSubmitting || (hasSubmitted && !formValues.roleName.trim())}
+            className="flex-1 sm:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20 hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:bg-gray-400 flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-sm">
               {mode === "add" ? "add" : "save"}

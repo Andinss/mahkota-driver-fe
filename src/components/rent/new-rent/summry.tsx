@@ -14,16 +14,18 @@ interface SummaryProps {
   onConfirm: () => void;
   onCancel: () => void;
   isSubmitting?: boolean;  
-  mode?: "add" | "edit"; 
+  mode?: "add" | "edit";
+  isDisabled?: boolean;
 }
 
 const Summary = ({
    rentalData,
-    onConfirm, 
-    onCancel,
-    isSubmitting = false,
-    mode = "add" 
-  }: SummaryProps) => {
+     onConfirm, 
+     onCancel,
+     isSubmitting = false,
+     mode = "add",
+     isDisabled = false
+   }: SummaryProps) => {
   const dailyRateTotal = rentalData.dailyRate * rentalData.duration;
   const totalRevenue =
     dailyRateTotal + rentalData.depositAmount + rentalData.serviceFee;
@@ -95,8 +97,8 @@ const Summary = ({
         <div className="mt-8 space-y-3">
           <button
             onClick={onConfirm}
-            disabled={isSubmitting}
-            className="w-full py-3 bg-primary text-white font-bold rounded-lg shadow-md hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+            disabled={isSubmitting || isDisabled}
+            className="w-full py-3 bg-primary text-white font-bold rounded-lg shadow-md hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:bg-gray-400 flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-xl">
               {mode === "add" ? "check_circle" : "update"}

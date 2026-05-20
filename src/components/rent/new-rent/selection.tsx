@@ -44,7 +44,16 @@ const rentalPeriod = [
   
 ];
 
-  interface SelectionFormProps {
+  interface FormErrors {
+  vehicleId?: string;
+  driverId?: string;
+  startDate?: string;
+  endDate?: string;
+  dailyRate?: string;
+  depositAmount?: string;
+}
+
+interface SelectionFormProps {
   onDataChange?: (data: {
     vehicleId?: string;
     driverId?: string;
@@ -54,10 +63,11 @@ const rentalPeriod = [
     vehicleId?: string;
     driverId?: string;
   };
+  error?: FormErrors;
 }
 
 
-const SelectionForm = ({ onDataChange, initialData}: SelectionFormProps) => {
+const SelectionForm = ({ onDataChange, initialData, error }: SelectionFormProps) => {
    const [selectedDriver, setSelectedDriver] = useState<string | undefined>(
     initialData?.driverId
   );
@@ -105,6 +115,7 @@ const SelectionForm = ({ onDataChange, initialData}: SelectionFormProps) => {
               placeholder="Search driver..."
               value={selectedDriver}
               onChange={handleDriverChange}
+              error={error?.driverId}
             />
           </div>
 
@@ -119,6 +130,7 @@ const SelectionForm = ({ onDataChange, initialData}: SelectionFormProps) => {
               placeholder="Search vehicle..."
               value={selectedVehicle}
               onChange={handleVehicleChange}
+              error={error?.vehicleId}
             />
           </div>
         </div>

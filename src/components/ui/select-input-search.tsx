@@ -16,6 +16,7 @@ interface SelectSearchProps {
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
+  error?: string;
 }
 
 export const SelectSearch = ({
@@ -26,6 +27,7 @@ export const SelectSearch = ({
   value, 
   defaultValue,
   onChange,
+  error,
 }: SelectSearchProps) => {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -49,7 +51,11 @@ export const SelectSearch = ({
 
 
   const inputStyle =
-    "w-full rounded-lg border border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary";
+    "w-full rounded-lg border bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary";
+
+  const borderColor = error 
+    ? "border-red-500 ring-1 ring-red-500" 
+    : "border-[#dbe0e6] dark:border-[#4b5563]";
 
   // ✅ FILTER FIX (tidak aneh lagi)
   const filtered =
@@ -112,7 +118,7 @@ export const SelectSearch = ({
         </span>
 
         <input
-          className={`${inputStyle} ${
+          className={`${inputStyle} ${borderColor} ${
             selected?.image ? "pl-10" : "pl-3"
           } pr-10`}
           placeholder={placeholder}
@@ -128,6 +134,9 @@ export const SelectSearch = ({
           }}
         />
       </div>
+      {error && (
+        <p className="text-xs text-red-500 mt-1">{error}</p>
+      )}
 
       {/* DROPDOWN */}
       {open && (

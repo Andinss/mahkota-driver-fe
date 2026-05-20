@@ -47,6 +47,7 @@ export function AddUserForm({
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [avatar, setAvatar] = useState<string>(initialData?.avatar || "");
+  const [isDraftAlertOpen, setIsDraftAlertOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
