@@ -15,6 +15,8 @@ interface SummaryProps {
   onClear?: () => void;
   isSubmitting?: boolean;
   mode?: "add" | "edit";
+  onValidate?: () => boolean;
+  setHasSubmitted?: (value: boolean) => void;
 }
 
 const methodIconMap: Record<string, string> = {
@@ -57,6 +59,8 @@ const Summary = ({
   onClear,
   isSubmitting = false,
   mode = "add",
+  onValidate,
+  setHasSubmitted,
 }: SummaryProps) => {
 
    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -147,7 +151,13 @@ const Summary = ({
 
           <div className="flex flex-col gap-3 mt-4">
              <button 
-              onClick={() => setIsConfirmOpen(true)}
+              onClick={() => {
+                if (onValidate && !onValidate()) {
+                  setHasSubmitted?.(true);
+                  return;
+                }
+                setIsConfirmOpen(true);
+              }}
               disabled={isSubmitting}
               className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-blue-600 text-white rounded-lg h-12 font-semibold shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
