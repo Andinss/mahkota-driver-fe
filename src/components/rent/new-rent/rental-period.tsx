@@ -3,6 +3,15 @@
 import { DateInput } from "@/components/ui/date-input";
 import { useState, useEffect } from "react";
 
+interface FormErrors {
+  vehicleId?: string;
+  driverId?: string;
+  startDate?: string;
+  endDate?: string;
+  dailyRate?: string;
+  depositAmount?: string;
+}
+
 interface PeriodProps {
   onDataChange?: (data: {
     startDate: string;
@@ -13,9 +22,10 @@ interface PeriodProps {
     startDate?: string;
     endDate?: string;
   };
+  error?: FormErrors;
 }
 
-const Period = ({ onDataChange, initialData }: PeriodProps) => {
+const Period = ({ onDataChange, initialData, error }: PeriodProps) => {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [duration, setDuration] = useState<number | null>(null);
@@ -75,6 +85,7 @@ const Period = ({ onDataChange, initialData }: PeriodProps) => {
               required
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
+              error={error?.startDate}
             />
           </div>
           <div className="space-y-2">
@@ -85,6 +96,7 @@ const Period = ({ onDataChange, initialData }: PeriodProps) => {
               required
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
+              error={error?.endDate}
             />
           </div>
           <div className="bg-primary/5 dark:bg-primary/10 rounded-lg p-4 flex flex-col items-center justify-center border border-primary/20 h-[50px]">

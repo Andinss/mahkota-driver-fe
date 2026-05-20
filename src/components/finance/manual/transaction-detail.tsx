@@ -4,6 +4,7 @@ import { RadioCard } from "@/components/ui/radio-card";
 import { Icon } from "@/components/ui/icon";
 import { Textarea } from "@/components/ui/textarea";
 import { Modal } from "@/components/ui/modal";
+import { CurrencyInput } from "@/components/ui/currency-input";
 
 interface FormErrors {
   paymentDate?: string;
@@ -52,7 +53,8 @@ const TransactionDetail = ({
     if (!referenceNumber?.trim()) {
       newErrors.referenceNumber = "Reference number is required";
     } else if (referenceNumber.length < 3) {
-      newErrors.referenceNumber = "Reference number must be at least 3 characters";
+      newErrors.referenceNumber =
+        "Reference number must be at least 3 characters";
     }
 
     if (!paymentMethod) {
@@ -72,28 +74,28 @@ const TransactionDetail = ({
   const handleAmountChange = (value: string) => {
     onAmountChange?.(value);
     if (errors.amount && value) {
-      setErrors(prev => ({ ...prev, amount: undefined }));
+      setErrors((prev) => ({ ...prev, amount: undefined }));
     }
   };
 
   const handlePaymentDateChange = (value: string) => {
     onPaymentDateChange?.(value);
     if (errors.paymentDate && value) {
-      setErrors(prev => ({ ...prev, paymentDate: undefined }));
+      setErrors((prev) => ({ ...prev, paymentDate: undefined }));
     }
   };
 
   const handleReferenceNumberChange = (value: string) => {
     onReferenceNumberChange?.(value);
     if (errors.referenceNumber && value) {
-      setErrors(prev => ({ ...prev, referenceNumber: undefined }));
+      setErrors((prev) => ({ ...prev, referenceNumber: undefined }));
     }
   };
 
   const handlePaymentMethodChange = (value: string) => {
     onPaymentMethodChange?.(value);
     if (errors.paymentMethod && value) {
-      setErrors(prev => ({ ...prev, paymentMethod: undefined }));
+      setErrors((prev) => ({ ...prev, paymentMethod: undefined }));
     }
   };
 

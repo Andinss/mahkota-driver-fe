@@ -4,6 +4,15 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import { Select } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 
+interface FormErrors {
+  vehicleId?: string;
+  driverId?: string;
+  startDate?: string;
+  endDate?: string;
+  dailyRate?: string;
+  depositAmount?: string;
+}
+
 interface FinancialRentalProps {
   onDataChange?: (data: { 
     dailyRate: number;
@@ -15,10 +24,11 @@ interface FinancialRentalProps {
     depositAmount?: number;
     methodPayment?: string;
   }
+  error?: FormErrors;
 } 
-
-
-const FinancialRental = ({ onDataChange, initialData }: FinancialRentalProps) => {
+ 
+ 
+const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalProps) => {
   const [dailyRate, setDailyRate] = useState<string>("");
   const [depositAmount, setDepositAmount] = useState<string>("");
   const [methodPayment, setMethodPayment] = useState<string>(initialData?.methodPayment || "Bank");
@@ -64,6 +74,7 @@ const FinancialRental = ({ onDataChange, initialData }: FinancialRentalProps) =>
             placeholder="0"
             value={dailyRate}
             onChange={setDailyRate}
+            error={error?.dailyRate}
           />
           <p className="text-[10px] text-slate-500 italic">
             *Auto-filled from vehicle data
@@ -77,6 +88,7 @@ const FinancialRental = ({ onDataChange, initialData }: FinancialRentalProps) =>
             placeholder="0"
             value={depositAmount}
             onChange={setDepositAmount}
+            error={error?.depositAmount}
           />
         </div>
         <div className="space-y-2">

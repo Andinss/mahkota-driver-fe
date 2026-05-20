@@ -9,24 +9,26 @@ import SelectionForm from "@/components/rent/new-rent/selection";
 import Summary from "@/components/rent/new-rent/summry";
 import { DocumentsForm } from "@/components/rent/new-rent/upload-document";
 
+interface FormErrors {
+  vehicleId?: string;
+  driverId?: string;
+  startDate?: string;
+  endDate?: string;
+  dailyRate?: string;
+  depositAmount?: string;
+}
+
 interface RentalData {
-  // Selection data
   transactionId?: string;
   vehicleId?: string;
   driverId?: string;
   driverType?: string;
-
-  // Period data
   startDate: string;
   endDate: string;
   duration: number;
-
-  // Financial data
   dailyRate: number;
   depositAmount: number;
   serviceFee: number;
-
-  // Documents data
   documents?: File[];
   paymentStatus?: string;
   deposit?: string;
@@ -99,17 +101,87 @@ const NewRentPage = () => {
 
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [rentalData, setRentalData] = useState<RentalData>({
     startDate: "",
     endDate: "",
     duration: 0,
     dailyRate: 0,
     depositAmount: 0,
-    serviceFee: 25000, // Default service fee
+    serviceFee: 25000,
   });
+  const [formValues, setFormValues] = useState({
+    vehicleId: "",
+    driverId: "",
+    startDate: "",
+    endDate: "",
+    dailyRate: 0,
+    depositAmount: 0,
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  // state confirm dialog
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    setErrors({});
+  }, []);
+
+  const handleInputChange = (
+    field: keyof FormErrors,
+    value: string | number,
+  ) => {
+    setFormValues((prev) => ({ ...prev, [field]: value }));
+    if (hasSubmitted && errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    let isValid = true;
+
+    if (!rentalData.vehicleId) {
+      newErrors.vehicleId = "Vehicle is required";
+      isValid = false;
+    }
+
+    if (!rentalData.driverId) {
+      newErrors.driverId = "Driver is required";
+      isValid = false;
+    }
+
+    if (!rentalData.startDate) {
+      newErrors.startDate = "Start date is required";
+      isValid = false;
+    }
+
+    if (!rentalData.endDate) {
+      newErrors.endDate = "End date is required";
+      isValid = false;
+    }
+
+    if (!rentalData.dailyRate || rentalData.dailyRate <= 0) {
+      newErrors.dailyRate = "Daily rate is required";
+      isValid = false;
+    }
+
+    if (!rentalData.depositAmount || rentalData.depositAmount <= 0) {
+      newErrors.depositAmount = "Deposit amount is required";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const isFormInvalid = hasSubmitted && (
+    !rentalData.vehicleId ||
+    !rentalData.driverId ||
+    !rentalData.startDate ||
+    !rentalData.endDate ||
+    !rentalData.dailyRate ||
+    !rentalData.depositAmount
+  );
 
   // Load data when in edit mode
   useEffect(() => {
@@ -129,6 +201,14 @@ const NewRentPage = () => {
         paymentStatus: rental.paymentStatus,
         deposit: rental.deposit,
         methodPayment: rental.methodPayment,
+      });
+      setFormValues({
+        vehicleId: rental.vehicleId,
+        driverId: rental.driverId,
+        startDate: rental.startDate,
+        endDate: rental.endDate,
+        dailyRate: rental.dailyRate,
+        depositAmount: rental.depositAmount,
       });
     } else {
       setMode("add");
@@ -153,6 +233,11 @@ const NewRentPage = () => {
       ...prev,
       ...data,
     }));
+    setFormValues((prev) => ({
+      ...prev,
+      vehicleId: data.vehicleId ?? prev.vehicleId,
+      driverId: data.driverId ?? prev.driverId,
+    }));
   };
 
   // Handler untuk Period component
@@ -164,6 +249,11 @@ const NewRentPage = () => {
     setRentalData((prev) => ({
       ...prev,
       ...data,
+    }));
+    setFormValues((prev) => ({
+      ...prev,
+      startDate: data.startDate,
+      endDate: data.endDate,
     }));
   };
 
@@ -177,6 +267,11 @@ const NewRentPage = () => {
       ...prev,
       ...data,
     }));
+    setFormValues((prev) => ({
+      ...prev,
+      dailyRate: data.dailyRate,
+      depositAmount: data.depositAmount,
+    }));
   };
 
   // Handler untuk Documents form
@@ -188,6 +283,12 @@ const NewRentPage = () => {
   };
 
   const handleConfirmRental = () => {
+    setHasSubmitted(true);
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsConfirmOpen(true);
   };
 
@@ -207,7 +308,7 @@ const NewRentPage = () => {
   };
 
   const handleCancel = () => {
-      window.location.href = "/dashboard/rent";
+    window.location.href = "/dashboard/rent";
   };
 
   return (
@@ -222,6 +323,7 @@ const NewRentPage = () => {
               vehicleId: rentalData.vehicleId,
               driverId: rentalData.driverId,
             }}
+            error={hasSubmitted ? errors : undefined}
           />
 
           {/* Section 2: Period */}
@@ -231,6 +333,7 @@ const NewRentPage = () => {
               startDate: rentalData.startDate,
               endDate: rentalData.endDate,
             }}
+            error={hasSubmitted ? errors : undefined}
           />
 
           {/* Section 3: Financials */}
@@ -241,19 +344,21 @@ const NewRentPage = () => {
               depositAmount: rentalData.depositAmount,
               methodPayment: rentalData.methodPayment,
             }}
+            error={hasSubmitted ? errors : undefined}
           />
 
           {/* Section 4: Documentation */}
           <DocumentsForm onDataChange={handleDocumentsChange} />
         </div>
 
-        {/* Summary Sidebar - Perbaikan ada di sini! */}
+{/* Summary Sidebar */}
         <Summary
           rentalData={rentalData}
           onConfirm={handleConfirmRental}
           onCancel={handleCancel}
           isSubmitting={isSubmitting}
           mode={mode}
+          isDisabled={isFormInvalid}
         />
       </div>
 
