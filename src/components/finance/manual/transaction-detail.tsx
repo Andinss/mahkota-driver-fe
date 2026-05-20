@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { RadioCard } from "@/components/ui/radio-card";
 import { Icon } from "@/components/ui/icon";
@@ -24,6 +24,7 @@ interface TransactionDetailProps {
   onPaymentMethodChange?: (value: string) => void;
   onAmountChange?: (value: string) => void;
   onNotesChange?: (value: string) => void;
+  hasSubmitted?: boolean;
 }
 
 const TransactionDetail = ({
@@ -37,11 +38,41 @@ const TransactionDetail = ({
   onPaymentMethodChange,
   onAmountChange,
   onNotesChange,
+  hasSubmitted = false,
 }: TransactionDetailProps) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showEwalletModal, setShowEwalletModal] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (hasSubmitted) {
+      const newErrors: FormErrors = {};
+
+      if (!paymentDate) {
+        newErrors.paymentDate = "Payment date is required";
+      }
+
+      if (!referenceNumber?.trim()) {
+        newErrors.referenceNumber = "Reference number is required";
+      } else if (referenceNumber.length < 3) {
+        newErrors.referenceNumber =
+          "Reference number must be at least 3 characters";
+      }
+
+      if (!paymentMethod) {
+        newErrors.paymentMethod = "Please select a payment method";
+      }
+
+      if (!amount) {
+        newErrors.amount = "Amount is required";
+      } else if (parseFloat(amount) <= 0) {
+        newErrors.amount = "Amount must be greater than 0";
+      }
+
+      setErrors(newErrors);
+    }
+  }, [hasSubmitted, paymentDate, referenceNumber, paymentMethod, amount]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};

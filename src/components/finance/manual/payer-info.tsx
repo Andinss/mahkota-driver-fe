@@ -56,13 +56,15 @@ interface PayerInfoProps {
   onSearchChange?: (value: string) => void;
   onPayerSelect?: (name: string, id: string) => void;
   selectedPayerId?: string; 
+  hasSubmitted?: boolean;
 }
 
 const PayerInfo = ({ 
   searchValue = "", 
   onSearchChange,
   onPayerSelect,
-  selectedPayerId 
+  selectedPayerId,
+  hasSubmitted = false
 }: PayerInfoProps) => {
   const [filteredDrivers, setFilteredDrivers] = useState(mockDrivers);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -105,6 +107,9 @@ const PayerInfo = ({
       <h3 className="text-base font-semibold text-[#111418] dark:text-white mb-4">
         Payer Information
       </h3>
+      {hasSubmitted && !selectedDriver && (
+        <p className="text-xs text-red-500 mb-4">Payer is required</p>
+      )}
       <div className="relative mb-6">
       <SearchInputWithClear
         placeholder="Search Driver ID or Name..."

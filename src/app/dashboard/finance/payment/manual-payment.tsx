@@ -101,6 +101,7 @@ const ManualPaymentPage = () => {
 
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const [searchValue, setSearchValue] = useState("");
   const [paymentDate, setPaymentDate] = useState("");
@@ -134,6 +135,7 @@ const ManualPaymentPage = () => {
   }, [paymentIdParam]);
 
    const handleSubmit = async () => {
+    setHasSubmitted(true);
     setIsSubmitting(true);
 
     const paymentData = {
@@ -171,11 +173,21 @@ const ManualPaymentPage = () => {
     setPaymentMethod("");
     setAmount("");
     setNotes("");
+    setHasSubmitted(false);
   };
 
   //  update selected payer
   const handlePayerSelect = (name: string, id: string) => {
     setSelectedPayer({ name, id });
+  };
+
+  const validateAll = (): boolean => {
+    if (!selectedPayer) return false;
+    if (!paymentDate) return false;
+    if (!referenceNumber?.trim() || referenceNumber.length < 3) return false;
+    if (!paymentMethod) return false;
+    if (!amount || parseFloat(amount) <= 0) return false;
+    return true;
   };
 
 
@@ -186,8 +198,9 @@ const ManualPaymentPage = () => {
           <PayerInfo
             searchValue={searchValue}
             onSearchChange={setSearchValue}
-            onPayerSelect={handlePayerSelect}  // TAMBAHKAN INI
-            selectedPayerId={selectedPayer?.id} 
+            onPayerSelect={handlePayerSelect}
+            selectedPayerId={selectedPayer?.id}
+            hasSubmitted={hasSubmitted}
           />
           <TransactionDetail
             paymentDate={paymentDate}
@@ -200,6 +213,7 @@ const ManualPaymentPage = () => {
             onPaymentMethodChange={setPaymentMethod}
             onAmountChange={setAmount}
             onNotesChange={setNotes}
+            hasSubmitted={hasSubmitted}
           />
         </div>
         <Summary
@@ -213,7 +227,9 @@ const ManualPaymentPage = () => {
           onCancel={handleCancel}   
           onClear={handleClear}      
           isSubmitting={isSubmitting} 
-          mode={mode}                
+          mode={mode}
+          onValidate={validateAll}
+          setHasSubmitted={setHasSubmitted}
         />
       </div>
     </div>
