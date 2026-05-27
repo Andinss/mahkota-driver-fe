@@ -5,6 +5,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Avatar } from "@/components/ui/avatar";
 import { DropdownNotif } from "@/components/notif";
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 // Mapping untuk path segment ke label yang readable
 const pathLabels: Record<string, string> = {
@@ -31,6 +32,7 @@ function generateBreadcrumbs(pathname: string) {
 }
 
 const Topbar = () => {
+  const { user } = useAuth();
   const pathname = usePathname();
   const breadcrumbs = generateBreadcrumbs(pathname);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -116,13 +118,13 @@ const Topbar = () => {
         <div className="flex items-center gap-3 cursor-pointer group">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors">
-              Sarah Jenkins
+              {user?.username || "User"}
             </p>
-            <p className="text-xs text-slate-500">Supervisor</p>
+            <p className="text-xs text-slate-500">{user?.email || "—"}</p>
           </div>
           <Avatar
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBWlskkdFoTQprusiYVu7an4AXhl_9-FDQvUqoV7CfJSu11thcCE5vg56M68qimVlCi6UKLy0TemBcJADCyasSX01GUoGRkbawpjU1ZmAMY-Q3l5L8MipeG8HQfoPZ7oLbMtatSz_6mnssWAwAAQC7qn7FDiraGFp_qcQ2JBGyR0Esxy0mOpcPFgg_qckqazyxa9aCAwYO9nZE9cDtkWMv81L4VX6zliMkx7Y5fj1RwV8KCuCKEGshMHI6DMr3a54zGOa8-eyg_jWH"
-            alt="Admin user profile avatar"
+            src={user?.profile_photo || ""}
+            alt="User profile avatar"
           />
         </div>
       </div>
