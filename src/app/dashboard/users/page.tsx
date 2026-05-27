@@ -4,63 +4,31 @@ import { AlertDialog } from "@/components/ui/alert";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ExportOptions } from "@/components/ui/export";
 import SearchBar from "@/components/user/dashboard/search-bar-user";
+import type { UserFilters } from "@/components/user/dashboard/search-bar-user";
 import { UserTable } from "@/components/user/dashboard/table-user";
 import { UserPagination } from "@/components/user/dashboard/user-pagination";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
-
-const users = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "081234567890",
-    avatar: "https://i.pravatar.cc/150?u=john",
-    role: {
-      name: "Administrator",
-    },
-    status: "active" as const,
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    phone: "081298765432",
-    avatar: "https://i.pravatar.cc/150?u=jane",
-    role: {
-      name: "Fleet Manager",
-    },
-    status: "inactive" as const,
-  },
-  {
-    id: "3",
-    name: "Bob Johnson",
-    email: "bob.johnson@example.com",
-    avatar: "https://i.pravatar.cc/150?u=bob",
-    role: {
-      name: "Fleet Manager",
-    },
-    status: "inactive" as const,
-    lastLogin: {
-      date: "2023-09-28",
-      time: "02:15 PM",
-    },
-  },
-];
+import { useState, useEffect, useCallback } from "react";
+import { usersApi } from "@/lib/api/users";
+import type { UserItem } from "@/lib/types/user";
 
 export default function UserList() {
-  const handleExport = (options: ExportOptions) => {
-    console.log("Export options from user page:", options);
-    alert(`Exporting user data as ${options.format} with ${options.type} data`);
-  };
-
   const searchParams = useSearchParams();
 
+  const [users, setUsers] = useState<UserItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 2;
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const itemsPerPage = 10;
 
-  // State confirm delete
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [filters, setFilters] = useState<UserFilters>({
+    search: "",
+    role: "",
+    status: "",
+  });
+
+  const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -68,14 +36,13 @@ export default function UserList() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState<"success" | "error">("success");
 
-  // Tampilkan alert jika ada success param di URL
   useEffect(() => {
     const success = searchParams.get("success");
     const user = searchParams.get("user");
 
     if (success && user) {
       const action = success === "updated" ? "Updated" : "Registration";
-      setAlertTitle(`${action} Successsful`);
+      setAlertTitle(`${action} Successful`);
       setAlertMessage(
         `User ${decodeURIComponent(user)} has been ${success} successfully.`,
       );
@@ -86,36 +53,70 @@ export default function UserList() {
     }
   }, [searchParams]);
 
-  // Calculate pagination values
-  const totalResults = users.length;
-  const totalPages = Math.ceil(totalResults / itemsPerPage);
+  const fetchUsers = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await usersApi.getList({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: filters.search || undefined,
+        role: filters.role || undefined,
+        status: filters.status || undefined,
+      });
+      setUsers(res.data);
+      setTotalPages(res.meta.totalPages);
+      setTotalResults(res.meta.total);
+    } catch {
+      setUsers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, filters]);
 
-  // Get current page users
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentUsers = users.slice(startIndex, endIndex);
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const handleFilterChange = (newFilters: UserFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const handleDeleteClick = (user: any) => {
+  const handleDeleteClick = (user: UserItem) => {
     setSelectedUser(user);
     setIsConfirmDeleteOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    console.log("Deleted user:", selectedUser);
+  const handleConfirmDelete = async () => {
+    if (!selectedUser) return;
+    try {
+      await usersApi.delete(selectedUser.id);
+      setAlertTitle("Delete Successful");
+      setAlertMessage(`User ${selectedUser.name} has been deleted successfully`);
+      setAlertType("success");
+      setIsAlertOpen(true);
+      fetchUsers();
+    } catch {
+      setAlertTitle("Delete Failed");
+      setAlertMessage("Failed to delete user. Please try again.");
+      setAlertType("error");
+      setIsAlertOpen(true);
+    }
     setIsConfirmDeleteOpen(false);
-    setAlertTitle("Delete Succesful");
-    setAlertMessage(`User ${selectedUser?.name} has been deleted successfully`);
-    setAlertType("success");
-    setIsAlertOpen(true);
     setSelectedUser(null);
   };
 
   const handleAlertClose = () => {
     setIsAlertOpen(false);
+  };
+
+  const handleExport = (options: ExportOptions) => {
+    console.log("Export options from user page:", options);
+    alert(`Exporting user data as ${options.format} with ${options.type} data`);
   };
 
   return (
@@ -126,20 +127,26 @@ export default function UserList() {
         buttonText="Add New User"
         buttonHref="/dashboard/users/new"
       />
-      <SearchBar />
+      <SearchBar filters={filters} onFilterChange={handleFilterChange} />
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <UserTable
-          users={currentUsers}
-          onDelete={handleDeleteClick}
-          onExport={handleExport}
-        />
-        <UserPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalResults={totalResults}
-          resultsPerPage={itemsPerPage}
-          onPageChange={handlePageChange}
-        />
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-500">Loading users...</div>
+        ) : (
+          <>
+            <UserTable
+              users={users}
+              onDelete={handleDeleteClick}
+              onExport={handleExport}
+            />
+            <UserPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalResults={totalResults}
+              resultsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+            />
+          </>
+        )}
       </div>
       <ConfirmDialog
         isOpen={isConfirmDeleteOpen}
@@ -152,7 +159,6 @@ export default function UserList() {
         variant="danger"
       />
 
-      {/* Alert Dialog */}
       <AlertDialog
         isOpen={isAlertOpen}
         onClose={handleAlertClose}

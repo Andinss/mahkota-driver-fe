@@ -1,9 +1,22 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { Select } from "@/components/ui/select";
 import Link from "next/link";
 
-const SearchBar = () => {
+export interface UserFilters {
+  search: string;
+  role: string;
+  status: string;
+}
+
+interface SearchBarProps {
+  filters: UserFilters;
+  onFilterChange: (filters: UserFilters) => void;
+}
+
+const SearchBar = ({ filters, onFilterChange }: SearchBarProps) => {
   return (
     <div className="flex-1 overflow-y-auto mt-5">
       <div className="flex flex-wrap items-end gap-4 mb-6 bg-white dark:bg-[#111418] p-4 rounded-xl border border-[#dbe0e6] dark:border-gray-800 shadow-sm">
@@ -15,7 +28,10 @@ const SearchBar = () => {
             <SearchInput
               className="w-full md:max-w-md"
               placeholder="Search by name, email, or ID..."
-              defaultValue=""
+              value={filters.search}
+              onChange={(e) =>
+                onFilterChange({ ...filters, search: e.target.value })
+              }
             />
           </div>
         </label>
@@ -24,7 +40,12 @@ const SearchBar = () => {
             Role
           </p>
           <div className="relative">
-            <Select>
+            <Select
+              value={filters.role}
+              onChange={(e) =>
+                onFilterChange({ ...filters, role: e.target.value })
+              }
+            >
               <option value="">All Roles</option>
               <option value="admin">Administrator</option>
               <option value="manager">Fleet Manager</option>
@@ -38,7 +59,12 @@ const SearchBar = () => {
             Status
           </p>
           <div className="relative">
-            <Select>
+            <Select
+              value={filters.status}
+              onChange={(e) =>
+                onFilterChange({ ...filters, status: e.target.value })
+              }
+            >
               <option value="">All Statuses</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>

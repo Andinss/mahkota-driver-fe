@@ -55,8 +55,12 @@ export function ContactInfoForm({
 
     const phoneNumber = formData.get("phoneNumber") as string;
     const email = formData.get("email") as string;
-    const emergencyContactNumber = formData.get("emergencyContactNumber") as string;
-    const emergencyContactEmail = formData.get("emergencyContactEmail") as string;
+    const emergencyContactNumber = formData.get(
+      "emergencyContactNumber",
+    ) as string;
+    const emergencyContactEmail = formData.get(
+      "emergencyContactEmail",
+    ) as string;
     const house = formData.get("house") as string;
     const permanentAddress = formData.get("permanentAddress") as string;
 
@@ -75,7 +79,8 @@ export function ContactInfoForm({
     if (!emergencyContactNumber?.trim()) {
       newErrors.emergencyContactNumber = "Emergency contact number is required";
     } else if (!/^\d{10,15}$/.test(emergencyContactNumber.replace(/\D/g, ""))) {
-      newErrors.emergencyContactNumber = "Emergency contact number must be 10-15 digits";
+      newErrors.emergencyContactNumber =
+        "Emergency contact number must be 10-15 digits";
     }
 
     if (!emergencyContactEmail?.trim()) {
@@ -89,7 +94,8 @@ export function ContactInfoForm({
     }
 
     if (!readyToSignContract) {
-      newErrors.readyToSignContract = "Please select if you are ready to sign contract";
+      newErrors.readyToSignContract =
+        "Please select if you are ready to sign contract";
     }
 
     if (!permanentAddress?.trim()) {
@@ -99,7 +105,8 @@ export function ContactInfoForm({
     }
 
     if (!willingToBeSurveyed) {
-      newErrors.willingToBeSurveyed = "Please select if you are willing to be surveyed";
+      newErrors.willingToBeSurveyed =
+        "Please select if you are willing to be surveyed";
     }
 
     setErrors(newErrors);
@@ -196,7 +203,12 @@ export function ContactInfoForm({
             />
 
             <div>
-              <Select id="house" name="house" label="House" error={errors.house}>
+              <Select
+                id="house"
+                name="house"
+                label="House"
+                error={errors.house}
+              >
                 <option value="">Select house type</option>
                 <option value="contract">Contract</option>
                 <option value="property_parent">Property Parent</option>
@@ -227,7 +239,9 @@ export function ContactInfoForm({
                 />
               </div>
               {errors.readyToSignContract && (
-                <p className="text-xs text-red-500">{errors.readyToSignContract}</p>
+                <p className="text-xs text-red-500">
+                  {errors.readyToSignContract}
+                </p>
               )}
             </div>
 
@@ -239,15 +253,16 @@ export function ContactInfoForm({
                 Permanent Address <span className="text-red-500">*</span>
               </label>
               <textarea
-                className={`w-full rounded-lg border bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary h-auto ${errors.permanentAddress ? "border-red-500" : "border-[#dbe0e6] dark:border-[#4b5563]"}`}
+                className={`w-full rounded-lg border bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary h-auto ${errors.permanentAddress ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-[#dbe0e6] dark:border-[#4b5563]"}`}
                 placeholder="Enter full permanent address including city, state, and zip code"
                 name="permanentAddress"
                 id="permanentAddress"
                 rows={2}
-                required
               />
               {errors.permanentAddress && (
-                <p className="text-xs text-red-500 mt-1">{errors.permanentAddress}</p>
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.permanentAddress}
+                </p>
               )}
             </div>
 
@@ -277,7 +292,9 @@ export function ContactInfoForm({
                     />
                   </div>
                   {errors.willingToBeSurveyed && (
-                    <p className="text-xs text-red-500">{errors.willingToBeSurveyed}</p>
+                    <p className="text-xs text-red-500">
+                      {errors.willingToBeSurveyed}
+                    </p>
                   )}
                 </div>
               </div>

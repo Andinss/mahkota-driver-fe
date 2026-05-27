@@ -6,7 +6,7 @@ import { Select } from "@/components/ui/select";
 import { AlertDialog } from "@/components/ui/alert";
 
 export interface UserFormData {
-  fullname: string;
+  username: string;
   email: string;
   phone: string;
   role: string;
@@ -24,7 +24,7 @@ interface AddUserFormProps {
 }
 
 interface FormErrors {
-  fullname?: string;
+  username?: string;
   email?: string;
   phone?: string;
   role?: string;
@@ -40,7 +40,7 @@ export function AddUserForm({
 }: AddUserFormProps) {
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
   const [formValues, setFormValues] = useState({
-    fullname: initialData?.fullname || "",
+    username: initialData?.username || "",
     email: initialData?.email || "",
     phone: initialData?.phone || "",
     role: initialData?.role || "",
@@ -54,7 +54,7 @@ export function AddUserForm({
     if (initialData) {
       setIsActive(initialData.isActive);
       setFormValues({
-        fullname: initialData.fullname || "",
+        username: initialData.username || "",
         email: initialData.email || "",
         phone: initialData.phone || "",
         role: initialData.role || "",
@@ -66,19 +66,19 @@ export function AddUserForm({
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formValues.fullname.trim()) {
-      newErrors.fullname = "Full name is required";
-    } else if (formValues.fullname.trim().length < 2) {
-      newErrors.fullname = "Full name must be at least 2 characters";
+    if (!formValues.username?.trim()) {
+      newErrors.username = "Username is required";
+    } else if (formValues.username.trim().length < 2) {
+      newErrors.username = "Username must be at least 2 characters";
     }
 
-    if (!formValues.email.trim()) {
+    if (!formValues.email?.trim()) {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)) {
       newErrors.email = "Please enter a valid email address";
     }
 
-    if (!formValues.phone.trim()) {
+    if (!formValues.phone?.trim()) {
       newErrors.phone = "Phone number is required";
     } else if (!/^\d{10,15}$/.test(formValues.phone.replace(/\D/g, ""))) {
       newErrors.phone = "Phone number must be 10-15 digits";
@@ -100,7 +100,7 @@ export function AddUserForm({
     }
 
     const data: UserFormData = {
-      fullname: formValues.fullname,
+      username: formValues.username,
       email: formValues.email,
       phone: formValues.phone,
       role: formValues.role,
@@ -113,7 +113,7 @@ export function AddUserForm({
 
   const handleSaveDraft = () => {
     const draftData: UserFormData = {
-      fullname: formValues.fullname,
+      username: formValues.username,
       email: formValues.email,
       phone: formValues.phone,
       role: formValues.role,
@@ -121,7 +121,7 @@ export function AddUserForm({
       avatar: avatar,
     };
 
-     // Simpan ke localStorage
+    // Simpan ke localStorage
     localStorage.setItem("user_draft", JSON.stringify(draftData));
     setIsDraftAlertOpen(true);
     onSaveDraft?.();
@@ -166,8 +166,8 @@ export function AddUserForm({
   const buttonText = isSubmitting
     ? "Processing..."
     : mode === "add"
-    ? "Create User"
-    : "Update User";
+      ? "Create User"
+      : "Update User";
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
@@ -180,9 +180,7 @@ export function AddUserForm({
               <h3 className="text-[#111418] dark:text-white text-lg font-bold mb-4">
                 Personal Photo
               </h3>
-              <div
-                className="relative group"
-              >
+              <div className="relative group">
                 <div
                   className={`flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] px-6 py-16 hover:border-primary transition-colors cursor-pointer ${
                     avatar ? "py-8" : ""
@@ -308,14 +306,14 @@ export function AddUserForm({
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
-                id="fullname"
-                name="fullname"
-                label="Full Name"
-                placeholder="Enter full name"
+                id="username"
+                name="username"
+                label="Username"
+                placeholder="Enter username"
                 required
-                value={formValues.fullname}
-                onChange={(e) => handleInputChange("fullname", e.target.value)}
-                error={errors.fullname}
+                value={formValues.username}
+                onChange={(e) => handleInputChange("username", e.target.value)}
+                error={errors.username}
               />
 
               <Input
@@ -429,7 +427,7 @@ export function AddUserForm({
           </form>
         </div>
       </div>
-       <AlertDialog
+      <AlertDialog
         isOpen={isDraftAlertOpen}
         onClose={handleDraftAlertClose}
         title="Draft Saved Successfully"
@@ -440,4 +438,4 @@ export function AddUserForm({
       />
     </div>
   );
-}   
+}

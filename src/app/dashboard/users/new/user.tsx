@@ -5,37 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { AddUserForm, UserFormData } from "@/components/user/new/add-user-form";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import CardUser from "@/components/user/new/card-user";
-
-const mockUsers: Record<string, any> = {
-  "1": {
-    id: "1",
-    fullname: "John Doe",
-    email: "john.doe@example.com",
-    phone: "081234567890",
-    role: "administrator",
-    isActive: true,
-    avatar: "https://i.pravatar.cc/150?u=john", 
-  },
-  "2": {
-    id: "2",
-    fullname: "Jane Smith",
-    email: "jane.smith@example.com",
-    phone: "081298765432",
-    role: "fleet_manager",
-    isActive: false,
-    avatar: "https://i.pravatar.cc/150?u=jane",
-  },
-  "3": {
-    id: "3",
-    fullname: "Bob Johnson",
-    email: "bob.johnson@example.com",
-    phone: "081298765432",
-    role: "fleet_manager",
-    isActive: false,
-   avatar: "https://i.pravatar.cc/150?u=bob",
-  },
-};
-
+import { usersApi } from "@/lib/api/users";
 
 export default function AddNewUserPage() {
   const searchParams = useSearchParams();
@@ -49,60 +19,75 @@ export default function AddNewUserPage() {
   const [pendingData, setPendingData] = useState<UserFormData | null>(null);
 
   useEffect(() => {
-    if (userIdParam && mockUsers[userIdParam]) {
-      const user = mockUsers[userIdParam];
+    if (userIdParam) {
       setMode("edit");
-      setInitialData({
-        fullname: user.fullname,
-        email: user.email,
-        phone: user.phone,
-        role: user.role,
-        isActive: user.isActive,
-        avatar: user.avatar,
-      });
+      usersApi
+        .getById(userIdParam)
+        .then((res) => {
+          const u = res.data;
+          setInitialData({
+            username: u.name,
+            email: u.email,
+            phone: u.phone || "",
+            role: u.role.name.toLowerCase(),
+            isActive: u.status === "active",
+            avatar: u.avatar,
+          });
+        })
+        .catch(() => {
+          setMode("add");
+        });
     } else {
       setMode("add");
       setInitialData(undefined);
     }
   }, [userIdParam]);
 
-   const handleSubmit = (data: UserFormData) => {
+  const handleSubmit = (data: UserFormData) => {
     setPendingData(data);
     setIsConfirmOpen(true);
-   };
+  };
 
-   const handleConfirmSubmit = async () => {
+  const handleConfirmSubmit = async () => {
     if (!pendingData) return;
 
     setIsSubmitting(true);
     setIsConfirmOpen(false);
 
-    console.log("User Data:", pendingData);
+    try {
+      const payload = {
+        name: pendingData.username,
+        email: pendingData.email,
+        phone: pendingData.phone,
+        role: pendingData.role,
+        isActive: pendingData.isActive,
+        avatar: pendingData.avatar,
+      };
 
-    // if (mode === "edit") {
-    //   console.log("Updating user:", userIdParam);
-    //   alert(`User ${pendingData.fullname} updated successfully`);
-    // } else {
-    //   console.log("creating new user");
-    //   alert(`User ${pendingData.fullname} created successfully`);
-    // }
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
+      if (mode === "edit" && userIdParam) {
+        await usersApi.update(userIdParam, payload);
+      } else {
+        await usersApi.create(payload);
+      }
 
       const action = mode === "edit" ? "updated" : "registered";
-      const userName = pendingData?.fullname || "New User";
+      const userName = pendingData?.username || "New User";
+      window.location.href = `/dashboard/users?success=${action}&user=${encodeURIComponent(userName)}`;
+    } catch {
+      alert("Failed to save user. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    window.location.href = `/dashboard/users?success=${action}&user=${encodeURIComponent(userName)}`;
-   };
-   const handleCancel = () => {
+  const handleCancel = () => {
     window.location.href = "/dashboard/users";
-   };
+  };
 
-   const handleSaveDraft = () => {
+  const handleSaveDraft = () => {
     console.log("Save draft:", initialData);
-   };
-  
+  };
+
   return (
     <div className="p-8">
       <AddUserForm
@@ -115,8 +100,7 @@ export default function AddNewUserPage() {
       />
       <CardUser />
 
-      {/* confirm dialog */}
-       <ConfirmDialog
+      <ConfirmDialog
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleConfirmSubmit}

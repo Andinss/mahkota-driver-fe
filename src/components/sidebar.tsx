@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 
 const Sidebar = () => {
+  const { logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, height: 0 });
   const menuRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
@@ -89,10 +91,7 @@ const Sidebar = () => {
 
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
   e.preventDefault();
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  sessionStorage.clear();
-  router.push("/auth/login");
+  logout();
 };
 
   return (

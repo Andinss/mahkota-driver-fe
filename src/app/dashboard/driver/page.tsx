@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Suspense } from "react";
 import { DriverStatsCard } from "@/components/driver/dashboard/driver-stats-card";
 import {
@@ -9,62 +9,17 @@ import {
 } from "@/components/driver/dashboard/driver-table-filters";
 import { DriverTable } from "@/components/driver/dashboard/driver-table";
 import { DriverPagination } from "@/components/driver/dashboard/driver-pagination";
-import { Driver } from "@/components/driver/dashboard/driver-table-row";
+import type { Driver } from "@/components/driver/dashboard/driver-table-row";
 import { PageHeader } from "@/components/page-header";
 import { useRouter } from "next/navigation";
-import { ExportOptions } from "@/components/ui/export";
-
-// Mock data
-const mockDrivers: Driver[] = [
-  {
-    name: "Marcus Wright",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD-qYfFL3In7JL4maoOxB8QqNbOANCIYNhsY-l1AGrUUadhZ0roktjb5ib4cNoakVh_oO__7Z4RZhjXwWeAzcra7WLVqKA8KiZ6Hyl_FqEE5p19pJCWIFFe-6P_hDEvf_LZnm0vUD03dfgzwIMZ0zZhy3YHHoX-gZ5gY90BD8zmSeBpJoQ6y0ivDnU6ckC0HAMrzAvJ2BVNqeSZVYnlBxyWLH8LzYWuXuRhMaAgU0M_pozCE96pLx3mDrVtr1TGEBz19KoRro9nKAo",
-    joinedDate: "Joined June 2023",
-    employeeId: "MD-0042",
-    phoneNumber: "+62 812-3456-7890",
-    licenseType: "Class A",
-    totalTrips: 128,
-    status: "Active",
-  },
-  {
-    name: "Sarah Jenkins",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDAJRxtoYIvLfiJORIJcK7_u7IiLQnwFBDoQumbz_rlneeqVavyA8jYKVsr2hb2DZOyAMNxvuySNSD3LWjeZQj2zyqlm2wJ1NArKZ8qjbV4XqkEnHOp1dgb6n-KmZKwk7eVD6oKI_jCqOaUH2MY8bFD65kjDyVsLjeZQXUZwVbc4XYJ6ZURFQXli1XkCbLxWFOcj2Czdgqrf_iQhHPvVlPm7yWEou5vvw8_RhUGXqUdul-pE8763c0l47ZPxEcAtfa2C__Hivdujj8",
-    joinedDate: "Joined Feb 2022",
-    employeeId: "MD-0015",
-    phoneNumber: "+62 811-9876-5432",
-    licenseType: "Class B",
-    totalTrips: 245,
-    status: "Active",
-  },
-  {
-    name: "David Chen",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCg3OtbSiDMbS2fQauodlopCPX-ygSjB64loonPwECzcfUeuos7v7dDf81NRGtxDV0OHo5Snx274k0ole2vMlXn_4NjZaaNDT6uA1lwF6XU_8NqE7uzAMDpwgRwu9r6Ad02UGg40EpS_9Q80MfPadOdKKdcDUKLNm7yE13M4wnsNtEYuQrQpfNmItKdpFZwh-v3zsS9DvPZNwaDZsd-eM05ccamSZQIVNACyYIl57b2Q5tjdNOzSr2e89Cadua8-j3EL_pFAz4CIQ8",
-    joinedDate: "Joined Oct 2023",
-    employeeId: "MD-0068",
-    phoneNumber: "+62 822-1122-3344",
-    licenseType: "Class A",
-    totalTrips: 12,
-    status: "On Leave",
-  },
-  {
-    name: "Elena Rodriguez",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDFJhxtLHfGYG6h7m8pS8rivEJjWEsl5cbpcqCrh_fO4amNI0ldFdtZAT9VUdkCcA9x_k60lAzFaojyQ-IDSAcZLo9PcSoM2wGt5dZMMBvDGcXvkcMJEAD4Ab2iaeoneJgaSRy2UZDSQ461FXjG5_s0LyChu9OiM4TTgBbG28bUjvx0NGeZSI_Cl5ILrrTnjHcMoYwoglyuiMVcebapHUXEp-iLqFnaO7Q54DHpZe_Ff5a7q2Q4ode_SffCfUDv7lxEBePa2jFBx2Q",
-    joinedDate: "Joined Jan 2021",
-    employeeId: "MD-0008",
-    phoneNumber: "+62 855-6677-8899",
-    licenseType: "Class A",
-    totalTrips: 512,
-    status: "Inactive",
-  },
-];
+import type { ExportOptions } from "@/components/ui/export";
+import { driverApi } from "@/lib/api/driver";
+import type { DriverItem } from "@/lib/types/driver";
 
 export default function DriverPage() {
-  const router = useRouter(); 
-  const [drivers, setDrivers] = useState<Driver[]>(mockDrivers);
+  const router = useRouter();
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<DriverFilters>({
     search: "",
     performance: "Performance: All",
@@ -72,36 +27,52 @@ export default function DriverPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Change to 5 untuk tampilan lebih baik
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const itemsPerPage = 10;
 
-  // Calculate real stats from current drivers data
-  const totalDrivers = drivers.length;
+  const fetchDrivers = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const params: Record<string, string | number | undefined> = {
+        page: currentPage,
+        limit: itemsPerPage,
+      };
+      if (filters.search) params.search = filters.search;
+      if (filters.status && filters.status !== "All Statuses") params.status = filters.status;
+
+      const res = await driverApi.getList(params);
+      const mapped: Driver[] = res.data.map((item: DriverItem) => ({
+        name: item.name,
+        imageUrl: item.imageUrl,
+        joinedDate: item.joinedDate,
+        employeeId: item.employeeId,
+        phoneNumber: item.phoneNumber,
+        licenseType: item.licenseType,
+        totalTrips: item.totalTrips,
+        status: item.status,
+      }));
+      setDrivers(mapped);
+      setTotalPages(res.meta.totalPages);
+      setTotalResults(res.meta.total);
+    } catch {
+      setDrivers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, filters.search, filters.status]);
+
+  useEffect(() => {
+    fetchDrivers();
+  }, [fetchDrivers]);
+
   const activeDrivers = drivers.filter((d) => d.status === "Active").length;
   const onLeaveDrivers = drivers.filter((d) => d.status === "On Leave").length;
   const inactiveDrivers = drivers.filter((d) => d.status === "Inactive").length;
 
-  // Filter drivers based on search and status
-  const filteredDrivers = drivers.filter((driver) => {
-    const matchesSearch =
-      driver.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-      driver.employeeId.toLowerCase().includes(filters.search.toLowerCase());
-    const matchesStatus =
-      filters.status === "All Statuses" || driver.status === filters.status;
-    return matchesSearch && matchesStatus;
-  });
-
-  // Calculate pagination based on filtered data
-  const totalResults = filteredDrivers.length;
-  const totalPages = Math.ceil(totalResults / itemsPerPage);
-
-  // Get current page drivers
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentDrivers = filteredDrivers.slice(startIndex, endIndex);
-
   const handleFilterChange = (newFilters: DriverFilters) => {
     setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
@@ -111,35 +82,23 @@ export default function DriverPage() {
   };
 
   const handleExport = (options?: ExportOptions) => {
-        if (!options) return;
-        console.log("Export options from driver page:", options);
-        alert(`Exporting driver data as ${options.format} with ${options.type} data`);
-      };
+    if (!options) return;
+    console.log("Export options from driver page:", options);
+    alert(`Exporting driver data as ${options.format} with ${options.type} data`);
+  };
 
-   //  HANDLERS detail driver
-    const handleDetails = (driver: Driver) => {
-      console.log("Details:", driver);
-     router.push(`/dashboard/driver/detail`);
-    };
+  const handleDetails = (driver: Driver) => {
+    console.log("Details:", driver);
+    router.push(`/dashboard/driver/detail`);
+  };
 
-  // Handle delete driver
-  const handleDeleteDriver = (driverId: string) => {
-    // Filter out the deleted driver
-    const updatedDrivers = drivers.filter(
-      (driver) => driver.employeeId !== driverId,
-    );
-    setDrivers(updatedDrivers);
-
-    // Adjust current page if needed
-    const newTotalPages = Math.ceil(
-      filteredDrivers.filter((d) => d.employeeId !== driverId).length /
-        itemsPerPage,
-    );
-    if (currentPage > newTotalPages && newTotalPages > 0) {
-      setCurrentPage(newTotalPages);
+  const handleDeleteDriver = async (driverId: string) => {
+    try {
+      await driverApi.delete(driverId);
+      fetchDrivers();
+    } catch {
+      alert("Failed to delete driver");
     }
-
-    console.log(`Driver ${driverId} deleted successfully`);
   };
 
   return (
@@ -154,12 +113,12 @@ export default function DriverPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-5 mb-8">
         <DriverStatsCard
           title="Total Drivers"
-          value={totalDrivers.toString()}
+          value={totalResults.toString()}
           icon="groups"
           iconColor="text-primary"
           trend={{
             icon: "trending_up",
-            text: "+3 newly joined",
+            text: "All registered drivers",
             textColor: "text-emerald-500",
           }}
         />
@@ -181,7 +140,7 @@ export default function DriverPage() {
           iconColor="text-amber-500"
           trend={{
             icon: "info",
-            text: "4 returning tomorrow",
+            text: "Temporarily unavailable",
             textColor: "text-slate-400",
           }}
         />
@@ -198,29 +157,34 @@ export default function DriverPage() {
         />
       </div>
 
-       <Suspense fallback={<div className="rounded-xl border p-4 text-center">Loading filters...</div>}>
-        <DriverTableFilters 
+      <Suspense fallback={<div className="rounded-xl border p-4 text-center">Loading filters...</div>}>
+        <DriverTableFilters
           filters={filters}
           onFilterChange={handleFilterChange}
         />
       </Suspense>
       <div className="bg-white mt-5 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <DriverTable
-          drivers={currentDrivers}
-          onDeleteDriver={handleDeleteDriver}
-          onExport={handleExport}
-          onDetailsDriver={handleDetails} 
-        />
-        {/* Add separator line between table and pagination */}
-        <div className="border-t border-slate-200 dark:border-slate-800">
-          <DriverPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalResults={totalResults}
-            resultsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-          />
-        </div>
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-500">Loading drivers...</div>
+        ) : (
+          <>
+            <DriverTable
+              drivers={drivers}
+              onDeleteDriver={handleDeleteDriver}
+              onExport={handleExport}
+              onDetailsDriver={handleDetails}
+            />
+            <div className="border-t border-slate-200 dark:border-slate-800">
+              <DriverPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalResults={totalResults}
+                resultsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

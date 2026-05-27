@@ -2,11 +2,11 @@
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { DateInput } from "@/components/ui/date-input";
+
 
 export interface DocumentsData {
   simFront?: File;
-  simExpiry: string;
+
   ktpFront?: File;
   npwpFront?: File;
   houseGaragePhoto?: File;
@@ -14,7 +14,6 @@ export interface DocumentsData {
 
 interface FormErrors {
   simFront?: string;
-  simExpiry?: string;
   ktpFront?: string;
   npwpFront?: string;
 }
@@ -47,11 +46,14 @@ export function DocumentsForm({
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, simFront: "File size must be less than 2MB" }));
+        setErrors((prev) => ({
+          ...prev,
+          simFront: "File size must be less than 2MB",
+        }));
         return;
       }
       setSimFile(file);
-      setErrors(prev => ({ ...prev, simFront: undefined }));
+      setErrors((prev) => ({ ...prev, simFront: undefined }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setSimPreview(reader.result as string);
@@ -64,11 +66,14 @@ export function DocumentsForm({
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, ktpFront: "File size must be less than 2MB" }));
+        setErrors((prev) => ({
+          ...prev,
+          ktpFront: "File size must be less than 2MB",
+        }));
         return;
       }
       setKtpFile(file);
-      setErrors(prev => ({ ...prev, ktpFront: undefined }));
+      setErrors((prev) => ({ ...prev, ktpFront: undefined }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setKtpPreview(reader.result as string);
@@ -81,11 +86,14 @@ export function DocumentsForm({
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, npwpFront: "File size must be less than 2MB" }));
+        setErrors((prev) => ({
+          ...prev,
+          npwpFront: "File size must be less than 2MB",
+        }));
         return;
       }
       setNpwpFile(file);
-      setErrors(prev => ({ ...prev, npwpFront: undefined }));
+      setErrors((prev) => ({ ...prev, npwpFront: undefined }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setNpwpPreview(reader.result as string);
@@ -146,22 +154,10 @@ export function DocumentsForm({
   };
 
   const validateForm = (): boolean => {
-    const formData = new FormData(formRef.current || undefined);
     const newErrors: FormErrors = {};
-    const simExpiry = formData.get("simExpiry") as string;
 
     if (!simFile) {
       newErrors.simFront = "Driver's License (SIM) is required";
-    }
-
-    if (!simExpiry) {
-      newErrors.simExpiry = "SIM expiry date is required";
-    } else {
-      const expiryDate = new Date(simExpiry);
-      const today = new Date();
-      if (expiryDate < today) {
-        newErrors.simExpiry = "SIM has expired. Please renew your license.";
-      }
     }
 
     if (!ktpFile) {
@@ -186,7 +182,6 @@ export function DocumentsForm({
     const formData = new FormData(e.currentTarget);
     const data: DocumentsData = {
       simFront: simFile,
-      simExpiry: formData.get("simExpiry") as string,
       ktpFront: ktpFile,
       npwpFront: npwpFile,
       houseGaragePhoto: houseGarageFile,
@@ -219,7 +214,8 @@ export function DocumentsForm({
           {/* SIM Upload */}
           <div className="space-y-4">
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Driver&apos;s License (SIM) <span className="text-red-500">*</span>
+              Driver&apos;s License (SIM){" "}
+              <span className="text-red-500">*</span>
             </label>
             {errors.simFront && (
               <p className="text-xs text-red-500">{errors.simFront}</p>
@@ -273,16 +269,6 @@ export function DocumentsForm({
                 />
               </div>
             )}
-          </div>
-
-          <div className="space-y-4">
-            <DateInput
-              id="simExpiry"
-              name="simExpiry"
-              label="SIM Expiry Date"
-              required
-              error={errors.simExpiry}
-            />
           </div>
 
           {/* KTP Upload */}

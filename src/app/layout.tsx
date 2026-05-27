@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
 
 const inter = Inter({
@@ -36,7 +37,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 antialiased overflow-hidden`}
       >
-        <div className="flex h-screen w-full overflow-hidden">{children}</div>
+        <AuthProvider>
+          <div className="flex h-screen w-full overflow-hidden">{children}</div>
+        </AuthProvider>
       </body>
     </html>
   );

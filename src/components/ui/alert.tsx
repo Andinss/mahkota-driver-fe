@@ -81,14 +81,16 @@ export const AlertDialog = ({
         <p className="text-sm text-[#617589] dark:text-[#94a3b8] mb-6">
           {message}
         </p>
-        <div className="flex gap-3 justify-center">
-          <Button
-            variant={type === "error" ? "danger" : "primary"}
-            onClick={onClose}
-          >
-            {confirmText}
-          </Button>
-        </div>
+        {confirmText && (
+          <div className="flex gap-3 justify-center">
+            <Button
+              variant={type === "error" ? "danger" : "primary"}
+              onClick={onClose}
+            >
+              {confirmText}
+            </Button>
+          </div>
+        )}
       </div>
     </Modal>
   );
