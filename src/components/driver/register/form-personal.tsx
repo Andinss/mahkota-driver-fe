@@ -165,7 +165,8 @@ export function PersonalDetailsForm({
         />
 
         <Select id="gender" name="gender" label="Gender"
-         defaultValue={initialValues?.gender} error={errors.gender}>
+         defaultValue={initialValues?.gender} error={errors.gender}
+         key={"gender-" + (initialValues?.gender || "")}>
           <option value="">Select Gender</option> 
           <option value="Male">Male</option>
           <option value="Female">Female</option>
@@ -186,7 +187,8 @@ export function PersonalDetailsForm({
         </div>
 
         <Select id="citizenship" name="citizenship" label="Citizenship"
-        defaultValue={initialValues?.citizenship} error={errors.citizenship}>
+        defaultValue={initialValues?.citizenship} error={errors.citizenship}
+        key={"citizenship-" + (initialValues?.citizenship || "")}>
           <option value="">Select Citizenship</option>
           <option value="Indonesian (WNI)">Indonesian (WNI)</option>
           <option value="Foreigner (WNA)">Foreigner (WNA)</option>

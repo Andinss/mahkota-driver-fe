@@ -1,27 +1,28 @@
 export interface UserItem {
   id: string;
-  name: string;
+  username: string;
   email: string;
-  phone?: string;
-  avatar?: string;
-  role: {
-    name: string;
-    color?: string;
-  };
-  status: "active" | "inactive";
-  lastLogin?: {
-    date: string;
-    time: string;
-  };
+  is_active: boolean;
+  role?: string;
+  password?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CreateUserPayload {
-  name: string;
+  username: string;
   email: string;
-  phone: string;
-  role: string;
-  isActive: boolean;
-  avatar?: string;
+  password: string;
+  role?: string;
+  is_active?: boolean;
+}
+
+export interface UpdateUserPayload extends Partial<CreateUserPayload> {}
+
+export interface UserListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
 }
 
 export interface UpdateUserPayload extends Partial<CreateUserPayload> {}

@@ -13,93 +13,81 @@ import {
 import {
   DocumentsForm,
   DocumentsData,
+  DocumentsUrlData,
 } from "@/components/driver/register/documents-form";
 import { ReviewStep } from "@/components/driver/register/review-step";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { driverApi } from "@/lib/api/driver";
+import { renameFile } from "@/lib/utils/file";
+import { AlertDialog } from "@/components/ui/alert";
 
 type Step = 1 | 2 | 3 | 4;
 
-// MOCK DATA 
-const mockDriverData: Record<string, any> = {
-  "MD-0042": {
-    personal: {
-      firstName: "Marcus",
-      lastName: "Wright",
-      dateOfBirth: "1988-05-14",
-      gender: "Male",
-      employeeId: "MD-0042",
-      citizenship: "Indonesian (WNI)",
-      phoneNumber: "+62 812-3456-7890",
-      email: "marcus.wright@email.com",
-    },
-    contact: {
-      phoneNumber: "+62 812-3456-7890",
-      email: "marcus.wright@email.com",
-      emergencyContactName: "Jane Wright",
-      emergencyContactRelationship: "Spouse",
-      permanentAddress: "Jl. Merdeka No. 42, Jakarta Pusat",
-      addressType: "contract",
-    },
-  },
-  "MD-0015": {
-    personal: {
-      firstName: "Sarah",
-      lastName: "Jenkins",
-      dateOfBirth: "1990-03-22",
-      gender: "Female",
-      employeeId: "MD-0015",
-      citizenship: "Indonesian (WNI)",
-      phoneNumber: "+62 811-9876-5432",
-      email: "sarah.jenkins@email.com",
-    },
-    contact: {
-      phoneNumber: "+62 811-9876-5432",
-      email: "sarah.jenkins@email.com",
-      emergencyContactName: "Mike Jenkins",
-      emergencyContactRelationship: "Brother",
-      permanentAddress: "Jl. Sudirman No. 15, Jakarta Selatan",
-      addressType: "property_parent",
-    },
-  },
-};
-
 export default function DriverRegisterPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const driverIdParam = searchParams.get("id");
   const [mode, setMode] = useState<"add" | "edit">("add");
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [formData, setFormData] = useState<{
     personal?: PersonalDetailsData;
     contact?: ContactInfoData;
     documents?: DocumentsData;
+    documentsUrl?: DocumentsUrlData;
     photo?: string;
   }>({});
 
   useEffect(() => {
-    if (driverIdParam && mockDriverData[driverIdParam]) {
+    if (driverIdParam) {
       setMode("edit");
-      setIsLoading(true);
-      // Simulasi loading data
-      const driver = mockDriverData[driverIdParam];
-      setFormData({
-        personal: driver.personal,
-        contact: driver.contact,
+      driverApi.getList({limit: 9999} as any).then((res: any) => {
+        const items = Array.isArray(res.data) ? res.data : [];
+        const driver: any = items.find((d: any) => String(d.id) === driverIdParam || d.employee_id === driverIdParam);
+        if (driver) {
+          console.log("Driver data for edit:", driver);
+          const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+          const buildUrl = (path: string) => path ? (path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`) : "";
+          const photo = driver.profile_photo || "";
+          setFormData({
+            personal: {
+              firstName: driver.first_name || "",
+              lastName: driver.last_name || "",
+              dateOfBirth: driver.date_of_birth || "",
+              gender: driver.gender || "",
+              employeeId: driver.employee_id || "",
+              citizenship: driver.citizenship || "Indonesian (WNI)",
+              phoneNumber: driver.phone || "",
+              email: driver.email || "",
+            },
+            contact: {
+              emergencyContactName: driver.emergency_contact || "",
+              emergencyContactRelationship: driver.emergency_email || "",
+              permanentAddress: driver.permanent_address || "",
+              addressType: driver.house_type || "",
+              readySignContract: driver.ready_sign_contract != null ? String(driver.ready_sign_contract) : "",
+              willingToBeSurveyed: driver.willing_to_be_survey != null ? String(driver.willing_to_be_survey) : "",
+            },
+            photo: buildUrl(photo),
+            documentsUrl: {
+              sim: buildUrl(driver.sim_card || ""),
+              ktp: buildUrl(driver.national_id_card || ""),
+              npwp: buildUrl(driver.npwp_photo || ""),
+              house: buildUrl(driver.garage_photo || ""),
+            },
+          });
+        }
+      }).catch(() => {
+        setErrorMessage("Failed to load driver data.");
+        setShowError(true);
       });
-      setIsLoading(false);
     } else {
       setMode("add");
     }
   }, [driverIdParam]);
-
-  if (isLoading) {
-    return (
-      <div className="p-7 flex justify-center items-center h-64">
-        <div className="text-center">Loading driver data...</div>
-      </div>
-    );
-  }
 
   const handlePersonalNext = (data: PersonalDetailsData) => {
     setFormData({ ...formData, personal: data });
@@ -123,17 +111,48 @@ export default function DriverRegisterPage() {
   };
 
   const handleSubmit = async () => {
-    console.log("Submitting driver registration:", formData);
+    const personal = formData.personal!;
+    const contact = formData.contact!;
+    const docs = formData.documents;
 
-    // proses submit
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const fd = new FormData();
 
-    const action = mode === "edit" ? "updated" : "registered";
-    const driverName = formData.personal 
-      ? `${formData.personal.firstName} ${formData.personal.lastName}` 
-      : "New Driver";
-    
-    window.location.href = `/dashboard/driver?success=${action}&driver=${encodeURIComponent(driverName)}`;
+    fd.append("first_name", personal.firstName);
+    fd.append("last_name", personal.lastName);
+    fd.append("date_of_birth", personal.dateOfBirth);
+    fd.append("gender", personal.gender);
+    fd.append("employee_id", personal.employeeId);
+    fd.append("phone", personal.phoneNumber);
+    fd.append("email", personal.email);
+    fd.append("emergency_contact", contact.emergencyContactName);
+    fd.append("emergency_email", contact.emergencyContactRelationship);
+    fd.append("house_type", contact.addressType);
+    fd.append("permanent_address", contact.permanentAddress);
+    fd.append("ready_sign_contract", contact.readySignContract);
+    fd.append("willing_to_be_survey", contact.willingToBeSurveyed);
+
+    const namePrefix = `${personal.firstName}_${personal.lastName}`.toLowerCase().replace(/\s+/g, "_");
+
+    if (docs?.ktpFront) fd.append("images", renameFile(docs.ktpFront, `${namePrefix}_ktp`));
+    if (docs?.simFront) fd.append("images", renameFile(docs.simFront, `${namePrefix}_sim`));
+    if (docs?.npwpFront) fd.append("images", renameFile(docs.npwpFront, `${namePrefix}_npwp`));
+    if (docs?.houseGaragePhoto) fd.append("images", renameFile(docs.houseGaragePhoto, `${namePrefix}_rumah`));
+    if (personal.profilePhoto) fd.append("images", renameFile(personal.profilePhoto, `${namePrefix}_profil`));
+
+    try {
+      if (mode === "edit" && driverIdParam) {
+        await driverApi.update(driverIdParam, fd);
+      } else {
+        await driverApi.create(fd);
+      }
+
+      const driverName = `${personal.firstName} ${personal.lastName}`;
+      const successType = mode === "edit" ? "updated" : "registered";
+      router.push(`/dashboard/driver?success=${successType}&driver=${encodeURIComponent(driverName)}`);
+    } catch (error: any) {
+      setErrorMessage(error?.message || `Failed to ${mode === "edit" ? "update" : "create"} driver. Please try again.`);
+      setShowError(true);
+    }
   };
 
   const handleSaveDraft = () => {
@@ -141,7 +160,7 @@ export default function DriverRegisterPage() {
   };
 
   const handleCancel = () => {
-    console.log("Cancel registration");
+    router.push("/dashboard/driver");
   };
 
   const renderStep = () => {
@@ -150,8 +169,8 @@ export default function DriverRegisterPage() {
         return (
           <PersonalDetailsForm
             onNext={handlePersonalNext}
-            initialData={mode === "edit" ? formData.personal : undefined}
-            // onCancel={handleCancel}
+            initialData={formData.personal}
+            initialProfilePhotoUrl={formData.photo}
           />
         );
       case 2:
@@ -160,7 +179,7 @@ export default function DriverRegisterPage() {
             onNext={handleContactNext}
             onBack={handleBack}
             onSaveDraft={handleSaveDraft}
-            initialData={mode === "edit" ? formData.contact : undefined}
+            initialData={formData.contact}
           />
         );
       case 3:
@@ -169,15 +188,22 @@ export default function DriverRegisterPage() {
             onNext={handleDocumentsNext}
             onBack={handleBack}
             onSaveDraft={handleSaveDraft}
+            initialData={formData.documents}
+            initialUrlData={formData.documentsUrl}
           />
         );
       case 4:
         return (
-          <ReviewStep
+            <ReviewStep
             data={{
               personal: formData.personal || ({} as PersonalDetailsData),
-              contact: formData.contact || ({} as ContactInfoData),
+              contact: {
+                ...(formData.contact || ({} as ContactInfoData)),
+                email: formData.personal?.email || "",
+                phoneNumber: formData.personal?.phoneNumber || "",
+              },
               documents: formData.documents || ({} as DocumentsData),
+              documentsUrl: formData.documentsUrl,
               photo: formData.photo,
             }}
             onBack={handleBack}
@@ -195,6 +221,14 @@ export default function DriverRegisterPage() {
     <div className="p-7">
       <Stepper currentStep={currentStep} />
       {renderStep()}
+
+      <AlertDialog
+        isOpen={showError}
+        onClose={() => setShowError(false)}
+        title="Registration Failed"
+        message={errorMessage}
+        type="error"
+      />
     </div>
   );
 }

@@ -144,6 +144,10 @@ const api = {
     upload: (endpoint, formData)=>request(endpoint, {
             method: "POST",
             body: formData
+        }),
+    uploadPut: (endpoint, formData)=>request(endpoint, {
+            method: "PUT",
+            body: formData
         })
 };
 ;

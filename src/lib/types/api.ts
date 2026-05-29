@@ -18,6 +18,12 @@ export interface PaginationMeta {
   totalPages: number;
 }
 
+export interface SuccessResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
 export interface ApiError {
   statusCode: number;
   message: string;

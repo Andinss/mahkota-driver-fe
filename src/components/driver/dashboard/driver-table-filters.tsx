@@ -1,12 +1,8 @@
 
-import { Select } from "@/components/ui/select";
-import { IconButton } from "@/components/ui/icon-button";
 import { SearchInput } from "@/components/ui/search-input";
 
 export interface DriverFilters {
   search: string;
-  performance: string;
-  status: string;
 }
 
 interface DriverTableFiltersProps {
@@ -31,36 +27,6 @@ export function DriverTableFilters({
             onFilterChange({ ...filters, search: e.target.value })
           }
         />
-      <div className="flex gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-        <Select
-          id="performance"
-          name="performance"
-          className="min-w-[140px]"
-          value={filters.performance}
-          onChange={(e) =>
-            onFilterChange({ ...filters, performance: e.target.value })
-          }
-        >
-          <option value="">Performance: All</option>
-          <option value="Top Performer">Top Performer</option>
-          <option value="Average">Average</option>
-          <option value="Needs Improvement">Needs Improvement</option>
-        </Select>
-        <Select
-          id="status"
-          name="status"
-          className="min-w-[140px]"
-          value={filters.status}
-          onChange={(e) =>
-            onFilterChange({ ...filters, status: e.target.value })
-          }
-        >
-          <option value="">All Statuses</option>
-          <option value="Active">Active</option>
-          <option value="On Leave">On Leave</option>
-          <option value="Inactive">Inactive</option>
-        </Select>
-      </div>
       </div>
     </div>
   );

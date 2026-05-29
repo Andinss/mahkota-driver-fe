@@ -1,65 +1,47 @@
 import Link from "next/link";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 
-export type DriverStatus = "Active" | "On Leave" | "Inactive";
-
 export interface Driver {
+  id: string;
   name: string;
-  imageUrl: string;
-  joinedDate: string;
+  profilePhoto: string;
   employeeId: string;
   phoneNumber: string;
-  licenseType: string;
-  totalTrips: number;
-  status: DriverStatus;
+  email: string;
 }
 
 interface DriverTableRowProps {
   driver: Driver;
-  onDeleteClick?: (driver: Driver) => void; // Ubah dari driverId ke driver object
+  onDeleteClick?: (driver: Driver) => void;
   onDetailsClick?: (driver: Driver) => void;
 }
 
-const statusStyles: Record<
-  DriverStatus,
-  { bg: string; text: string; dotColor: string }
-> = {
-  Active: {
-    bg: "bg-emerald-100 dark:bg-emerald-500/10",
-    text: "text-emerald-600 dark:text-emerald-400",
-    dotColor: "bg-emerald-500",
-  },
-  "On Leave": {
-    bg: "bg-amber-100 dark:bg-amber-500/10",
-    text: "text-amber-600 dark:text-amber-400",
-    dotColor: "bg-amber-500",
-  },
-  Inactive: {
-    bg: "bg-slate-100 dark:bg-slate-800",
-    text: "text-slate-500 dark:text-slate-400",
-    dotColor: "bg-slate-400",
-  },
-};
-
-export function DriverTableRow({ driver, onDeleteClick, onDetailsClick }: DriverTableRowProps) {
-  const statusStyle = statusStyles[driver.status];
-
+export function DriverTableRow({
+  driver,
+  onDeleteClick,
+  onDetailsClick,
+}: DriverTableRowProps) {
   return (
     <tr className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 shrink-0 overflow-hidden">
-            <img
-              alt={driver.name}
-              className="w-full h-full object-cover"
-              src={driver.imageUrl}
-            />
+            {driver.profilePhoto ? (
+              <img
+                alt={driver.name}
+                className="w-full h-full object-cover"
+                src={driver.profilePhoto}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-400">
+                <span className="material-symbols-outlined text-lg">person</span>
+              </div>
+            )}
           </div>
           <div>
             <p className="font-bold text-slate-900 dark:text-white text-sm">
               {driver.name}
             </p>
-            <p className="text-xs text-slate-500">{driver.joinedDate}</p>
           </div>
         </div>
       </td>
@@ -71,25 +53,8 @@ export function DriverTableRow({ driver, onDeleteClick, onDetailsClick }: Driver
       <td className="px-6 py-5 text-sm text-slate-600 dark:text-slate-400">
         {driver.phoneNumber}
       </td>
-      <td className="px-6 py-5">
-        <span className="px-2 py-1 bg-primary/10 text-primary border border-primary/20 rounded text-xs font-bold uppercase">
-          {driver.licenseType}
-        </span>
-      </td>
-      <td className="px-6 py-5">
-        <p className="text-sm font-bold text-slate-900 dark:text-white">
-          {driver.totalTrips}
-        </p>
-      </td>
-      <td className="px-6 py-5">
-        <span
-          className={`inline-flex items-center gap-1.5 px-3 py-1 ${statusStyle.bg} ${statusStyle.text} rounded-full text-xs font-bold`}
-        >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${statusStyle.dotColor}`}
-          ></span>
-          {driver.status}
-        </span>
+      <td className="px-6 py-5 text-sm text-slate-600 dark:text-slate-400">
+        {driver.email}
       </td>
       <td className="px-6 py-5 text-right">
         <Dropdown
@@ -101,7 +66,7 @@ export function DriverTableRow({ driver, onDeleteClick, onDetailsClick }: Driver
             </button>
           }
         >
-          <Link href={`/dashboard/driver/register?id=${driver.employeeId}`}>
+          <Link href={`/dashboard/driver/register?id=${driver.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
           <DropdownMenuItem
