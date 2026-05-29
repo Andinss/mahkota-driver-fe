@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { AlertDialog } from "@/components/ui/alert";
@@ -8,10 +8,8 @@ import { AlertDialog } from "@/components/ui/alert";
 export interface UserFormData {
   username: string;
   email: string;
-  phone: string;
   role: string;
   isActive: boolean;
-  avatar?: string;
 }
 
 interface AddUserFormProps {
@@ -26,7 +24,6 @@ interface AddUserFormProps {
 interface FormErrors {
   username?: string;
   email?: string;
-  phone?: string;
   role?: string;
 }
 
@@ -42,13 +39,10 @@ export function AddUserForm({
   const [formValues, setFormValues] = useState({
     username: initialData?.username || "",
     email: initialData?.email || "",
-    phone: initialData?.phone || "",
     role: initialData?.role || "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [avatar, setAvatar] = useState<string>(initialData?.avatar || "");
   const [isDraftAlertOpen, setIsDraftAlertOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -56,10 +50,8 @@ export function AddUserForm({
       setFormValues({
         username: initialData.username || "",
         email: initialData.email || "",
-        phone: initialData.phone || "",
         role: initialData.role || "",
       });
-      setAvatar(initialData.avatar || "");
     }
   }, [initialData]);
 
@@ -76,12 +68,6 @@ export function AddUserForm({
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)) {
       newErrors.email = "Please enter a valid email address";
-    }
-
-    if (!formValues.phone?.trim()) {
-      newErrors.phone = "Phone number is required";
-    } else if (!/^\d{10,15}$/.test(formValues.phone.replace(/\D/g, ""))) {
-      newErrors.phone = "Phone number must be 10-15 digits";
     }
 
     if (!formValues.role) {
@@ -102,10 +88,8 @@ export function AddUserForm({
     const data: UserFormData = {
       username: formValues.username,
       email: formValues.email,
-      phone: formValues.phone,
       role: formValues.role,
       isActive: isActive,
-      avatar: avatar,
     };
 
     onSubmit?.(data);
@@ -115,10 +99,8 @@ export function AddUserForm({
     const draftData: UserFormData = {
       username: formValues.username,
       email: formValues.email,
-      phone: formValues.phone,
       role: formValues.role,
       isActive: isActive,
-      avatar: avatar,
     };
 
     // Simpan ke localStorage
@@ -129,34 +111,6 @@ export function AddUserForm({
 
   const handleDraftAlertClose = () => {
     setIsDraftAlertOpen(false);
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validasi ukuran file (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("File size exceeds 5MB limit");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleCancel = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAvatar("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
   };
 
   const handleInputChange = (field: keyof typeof formValues, value: string) => {
@@ -175,86 +129,6 @@ export function AddUserForm({
         {/* Left Side */}
         <div className="md:col-span-4 bg-slate-50 dark:bg-slate-800/50 p-8 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between">
           <div>
-            {/* Avatar Upload Section - SAMA PERSIS DENGAN VEHICLE */}
-            <div>
-              <h3 className="text-[#111418] dark:text-white text-lg font-bold mb-4">
-                Personal Photo
-              </h3>
-              <div className="relative group">
-                <div
-                  className={`flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] px-6 py-16 hover:border-primary transition-colors cursor-pointer ${
-                    avatar ? "py-8" : ""
-                  }`}
-                  onClick={handleClick}
-                >
-                  {avatar ? (
-                    <div className="w-full">
-                      <img
-                        src={avatar}
-                        alt="User preview"
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                      <div className="flex gap-2 mt-3">
-                        <button
-                          type="button"
-                          className="flex-1 px-4 py-2 bg-[#f0f2f4] dark:bg-[#2a3845] text-[#111418] dark:text-white rounded-lg text-sm font-bold hover:bg-gray-200 dark:hover:bg-[#3a4855] transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleClick();
-                          }}
-                        >
-                          Change Photo
-                        </button>
-                        <button
-                          type="button"
-                          className="px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                          onClick={handleCancel}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                        <span className="material-symbols-outlined text-primary text-3xl">
-                          add_a_photo
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-[#111418] dark:text-white font-bold">
-                          Upload Personal Photo
-                        </p>
-                        <p className="text-[#617589] text-sm mt-1">
-                          Click to browse or drag & drop
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        className="mt-4 px-4 py-2 bg-[#f0f2f4] dark:bg-[#2a3845] text-[#111418] dark:text-white rounded-lg text-sm font-bold hover:bg-gray-200 dark:hover:bg-[#3a4855] transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleClick();
-                        }}
-                      >
-                        Select File
-                      </button>
-                    </>
-                  )}
-                </div>
-                <input
-                  ref={fileInputRef}
-                  accept="image/jpeg,image/png,image/jpg"
-                  className="hidden"
-                  type="file"
-                  onChange={handleFileSelect}
-                />
-              </div>
-              <p className="text-xs text-[#617589] dark:text-slate-400 mt-3 italic text-center">
-                Accepted formats: JPG, PNG. Max size 5MB.
-              </p>
-            </div>
-
             {/* Icon Blue Box */}
             <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-200 dark:shadow-none mt-6">
               <span
@@ -328,18 +202,6 @@ export function AddUserForm({
                 error={errors.email}
               />
 
-              <Input
-                id="phone"
-                name="phone"
-                label="Phone Number"
-                placeholder="Enter phone number"
-                type="tel"
-                required
-                value={formValues.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                error={errors.phone}
-              />
-
               <Select
                 id="role"
                 name="role"
@@ -350,10 +212,13 @@ export function AddUserForm({
                 error={errors.role}
               >
                 <option value="">Select a role</option>
-                <option value="administrator">Administrator</option>
-                <option value="fleet_manager">Fleet Manager</option>
-                <option value="staff">Staff</option>
+                <option value="owner">Owner</option>
+                <option value="finance">Finance</option>
+                <option value="supervisor">Supervisor</option>
+                <option value="field_officer">Field Officer</option>
                 <option value="driver">Driver</option>
+                <option value="admin">Admin</option>
+                <option value="operator">Operator</option>
               </Select>
             </div>
 
@@ -384,6 +249,7 @@ export function AddUserForm({
                   checked={isActive}
                   className="sr-only peer"
                   type="checkbox"
+                  name="is_active"
                   onChange={(e) => setIsActive(e.target.checked)}
                 />
                 <div className="w-12 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>

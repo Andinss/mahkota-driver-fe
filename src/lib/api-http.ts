@@ -116,6 +116,12 @@ export const api = {
       method: "POST",
       body: formData,
     }),
+
+  uploadPut: <T>(endpoint: string, formData: FormData) =>
+    request<T>(endpoint, {
+      method: "PUT",
+      body: formData,
+    }),
 };
 
 export { HttpClientError };

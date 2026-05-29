@@ -6,6 +6,7 @@ import { AddUserForm, UserFormData } from "@/components/user/new/add-user-form";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import CardUser from "@/components/user/new/card-user";
 import { usersApi } from "@/lib/api/users";
+import type { CreateUserPayload } from "@/lib/types/user";
 
 export default function AddNewUserPage() {
   const searchParams = useSearchParams();
@@ -23,15 +24,12 @@ export default function AddNewUserPage() {
       setMode("edit");
       usersApi
         .getById(userIdParam)
-        .then((res) => {
-          const u = res.data;
+        .then((u) => {
           setInitialData({
-            username: u.name,
+            username: u.username,
             email: u.email,
-            phone: u.phone || "",
-            role: u.role.name.toLowerCase(),
-            isActive: u.status === "active",
-            avatar: u.avatar,
+            role: u.role || "",
+            isActive: u.is_active,
           });
         })
         .catch(() => {
@@ -55,18 +53,22 @@ export default function AddNewUserPage() {
     setIsConfirmOpen(false);
 
     try {
-      const payload = {
-        name: pendingData.username,
-        email: pendingData.email,
-        phone: pendingData.phone,
-        role: pendingData.role,
-        isActive: pendingData.isActive,
-        avatar: pendingData.avatar,
-      };
-
       if (mode === "edit" && userIdParam) {
+        const payload: Partial<CreateUserPayload> = {
+          username: pendingData.username,
+          email: pendingData.email,
+          role: pendingData.role,
+          is_active: pendingData.isActive,
+        };
         await usersApi.update(userIdParam, payload);
       } else {
+        const payload: CreateUserPayload = {
+          username: pendingData.username,
+          email: pendingData.email,
+          password: "changeme123",
+          role: pendingData.role,
+          is_active: pendingData.isActive,
+        };
         await usersApi.create(payload);
       }
 

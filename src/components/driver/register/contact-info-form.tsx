@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Radio } from "@/components/ui/radio";
 
 export interface ContactInfoData {
-  phoneNumber: string;
-  email: string;
   emergencyContactName: string;
   emergencyContactRelationship: string;
   permanentAddress: string;
   addressType: string;
+  readySignContract: string;
+  willingToBeSurveyed: string;
+  email?: string;
+  phoneNumber?: string;
 }
 
 interface FormErrors {
-  phoneNumber?: string;
-  email?: string;
   emergencyContactNumber?: string;
   emergencyContactEmail?: string;
   house?: string;
@@ -39,15 +39,10 @@ export function ContactInfoForm({
   onSaveDraft,
   initialData,
 }: ContactInfoFormProps) {
-  const [readyToSignContract, setReadyToSignContract] = useState<string>("");
-  const [willingToBeSurveyed, setWillingToBeSurveyed] = useState<string>("");
+  const [readyToSignContract, setReadyToSignContract] = useState<string>(initialData?.readySignContract || "");
+  const [willingToBeSurveyed, setWillingToBeSurveyed] = useState<string>(initialData?.willingToBeSurveyed || "");
   const [errors, setErrors] = useState<FormErrors>({});
   const formRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    if (initialData) {
-    }
-  }, [initialData]);
 
   const validateForm = (): boolean => {
     const formData = new FormData(formRef.current || undefined);
@@ -63,18 +58,6 @@ export function ContactInfoForm({
     ) as string;
     const house = formData.get("house") as string;
     const permanentAddress = formData.get("permanentAddress") as string;
-
-    if (!phoneNumber?.trim()) {
-      newErrors.phoneNumber = "Phone number is required";
-    } else if (!/^\d{10,15}$/.test(phoneNumber.replace(/\D/g, ""))) {
-      newErrors.phoneNumber = "Phone number must be 10-15 digits";
-    }
-
-    if (!email?.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
 
     if (!emergencyContactNumber?.trim()) {
       newErrors.emergencyContactNumber = "Emergency contact number is required";
@@ -122,14 +105,14 @@ export function ContactInfoForm({
 
     const formData = new FormData(e.currentTarget);
     const data: ContactInfoData = {
-      phoneNumber: formData.get("phoneNumber") as string,
-      email: formData.get("email") as string,
       emergencyContactName: formData.get("emergencyContactNumber") as string,
       emergencyContactRelationship: formData.get(
         "emergencyContactEmail",
       ) as string,
       permanentAddress: formData.get("permanentAddress") as string,
       addressType: formData.get("house") as string,
+      readySignContract: formData.get("readyToSignContract") as string,
+      willingToBeSurveyed: formData.get("willingToBeSurveyed") as string,
     };
 
     onNext(data);
@@ -160,17 +143,6 @@ export function ContactInfoForm({
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Input
-              id="phoneNumber"
-              name="phoneNumber"
-              label="Phone Number"
-              placeholder="e.g. +62 812 3456 7890"
-              type="tel"
-              defaultValue={initialData?.phoneNumber}
-              required
-              error={errors.phoneNumber}
-            />
-
-            <Input
               id="emergencyContactNumber"
               name="emergencyContactNumber"
               label="Emergency Contact Number"
@@ -178,17 +150,6 @@ export function ContactInfoForm({
               defaultValue={initialData?.emergencyContactName}
               required
               error={errors.emergencyContactNumber}
-            />
-
-            <Input
-              id="email"
-              name="email"
-              label="Email Address"
-              placeholder="e.g. driver@email.com"
-              type="email"
-              defaultValue={initialData?.email}
-              required
-              error={errors.email}
             />
 
             <Input
@@ -207,6 +168,7 @@ export function ContactInfoForm({
                 id="house"
                 name="house"
                 label="House"
+                defaultValue={initialData?.addressType || ""}
                 error={errors.house}
               >
                 <option value="">Select house type</option>
@@ -258,6 +220,7 @@ export function ContactInfoForm({
                 name="permanentAddress"
                 id="permanentAddress"
                 rows={2}
+                defaultValue={initialData?.permanentAddress || ""}
               />
               {errors.permanentAddress && (
                 <p className="text-xs text-red-500 mt-1">

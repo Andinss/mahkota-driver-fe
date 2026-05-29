@@ -14,7 +14,6 @@ import { PageHeader } from "@/components/page-header";
 import { useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
 import { driverApi } from "@/lib/api/driver";
-import type { DriverItem } from "@/lib/types/driver";
 
 export default function DriverPage() {
   const router = useRouter();
@@ -22,8 +21,6 @@ export default function DriverPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<DriverFilters>({
     search: "",
-    performance: "Performance: All",
-    status: "All Statuses",
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,36 +36,42 @@ export default function DriverPage() {
         limit: itemsPerPage,
       };
       if (filters.search) params.search = filters.search;
-      if (filters.status && filters.status !== "All Statuses") params.status = filters.status;
 
       const res = await driverApi.getList(params);
-      const mapped: Driver[] = res.data.map((item: DriverItem) => ({
-        name: item.name,
-        imageUrl: item.imageUrl,
-        joinedDate: item.joinedDate,
-        employeeId: item.employeeId,
-        phoneNumber: item.phoneNumber,
-        licenseType: item.licenseType,
-        totalTrips: item.totalTrips,
-        status: item.status,
-      }));
+      const items = Array.isArray(res.data) ? res.data : [];
+      const imageBase = (
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+      ).replace(/\/api\/?$/, "");
+      const mapped: Driver[] = items.map((item: Record<string, any>) => {
+        const photo = item.profile_photo || "";
+        const profilePhoto = photo
+          ? photo.startsWith("http")
+            ? photo
+            : `${imageBase}/${photo.replace(/^\//, "")}`
+          : "";
+        return {
+          id: item.id || item.employee_id || "",
+          name: [item.first_name, item.last_name].filter(Boolean).join(" ") || item.name || "",
+          profilePhoto,
+          employeeId: item.employee_id || "",
+          phoneNumber: item.phone || "",
+          email: item.email || "",
+        };
+      });
       setDrivers(mapped);
-      setTotalPages(res.meta.totalPages);
-      setTotalResults(res.meta.total);
-    } catch {
+      setTotalPages(1);
+      setTotalResults(mapped.length);
+    } catch (err) {
+      console.error("Failed to fetch drivers:", err);
       setDrivers([]);
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, filters.search, filters.status]);
+  }, [currentPage, filters.search]);
 
   useEffect(() => {
     fetchDrivers();
   }, [fetchDrivers]);
-
-  const activeDrivers = drivers.filter((d) => d.status === "Active").length;
-  const onLeaveDrivers = drivers.filter((d) => d.status === "On Leave").length;
-  const inactiveDrivers = drivers.filter((d) => d.status === "Inactive").length;
 
   const handleFilterChange = (newFilters: DriverFilters) => {
     setFilters(newFilters);
@@ -84,7 +87,9 @@ export default function DriverPage() {
   const handleExport = (options?: ExportOptions) => {
     if (!options) return;
     console.log("Export options from driver page:", options);
-    alert(`Exporting driver data as ${options.format} with ${options.type} data`);
+    alert(
+      `Exporting driver data as ${options.format} with ${options.type} data`,
+    );
   };
 
   const handleDetails = (driver: Driver) => {
@@ -124,9 +129,9 @@ export default function DriverPage() {
         />
         <DriverStatsCard
           title="Active"
-          value={activeDrivers.toString()}
           icon="check_circle"
           iconColor="text-emerald-500"
+          value="2"
           trend={{
             icon: "fiber_manual_record",
             text: "On current trips",
@@ -135,9 +140,9 @@ export default function DriverPage() {
         />
         <DriverStatsCard
           title="On Leave"
-          value={onLeaveDrivers.toString()}
           icon="event_busy"
           iconColor="text-amber-500"
+          value="1"
           trend={{
             icon: "info",
             text: "Temporarily unavailable",
@@ -146,9 +151,9 @@ export default function DriverPage() {
         />
         <DriverStatsCard
           title="Inactive"
-          value={inactiveDrivers.toString()}
           icon="person_off"
           iconColor="text-rose-500"
+          value="2"
           trend={{
             icon: "warning",
             text: "Needs review",
@@ -157,7 +162,13 @@ export default function DriverPage() {
         />
       </div>
 
-      <Suspense fallback={<div className="rounded-xl border p-4 text-center">Loading filters...</div>}>
+      <Suspense
+        fallback={
+          <div className="rounded-xl border p-4 text-center">
+            Loading filters...
+          </div>
+        }
+      >
         <DriverTableFilters
           filters={filters}
           onFilterChange={handleFilterChange}
@@ -165,7 +176,9 @@ export default function DriverPage() {
       </Suspense>
       <div className="bg-white mt-5 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500">Loading drivers...</div>
+          <div className="p-12 text-center text-slate-500">
+            Loading drivers...
+          </div>
         ) : (
           <>
             <DriverTable

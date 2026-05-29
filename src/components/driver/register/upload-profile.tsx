@@ -12,7 +12,7 @@ interface DriverProfileUploadProps {
 export function DriverProfileUpload({
   onImageSelect,
   initialImageUrl,
-  acceptedFormats = ["JPG", "PNG"],
+  acceptedFormats = ["JPG", "JPEG", "PNG"],
   maxSizeMB = 5,
 }: DriverProfileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
@@ -156,9 +156,7 @@ export function DriverProfileUpload({
         </div>
         <input
           ref={fileInputRef}
-          accept={acceptedFormats
-            .map((f) => `image/${f.toLowerCase()}`)
-            .join(",")}
+          accept=".jpg,.jpeg,.png"
           className="hidden"
           type="file"
           onChange={handleFileSelect}

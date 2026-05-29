@@ -60,12 +60,12 @@ export default function UserList() {
         page: currentPage,
         limit: itemsPerPage,
         search: filters.search || undefined,
-        role: filters.role || undefined,
-        status: filters.status || undefined,
       });
-      setUsers(res.data);
-      setTotalPages(res.meta.totalPages);
-      setTotalResults(res.meta.total);
+
+      const data = Array.isArray(res.data) ? res.data : [];
+      setUsers(data);
+      setTotalPages(1);
+      setTotalResults(data.length);
     } catch {
       setUsers([]);
     } finally {
@@ -96,7 +96,7 @@ export default function UserList() {
     try {
       await usersApi.delete(selectedUser.id);
       setAlertTitle("Delete Successful");
-      setAlertMessage(`User ${selectedUser.name} has been deleted successfully`);
+      setAlertMessage(`User ${selectedUser.username} has been deleted successfully`);
       setAlertType("success");
       setIsAlertOpen(true);
       fetchUsers();
@@ -153,7 +153,7 @@ export default function UserList() {
         onClose={() => setIsConfirmDeleteOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete User"
-        message={`Are you sure you want to delete ${selectedUser?.name}? This action cannot be undone.`}
+        message={`Are you sure you want to delete ${selectedUser?.username}? This action cannot be undone.`}
         confirmText="Yes, Delete"
         cancelText="Cancel"
         variant="danger"

@@ -4,14 +4,10 @@ import { ExportColumn, ModalExport } from "@/components/ui/export";
 
 interface User {
   id: string;
-  name: string;
+  username: string;
   email: string;
-  avatar?: string;
-  role: {
-    name: string;
-    color?: string;
-  };
-  status: "active" | "inactive";
+  is_active: boolean;
+  role?: string;
 }
 
 interface UserTableProps {
@@ -27,11 +23,10 @@ interface UserTableProps {
 }
 
 const userColumns: ExportColumn[] = [
-  { id: "name", label: "Name", defaultChecked: true },
+  { id: "username", label: "Username", defaultChecked: true },
   { id: "email", label: "Email", defaultChecked: true },
-  { id: "phone", label: "Phone Number", defaultChecked: true },
   { id: "role", label: "Role", defaultChecked: true },
-  { id: "status", label: "Status", defaultChecked: true },
+  { id: "is_active", label: "Status", defaultChecked: true },
   { id: "id", label: "User ID", defaultChecked: false },
 ];
 
@@ -56,7 +51,8 @@ export const UserTable = ({
         <h2 className="font-bold text-lg text-gray-900">User Management</h2>
         <button
           onClick={() => setIsExportModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300">
+          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
+        >
           <span className="material-symbols-outlined text-base">download</span>
           Export
         </button>
@@ -75,7 +71,6 @@ export const UserTable = ({
               <th className="px-6 py-4">User</th>
               <th className="px-6 py-4">Role</th>
               <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Phone Number</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>

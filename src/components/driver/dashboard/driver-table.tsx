@@ -9,10 +9,7 @@ const driverColumns: ExportColumn[] = [
   { id: "name", label: "Driver Name", defaultChecked: true },
   { id: "employeeId", label: "Employee ID", defaultChecked: true },
   { id: "phoneNumber", label: "Phone Number", defaultChecked: true },
-  { id: "licenseType", label: "License Type", defaultChecked: true },
-  { id: "totalTrips", label: "Total Trips", defaultChecked: true },
-  { id: "status", label: "Status", defaultChecked: true },
-  { id: "joinedDate", label: "Joined Date", defaultChecked: true },
+  { id: "email", label: "Email", defaultChecked: true },
 ];
 interface DriverTableProps {
   drivers: Driver[];
@@ -92,9 +89,7 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
               <th className="px-6 py-4">Profile</th>
               <th className="px-6 py-4">Employee ID</th>
               <th className="px-6 py-4">Phone Number</th>
-              <th className="px-6 py-4">License Type</th>
-              <th className="px-6 py-4">Total Trips</th>
-              <th className="px-6 py-4">Status</th>
+              <th className="px-6 py-4">Email</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>

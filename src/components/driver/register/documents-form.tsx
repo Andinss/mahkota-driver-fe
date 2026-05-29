@@ -1,15 +1,21 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 
 export interface DocumentsData {
   simFront?: File;
-
   ktpFront?: File;
   npwpFront?: File;
   houseGaragePhoto?: File;
+}
+
+export interface DocumentsUrlData {
+  sim?: string;
+  ktp?: string;
+  npwp?: string;
+  house?: string;
 }
 
 interface FormErrors {
@@ -22,25 +28,56 @@ interface DocumentsFormProps {
   onNext: (data: DocumentsData) => void;
   onBack: () => void;
   onSaveDraft?: () => void;
+  initialData?: DocumentsData;
+  initialUrlData?: DocumentsUrlData;
 }
 
 export function DocumentsForm({
   onNext,
   onBack,
   onSaveDraft,
+  initialData,
+  initialUrlData,
 }: DocumentsFormProps) {
-  const [simFile, setSimFile] = useState<File | undefined>();
-  const [ktpFile, setKtpFile] = useState<File | undefined>();
-  const [npwpFile, setNpwpFile] = useState<File | undefined>();
-  const [houseGarageFile, setHouseGarageFile] = useState<File | undefined>();
+  const [simFile, setSimFile] = useState<File | undefined>(initialData?.simFront);
+  const [ktpFile, setKtpFile] = useState<File | undefined>(initialData?.ktpFront);
+  const [npwpFile, setNpwpFile] = useState<File | undefined>(initialData?.npwpFront);
+  const [houseGarageFile, setHouseGarageFile] = useState<File | undefined>(initialData?.houseGaragePhoto);
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const [simPreview, setSimPreview] = useState<string>("");
-  const [ktpPreview, setKtpPreview] = useState<string>("");
-  const [npwpPreview, setNpwpPreview] = useState<string>("");
-  const [houseGaragePreview, setHouseGaragePreview] = useState<string>("");
+  const [simPreview, setSimPreview] = useState<string>(initialUrlData?.sim || "");
+  const [ktpPreview, setKtpPreview] = useState<string>(initialUrlData?.ktp || "");
+  const [npwpPreview, setNpwpPreview] = useState<string>(initialUrlData?.npwp || "");
+  const [houseGaragePreview, setHouseGaragePreview] = useState<string>(initialUrlData?.house || "");
+
+  const [simUrlRemoved, setSimUrlRemoved] = useState(false);
+  const [ktpUrlRemoved, setKtpUrlRemoved] = useState(false);
+  const [npwpUrlRemoved, setNpwpUrlRemoved] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    const readFile = (file: File | undefined, setter: (v: string) => void) => {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onloadend = () => setter(reader.result as string);
+      reader.readAsDataURL(file);
+    };
+    readFile(initialData?.simFront, setSimPreview);
+    readFile(initialData?.ktpFront, setKtpPreview);
+    readFile(initialData?.npwpFront, setNpwpPreview);
+    readFile(initialData?.houseGaragePhoto, setHouseGaragePreview);
+  }, []);
+
+  useEffect(() => {
+    if (!simFile && initialUrlData?.sim) setSimPreview(initialUrlData.sim);
+    if (!ktpFile && initialUrlData?.ktp) setKtpPreview(initialUrlData.ktp);
+    if (!npwpFile && initialUrlData?.npwp) setNpwpPreview(initialUrlData.npwp);
+    if (!houseGarageFile && initialUrlData?.house) setHouseGaragePreview(initialUrlData.house);
+  }, [initialUrlData, simFile, ktpFile, npwpFile, houseGarageFile]);
+
+  // show existing file name from URL
+  const fileNameFromUrl = (url?: string) => url ? url.split("/").pop() || "Existing file" : "";
 
   const handleSimUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -120,16 +157,19 @@ export function DocumentsForm({
   const handleRemoveSim = () => {
     setSimFile(undefined);
     setSimPreview("");
+    setSimUrlRemoved(true);
   };
 
   const handleRemoveKtp = () => {
     setKtpFile(undefined);
     setKtpPreview("");
+    setKtpUrlRemoved(true);
   };
 
   const handleRemoveNpwp = () => {
     setNpwpFile(undefined);
     setNpwpPreview("");
+    setNpwpUrlRemoved(true);
   };
 
   const handleRemoveHouseGarage = () => {
@@ -153,18 +193,22 @@ export function DocumentsForm({
     document.getElementById("houseGarageFileInput")?.click();
   };
 
+  const hasExistingSim = !simUrlRemoved && !!initialUrlData?.sim;
+  const hasExistingKtp = !ktpUrlRemoved && !!initialUrlData?.ktp;
+  const hasExistingNpwp = !npwpUrlRemoved && !!initialUrlData?.npwp;
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!simFile) {
+    if (!simFile && !hasExistingSim) {
       newErrors.simFront = "Driver's License (SIM) is required";
     }
 
-    if (!ktpFile) {
+    if (!ktpFile && !hasExistingKtp) {
       newErrors.ktpFront = "National ID Card (KTP) is required";
     }
 
-    if (!npwpFile) {
+    if (!npwpFile && !hasExistingNpwp) {
       newErrors.npwpFront = "NPWP is required";
     }
 
@@ -237,7 +281,7 @@ export function DocumentsForm({
                   </button>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 font-medium">
-                  {simFile?.name}
+                  {simFile?.name || fileNameFromUrl(initialUrlData?.sim)}
                 </p>
               </div>
             ) : (
@@ -296,7 +340,7 @@ export function DocumentsForm({
                   </button>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 font-medium">
-                  {ktpFile?.name}
+                  {ktpFile?.name || fileNameFromUrl(initialUrlData?.ktp)}
                 </p>
               </div>
             ) : (
@@ -354,7 +398,7 @@ export function DocumentsForm({
                   </button>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 font-medium">
-                  {npwpFile?.name}
+                  {npwpFile?.name || fileNameFromUrl(initialUrlData?.npwp)}
                 </p>
               </div>
             ) : (
@@ -409,7 +453,7 @@ export function DocumentsForm({
                   </button>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 font-medium">
-                  {houseGarageFile?.name}
+                  {houseGarageFile?.name || fileNameFromUrl(initialUrlData?.house)}
                 </p>
               </div>
             ) : (

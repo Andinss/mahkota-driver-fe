@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"; // Import ConfirmDialog
 import { PersonalDetailsData } from "./personal-details-form";
 import { ContactInfoData } from "./contact-info-form";
-import { DocumentsData } from "./documents-form";
+import { DocumentsData, DocumentsUrlData } from "./documents-form";
 
 export interface DriverReviewData {
   personal: PersonalDetailsData;
   contact: ContactInfoData;
   documents: DocumentsData;
+  documentsUrl?: DocumentsUrlData;
   photo?: string;
 }
 
@@ -18,9 +19,12 @@ interface ReviewStepProps {
   data: DriverReviewData;
   onBack: () => void;
   onSaveDraft?: () => void;
-  onSubmit: () => void;
+  onSubmit: () => Promise<void>;
   mode?: "add" | "edit";
 }
+
+const fileNameFromUrl = (url?: string) =>
+  url ? url.split("/").pop() || "Uploaded" : "";
 
 export function ReviewStep({
   data,
@@ -33,14 +37,7 @@ export function ReviewStep({
 
   const handleConfirmSubmit = async () => {
     setIsConfirmDialogOpen(false);
-
-    // simulasi loading
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const driverName = `${data.personal.firstName} ${data.personal.lastName}`;
-    const action = mode === "edit" ? "updated" : "registered";
-
-    window.location.href = `/dashboard/driver?success=${action}&driver=${encodeURIComponent(driverName)}`;
+    await onSubmit();
   };
 
   return (
@@ -198,7 +195,7 @@ export function ReviewStep({
                       Driver&apos;s License (SIM)
                     </p>
                     <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                      {data.documents.simFront?.name || "Not uploaded"}
+                      {data.documents.simFront?.name || fileNameFromUrl(data.documentsUrl?.sim) || "Not uploaded"}
                     </p>
                   </div>
                 </div>
@@ -214,7 +211,7 @@ export function ReviewStep({
                       National ID Card (KTP)
                     </p>
                     <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                      {data.documents.ktpFront?.name || "Not uploaded"}
+                      {data.documents.ktpFront?.name || fileNameFromUrl(data.documentsUrl?.ktp) || "Not uploaded"}
                     </p>
                   </div>
                 </div>
@@ -228,7 +225,7 @@ export function ReviewStep({
                   <div>
                     <p className="text-xs text-slate-400">NPWP (Tax ID)</p>
                     <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                      {data.documents.npwpFront?.name || "Not uploaded"}
+                      {data.documents.npwpFront?.name || fileNameFromUrl(data.documentsUrl?.npwp) || "Not uploaded"}
                     </p>
                   </div>
                 </div>
@@ -244,7 +241,7 @@ export function ReviewStep({
                       House &amp; Garage Photo
                     </p>
                     <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                      {data.documents.houseGaragePhoto?.name || "Not uploaded"}
+                      {data.documents.houseGaragePhoto?.name || fileNameFromUrl(data.documentsUrl?.house) || "Not uploaded"}
                     </p>
                   </div>
                 </div>
