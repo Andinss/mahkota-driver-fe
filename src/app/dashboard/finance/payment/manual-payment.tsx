@@ -1,105 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import PayerInfo from "@/components/finance/manual/payer-info";
 import Summary from "@/components/finance/manual/summary";
 import TransactionDetail from "@/components/finance/manual/transaction-detail";
+import { financeApi } from "@/lib/api/finances";
+import type { FinanceItem } from "@/lib/types/finances";
 
-// Mock data 
-const mockPayments: Record<string, any> = {
-  "INV-4022": {
-    id: "INV-4022",
-    payerName: "Michael Chen",
-    payerId: "DRV-8824",  // buat ID driver baru
-    amount: "$320.00",
-    paymentDate: "2023-10-26",
-    paymentMethod: "Credit Card",
-    referenceNumber: "REF-20231026-002",
-    notes: "Payment for rental invoice INV-4022",
-    invoiceId: "#INV-4022",
-    vehiclePlate: "B 9988 AA",
-  },
-  "INV-4023": {
-    id: "INV-4023",
-    payerName: "James Anderson",
-    payerId: "DRV-8825",
-    amount: "$450.00",
-    paymentDate: "2023-10-24",
-    paymentMethod: "Credit Card",
-    referenceNumber: "REF-20231024-003",
-    notes: "Payment for rental invoice INV-4023",
-    invoiceId: "#INV-4023",
-    vehiclePlate: "B 1234 CD",
-  },
-  "INV-4024": {
-    id: "INV-4024",
-    payerName: "Sarah Connor",
-    payerId: "DRV-8822",
-    amount: "$1,200.00",
-    paymentDate: "2023-10-26",
-    paymentMethod: "Transfer",
-    referenceNumber: "TRF-20231026-001",
-    notes: "Payment for rental invoice INV-4024",
-    invoiceId: "#INV-4024",
-    vehiclePlate: "D 5678 XY",
-  },
-  "INV-4025": {
-    id: "INV-4025",
-    payerName: "Emma Watson",
-    payerId: "DRV-8823",
-    amount: "$850.00",
-    paymentDate: "2023-10-26",
-    paymentMethod: "Cash",
-    referenceNumber: "CSH-20231026-002",
-    notes: "Payment for rental invoice INV-4025",
-    invoiceId: "#INV-4025",
-    vehiclePlate: "F 2233 KL",
-  },
-  "INV-4021": {
-    id: "INV-4021",
-    payerName: "Robert Fox",
-    payerId: "DRV-8826",
-    amount: "$150.00",
-    paymentDate: "2023-10-25",
-    paymentMethod: "Credit Card",
-    referenceNumber: "REF-20231025-004",
-    notes: "Payment for rental invoice INV-4021",
-    invoiceId: "#INV-4021",
-    vehiclePlate: "A 5544 BC",
-  },
-  "INV-4031": {
-    id: "INV-4031",
-    payerName: "Frank Lee",
-    payerId: "DRV-8831",
-    amount: "$430.00",
-    paymentDate: "2023-10-29",
-    paymentMethod: "Cash",
-    referenceNumber: "REF-20231029-009",
-    notes: "Payment for rental invoice INV-4031",
-    invoiceId: "#INV-4031",
-    vehiclePlate: "B 6666 OP",
-  },
-  "INV-4032": {
-    id: "INV-4032",
-    payerName: "Grace Kim",
-    payerId: "DRV-8832",
-    amount: "$1,500.00",
-    paymentDate: "2023-10-30",
-    paymentMethod: "Transfer",
-    referenceNumber: "REF-20231030-010",
-    notes: "Payment for rental invoice INV-4032",
-    invoiceId: "#INV-4032",
-    vehiclePlate: "D 7777 QR",
-  },
-};
+interface ManualPaymentPageProps {
+  id: string | null;
+}
 
-
-const ManualPaymentPage = () => {
-  const searchParams = useSearchParams();
-  const paymentIdParam = searchParams.get("id");
+const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
+  const paymentIdParam = id;
 
   const [mode, setMode] = useState<"add" | "edit">("add");
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
@@ -109,19 +25,36 @@ const ManualPaymentPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
+  const [paymentDetail, setPaymentDetail] = useState("");
   const [selectedPayer, setSelectedPayer] = useState<{name: string; id: string} | null>(null);
 
-   useEffect(() => {
-    if (paymentIdParam && mockPayments[paymentIdParam]) {
-      const payment = mockPayments[paymentIdParam];
+  useEffect(() => {
+    if (paymentIdParam) {
       setMode("edit");
-      setSearchValue(payment.payerName);
-      setSelectedPayer({ name: payment.payerName, id: payment.payerId });
-      setPaymentDate(payment.paymentDate);
-      setReferenceNumber(payment.referenceNumber);
-      setPaymentMethod(payment.paymentMethod);
-      setAmount(payment.amount);
-      setNotes(payment.notes || "");
+      setIsLoading(true);
+      const fetchFinance = async () => {
+        try {
+          const response = await financeApi.getById(paymentIdParam);
+          const item = (response?.data ?? response) as unknown as FinanceItem;
+          if (!item?.payer) {
+            throw new Error("Invalid response format");
+          }
+          setSelectedPayer({ name: item.payer, id: item.id });
+          setSearchValue(item.payer);
+          setPaymentDate(item.payment_date);
+          setReferenceNumber(item.reference_number);
+          setPaymentMethod(item.payment_method);
+          setAmount(item.amount_received);
+          setNotes(item.notes || "");
+        } catch (err) {
+          console.error("Failed to fetch finance:", err);
+          setMode("add");
+          alert("Failed to load finance data for editing.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchFinance();
     } else {
       setMode("add");
       setSearchValue("");
@@ -129,40 +62,58 @@ const ManualPaymentPage = () => {
       setPaymentDate("");
       setReferenceNumber("");
       setPaymentMethod("");
+      setPaymentDetail("");
       setAmount("");
       setNotes("");
     }
   }, [paymentIdParam]);
 
-   const handleSubmit = async () => {
+  const handlePaymentDetailChange = (detail: string) => {
+    setPaymentDetail(detail);
+    const prefix = paymentMethod === "transfer" ? "Bank: " : "E-Wallet: ";
+    const cleanNotes = notes
+      .replace(/^(Bank:|E-Wallet:).*$/gm, "")
+      .replace(/\n{2,}/g, "\n")
+      .trim();
+    if (detail) {
+      setNotes(cleanNotes ? `${cleanNotes}\n${prefix}${detail}` : `${prefix}${detail}`);
+    } else {
+      setNotes(cleanNotes);
+    }
+  };
+
+  const handleSubmit = async () => {
     setHasSubmitted(true);
     setIsSubmitting(true);
 
-    const paymentData = {
-      id: paymentIdParam || undefined,
-      payerName: selectedPayer?.name || "",
-      payerId: selectedPayer?.id || "",
-      paymentDate,
-      referenceNumber,
-      paymentMethod,
-      amount,
-      notes,
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      const payload = {
+        payment_date: paymentDate,
+        reference_number: referenceNumber,
+        payment_method: paymentMethod as FinanceItem["payment_method"],
+        amount_received: amount,
+        notes,
+        payer: selectedPayer?.name || "",
+      };
 
-    console.log("Payment Data:", paymentData);
+      if (mode === "edit" && paymentIdParam) {
+        await financeApi.update(paymentIdParam, payload);
+      } else {
+        await financeApi.create(payload);
+      }
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
+      const action = mode === "edit" ? "updated" : "registered";
+      const ref = referenceNumber || "New Payment";
 
-    const action = mode === "edit" ? "updated" : "registered";
-    const financeName = paymentData.payerName || "New Payment";
-
-    window.location.href = `/dashboard/finance?success=${action}&finance=${encodeURIComponent(financeName)}`;
+      window.location.href = `/dashboard/finance?success=${action}&ref=${encodeURIComponent(ref)}`;
+    } catch {
+      setIsSubmitting(false);
+      alert("Failed to save payment. Please check your input and try again.");
+    }
   };
 
   const handleCancel = () => {
-      window.location.href = "/dashboard/finance";
+    window.location.href = "/dashboard/finance";
   };
 
   const handleClear = () => {
@@ -171,12 +122,12 @@ const ManualPaymentPage = () => {
     setPaymentDate("");
     setReferenceNumber("");
     setPaymentMethod("");
+    setPaymentDetail("");
     setAmount("");
     setNotes("");
     setHasSubmitted(false);
   };
 
-  //  update selected payer
   const handlePayerSelect = (name: string, id: string) => {
     setSelectedPayer({ name, id });
   };
@@ -190,6 +141,14 @@ const ManualPaymentPage = () => {
     return true;
   };
 
+
+  if (isLoading) {
+    return (
+      <div className="m-8 flex items-center justify-center min-h-[400px]">
+        <p className="text-slate-500 dark:text-slate-400">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="m-8">
@@ -211,22 +170,23 @@ const ManualPaymentPage = () => {
             onPaymentDateChange={setPaymentDate}
             onReferenceNumberChange={setReferenceNumber}
             onPaymentMethodChange={setPaymentMethod}
+            onPaymentDetailChange={handlePaymentDetailChange}
             onAmountChange={setAmount}
             onNotesChange={setNotes}
             hasSubmitted={hasSubmitted}
           />
         </div>
         <Summary
-           payerName={selectedPayer?.name || ""}
+          payerName={selectedPayer?.name || ""}
           payerId={selectedPayer?.id || ""}
           paymentDate={paymentDate}
           paymentMethod={paymentMethod}
           amount={amount}
           currentBalance={-3500000}
-          onSubmit={handleSubmit}  
-          onCancel={handleCancel}   
-          onClear={handleClear}      
-          isSubmitting={isSubmitting} 
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          onClear={handleClear}
+          isSubmitting={isSubmitting}
           mode={mode}
           onValidate={validateAll}
           setHasSubmitted={setHasSubmitted}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AlertDialog } from "@/components/ui/alert";
@@ -10,11 +10,32 @@ import { SearchFilters } from "@/components/search-filters";
 import { PageHeader } from "@/components/page-header";
 import { VehiclePagination } from "@/components/vehicle/dashboard/vehicle-pagination";
 import { ExportOptions } from "@/components/ui/export";
+import { vehicleApi } from "@/lib/api/vehicle";
+import type { VehicleItem } from "@/lib/types/vehicle";
+
+type VehicleStatus = "available" | "rented" | "maintenance";
+
+interface VehicleDisplay {
+  id?: string;
+  name: string;
+  year: number;
+  transmission: string;
+  plate: string;
+  type: string;
+  rate: string;
+  status: VehicleStatus;
+  image: string;
+  imageAlt: string;
+}
 
 export default function DashboardVehiclePage() {
   const searchParams = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 2; // Adjust based on your preference
+  const [isLoading, setIsLoading] = useState(false);
+  const [vehicles, setVehicles] = useState<VehicleDisplay[]>([]);
+  const [totalResults, setTotalResults] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
 
   // State Confirm Dialog
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -26,7 +47,55 @@ export default function DashboardVehiclePage() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState<"success" | "error">("success");
 
-  // Tampilkan alert jika ada success param di URL
+  const imageBase = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+  ).replace(/\/api\/?$/, "");
+
+  const fetchVehicles = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await vehicleApi.getList({ page: currentPage, limit: itemsPerPage });
+      const items = Array.isArray(res.data) ? res.data : [];
+      const mapped: VehicleDisplay[] = items.map((item: VehicleItem) => {
+        const name = `${item.merk || ""} ${item.model || ""}`.trim() || "Unknown";
+        const rawPhoto = item.vehicle_photo;
+        const photoUrl = Array.isArray(rawPhoto) ? rawPhoto[0] : rawPhoto;
+        const image = photoUrl
+          ? photoUrl.startsWith("http")
+            ? photoUrl
+            : `${imageBase}/${photoUrl.replace(/^\//, "")}`
+          : "";
+        const year = item.launching_year ? new Date(item.launching_year).getFullYear() : 0;
+        const statusMap: Record<string, VehicleStatus> = {
+          Available: "available",
+          Maintenance: "maintenance",
+          Service: "rented",
+          Reserved: "available",
+        };
+        return {
+          id: item.id,
+          name,
+          year,
+          transmission: "Automatic",
+          plate: item.license_plate,
+          type: "Sedan",
+          rate: `Rp ${(item.daily_rate || 0).toLocaleString("id-ID")}`,
+          status: statusMap[item.status] || "available",
+          image,
+          imageAlt: `${name} side view`,
+        };
+      });
+      setVehicles(mapped);
+      setTotalPages(1);
+      setTotalResults(mapped.length);
+    } catch (err) {
+      console.error("Failed to fetch vehicles:", err);
+      setVehicles([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage]);
+
   useEffect(() => {
     const success = searchParams.get("success");
     const vehicle = searchParams.get("vehicle");
@@ -37,78 +106,39 @@ export default function DashboardVehiclePage() {
       setAlertMessage(`Vehicle ${decodeURIComponent(vehicle)} has been ${success} successfully.`);
       setAlertType("success");
       setIsAlertOpen(true);
-
-      // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
       window.history.replaceState({}, "", "/dashboard/vehicle");
     }
-  }, [searchParams]);
 
-  const vehicles = [
-    {
-      name: "Toyota Camry",
-      year: 2022,
-      transmission: "Automatic",
-      plate: "B 1234 XYZ",
-      type: "Sedan",
-      rate: "$50.00",
-      status: "available" as const,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTPXl3_1Wdm0vfEBBNfPz34KYWfTwgk92FN-NMeG529KFX1AoOCF0Xw2rshR7QRnMz9NgkYRdicFT07sEO_JcpauYoriHK8_eSj9MUtTrPLMI4nq7V4pt9RyqLSOQu_XxaNcKRLLvf44b5LKMrGoWz02DfFtOSgNNBrtbgDz2_LYHpPi7pBRiWXfYRAubew-O4Taz0RqtGQoSh-bX7L_yBXpuryAqsPZ-DbGjaGKz3blYbCu4VMUoQ2PH_N3-Ht0OueyUHdE1JCDb",
-      imageAlt: "Silver Toyota Camry side view",
-    },
-    {
-      name: "Honda CR-V",
-      year: 2021,
-      transmission: "Automatic",
-      plate: "B 5678 ABC",
-      type: "SUV",
-      rate: "$65.00",
-      status: "rented" as const,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTPXl3_1Wdm0vfEBBNfPz34KYWfTwgk92FN-NMeG529KFX1AoOCF0Xw2rshR7QRnMz9NgkYRdicFT07sEO_JcpauYoriHK8_eSj9MUtTrPLMI4nq7V4pt9RyqLSOQu_XxaNcKRLLvf44b5LKMrGoWz02DfFtOSgNNBrtbgDz2_LYHpPi7pBRiWXfYRAubew-O4Taz0RqtGQoSh-bX7L_yBXpuryAqsPZ-DbGjaGKz3blYbCu4VMUoQ2PH_N3-Ht0OueyUHdE1JCDb",
-      imageAlt: "White Honda CRV front view",
-    },
-    {
-      name: "Mercedes C-Class",
-      year: 2023,
-      transmission: "Automatic",
-      plate: "B 9988 MERC",
-      type: "Luxury",
-      rate: "$120.00",
-      status: "maintenance" as const,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTPXl3_1Wdm0vfEBBNfPz34KYWfTwgk92FN-NMeG529KFX1AoOCF0Xw2PH_N3-Ht0OueyUHdE1JCDb",
-      imageAlt: "Black Mercedes C-Class side",
-    },
-    {
-      name: "Ford Transit",
-      year: 2020,
-      transmission: "Manual",
-      plate: "B 3322 TRK",
-      type: "Van",
-      rate: "$85.00",
-      status: "available" as const,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTPXl3_1Wdm0vfEBBNfPz34KYWfTwgk92FN-NMeG529KFX1AoOCF0Xw2rshR7QRnMz9NgkYRdicFT07sEO_JcpauYoriHK8_eSj9MUtTrPLMI4nq7V4pt9RyqLSOQu_XxaNcKRLLvf44b5LKMrGoWz02DfFtOSgNNBrtbgDz2_LYHpPi7pBRiWXfYRAubew-O4Taz0RqtGQoSh-bX7L_yBXpuryAqsPZ-DbGjaGKz3blYbCu4VMUoQ2PH_N3-Ht0OueyUHdE1JCDb",
-      imageAlt: "Blue Ford Transit Van",
-    },
-  ];
+    fetchVehicles();
+  }, [searchParams, fetchVehicles]);
 
-  // Handler untuk Delete
   const handleDeleteClick = (vehicle: any) => {
-    setSelectedVehicle(vehicle);
+    const full = vehicles.find((v) => v.plate === vehicle.plate);
+    setSelectedVehicle(full || vehicle);
     setIsConfirmOpen(true);
   }
 
-  const handleConfirmDelete = () => {
-    console.log("Deleted vehicle:", selectedVehicle);
-    // TODO: Panggil API delete di sini
-    setIsConfirmOpen(false);
-    setAlertTitle("Delete Successful");
-    setAlertMessage(`Vehicle ${selectedVehicle?.name} has been deleted successfully.`);
-    setAlertType("success");
-    setIsAlertOpen(true);
-    setSelectedVehicle(null);
+  const handleConfirmDelete = async () => {
+    if (!selectedVehicle) return;
+    try {
+      const id = selectedVehicle.id || vehicles.find((v) => v.plate === selectedVehicle.plate)?.id;
+      if (!id) throw new Error("Vehicle ID not found");
+      await vehicleApi.delete(id);
+      setIsConfirmOpen(false);
+      setAlertTitle("Delete Successful");
+      setAlertMessage(`Vehicle ${selectedVehicle.name} (${selectedVehicle.plate}) has been deleted successfully.`);
+      setAlertType("success");
+      setIsAlertOpen(true);
+      setSelectedVehicle(null);
+      fetchVehicles();
+    } catch (err) {
+      console.error("Failed to delete vehicle:", err);
+      setIsConfirmOpen(false);
+      setAlertTitle("Delete Failed");
+      setAlertMessage("Failed to delete vehicle. Please try again.");
+      setAlertType("error");
+      setIsAlertOpen(true);
+    }
   };
 
   const handleExport = (options?: ExportOptions) => {
@@ -117,19 +147,9 @@ export default function DashboardVehiclePage() {
     alert(`Exporting vehicle data as ${options.format} with ${options.type} data`);
   };
 
-
   const handleAlertClose = () => {
     setIsAlertOpen(false);
   };
-
-
-
-  // Calculate pagination
-  const totalResults = vehicles.length;
-  const totalPages = Math.ceil(totalResults / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentVehicles = vehicles.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -207,7 +227,7 @@ export default function DashboardVehiclePage() {
           <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] shadow-sm overflow-hidden">
             {/* Vehicle Table */}
             <VehicleTable 
-            vehicles={currentVehicles}
+            vehicles={vehicles}
             onDelete={handleDeleteClick} 
             onExport={handleExport}
             />

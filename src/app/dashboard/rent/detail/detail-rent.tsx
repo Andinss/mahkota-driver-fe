@@ -1,25 +1,88 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import CardCarInfo from "@/components/rent/detail/car-info";
 import DriverInfo from "@/components/rent/detail/driver-info";
 import Duration from "@/components/rent/detail/duration";
 import DocumentSign from "@/components/rent/detail/signed-document";
 import { Button } from "@/components/ui/button";
+import { rentalApi } from "@/lib/api/rentals";
+import type { RentalTransaction } from "@/lib/types/rentals";
 
 const DetailRentPage = () => {
+  const searchParams = useSearchParams();
+  const transactionId = searchParams.get("id");
+
+  const [rental, setRental] = useState<RentalTransaction | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (transactionId) {
+      setIsLoading(true);
+      rentalApi.getList({ limit: 10 }).then((res) => {
+        const items = Array.isArray(res.data) ? res.data : [];
+        const found = items.find((r) => r.id === transactionId);
+        setRental(found || null);
+      }).catch(() => setRental(null))
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
+    }
+  }, [transactionId]);
+
+  if (isLoading) {
+    return (
+      <div className="m-8 p-12 text-center text-slate-500">
+        Loading rental details...
+      </div>
+    );
+  }
+
+  if (!rental) {
+    return (
+      <div className="m-8 p-12 text-center text-slate-500">
+        Rental not found.
+      </div>
+    );
+  }
+
   return (
     <div className="m-8">
       <div className="grid grid-cols-12 gap-6 lg:gap-8">
         {/* Large Vehicle Card (Span 8) */}
-        <CardCarInfo />
+        <CardCarInfo
+          vehicleName={rental.car_model || "Vehicle"}
+          licensePlate={rental.car_model || "-"}
+          color="N/A"
+          fuelLevel={85}
+          odometer={0}
+          depositAmount={Number(rental.security_deposit) || 0}
+          imageUrl=""
+        />
 
         {/* Driver Information (Span 4) */}
-        <DriverInfo />
+        <DriverInfo
+          name={rental.driver_active || "-"}
+          accountType="-"
+          licenseStatus="Verified"
+          contact="-"
+          email="-"
+          avatar=""
+        />
 
         {/* Duration & Rates (Span 7) */}
-        <Duration />
+        <Duration
+          startDate={rental.start_date || ""}
+          endDate={rental.end_date || ""}
+          dailyRate={Number(rental.daily_rate) || 0}
+          depositAmount={Number(rental.deposit_amount) || 0}
+          duration={rental.total_duration || 0}
+        />
 
         {/* Documents Section (Span 5) */}
         <div className="col-span-12 lg:col-span-5">
-          <DocumentSign />
+          <DocumentSign documentUrl={rental.document_contract} />
         </div>
       </div>
 

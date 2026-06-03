@@ -1,5 +1,6 @@
 import FinanceDetailPage from "./detail-finance";
 
-export default function FinanceDetail() {
-  return <FinanceDetailPage />;
+export default async function Page(props: { searchParams: Promise<{ id?: string }> }) {
+  const { id } = await props.searchParams;
+  return <FinanceDetailPage id={id ?? null} />;
 }

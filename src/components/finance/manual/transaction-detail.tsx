@@ -22,6 +22,7 @@ interface TransactionDetailProps {
   onPaymentDateChange?: (value: string) => void;
   onReferenceNumberChange?: (value: string) => void;
   onPaymentMethodChange?: (value: string) => void;
+  onPaymentDetailChange?: (detail: string) => void;
   onAmountChange?: (value: string) => void;
   onNotesChange?: (value: string) => void;
   hasSubmitted?: boolean;
@@ -36,6 +37,7 @@ const TransactionDetail = ({
   onPaymentDateChange,
   onReferenceNumberChange,
   onPaymentMethodChange,
+  onPaymentDetailChange,
   onAmountChange,
   onNotesChange,
   hasSubmitted = false,
@@ -227,14 +229,17 @@ const TransactionDetail = ({
             <p className="text-xs text-red-500">{errors.paymentMethod}</p>
           )}
           <div className="grid grid-cols-3 gap-3">
-            <RadioCard
-              icon="payments"
-              label="Cash"
-              name="payment_method"
-              value="Cash"
-              checked={paymentMethod === "Cash"}
-              onChange={() => onPaymentMethodChange?.("Cash")}
-            />
+              <RadioCard
+                icon="payments"
+                label="Cash"
+                name="payment_method"
+                value="cash"
+                checked={paymentMethod === "cash"}
+                onChange={() => {
+                  onPaymentMethodChange?.("cash");
+                  onPaymentDetailChange?.("");
+                }}
+              />
             <button
               type="button"
               onClick={() => setShowTransferModal(true)}
@@ -242,8 +247,7 @@ const TransactionDetail = ({
             >
               <div
                 className={`flex flex-col items-center justify-center p-3 rounded-lg border h-24 transition-all hover:border-gray-400 dark:hover:border-gray-500 ${
-                  paymentMethod !== "Cash" &&
-                  !paymentMethod.startsWith("E-Wallet")
+                  paymentMethod === "transfer"
                     ? "border-primary bg-primary/5 text-primary"
                     : "border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800"
                 }`}
@@ -251,12 +255,11 @@ const TransactionDetail = ({
                 <Icon
                   name="account_balance"
                   size="lg"
-                  className={`mb-2 ${paymentMethod !== "Cash" && !paymentMethod.startsWith("E-Wallet") ? "text-primary" : "text-[#617589] dark:text-gray-400"}`}
+                  className={`mb-2 ${paymentMethod === "transfer" ? "text-primary" : "text-[#617589] dark:text-gray-400"}`}
                 />
                 <span
                   className={`text-sm font-medium ${
-                    paymentMethod !== "Cash" &&
-                    !paymentMethod.startsWith("E-Wallet")
+                    paymentMethod === "transfer"
                       ? "text-primary"
                       : "text-[#111418] dark:text-gray-200"
                   }`}
@@ -264,8 +267,7 @@ const TransactionDetail = ({
                   Transfer
                 </span>
               </div>
-              {paymentMethod !== "Cash" &&
-                !paymentMethod.startsWith("E-Wallet") && (
+              {paymentMethod === "transfer" && (
                   <div className="absolute top-2 right-2 text-primary">
                     <Icon name="check_circle" size="md" />
                   </div>
@@ -278,7 +280,7 @@ const TransactionDetail = ({
             >
               <div
                 className={`flex flex-col items-center justify-center p-3 rounded-lg border h-24 transition-all hover:border-gray-400 dark:hover:border-gray-500 ${
-                  paymentMethod.startsWith("E-Wallet")
+                  paymentMethod === "e-wallet"
                     ? "border-primary bg-primary/5 text-primary"
                     : "border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800"
                 }`}
@@ -286,11 +288,11 @@ const TransactionDetail = ({
                 <Icon
                   name="account_balance_wallet"
                   size="lg"
-                  className={`mb-2 ${paymentMethod.startsWith("E-Wallet") ? "text-primary" : "text-[#617589] dark:text-gray-400"}`}
+                  className={`mb-2 ${paymentMethod === "e-wallet" ? "text-primary" : "text-[#617589] dark:text-gray-400"}`}
                 />
                 <span
                   className={`text-sm font-medium ${
-                    paymentMethod.startsWith("E-Wallet")
+                    paymentMethod === "e-wallet"
                       ? "text-primary"
                       : "text-[#111418] dark:text-gray-200"
                   }`}
@@ -298,7 +300,7 @@ const TransactionDetail = ({
                   E-Wallet
                 </span>
               </div>
-              {paymentMethod.startsWith("E-Wallet") && (
+              {paymentMethod === "e-wallet" && (
                 <div className="absolute top-2 right-2 text-primary">
                   <Icon name="check_circle" size="md" />
                 </div>
@@ -343,7 +345,8 @@ const TransactionDetail = ({
                 key={bank.name}
                 type="button"
                 onClick={() => {
-                  onPaymentMethodChange?.(`Transfer - ${bank.name}`);
+                  onPaymentMethodChange?.("transfer");
+                  onPaymentDetailChange?.(bank.name);
                   setShowTransferModal(false);
                 }}
                 className="group flex items-center justify-center p-4 rounded-xl border-2 border-[#e5e7eb] dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
@@ -376,7 +379,8 @@ const TransactionDetail = ({
                 key={wallet.name}
                 type="button"
                 onClick={() => {
-                  onPaymentMethodChange?.(`E-Wallet - ${wallet.name}`);
+                  onPaymentMethodChange?.("e-wallet");
+                  onPaymentDetailChange?.(wallet.name);
                   setShowEwalletModal(false);
                 }}
                 className="group flex items-center justify-center p-4 rounded-xl border-2 border-[#e5e7eb] dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"

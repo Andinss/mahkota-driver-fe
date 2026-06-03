@@ -5,40 +5,25 @@ import { PaymentTableRow } from "./payment-table-row";
 import { ModalExport } from "@/components/ui/export";
 import type { ExportColumn, ExportOptions } from "@/components/ui/export";
 import Link from "next/link";
-
-interface Payment {
-  invoiceId: string;
-  customer: {
-    name: string;
-    avatar?: string;
-  };
-  vehicle: {
-    plate: string;
-  };
-  amount: string;
-  dueDate: string;
-  status: "Late" | "Pending Review" | "Paid";
-  method: string;
-}
+import type { FinanceItem } from "@/lib/types/finances";
 
 interface PaymentTableProps {
-  payment: Payment[];
-  onValidate?: (payment: Payment) => void;
-  onDetails?: (payment: Payment) => void;
-  onDownload?: (payment: Payment) => void;
-  onEdit?: (payment: Payment) => void;
-  onDelete?: (payment: Payment) => void;
+  payment: FinanceItem[];
+  onValidate?: (payment: FinanceItem) => void;
+  onDetails?: (payment: FinanceItem) => void;
+  onDownload?: (payment: FinanceItem) => void;
+  onEdit?: (payment: FinanceItem) => void;
+  onDelete?: (payment: FinanceItem) => void;
   onExport?: (options: ExportOptions) => void;
 }
 
 const paymentColumns: ExportColumn[] = [
-  { id: "invoiceId", label: "Invoice ID", defaultChecked: true },
-  { id: "customerName", label: "Customer Name", defaultChecked: true },
-  { id: "vehiclePlate", label: "Vehicle Plate", defaultChecked: true },
-  { id: "amount", label: "Amount", defaultChecked: true },
-  { id: "dueDate", label: "Due Date", defaultChecked: true },
+  { id: "reference_number", label: "Reference Number", defaultChecked: true },
+  { id: "payer", label: "Payer", defaultChecked: true },
+  { id: "amount_received", label: "Amount Received", defaultChecked: true },
+  { id: "payment_date", label: "Payment Date", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
-  { id: "method", label: "Payment Method", defaultChecked: true },
+  { id: "payment_method", label: "Payment Method", defaultChecked: true },
 ];
 
 export function PaymentTable({
@@ -52,7 +37,7 @@ export function PaymentTable({
 }: PaymentTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const totalResults = payment.length;
   const totalPages = Math.ceil(totalResults / itemsPerPage);
@@ -65,26 +50,13 @@ export function PaymentTable({
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   };
 
-  if (totalResults === 0) {
-    return (
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 text-center">
-        <p className="text-slate-500 dark:text-slate-400">
-          No payment data available
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div>
-      {/* Table */}
-
       <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
         <h2 className="font-bold text-lg text-slate-900 dark:text-white">
           Finance Management
         </h2>
         <div className="flex items-center gap-3">
-          {/* Button Late Payment */}
           <Link
             href="/dashboard/finance/late"
             className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
@@ -92,7 +64,6 @@ export function PaymentTable({
             <span className="material-symbols-outlined text-base">warning</span>
             Late Payment
           </Link>
-          {/* Button Export Data */}
           <button
             onClick={() => setIsExportModalOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
@@ -109,11 +80,10 @@ export function PaymentTable({
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-6 py-4">Invoice ID</th>
-              <th className="px-6 py-4">Customer Name</th>
-              <th className="px-6 py-4">Vehicle Plate</th>
-              <th className="px-6 py-4">Amount</th>
-              <th className="px-6 py-4">Due Date</th>
+              <th className="px-6 py-4">Reference Number</th>
+              <th className="px-6 py-4">Payer</th>
+              <th className="px-6 py-4">Amount Received</th>
+              <th className="px-6 py-4">Payment Date</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-2 py-4">Method</th>
               <th className="pe-6 py-4 text-center">Actions</th>
@@ -122,7 +92,7 @@ export function PaymentTable({
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
             {paginatedPayment.map((item, index) => (
               <PaymentTableRow
-                key={item.invoiceId || index}
+                key={item.id || index}
                 payment={item}
                 onValidate={onValidate}
                 onDetails={onDetails}

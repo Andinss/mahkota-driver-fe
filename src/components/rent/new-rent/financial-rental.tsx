@@ -2,7 +2,7 @@
 
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Select } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface FormErrors {
   vehicleId?: string;
@@ -28,32 +28,42 @@ interface FinancialRentalProps {
 } 
  
  
+const parseCurrency = (val: string) => val ? parseInt(val.replace(/\./g, ""), 10) : 0;
+
 const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalProps) => {
-  const [dailyRate, setDailyRate] = useState<string>("");
-  const [depositAmount, setDepositAmount] = useState<string>("");
+  const initRate = initialData?.dailyRate ? initialData.dailyRate.toString() : "";
+  const initDeposit = initialData?.depositAmount ? initialData.depositAmount.toString() : "";
+  const [dailyRate, setDailyRate] = useState<string>(initRate);
+  const [depositAmount, setDepositAmount] = useState<string>(initDeposit);
   const [methodPayment, setMethodPayment] = useState<string>(initialData?.methodPayment || "Bank");
 
-  useEffect(() => {
-    if (initialData?.dailyRate) {
-      setDailyRate(initialData.dailyRate.toString());
-    }
-    if (initialData?.depositAmount) {
-      setDepositAmount(initialData.depositAmount.toString());
-    }
-    if (initialData?.methodPayment) {
-      setMethodPayment(initialData.methodPayment);
-    } 
-  }, [initialData]);
+  const handleDailyRateChange = (val: string) => {
+    setDailyRate(val);
+    onDataChange?.({
+      dailyRate: parseCurrency(val),
+      depositAmount: parseCurrency(depositAmount),
+      methodPayment,
+    });
+  };
 
-  useEffect(() => {
-    if (onDataChange) {
-      onDataChange({
-        dailyRate: dailyRate ? parseInt(dailyRate.replace(/\./g, ""), 10) : 0,
-        depositAmount: depositAmount ? parseInt(depositAmount.replace(/\./g, ""), 10) : 0,
-        methodPayment,
-      });
-    }
-  }, [dailyRate, depositAmount, methodPayment, onDataChange]);
+  const handleDepositChange = (val: string) => {
+    setDepositAmount(val);
+    onDataChange?.({
+      dailyRate: parseCurrency(dailyRate),
+      depositAmount: parseCurrency(val),
+      methodPayment,
+    });
+  };
+
+  const handleMethodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setMethodPayment(val);
+    onDataChange?.({
+      dailyRate: parseCurrency(dailyRate),
+      depositAmount: parseCurrency(depositAmount),
+      methodPayment: val,
+    });
+  };
 
   return (
     <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -73,7 +83,7 @@ const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalPr
             label="Daily Rate"
             placeholder="0"
             value={dailyRate}
-            onChange={setDailyRate}
+            onChange={handleDailyRateChange}
             error={error?.dailyRate}
           />
           <p className="text-[10px] text-slate-500 italic">
@@ -87,7 +97,7 @@ const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalPr
             label="Deposit Amount"
             placeholder="0"
             value={depositAmount}
-            onChange={setDepositAmount}
+            onChange={handleDepositChange}
             error={error?.depositAmount}
           />
         </div>
@@ -98,7 +108,7 @@ const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalPr
               name="methodPayment"
               label="Method Payment"
               value={methodPayment}
-              onChange={(e) => setMethodPayment(e.target.value)}
+              onChange={handleMethodChange}
             >
               <option value="Bank">Bank</option>
               <option value="Property Parent">Property Parent</option>

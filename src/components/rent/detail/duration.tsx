@@ -1,4 +1,29 @@
-const Duration = () => {
+interface DurationProps {
+  startDate?: string;
+  endDate?: string;
+  dailyRate?: number;
+  depositAmount?: number;
+  duration?: number;
+}
+
+const formatDate = (d?: string) => {
+  if (!d) return "Aug 12, 2024";
+  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(value);
+};
+
+const Duration = ({
+  startDate = "Aug 12, 2024",
+  endDate = "Aug 19, 2024",
+  dailyRate = 245,
+  depositAmount = 500,
+  duration = 7,
+}: DurationProps) => {
+  const totalEst = dailyRate * duration + depositAmount;
+
   return (
     <div className="col-span-12 lg:col-span-7">
       <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md border border-gray-200 h-full">
@@ -7,7 +32,7 @@ const Duration = () => {
             Duration & Rates
           </h3>
           <span className="text-[9px] font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded">
-            7 DAYS TOTAL
+            {duration} DAYS TOTAL
           </span>
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -15,7 +40,7 @@ const Duration = () => {
             <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">
               Pick-up Date
             </p>
-            <p className="text-lg font-bold text-gray-900">Aug 12, 2024</p>
+            <p className="text-lg font-bold text-gray-900">{formatDate(startDate)}</p>
             <p className="text-[10px] text-gray-500">09:00 AM • Jakarta HQ</p>
           </div>
           <div className="flex items-center justify-center px-4 rotate-90 sm:rotate-0">
@@ -27,7 +52,7 @@ const Duration = () => {
             <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">
               Expected Return
             </p>
-            <p className="text-lg font-bold text-gray-900">Aug 19, 2024</p>
+            <p className="text-lg font-bold text-gray-900">{formatDate(endDate)}</p>
             <p className="text-[10px] text-gray-500">06:00 PM • Jakarta HQ</p>
           </div>
         </div>
@@ -36,7 +61,7 @@ const Duration = () => {
             <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">
               Daily Rate
             </p>
-            <p className="text-xl font-black text-gray-900">$245.00</p>
+            <p className="text-xl font-black text-gray-900">{formatCurrency(dailyRate)}</p>
           </div>
           <div>
             <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">
@@ -48,7 +73,7 @@ const Duration = () => {
             <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">
               Est. Total
             </p>
-            <p className="text-xl font-black text-blue-600">$2,030.00</p>
+            <p className="text-xl font-black text-blue-600">{formatCurrency(totalEst)}</p>
           </div>
         </div>
       </div>

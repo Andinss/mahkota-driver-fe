@@ -1,20 +1,40 @@
-const CardCarInfo = () => {
+interface CardCarInfoProps {
+  vehicleName?: string;
+  licensePlate?: string;
+  color?: string;
+  fuelLevel?: number;
+  odometer?: number;
+  depositAmount?: number;
+  imageUrl?: string;
+}
+
+const CardCarInfo = ({
+  vehicleName = "2024 Mercedes-Benz S-Class",
+  licensePlate = "B 1234 PTZ",
+  color = "Obsidian Black",
+  fuelLevel = 85,
+  odometer = 12402,
+  depositAmount = 1500,
+  imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCvjwInuWQ9_YeOX-7ECcy5lTNdkTUlhRGsTpT2xTs4BMFlypYWaVJPXrULRXJ9yVgGGO7Xwd2OM71m8KHYZUX_90-fSV2lalKZ0WDL4g9vwXpcDjFEwM3x1V2O9ZLUvo5MqucDBipevEa87d7AN_wYzaezwJ5b5_qvmMeEDihF6JZBJkwXC3a-5zTAJd_ktfPsTKCKq9rfHa4cH73vNt2Z0kdKpHwo_XXWYaA0UMTt0Jf09QdNRQnD9Bb6kxgunpNDkFMisW6b0Htp",
+}: CardCarInfoProps) => {
+  const displayImage = imageUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuCvjwInuWQ9_YeOX-7ECcy5lTNdkTUlhRGsTpT2xTs4BMFlypYWaVJPXrULRXJ9yVgGGO7Xwd2OM71m8KHYZUX_90-fSV2lalKZ0WDL4g9vwXpcDjFEwM3x1V2O9ZLUvo5MqucDBipevEa87d7AN_wYzaezwJ5b5_qvmMeEDihF6JZBJkwXC3a-5zTAJd_ktfPsTKCKq9rfHa4cH73vNt2Z0kdKpHwo_XXWYaA0UMTt0Jf09QdNRQnD9Bb6kxgunpNDkFMisW6b0Htp";
+
   return (
     <div className="col-span-12 lg:col-span-8">
       <div className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col md:flex-row h-full border border-gray-200">
         <div className="md:w-1/2 relative min-h-[250px] md:h-auto overflow-hidden group">
           <img
-            alt="2024 Mercedes-Benz S-Class"
+            alt={vehicleName}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvjwInuWQ9_YeOX-7ECcy5lTNdkTUlhRGsTpT2xTs4BMFlypYWaVJPXrULRXJ9yVgGGO7Xwd2OM71m8KHYZUX_90-fSV2lalKZ0WDL4g9vwXpcDjFEwM3x1V2O9ZLUvo5MqucDBipevEa87d7AN_wYzaezwJ5b5_qvmMeEDihF6JZBJkwXC3a-5zTAJd_ktfPsTKCKq9rfHa4cH73vNt2Z0kdKpHwo_XXWYaA0UMTt0Jf09QdNRQnD9Bb6kxgunpNDkFMisW6b0Htp"
+            src={displayImage}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
             <span className="bg-white/95 backdrop-blur px-2.5 py-1 rounded text-[9px] font-black tracking-widest uppercase text-gray-900">
-              B 1234 PTZ
+              {licensePlate}
             </span>
             <span className="bg-black/60 backdrop-blur text-white px-2.5 py-1 rounded text-[9px] font-bold tracking-widest uppercase">
-              Obsidian Black
+              {color}
             </span>
           </div>
         </div>
@@ -24,7 +44,7 @@ const CardCarInfo = () => {
               Primary Asset
             </h3>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 tracking-tight">
-              2024 Mercedes-Benz S-Class
+              {vehicleName}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="bg-gray-50 p-4 rounded-lg">
@@ -37,12 +57,12 @@ const CardCarInfo = () => {
                   </span>
                 </div>
                 <div className="flex items-end justify-between mb-1">
-                  <p className="text-2xl font-black text-gray-900">85%</p>
+                  <p className="text-2xl font-black text-gray-900">{fuelLevel}%</p>
                 </div>
                 <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-600"
-                    style={{ width: "85%" }}
+                    style={{ width: `${fuelLevel}%` }}
                   ></div>
                 </div>
               </div>
@@ -56,7 +76,7 @@ const CardCarInfo = () => {
                   </span>
                 </div>
                 <p className="text-2xl font-black text-gray-900">
-                  12,402{" "}
+                  {odometer.toLocaleString()}{" "}
                   <span className="text-[10px] font-normal text-gray-500">
                     km
                   </span>
@@ -75,7 +95,9 @@ const CardCarInfo = () => {
                 <p className="text-[9px] font-bold text-gray-500 uppercase">
                   Security Deposit
                 </p>
-                <p className="text-lg font-bold text-gray-900">$1,500.00</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(depositAmount)}
+                </p>
               </div>
             </div>
           </div>

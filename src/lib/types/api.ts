@@ -24,6 +24,13 @@ export interface SuccessResponse<T> {
   data: T;
 }
 
+export interface SuccessResponsePaginated<T> {
+  success: boolean;
+  message: string;
+  data: T[];
+  meta: PaginationMeta;
+}
+
 export interface ApiError {
   statusCode: number;
   message: string;

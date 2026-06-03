@@ -226,7 +226,7 @@ export function VehicleSpecificationsForm({
               name="dailyRate"
               label="Daily Rate"
               placeholder="0"
-              defaultValue={initialValues?.dailyRate}
+              value={initialValues?.dailyRate}
               required
               error={errors.dailyRate}
             />

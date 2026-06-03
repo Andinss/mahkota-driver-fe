@@ -1,42 +1,76 @@
-const FinanceSummary = () => {
+import type { FinanceItem } from "@/lib/types/finances";
+
+const formatCurrency = (value: string) => {
+  const num = parseFloat(value.replace(/[^\d.]/g, ""));
+  if (isNaN(num)) return "Rp 0";
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num);
+};
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const methodLabel: Record<string, string> = {
+  cash: "Cash",
+  transfer: "Transfer",
+  "e-wallet": "E-Wallet",
+};
+
+interface FinanceSummaryProps {
+  finance: FinanceItem;
+}
+
+const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
   return (
     <div className="bg-white rounded-2xl p-6 lg:p-8 border border-gray-200 shadow-sm overflow-hidden relative">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-10">
         <div>
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">
-            Invoice Code
+            Reference Number
           </h3>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl lg:text-4xl font-black tracking-tighter text-gray-900">
-              Invoice #TXN-99284-XYZ
+              {finance.reference_number}
             </span>
           </div>
         </div>
         <div className="flex flex-col items-start sm:items-end mt-10">
           <p className="text-[10px] text-gray-500 mt-3 font-medium">
-            24, 2023 • 14:32 PM
+            {formatDate(finance.payment_date)}
           </p>
         </div>
       </div>
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-t border-gray-200 mb-10">
         <div className="mt-5">
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">
-            Payment Summary
+            Amount Received
           </h3>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-semibold text-gray-500">$</span>
+            <span className="text-2xl font-semibold text-gray-500">Rp</span>
             <span className="text-5xl lg:text-7xl font-black tracking-tighter text-gray-900">
-              1,240.00
+              {formatCurrency(finance.amount_received).replace("Rp", "").trim()}
             </span>
           </div>
         </div>
         <div className="flex flex-col items-start sm:items-end mt-5">
-          <span className="px-4 py-2 bg-green-100 text-green-700 border border-green-200 rounded-full text-sm font-bold flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            Paid
+          <span className={`px-4 py-2 border rounded-full text-sm font-bold flex items-center gap-2 ${finance.is_active ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
+            <span className={`w-2 h-2 rounded-full animate-pulse ${finance.is_active ? "bg-green-500" : "bg-gray-400"}`}></span>
+            {finance.is_active ? "Active" : "Inactive"}
           </span>
           <p className="text-[10px] text-gray-500 mt-3 font-medium">
-            Verified by Banking Gateway
+            {finance.payer}
           </p>
         </div>
       </div>
@@ -54,46 +88,50 @@ const FinanceSummary = () => {
                 account_balance_wallet
               </span>
             </div>
-            <span className="font-bold text-gray-900">Transfer</span>
+            <span className="font-bold text-gray-900">
+              {methodLabel[finance.payment_method] || finance.payment_method}
+            </span>
           </div>
         </div>
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Transaction ID
+            Payer
           </p>
-          <p className="font-mono text-sm font-medium text-gray-900 bg-gray-100 px-2 py-1 rounded w-fit border border-gray-200">
-            99284-B-2023
+          <p className="font-mono text-sm font-medium text-gray-900">
+            {finance.payer}
           </p>
         </div>
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Reference Code
+            Notes
           </p>
-          <p className="font-mono text-sm font-medium text-gray-900">
-            XYZ-RE-449
+          <p className="text-sm font-medium text-gray-900">
+            {finance.notes || "-"}
           </p>
         </div>
 
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Duration Contract
+            Created At
           </p>
           <p className="text-sm font-medium text-gray-900">
-            3 Days (Oct 24 - Oct 27)
+            {formatDate(finance.created_at || "")}
           </p>
         </div>
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Location
+            Updated At
           </p>
-          <p className="text-sm font-medium text-gray-900">Jakarta HQ Branch</p>
+          <p className="text-sm font-medium text-gray-900">
+            {formatDate(finance.updated_at || "")}
+          </p>
         </div>
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Tax ID
+            Status
           </p>
-          <p className=" text-sm font-medium text-gray-900">
-            NPWP 01.234.567.8-901.000
+          <p className="text-sm font-medium text-gray-900">
+            {finance.is_active ? "Active" : "Inactive"}
           </p>
         </div>
       </div>

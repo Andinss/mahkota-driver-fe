@@ -4,14 +4,14 @@ import type { DriverItem, DriverListParams } from "../types/driver";
 
 export const driverApi = {
   getList: (params?: DriverListParams) =>
-    api.get<SuccessResponse<DriverItem[]>>("/driver", params as Record<string, string | number | undefined>),
+    api.get<SuccessResponse<DriverItem[]>>("/drivers", params as Record<string, string | number | undefined>),
 
   create: (formData: FormData) =>
-    api.upload<SuccessResponse<DriverItem>>("/driver/create", formData),
+    api.upload<SuccessResponse<DriverItem>>("/drivers/create", formData),
 
   update: (id: string, payload: FormData) =>
-    api.uploadPut<SuccessResponse<DriverItem>>(`/driver/update/${id}`, payload),
+    api.uploadPut<SuccessResponse<DriverItem>>(`/drivers/update/${id}`, payload),
 
   delete: (id: string) =>
-    api.delete<SuccessResponse<void>>(`/driver/delete/${id}`),
+    api.delete<SuccessResponse<void>>(`/drivers/delete/${id}`),
 };
