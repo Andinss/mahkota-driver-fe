@@ -111,8 +111,8 @@ const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalPr
               onChange={handleMethodChange}
             >
               <option value="Bank">Bank</option>
-              <option value="Property Parent">Property Parent</option>
-              <option value="Own Yourself">Own Yourself</option>
+              <option value="Cash">Cash</option>
+              <option value="E Wallet">E Wallet</option>
             </Select>
           </div>
         </div>

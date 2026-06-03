@@ -57,11 +57,10 @@ export const SelectSearch = ({
     ? "border-red-500 ring-1 ring-red-500" 
     : "border-[#dbe0e6] dark:border-[#4b5563]";
 
-  // ✅ FILTER FIX (tidak aneh lagi)
   const filtered =
     query.trim() !== ""
       ? options.filter((item) =>
-          item.label.toLowerCase().includes(query.toLowerCase()),
+          (item.label || "").toLowerCase().includes(query.toLowerCase()),
         )
       : options;
 
@@ -91,16 +90,17 @@ export const SelectSearch = ({
   return (
     <div ref={wrapperRef} className="w-full relative">
       {label && (
-        <label className="block mb-1 text-sm font-medium">
+        <label key="label" className="block mb-1 text-sm font-medium">
           {label} {required && "*"}
         </label>
       )}
 
       {/* INPUT */}
-      <div className="relative">
+      <div key="input-group" className="relative">
         {/* Avatar */}
         {selected?.image && (
           <img
+            key="selected-image"
             src={selected.image}
             className="absolute left-3 top-1/2 -translate-y-1/2 size-6 rounded-full object-cover"
           />
@@ -108,6 +108,7 @@ export const SelectSearch = ({
 
         {/* Dropdown Icon */}
         <span
+          key="expand-icon"
           onClick={() => {
             setOpen((prev) => !prev);
             setQuery(""); // reset biar semua muncul
@@ -118,6 +119,7 @@ export const SelectSearch = ({
         </span>
 
         <input
+          key="search-input"
           className={`${inputStyle} ${borderColor} ${
             selected?.image ? "pl-10" : "pl-3"
           } pr-10`}
@@ -135,16 +137,16 @@ export const SelectSearch = ({
         />
       </div>
       {error && (
-        <p className="text-xs text-red-500 mt-1">{error}</p>
+        <p key="error" className="text-xs text-red-500 mt-1">{error}</p>
       )}
 
       {/* DROPDOWN */}
       {open && (
-        <div className="absolute z-10 w-full bg-white dark:bg-[#1a2632] border-2 border-blue-500 rounded-lg mt-1 shadow max-h-60 overflow-auto">
+        <div key="dropdown" className="absolute z-10 w-full bg-white dark:bg-[#1a2632] border-2 border-blue-500 rounded-lg mt-1 shadow max-h-60 overflow-auto">
           {filtered.length > 0 ? (
-            filtered.map((item) => (
+            filtered.map((item, index) => (
               <div
-                key={item.value}
+                key={`${item.value || index}-${index}`}
                 onClick={() => handleSelect(item)}
                 className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition
                   ${
@@ -155,12 +157,13 @@ export const SelectSearch = ({
               >
                 {item.image && (
                   <img
+                    key="image"
                     src={item.image}
                     className="size-6 rounded-full object-cover"
                   />
                 )}
 
-                <span className="text-sm">{item.label}</span>
+                <span key="label" className="text-sm">{item.label}</span>
               </div>
             ))
           ) : (
