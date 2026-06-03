@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import FinancialRental from "@/components/rent/new-rent/financial-rental";
@@ -8,6 +8,11 @@ import Period from "@/components/rent/new-rent/rental-period";
 import SelectionForm from "@/components/rent/new-rent/selection";
 import Summary from "@/components/rent/new-rent/summry";
 import { DocumentsForm } from "@/components/rent/new-rent/upload-document";
+import { rentalApi } from "@/lib/api/rentals";
+import { driverApi } from "@/lib/api/driver";
+import { vehicleApi } from "@/lib/api/vehicle";
+import type { DriverItem } from "@/lib/types/driver";
+import type { VehicleItem } from "@/lib/types/vehicle";
 
 interface FormErrors {
   vehicleId?: string;
@@ -19,7 +24,7 @@ interface FormErrors {
 }
 
 interface RentalData {
-  transactionId?: string;
+  rentalId?: string;
   vehicleId?: string;
   driverId?: string;
   driverType?: string;
@@ -30,74 +35,18 @@ interface RentalData {
   depositAmount: number;
   serviceFee: number;
   documents?: File[];
-  paymentStatus?: string;
-  deposit?: string;
   methodPayment?: string;
 }
 
-// MOCK DATA untuk edit
-const mockRentals: Record<string, any> = {
-  "RT-4022": {
-    transactionId: "#RT-4022",
-    vehicleId: "B 11234 XYZ",
-    driverId: "889201",
-    startDate: "2024-10-12",
-    endDate: "2024-10-15",
-    duration: 3,
-    dailyRate: 850000,
-    depositAmount: 500000,
-    serviceFee: 25000,
-    paymentStatus: "paid",
-    deposit: "held",
-    methodPayment: "Bank",
-  },
-  "RT-4023": {
-    transactionId: "#RT-4023",
-    vehicleId: "B 5678 ABC",
-    driverId: "889205",
-    startDate: "2024-10-14",
-    endDate: "2024-10-20",
-    duration: 6,
-    dailyRate: 750000,
-    depositAmount: 500000,
-    serviceFee: 25000,
-    paymentStatus: "partial",
-    deposit: "pending",
-    methodPayment: "Property Parent",
-  },
-  "RT-4024": {
-    transactionId: "#RT-4024",
-    vehicleId: "B 9910 DEF",
-    driverId: "889312",
-    startDate: "2024-10-01",
-    endDate: "2024-10-10",
-    duration: 9,
-    dailyRate: 900000,
-    depositAmount: 500000,
-    serviceFee: 25000,
-    paymentStatus: "late",
-    deposit: "held",
-    methodPayment: "Bank",
-  },
-  "RT-4025": {
-    transactionId: "#RT-4025",
-    vehicleId: "B 2233 GHI",
-    driverId: "889410",
-    startDate: "2024-10-15",
-    endDate: "2024-10-16",
-    duration: 1,
-    dailyRate: 800000,
-    depositAmount: 500000,
-    serviceFee: 25000,
-    paymentStatus: "unpaid",
-    deposit: "waiting",
-    methodPayment: "Own Yourself",
-  },
-};
+interface SelectOption {
+  label: string;
+  value: string;
+  image?: string;
+}
 
 const NewRentPage = () => {
   const searchParams = useSearchParams();
-  const transactionParam = searchParams.get("transactionId");
+  const idParam = searchParams.get("id");
 
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,22 +68,37 @@ const NewRentPage = () => {
     depositAmount: 0,
   });
   const [errors, setErrors] = useState<FormErrors>({});
-
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  const [driverOptions, setDriverOptions] = useState<SelectOption[]>([]);
+  const [vehicleOptions, setVehicleOptions] = useState<SelectOption[]>([]);
 
   useEffect(() => {
     setErrors({});
   }, []);
 
-  const handleInputChange = (
-    field: keyof FormErrors,
-    value: string | number,
-  ) => {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
-    if (hasSubmitted && errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
+  useEffect(() => {
+    driverApi.getList().then((res) => {
+      const items = Array.isArray(res.data) ? res.data : [];
+      setDriverOptions(
+        items.map((d: DriverItem) => ({
+          label: d.name,
+          value: d.name,
+          image: d.imageUrl,
+        })),
+      );
+    }).catch(() => {});
+
+    vehicleApi.getList().then((res) => {
+      const items = Array.isArray(res.data) ? res.data : [];
+      setVehicleOptions(
+        items.map((v: VehicleItem) => ({
+          label: `${v.license_plate} - ${v.merk} ${v.model}`,
+          value: v.license_plate,
+        })),
+      );
+    }).catch(() => {});
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -185,30 +149,34 @@ const NewRentPage = () => {
 
   // Load data when in edit mode
   useEffect(() => {
-    if (transactionParam && mockRentals[transactionParam]) {
-      const rental = mockRentals[transactionParam];
+    if (idParam) {
       setMode("edit");
-      setRentalData({
-        transactionId: rental.transactionId,
-        vehicleId: rental.vehicleId,
-        driverId: rental.driverId,
-        startDate: rental.startDate,
-        endDate: rental.endDate,
-        duration: rental.duration,
-        dailyRate: rental.dailyRate,
-        depositAmount: rental.depositAmount,
-        serviceFee: rental.serviceFee,
-        paymentStatus: rental.paymentStatus,
-        deposit: rental.deposit,
-        methodPayment: rental.methodPayment,
-      });
-      setFormValues({
-        vehicleId: rental.vehicleId,
-        driverId: rental.driverId,
-        startDate: rental.startDate,
-        endDate: rental.endDate,
-        dailyRate: rental.dailyRate,
-        depositAmount: rental.depositAmount,
+      rentalApi.getList({ search: idParam, limit: 1 }).then((res) => {
+        const items = Array.isArray(res.data) ? res.data : [];
+        const rental = items.find((r) => r.id === idParam);
+        if (!rental) { setMode("add"); return; }
+        setRentalData({
+          rentalId: rental.id,
+          vehicleId: rental.car_model,
+          driverId: rental.driver_active,
+          startDate: rental.start_date || "",
+          endDate: rental.end_date || "",
+          duration: rental.total_duration || 0,
+          dailyRate: Number(rental.daily_rate) || 0,
+          depositAmount: Number(rental.deposit_amount) || 0,
+          serviceFee: Number(rental.service_fee) || 25000,
+          methodPayment: rental.method_payment,
+        });
+        setFormValues({
+          vehicleId: rental.car_model || "",
+          driverId: rental.driver_active || "",
+          startDate: rental.start_date || "",
+          endDate: rental.end_date || "",
+          dailyRate: Number(rental.daily_rate) || 0,
+          depositAmount: Number(rental.deposit_amount) || 0,
+        });
+      }).catch(() => {
+        setMode("add");
       });
     } else {
       setMode("add");
@@ -221,10 +189,10 @@ const NewRentPage = () => {
         serviceFee: 25000,
       });
     }
-  }, [transactionParam]);
+  }, [idParam]);
 
   // Handler untuk Selection form
-  const handleSelectionChange = (data: {
+  const handleSelectionChange = useCallback((data: {
     vehicleId?: string;
     driverId?: string;
     driverType?: string;
@@ -238,10 +206,10 @@ const NewRentPage = () => {
       vehicleId: data.vehicleId ?? prev.vehicleId,
       driverId: data.driverId ?? prev.driverId,
     }));
-  };
+  }, []);
 
   // Handler untuk Period component
-  const handlePeriodChange = (data: {
+  const handlePeriodChange = useCallback((data: {
     startDate: string;
     endDate: string;
     duration: number;
@@ -255,10 +223,10 @@ const NewRentPage = () => {
       startDate: data.startDate,
       endDate: data.endDate,
     }));
-  };
+  }, []);
 
   // Handler untuk FinancialRental component
-  const handleFinancialChange = (data: {
+  const handleFinancialChange = useCallback((data: {
     dailyRate: number;
     depositAmount: number;
     methodPayment?: string;
@@ -272,15 +240,15 @@ const NewRentPage = () => {
       dailyRate: data.dailyRate,
       depositAmount: data.depositAmount,
     }));
-  };
+  }, []);
 
   // Handler untuk Documents form
-  const handleDocumentsChange = (data: { documents?: File[] }) => {
+  const handleDocumentsChange = useCallback((data: { documents?: File[] }) => {
     setRentalData((prev) => ({
       ...prev,
       ...data,
     }));
-  };
+  }, []);
 
   const handleConfirmRental = () => {
     setHasSubmitted(true);
@@ -296,15 +264,49 @@ const NewRentPage = () => {
     setIsSubmitting(true);
     setIsConfirmOpen(false);
 
-    console.log("Rental Data:", rentalData);
+    try {
+      const totalDuration = rentalData.duration;
+      const dailyRate = rentalData.dailyRate;
+      const depositAmount = rentalData.depositAmount;
+      const serviceFee = rentalData.serviceFee;
+      const totalDailyRate = dailyRate * totalDuration;
+      const totalRevenue = totalDailyRate + depositAmount + serviceFee;
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
+      const formData = new FormData();
+      formData.append("driver_active", rentalData.driverId || "");
+      formData.append("car_model", rentalData.vehicleId || "");
+      formData.append("start_date", rentalData.startDate);
+      formData.append("end_date", rentalData.endDate);
+      formData.append("total_duration", String(totalDuration));
+      formData.append("daily_rate", String(dailyRate));
+      formData.append("deposit_amount", String(depositAmount));
+      formData.append("method_payment", rentalData.methodPayment || "Bank");
+      formData.append("total_daily_rate", String(totalDailyRate));
+      formData.append("security_deposit", String(depositAmount));
+      formData.append("service_fee", String(serviceFee));
+      formData.append("total_revenue", String(totalRevenue));
 
-    const action = mode === "edit" ? "updated" : "registered";
-    const rentName = rentalData.transactionId || "New Rental";
+      if (rentalData.documents && rentalData.documents.length > 0) {
+        rentalData.documents.forEach((file) => {
+          formData.append("document_contract", file);
+        });
+      }
 
-    window.location.href = `/dashboard/rent?success=${action}&rent=${encodeURIComponent(rentName)}`;
+      if (mode === "edit" && rentalData.rentalId) {
+        await rentalApi.update(rentalData.rentalId, formData);
+      } else {
+        await rentalApi.create(formData);
+      }
+
+      setIsSubmitting(false);
+      const action = mode === "edit" ? "updated" : "registered";
+      const rentName = rentalData.vehicleId || "New Rental";
+      window.location.href = `/dashboard/rent?success=${action}&rent=${encodeURIComponent(rentName)}`;
+    } catch (err) {
+      console.error("Failed to save rental:", err);
+      setIsSubmitting(false);
+      alert("Failed to save rental. Please try again.");
+    }
   };
 
   const handleCancel = () => {
@@ -318,16 +320,20 @@ const NewRentPage = () => {
         <div className="flex-1 space-y-8 pb-20">
           {/* Section 1: Selection */}
           <SelectionForm
+            key={"sel-" + (rentalData.rentalId || "add")}
             onDataChange={handleSelectionChange}
             initialData={{
               vehicleId: rentalData.vehicleId,
               driverId: rentalData.driverId,
             }}
             error={hasSubmitted ? errors : undefined}
+            driverOptions={driverOptions}
+            vehicleOptions={vehicleOptions}
           />
 
           {/* Section 2: Period */}
           <Period
+            key={"per-" + (rentalData.rentalId || "add")}
             onDataChange={handlePeriodChange}
             initialData={{
               startDate: rentalData.startDate,
@@ -338,6 +344,7 @@ const NewRentPage = () => {
 
           {/* Section 3: Financials */}
           <FinancialRental
+            key={"fin-" + (rentalData.rentalId || "add")}
             onDataChange={handleFinancialChange}
             initialData={{
               dailyRate: rentalData.dailyRate,

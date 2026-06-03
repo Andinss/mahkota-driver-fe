@@ -2,7 +2,7 @@
 
 import { Select } from "@/components/ui/select";
 
-export type VehicleStatus = "available" | "maintenance" | "out" | "reserved";
+export type VehicleStatus = "Available" | "Maintenance" | "Service" | "Reserved";
 
 interface StatusSelectProps {
   value?: VehicleStatus;
@@ -11,14 +11,14 @@ interface StatusSelectProps {
 }
 
 const statusOptions: Array<{ value: VehicleStatus; label: string }> = [
-  { value: "available", label: "Available for Rent" },
-  { value: "maintenance", label: "In Maintenance" },
-  { value: "out", label: "Out of Service" },
-  { value: "reserved", label: "Reserved" },
+  { value: "Available", label: "Available for Rent" },
+  { value: "Maintenance", label: "In Maintenance" },
+  { value: "Service", label: "Out of Service" },
+  { value: "Reserved", label: "Reserved" },
 ];
 
 export function StatusSelect({
-  value = "available",
+  value = "Available",
   onChange,
   disabled = false,
 }: StatusSelectProps) {

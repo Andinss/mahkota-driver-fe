@@ -1,22 +1,22 @@
 "use client";
 
 import { SelectSearch } from "@/components/ui/select-input-search";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 const driverDetails = [
    { label: "Marco Polo", 
-     value: "889201",
+     value: "Marco Polo",
      image: "https://i.pravatar.cc/40?img=1" 
     },   
   { label: "Sarah Smith", 
-    value: "889205", 
+    value: "Sarah Smith", 
     image: "https://i.pravatar.cc/40?img=2" 
   },   
   { label: "Robert Chen", 
-    value: "889312", 
+    value: "Robert Chen", 
     image: "https://i.pravatar.cc/40?img=3" 
   },   
   { label: "Anita Wijaya", 
-    value: "889410", 
+    value: "Anita Wijaya", 
     image: "https://i.pravatar.cc/40?img=4" 
   },  
 ];
@@ -53,6 +53,12 @@ const rentalPeriod = [
   depositAmount?: string;
 }
 
+interface SelectOption {
+  label: string;
+  value: string;
+  image?: string;
+}
+
 interface SelectionFormProps {
   onDataChange?: (data: {
     vehicleId?: string;
@@ -64,21 +70,21 @@ interface SelectionFormProps {
     driverId?: string;
   };
   error?: FormErrors;
+  driverOptions?: SelectOption[];
+  vehicleOptions?: SelectOption[];
 }
 
 
-const SelectionForm = ({ onDataChange, initialData, error }: SelectionFormProps) => {
+const SelectionForm = ({ onDataChange, initialData, error, driverOptions, vehicleOptions }: SelectionFormProps) => {
+  const effectiveDriverOptions = driverOptions && driverOptions.length > 0 ? driverOptions : driverDetails;
+  const effectiveVehicleOptions = vehicleOptions && vehicleOptions.length > 0 ? vehicleOptions : vehicleInfo;
+
    const [selectedDriver, setSelectedDriver] = useState<string | undefined>(
     initialData?.driverId
   );
   const [selectedVehicle, setSelectedVehicle] = useState<string | undefined>(
     initialData?.vehicleId
   );
-
-  useEffect(() => {
-    if (initialData?.driverId) setSelectedDriver(initialData.driverId);
-    if (initialData?.vehicleId) setSelectedVehicle(initialData.vehicleId);
-  }, [initialData]);
 
   const handleDriverChange = (value: string) => {
     setSelectedDriver(value);
@@ -111,7 +117,7 @@ const SelectionForm = ({ onDataChange, initialData, error }: SelectionFormProps)
             </label>
 
             <SelectSearch
-              options={driverDetails}
+              options={effectiveDriverOptions}
               placeholder="Search driver..."
               value={selectedDriver}
               onChange={handleDriverChange}
@@ -126,7 +132,7 @@ const SelectionForm = ({ onDataChange, initialData, error }: SelectionFormProps)
             </label>
 
             <SelectSearch
-              options={vehicleInfo}
+              options={effectiveVehicleOptions}
               placeholder="Search vehicle..."
               value={selectedVehicle}
               onChange={handleVehicleChange}

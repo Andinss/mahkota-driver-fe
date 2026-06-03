@@ -3,32 +3,44 @@
 import { Badge } from "@/components/ui/badge";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 import Link from "next/link";
-
-interface Payment {
-  invoiceId: string;
-  customer: {
-    name: string;
-    id?: string;
-    avatar?: string;
-  };
-  vehicle: {
-    plate: string;
-  };
-  amount: string;
-  dueDate: string;
-  status: "Late" | "Pending Review" | "Paid";
-  method: string;
-}
+import type { FinanceItem } from "@/lib/types/finances";
 
 interface PaymentTableRowProps {
-  payment: Payment;
-  onValidate?: (payment: Payment) => void;
-  onDetails?: (payment: Payment) => void;
-  onDownload?: (payment: Payment) => void;
-  onEdit?: (payment: Payment) => void;
-  onDelete?: (payment: Payment) => void;
+  payment: FinanceItem;
+  onValidate?: (payment: FinanceItem) => void;
+  onDetails?: (payment: FinanceItem) => void;
+  onDownload?: (payment: FinanceItem) => void;
+  onEdit?: (payment: FinanceItem) => void;
+  onDelete?: (payment: FinanceItem) => void;
 }
 
+const formatCurrency = (value: string) => {
+  const num = parseFloat(value.replace(/[^\d.]/g, ""));
+  if (isNaN(num)) return "Rp 0";
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num);
+};
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const methodLabel: Record<string, string> = {
+  cash: "Cash",
+  transfer: "Transfer",
+  "e-wallet": "E-Wallet",
+};
 
 export const PaymentTableRow = ({
   payment,
@@ -38,78 +50,47 @@ export const PaymentTableRow = ({
   onEdit,
   onDelete,
 }: PaymentTableRowProps) => {
-  const isPending = payment.status === "Pending Review";
-  const isLate = payment.status === "Late";
-  const isPaid = payment.status === "Paid";
+  const isActive = payment.is_active;
 
   return (
     <tr
       className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
       <td className="px-6 py-4 font-medium text-[#111418] dark:text-white">
-        {payment.invoiceId}
+        {payment.reference_number}
       </td>
 
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
-              {payment.customer.avatar ? (
-              <img
-                alt={payment.customer.name}
-                src={payment.customer.avatar}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-
-              <div className="w-full h-full flex items-center justify-center bg-slate-300 dark:bg-slate-600 text-xs font-medium">
-                {payment.customer.name.charAt(0)}
-              </div>
-            )}
+          <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0 flex items-center justify-center bg-slate-300 dark:bg-slate-600 text-xs font-medium">
+            {payment.payer.charAt(0).toUpperCase()}
           </div>
           <div>
-          <p className="font-semibold text-slate-900 dark:text-white">
-          {payment.customer.name}
-          </p>
-          {payment.customer.id && (
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-                ID: {payment.customer.id}
-              </p>
-            )}
+            <p className="font-semibold text-slate-900 dark:text-white">
+              {payment.payer}
+            </p>
+          </div>
         </div>
-        </div>
-      </td>
-
-      <td className="px-6 py-4 text-[#617589] dark:text-gray-400">
-        {payment.vehicle.plate}
       </td>
 
       <td className="px-6 py-4 font-semibold text-[#111418] dark:text-white">
-        {payment.amount}
+        {formatCurrency(payment.amount_received)}
       </td>
 
-      <td
-        className={`px-6 py-4 font-medium ${isLate ? "text-[#e73908]" : "text-[#617589] dark:text-gray-400"}`}
-      >
-        {payment.dueDate}
+      <td className="px-6 py-4 font-medium text-[#617589] dark:text-gray-400">
+        {formatDate(payment.payment_date)}
       </td>
 
       <td className="px-6 py-4">
-  <Badge 
-    variant={
-      payment.status === "Late" 
-        ? "danger"     
-        : payment.status === "Pending Review" 
-          ? "warning" 
-          : "success"
-    }
-    dot
-  >
-    {payment.status}
-  </Badge>
-</td>
+        <Badge
+          variant={isActive ? "success" : "neutral"}
+          dot
+        >
+          {isActive ? "Active" : "Inactive"}
+        </Badge>
+      </td>
 
       <td className="px-2 py-4 text-[#617589] dark:text-gray-400">
-        {payment.method}
+        {methodLabel[payment.payment_method] || payment.payment_method}
       </td>
 
       <td className="py-4 px-6 text-right">
@@ -122,9 +103,9 @@ export const PaymentTableRow = ({
             </button>
           }
         >
-          <Link href={`/dashboard/finance/payment?id=${payment.invoiceId.replace("#", "")}`}>
-  <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
-</Link>
+          <Link href={`/dashboard/finance/payment?id=${payment.id}`}>
+            <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
+          </Link>
           <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(payment)}>
             Delete
           </DropdownMenuItem>

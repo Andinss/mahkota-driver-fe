@@ -3,6 +3,7 @@ import { useState } from "react";
 import { RentalTableRow } from "./rent-table-row";
 
 interface Rental {
+  id: string;
   transactionId: string;
   driver: {
     name: string;

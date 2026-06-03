@@ -1,4 +1,10 @@
-const DocumentSign = () => {
+interface DocumentSignProps {
+  documentUrl?: string;
+}
+
+const DocumentSign = ({ documentUrl }: DocumentSignProps) => {
+  const hasDocument = !!documentUrl;
+
   return (
     <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md border border-gray-200 h-full">
       <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-6">
@@ -17,13 +23,24 @@ const DocumentSign = () => {
                 Rental Agreement.pdf
               </p>
               <p className="text-[9px] text-gray-500 uppercase">
-                Signed Aug 11, 2024
+                {hasDocument ? "Document Available" : "Signed Aug 11, 2024"}
               </p>
             </div>
           </div>
-          <span className="material-symbols-outlined text-lg text-gray-400 group-hover:text-blue-600 transition-colors">
-            download
-          </span>
+          {hasDocument ? (
+            <a
+              href={documentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="material-symbols-outlined text-lg text-gray-400 group-hover:text-blue-600 transition-colors"
+            >
+              download
+            </a>
+          ) : (
+            <span className="material-symbols-outlined text-lg text-gray-400 group-hover:text-blue-600 transition-colors">
+              download
+            </span>
+          )}
         </div>
         <div className="group flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-all cursor-pointer">
           <div className="flex items-center gap-3">

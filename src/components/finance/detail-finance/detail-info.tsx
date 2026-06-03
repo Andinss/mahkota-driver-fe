@@ -1,56 +1,74 @@
-const DetailInfo = () => {
+import type { FinanceItem } from "@/lib/types/finances";
+
+const formatCurrency = (value: string) => {
+  const num = parseFloat(value.replace(/[^\d.]/g, ""));
+  if (isNaN(num)) return "Rp 0";
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num);
+};
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+interface DetailInfoProps {
+  finance: FinanceItem;
+}
+
+const DetailInfo = ({ finance }: DetailInfoProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:border-blue-300 transition-colors">
         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-6">
-          Assigned Driver
-        </p>
-        <div className="flex items-center gap-4">
-          <img
-            alt="Marco Santoso"
-            className="w-14 h-14 rounded-xl object-cover ring-2 ring-gray-100"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuv6QDtGXDHJSPlcWVVQ-VhiH-PO5VbAWgvigfoARjilG9x2gp92FNboHxL4orj_ENf81-cNu_IaFRuckz4MV1-uel0noBqcQYMGn4_uw9zyyFl9LEIFLc_zkbGpdhBq0jnBLs5hZPDEQ6Uddyzh4GJ0jMAHeYoi0kkTlqX49JNriG-eDV1QWd2dOZZeeUvGnHtxFu-f3wIvWgpWV7XmtXVEBfxhjgjOJpZBgprXDeeNYTfrVXgWj6DjJc_Cj_5fyAv2nUInE7Q6Si"
-          />
-          <div>
-            <h4 className="font-bold text-lg text-gray-900">Marco Santoso</h4>
-            <p className="text-xs text-gray-500 font-medium tracking-wide">
-              ID: DRV-0882
-            </p>
-          </div>
-        </div>
-        <button className="mt-6 text-xs font-bold text-blue-600 flex items-center gap-2 hover:translate-x-1 transition-transform">
-          VIEW PROFILE{" "}
-          <span className="material-symbols-outlined text-sm">
-            arrow_forward
-          </span>
-        </button>
-      </div>
-      <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:border-blue-300 transition-colors">
-        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-6">
-          Vehicle Details
+          Payer Information
         </p>
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center border border-gray-200">
-            <span
-              className="material-symbols-outlined text-3xl text-gray-600"
-              data-icon="directions_car"
-            >
-              directions_car
+            <span className="text-2xl font-bold text-gray-600">
+              {finance.payer.charAt(0).toUpperCase()}
             </span>
           </div>
           <div>
-            <h4 className="font-bold text-lg text-gray-900">Toyota Alphard</h4>
+            <h4 className="font-bold text-lg text-gray-900">{finance.payer}</h4>
             <p className="text-xs text-gray-500 font-medium tracking-wide">
-              VIN: B 1234 XYZ
+              Amount: {formatCurrency(finance.amount_received)}
             </p>
           </div>
         </div>
-        <button className="mt-6 text-xs font-bold text-blue-600 flex items-center gap-2 hover:translate-x-1 transition-transform">
-          SERVICE LOG{" "}
-          <span className="material-symbols-outlined text-sm">
-            arrow_forward
-          </span>
-        </button>
+      </div>
+      <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:border-blue-300 transition-colors">
+        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-6">
+          Payment Details
+        </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-500">Reference:</span>
+            <span className="text-sm font-bold text-gray-900">{finance.reference_number}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-500">Date:</span>
+            <span className="text-sm font-bold text-gray-900">{formatDate(finance.payment_date)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-500">Method:</span>
+            <span className="text-sm font-bold text-gray-900 capitalize">{finance.payment_method}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-500">Notes:</span>
+            <span className="text-sm text-gray-900">{finance.notes || "-"}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

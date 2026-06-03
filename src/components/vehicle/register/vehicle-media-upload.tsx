@@ -45,14 +45,13 @@ export function VehicleMediaUpload({
     onImagesSelectRef.current = onImagesSelect;
   });
 
-  // Set initial images only once
+  // Set initial images only once (wait until initialImageUrls is resolved)
   useEffect(() => {
-    if (
-      !hasSetInitial.current &&
-      initialImageUrls &&
-      initialImageUrls.length > 0
-    ) {
-      hasSetInitial.current = true;
+    if (hasSetInitial.current) return;
+    if (initialImageUrls === undefined) return;
+    hasSetInitial.current = true;
+
+    if (initialImageUrls.length > 0) {
       const initialImages: UploadedImage[] = initialImageUrls.map(
         (url, idx) => ({
           file: new File([], `initial-${idx}`),

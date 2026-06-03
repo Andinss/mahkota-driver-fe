@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { VehicleMediaUpload, UploadedImage } from "@/components/vehicle/register/vehicle-media-upload";
+import { VehicleMediaUpload } from "@/components/vehicle/register/vehicle-media-upload";
 import {
   StatusSelect,
   VehicleStatus,
@@ -12,75 +12,74 @@ import {
   VehicleSpecificationsForm,
   VehicleFormData,
 } from "@/components/vehicle/register/vehicle-specifications-form";
-
-// Mock vehicle data - ini nanti diganti dengan fetch dari API
-const mockVehicles: Record<string, any> = {
-  "B 1234 XYZ": {
-    make: "Toyota",
-    model: "Camry",
-    year: "2022",
-    licensePlate: "B 1234 XYZ",
-    color: "Silver Metallic",
-    vin: "MHFB123K123456",
-    engineNumber: "1GD-FTV-8923",
-    dailyRate: "1200000",
-    status: "available" as VehicleStatus,
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTPXl3_1Wdm0vfEBBNfPz34KYWfTwgk92FN-NMeG529KFX1AoOCF0Xw2rshR7QRnMz9NgkYRdicFT07sEO_JcpauYoriHK8_eSj9MUtTrPLMI4nq7V4pt9RyqLSOQu_XxaNcKRLLvf44b5LKMrGoWz02DfFtOSgNNBrtbgDz2_LYHpPi7pBRiWXfYRAubew-O4Taz0RqtGQoSh-bX7L_yBXpuryAqsPZ-DbGjaGKz3blYbCu4VMUoQ2PH_N3-Ht0OueyUHdE1JCDb",
-  },
-  "B 5678 ABC": {
-    make: "Honda",
-    model: "CR-V",
-    year: "2021",
-    licensePlate: "B 5678 ABC",
-    color: "White Pearl",
-    vin: "MHFB456K789012",
-    engineNumber: "1GD-FTV-4567",
-    dailyRate: "1500000",
-    status: "rented" as VehicleStatus,
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAhTPXl3_1Wdm0vfEBBNfPz34KYWfTwgk92FN-NMeG529KFX1AoOCF0Xw2rshR7QRnMz9NgkYRdicFT07sEO_JcpauYoriHK8_eSj9MUtTrPLMI4nq7V4pt9RyqLSOQu_XxaNcKRLLvf44b5LKMrGoWz02DfFtOSgNNBrtbgDz2_LYHpPi7pBRiWXfYRAubew-O4Taz0RqtGQoSh-bX7L_yBXpuryAqsPZ-DbGjaGKz3blYbCu4VMUoQ2PH_N3-Ht0OueyUHdE1JCDb",
-  },
-};
+import { vehicleApi } from "@/lib/api/vehicle";
+import type { VehicleItem } from "@/lib/types/vehicle";
 
 export default function VehicleRegisterPage() {
   const searchParams = useSearchParams();
   const plateParam = searchParams.get("plate");
 
   const [mode, setMode] = useState<"add" | "edit">("add");
-  const [status, setStatus] = useState<VehicleStatus>("available");
+  const [status, setStatus] = useState<VehicleStatus>("Available");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialValues, setInitialValues] = useState<Partial<VehicleFormData> | undefined>();
-  const [initialImageUrl, setInitialImageUrl] = useState<string | undefined>();
+  const [initialImageUrls, setInitialImageUrls] = useState<string[] | null | undefined>();
+  const [editingId, setEditingId] = useState<string | null>(null);
 
-  // state confirm dialog
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingData, setPendingData] = useState<VehicleFormData | null>(null);
 
-
   useEffect(() => {
-    if (plateParam && mockVehicles[plateParam]) {
-      // Jika ada parameter plate dan data ditemukan
-      const vehicle = mockVehicles[plateParam];
-      setMode("edit");
-      setStatus(vehicle.status);
-      setInitialValues({
-        make: vehicle.make,
-        model: vehicle.model,
-        year: vehicle.year,
-        licensePlate: vehicle.licensePlate,
-        color: vehicle.color,
-        vin: vehicle.vin,
-        engineNumber: vehicle.engineNumber,
-        dailyRate: vehicle.dailyRate,
+    if (plateParam) {
+      vehicleApi.getList({ search: plateParam, limit: 10 }).then((res) => {
+        const items = Array.isArray(res.data) ? res.data : [];
+        const vehicle = items.find(
+          (v: VehicleItem) => v.license_plate === plateParam
+        );
+        if (vehicle) {
+          setMode("edit");
+          setEditingId(vehicle.id);
+          setStatus(vehicle.status);
+          const year = vehicle.launching_year
+            ? new Date(vehicle.launching_year).getFullYear().toString()
+            : "";
+          setInitialValues({
+            make: vehicle.merk,
+            model: vehicle.model,
+            year,
+            licensePlate: vehicle.license_plate,
+            color: vehicle.color,
+            vin: vehicle.vin_number,
+            engineNumber: vehicle.engine_number,
+            dailyRate: String(vehicle.daily_rate),
+          });
+          const imageBase = (
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+          ).replace(/\/api\/?$/, "");
+          const rawPhoto = vehicle.vehicle_photo;
+          const photos = Array.isArray(rawPhoto) ? rawPhoto : (rawPhoto ? [rawPhoto] : []);
+          setInitialImageUrls(
+            photos.length > 0
+              ? photos.map((url: string) =>
+                  url.startsWith("http")
+                    ? url
+                    : `${imageBase}/${url.replace(/^\//, "")}`
+                )
+              : null
+          );
+        } else {
+          setInitialImageUrls(null);
+        }
+      }).catch(() => {
+        setMode("add");
+        setInitialImageUrls(null);
       });
-      setInitialImageUrl(vehicle.imageUrl);
     } else {
-      // Mode add baru
       setMode("add");
+      setEditingId(null);
       setInitialValues(undefined);
-      setInitialImageUrl(undefined);
+      setInitialImageUrls(null);
     }
   }, [plateParam]);
 
@@ -95,15 +94,37 @@ export default function VehicleRegisterPage() {
     setIsSubmitting(true);
     setIsConfirmOpen(false);
 
-    console.log("Form data:", { ...pendingData, status, imageFiles, mode });
+    try {
+      const formData = new FormData();
+      formData.append("merk", pendingData.make);
+      formData.append("model", pendingData.model);
+      formData.append("launching_year", `${pendingData.year}-01-01T00:00:00.000Z`);
+      formData.append("license_plate", pendingData.licensePlate);
+      formData.append("color", pendingData.color);
+      formData.append("vin_number", pendingData.vin);
+      formData.append("engine_number", pendingData.engineNumber);
+      formData.append("daily_rate", pendingData.dailyRate.replace(/\./g, ""));
+      formData.append("status", status);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
+      imageFiles.forEach((file) => {
+        formData.append("vehicle_photo", file);
+      });
 
-    const action = mode === "edit" ? "updated" : "registered";
-    const vehicleName = `${pendingData.make} ${pendingData.model}`;
+      if (mode === "edit" && editingId) {
+        await vehicleApi.update(editingId, formData);
+      } else {
+        await vehicleApi.create(formData);
+      }
 
-    window.location.href = `/dashboard/vehicle?success=${action}&vehicle=${encodeURIComponent(vehicleName)}`;
+      setIsSubmitting(false);
+      const action = mode === "edit" ? "updated" : "registered";
+      const vehicleName = `${pendingData.make} ${pendingData.model}`;
+      window.location.href = `/dashboard/vehicle?success=${action}&vehicle=${encodeURIComponent(vehicleName)}`;
+    } catch (err) {
+      console.error("Failed to save vehicle:", err);
+      setIsSubmitting(false);
+      alert("Failed to save vehicle. Please try again.");
+    }
   };
 
   const handleCancel = () => {
@@ -115,7 +136,7 @@ export default function VehicleRegisterPage() {
         <div className="w-full md:w-1/3 bg-gray-50/50 dark:bg-slate-800/50 p-8 border-r border-[#f0f2f4] dark:border-slate-800 flex flex-col gap-8">
           <VehicleMediaUpload
             onImagesSelect={setImageFiles}
-            initialImageUrls={initialImageUrl ? [initialImageUrl] : undefined}
+            initialImageUrls={initialImageUrls === undefined ? undefined : (initialImageUrls || [])}
             acceptedFormats={["JPG", "PNG"]}
             maxSizeMB={5}
           />

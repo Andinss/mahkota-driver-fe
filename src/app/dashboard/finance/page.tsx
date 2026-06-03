@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Modal } from "@/components/ui/modal";           
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PaymentCard } from "@/components/finance/payment-list/card";
 import { FinancePagination } from "@/components/finance/payment-list/payment-pagination";
@@ -10,366 +9,243 @@ import { PaymentTable } from "@/components/finance/payment-list/payment-table";
 import { PageHeader } from "@/components/page-header";
 import { AlertDialog } from "@/components/ui/alert";
 import { useSearchParams } from "next/navigation";
-import { ExportOptions } from "@/components/ui/export";
+import type { ExportOptions } from "@/components/ui/export";
 import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
+import { financeApi } from "@/lib/api/finances";
+import type { FinanceItem, FinanceListParams } from "@/lib/types/finances";
 
 export default function PaymentList() {
   const searchParams = useSearchParams();
 
-  const handleExport = (options: ExportOptions) => {
-    console.log("Export options from finance page:", options);
-    alert(
-      `Exporting payment data as ${options.format} with ${options.type} data`,
-    );
-  };
+  const [finances, setFinances] = useState<FinanceItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+
+  const [searchValue, setSearchValue] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState<"success" | "error">("success");
 
+  const [selectedFinance, setSelectedFinance] = useState<FinanceItem | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // Tampilkan alert jika ada success param di url
+  const fetchFinances = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const params: FinanceListParams = {
+        page: currentPage,
+        limit: 10,
+        search: searchValue || undefined,
+        payment_method: paymentMethod || undefined,
+      };
+      const response = await financeApi.getList(params);
+      setFinances(response.data);
+      if (response.meta) {
+        setMeta(response.meta);
+      }
+    } catch {
+      setAlertTitle("Error");
+      setAlertMessage("Failed to load finance data");
+      setAlertType("error");
+      setIsAlertOpen(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, searchValue, paymentMethod]);
+
+  useEffect(() => {
+    fetchFinances();
+  }, [fetchFinances]);
+
   useEffect(() => {
     const success = searchParams.get("success");
-    const finance = searchParams.get("finance");
+    const ref = searchParams.get("ref");
 
-    if (success && finance) {
+    if (success && ref) {
       const action = success === "updated" ? "Update" : "Registration";
       setAlertTitle(`${action} Successful`);
-      setAlertMessage(`Finance ${decodeURIComponent(finance)} has been ${success} successfully.`);
+      setAlertMessage(`Finance ${decodeURIComponent(ref)} has been ${success} successfully.`);
       setAlertType("success");
       setIsAlertOpen(true);
-
-      // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
       window.history.replaceState({}, "", "/dashboard/finance");
     }
   }, [searchParams]);
 
-  const paymentsData = [
-    {
-      invoiceId: "#INV-4023",
-      customer: {
-        name: "James Anderson",
-        id: "CUST-001",
-        avatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuCcgquo3s1Gm9UWljE7Yx8CgDUShF68J6fkgw1QvJ5OY4Yi2YzBIR_mdrI8wMWujABWw_8vsHbygbpYbgqBM5o6LBdaJNvGR8cQS8Loj8VvD3G18m5AUrXkuEbRUFb0n2zJFsSZxH5ROqS9ReASBv8Z79k6f6jw6z5dQr37SpsRhKvVgrzA5Oi0_54ygMxCPhm31EX4bMSnxf4i1OggQBnvb8Q3cZ6XmBTkAoo-PacjlfHNUo2yx-p-rIQHrGzFcM8KDdC3f0yGWk0q",
-      },
-      vehicle: { plate: "B 1234 CD" },
-      amount: "$450.00",
-      dueDate: "Oct 24, 2023",
-      status: "Late" as const,
-      method: "Credit Card",
-    },
-    {
-      invoiceId: "#INV-4024",
-      customer: {
-        name: "Sarah Connor",
-        id: "CUST-002",
-        avatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuDyfv7iIobUo0yuS3OZSQpcwA_Q4P6OEp2BEv6Bwbfp5QdycOcW7dDrS_hRancDVUPPRaQKAJrwLOyxoV37O58AKHH0OHUX0RKiGjTpkOO_Fw89UQZGeSixjgPyTP0zqaGppeRd-jhD5sLc68crgFtEIOhQ2Nn4n8z7MwG0PJYnaqRpECVNooa_bCz7gY61QwZtkisx13u-gb-0t8A7slICPMoKqD6hBs_HMRMHG_bLDfwToOpWm8WmFhtJuwirFjrquGGHdcAHzCu-",
-      },
-      vehicle: { plate: "D 5678 XY" },
-      amount: "$1,200.00",
-      dueDate: "Oct 26, 2023",
-      status: "Pending Review" as const,
-      method: "Bank Transfer",
-    },
-    {
-      invoiceId: "#INV-4022",
-      customer: {
-        name: "Michael Chen",
-        id: "CUST-003",
-        avatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuC4-mRZKk3sqc11M4-sgdg-mZ9I5zyhANPAmdKmeqj7Iw5Q18dIJsIrBrF_d3HIegqAQF3CVoWTLy9B3LiaKdX2AvWyLFPmmX5ZTxAUwqH8rxIO-Gq3dBmsb4rThS8lQfTfZr0gs82-lWf4XIUr4H-B4ewbtq8_wcz-AueRROyj6MaLydH7bffTSjJFW95b81j9f0kKQh7UDd0NUgIhq7b-gK4s4JiOJ4Fph6tXyN8PnpssPowxaTHEOORPGbR65EN2OuzGgASXQXOm",
-      },
-      vehicle: { plate: "B 9988 AA" },
-      amount: "$320.00",
-      dueDate: "Oct 26, 2023",
-      status: "Paid" as const,
-      method: "Credit Card",
-    },
-    {
-      invoiceId: "#INV-4025",
-      customer: {
-        name: "Emma Watson",
-        id: "CUST-004",
-        avatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuD6QO9PL8jNr1d60A9pOnhJXK_msEq2QVp9QrkI9JKgiMRzewJp7yECe9-d3SWRWyTzkDZ3nXlb9SuQYKG19H1dutrDHNP6iazRBH4uaveVN0RxYwum0l6Ul5ah1HTYv-f56lFYn6JJmnXXobYEf6ueTww7FCQXfyF1jiIWRT910Q3xkk-m2xy2zsxZCu_YiDS008JPEAyzqmbm27ubUfYG6AAQSbggNbmI5MFc358Wiq_Kr2DnRFz6SIiefnhSYaTuDJzaHLe1wf-m",
-      },
-      vehicle: { plate: "F 2233 KL" },
-      amount: "$850.00",
-      dueDate: "Oct 26, 2023",
-      status: "Pending Review" as const,
-      method: "Cash",
-    },
-    {
-      invoiceId: "#INV-4021",
-      customer: {
-        name: "Robert Fox",
-        id: "CUST-005",
-        avatar:
-          "https://lh3.googleusercontent.com/aida-public/AB6AXuDi1kPQgCgdKaBias77134VvG-U5cHjmNvAkyjUxDQND6pcV1Tl2ewWUXIVrAQkt_IDqUWWkt17S2Tgb0VpatU3NLXeUS9Uw3sH3Eo7rt3e0IoDm15GHyBthB0U6OYS9L_6V5kHzz_TbsbdgJ7TOcwYVHEZgr4SRoUagMxckIfOHdPNyuZvfnl6SGm_hi2ltiFvt4kStP8sCBx8Axb-4Y1QWdeYCaiQJdJKpwYX1S2x6HvIT8ReGDBhLAM12kql2fvOt1xIPUP_EyeB",
-      },
-      vehicle: { plate: "A 5544 BC" },
-      amount: "$150.00",
-      dueDate: "Oct 25, 2023",
-      status: "Paid" as const,
-      method: "Credit Card",
-    },
-    {
-      invoiceId: "#INV-4026",
-      customer: { name: "Alice Johnson" },
-      vehicle: { plate: "B 1111 EF" },
-      amount: "$670.00",
-      dueDate: "Oct 27, 2023",
-      status: "Late" as const,
-      method: "Transfer",
-    },
-    {
-      invoiceId: "#INV-4027",
-      customer: { name: "Bob Smith" },
-      vehicle: { plate: "D 2222 GH" },
-      amount: "$990.00",
-      dueDate: "Oct 27, 2023",
-      status: "Paid" as const,
-      method: "Cash",
-    },
-    {
-      invoiceId: "#INV-4028",
-      customer: { name: "Carol White" },
-      vehicle: { plate: "F 3333 IJ" },
-      amount: "$1,100.00",
-      dueDate: "Oct 28, 2023",
-      status: "Pending Review" as const,
-      method: "QRIS",
-    },
-    {
-      invoiceId: "#INV-4029",
-      customer: { name: "David Brown" },
-      vehicle: { plate: "G 4444 KL" },
-      amount: "$2,300.00",
-      dueDate: "Oct 28, 2023",
-      status: "Paid" as const,
-      method: "Transfer",
-    },
-    {
-      invoiceId: "#INV-4030",
-      customer: { name: "Eva Martinez" },
-      vehicle: { plate: "H 5555 MN" },
-      amount: "$780.00",
-      dueDate: "Oct 29, 2023",
-      status: "Late" as const,
-      method: "Credit Card",
-    },
-    {
-      invoiceId: "#INV-4031",
-      customer: { name: "Frank Lee" },
-      vehicle: { plate: "B 6666 OP" },
-      amount: "$430.00",
-      dueDate: "Oct 29, 2023",
-      status: "Paid" as const,
-      method: "Cash",
-    },
-    {
-      invoiceId: "#INV-4032",
-      customer: { name: "Grace Kim" },
-      vehicle: { plate: "D 7777 QR" },
-      amount: "$1,500.00",
-      dueDate: "Oct 30, 2023",
-      status: "Pending Review" as const,
-      method: "Transfer",
-    },
-  ];
+  const totalAmount = finances.reduce((sum, f) => {
+    const num = parseFloat(f.amount_received.replace(/[^\d.]/g, ""));
+    return sum + (isNaN(num) ? 0 : num);
+  }, 0);
 
-  // Calculate real stats from data
-  const totalCollectionsToday = paymentsData
-    .filter((p) => p.dueDate === "Oct 26, 2023")
-    .reduce(
-      (sum, p) => sum + parseFloat(p.amount.replace(/[^0-9.-]+/g, "")),
-      0,
-    );
+  const activeCount = finances.filter((f) => f.is_active).length;
+  const inactiveCount = finances.filter((f) => !f.is_active).length;
 
-  const [selectedPayment, setSelectedPayment] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const handleExport = (options: ExportOptions) => {
+    alert(`Exporting payment data as ${options.format} with ${options.type} data`);
+  };
 
-  const pendingPayments = paymentsData.filter(
-    (p) => p.status === "Pending Review",
-  ).length;
-  const overdueAmount = paymentsData
-    .filter((p) => p.status === "Late")
-    .reduce(
-      (sum, p) => sum + parseFloat(p.amount.replace(/[^0-9.-]+/g, "")),
-      0,
-    );
+  const handleDelete = (finance: FinanceItem) => {
+    setSelectedFinance(finance);
+    setIsConfirmOpen(true);
+  };
 
-  const validatedTransactions = paymentsData.filter(
-    (p) => p.status === "Paid",
-  ).length;
+  const handleConfirmDelete = async () => {
+    if (!selectedFinance) return;
+    setIsDeleting(true);
+    try {
+      await financeApi.delete(selectedFinance.id);
+      setAlertTitle("Delete Successful");
+      setAlertMessage(`Finance ${selectedFinance.reference_number} has been deleted successfully`);
+      setAlertType("success");
+      setIsAlertOpen(true);
+      fetchFinances();
+    } catch {
+      setAlertTitle("Error");
+      setAlertMessage("Failed to delete finance record");
+      setAlertType("error");
+      setIsAlertOpen(true);
+    } finally {
+      setIsDeleting(false);
+      setIsConfirmOpen(false);
+      setSelectedFinance(null);
+    }
+  };
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const handleAlertClose = () => {
+    setIsAlertOpen(false);
+  };
 
-  const totalResults = paymentsData.length;
-  const totalPages = Math.ceil(totalResults / itemsPerPage);
+  const handleDetails = (finance: FinanceItem) => {
+    window.location.href = `/dashboard/finance/detail?id=${finance.id}`;
+  };
 
-  // Get current page payments
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentPayments = paymentsData.slice(startIndex, endIndex);
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value);
+    setCurrentPage(1);
+  };
+
+  const handlePaymentMethodChange = (value: string) => {
+    setPaymentMethod(value);
+    setCurrentPage(1);
+  };
 
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
+    if (page >= 1 && page <= meta.totalPages) {
       setCurrentPage(page);
     }
   };
 
-  const handleEdit = (payment: any) => {
-
-    // Redirect ke halaman edit dengan parameter id
-    window.location.href = `/dashboard/finance/payment?id=${payment.invoiceId.replace("#", "")}`;
-  };
-
-   const handleDelete = (payment: any) => {
-    setSelectedPayment(payment);
-    setIsConfirmOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-  console.log("Deleted:", selectedPayment);
-  // TODO: Panggil API delete di sini
-  setIsConfirmOpen(false);
-  setAlertTitle("Delete Successful");
-  setAlertMessage(`Finance ${selectedPayment?.invoiceId} has been deleted successfully`);
-  setAlertType("success");
-  setIsAlertOpen(true);
-  setSelectedPayment(null);
-};
-
-  const handleAlertClose = () => {
-    setIsAlertOpen(false);
-  }
-
-  const handleDetails = (payment: any) => {
-    // Redirect ke halaman detail
-    window.location.href = `/dashboard/finance/detail?id=${payment.invoiceId.replace("#", "")}`;
-  };
-
-  const handleValidate = (payment: any) => console.log("Validate:", payment);
-  const handleDownload = (payment: any) => console.log("Download:", payment);
-  const handleSearch = (value: string) => console.log("Search:", value);
-
   return (
     <div className="m-8">
-      <div className="flex-1 overflow-y-auto ">
+      <div className="flex-1 overflow-y-auto">
         <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 pb-10">
           <PageHeader
             title="Finance Dashboard"
-            description="Daily Payment Queue • October 26, 2023"
+            description={`Total Records: ${meta.total}`}
             buttonText="Manual Entry"
             buttonHref="/dashboard/finance/payment"
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <PaymentCard 
-            title="Total Collections Today"
-            value={`$${totalCollectionsToday.toLocaleString('id-ID')}`}
-            icon="payments"
-            iconColor="text-primary"
-            trend={{ 
-              value: "+12%",
-              color: "text-green-600",
-              icon: "trending_up"
-             }}
+            <PaymentCard
+              title="Total Amount Received"
+              value={`Rp ${totalAmount.toLocaleString("id-ID")}`}
+              icon="payments"
+              iconColor="text-primary"
+              trend={{
+                value: `${finances.length} transactions`,
+                color: "text-green-600",
+                icon: "trending_up",
+              }}
             />
-             <PaymentCard 
-            title="Pending Payments"
-            value={pendingPayments.toString()}
-            icon="pending_actions"
-            iconColor="text-amber-600"
-            trend={{ 
-              value: "+2%",
-              color: "text-amber-600",
-              icon: "trending_up"
-             }}
+            <PaymentCard
+              title="Active Records"
+              value={activeCount.toString()}
+              icon="verified"
+              iconColor="text-green-700"
+              trend={{
+                value: `${((activeCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
+                color: "text-green-700",
+                icon: "trending_up",
+              }}
             />
-             <PaymentCard 
-            title="Overdue Amount"
-            value={`$${overdueAmount.toLocaleString('id-ID')}`}
-            icon="warning"
-            iconColor="text-orange-700"
-            trend={{ 
-              value: "-5%",
-              color: "text-[#e73908]",
-              icon: "trending_down"
-             }}
+            <PaymentCard
+              title="Inactive Records"
+              value={inactiveCount.toString()}
+              icon="warning"
+              iconColor="text-orange-700"
+              trend={{
+                value: `${((inactiveCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
+                color: "text-[#e73908]",
+                icon: "trending_down",
+              }}
             />
-             <PaymentCard 
-            title="Validated Transactions"
-            value={validatedTransactions.toString()}
-            icon="verified"
-            iconColor="text-green-700"
-            trend={{ 
-              value: "+8%",
-              color: "text-green-700",
-              icon: "trending_up"
-             }}
+            <PaymentCard
+              title="Page"
+              value={`${meta.page} / ${meta.totalPages}`}
+              icon="description"
+              iconColor="text-blue-600"
+              trend={{
+                value: `${meta.total} total records`,
+                color: "text-blue-600",
+                icon: "info",
+              }}
             />
           </div>
 
-          <PaymentFilters />
+          <PaymentFilters
+            searchValue={searchValue}
+            paymentMethod={paymentMethod}
+            onSearchChange={handleSearchChange}
+            onPaymentMethodChange={handlePaymentMethodChange}
+          />
           <div className="flex flex-col gap-4 bg-surface-light dark:bg-surface-dark border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-            <PaymentTable
-              payment={currentPayments}
-              onValidate={handleValidate}
-              onDetails={handleDetails}
-              onDownload={handleDownload}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onExport={handleExport}
-            />
-            <div className="border-t border-[#dbe0e6] dark:border-gray-700">
-              <FinancePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalResults={totalResults}
-                resultsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-              />
-            </div>
+            {isLoading ? (
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+                Loading...
+              </div>
+            ) : (
+              <>
+                <PaymentTable
+                  payment={finances}
+                  onDetails={handleDetails}
+                  onEdit={(f) => {
+                    window.location.href = `/dashboard/finance/payment?id=${f.id}`;
+                  }}
+                  onDelete={handleDelete}
+                  onExport={handleExport}
+                />
+                <div className="border-t border-[#dbe0e6] dark:border-gray-700">
+                  <FinancePagination
+                    currentPage={meta.page}
+                    totalPages={meta.totalPages}
+                    totalResults={meta.total}
+                    resultsPerPage={meta.limit}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-        <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Edit Payment"
-      >
-        <div className="p-6">
-          <p className="text-slate-600 dark:text-slate-400">
-            Edit payment: <span className="font-bold">{selectedPayment?.invoiceId}</span>
-          </p>
-          {/* form edit payment di sini */}
-        </div>
-      </Modal>
-
-      {/* Confirm Dialog untuk Delete */}
       <ConfirmDialog
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Payment"
-        message={`Are you sure you want to delete ${selectedPayment?.invoiceId}?`}
-        confirmText="Yes, Delete"
+        message={`Are you sure you want to delete ${selectedFinance?.reference_number}?`}
+        confirmText={isDeleting ? "Deleting..." : "Yes, Delete"}
         cancelText="Cancel"
         variant="danger"
-      />      
+      />
 
-      {/* Alert Dialog */}
-      <AlertDialog 
+      <AlertDialog
         isOpen={isAlertOpen}
         onClose={handleAlertClose}
         title={alertTitle}
@@ -377,7 +253,6 @@ export default function PaymentList() {
         type={alertType}
         confirmText="OK"
       />
-
     </div>
   );
 }

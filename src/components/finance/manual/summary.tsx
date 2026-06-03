@@ -19,10 +19,10 @@ interface SummaryProps {
   setHasSubmitted?: (value: boolean) => void;
 }
 
-const methodIconMap: Record<string, string> = {
-  Cash: "payments",
-  Transfer: "account_balance",
-  "E-Wallet": "account_balance_wallet",
+const methodIcon: Record<string, string> = {
+  cash: "payments",
+  transfer: "account_balance",
+  "e-wallet": "account_balance_wallet",
 };
 
 const formatCurrency = (value: string) => {
@@ -112,12 +112,12 @@ const Summary = ({
             <div className="flex items-center gap-1.5">
               {paymentMethod && (
                 <Icon
-                  name={methodIconMap[paymentMethod] || "payments"}
+                  name={methodIcon[paymentMethod] || "payments"}
                   size="sm"
                   className="text-[#617589]"
                 />
               )}
-              <span className="text-sm font-medium text-[#111418] dark:text-white">
+              <span className="text-sm font-medium text-[#111418] dark:text-white capitalize">
                 {paymentMethod || "-"}
               </span>
             </div>

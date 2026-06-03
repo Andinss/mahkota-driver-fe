@@ -1,7 +1,7 @@
 "use client";
 
 import { DateInput } from "@/components/ui/date-input";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface FormErrors {
   vehicleId?: string;
@@ -25,46 +25,43 @@ interface PeriodProps {
   error?: FormErrors;
 }
 
+const calculateDuration = (start: string, end: string) => {
+  if (start && end) {
+    const startObj = new Date(start);
+    const endObj = new Date(end);
+    const diffTime = endObj.getTime() - startObj.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  }
+  return null;
+};
+
 const Period = ({ onDataChange, initialData, error }: PeriodProps) => {
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-  const [duration, setDuration] = useState<number | null>(null);
+  const [startDate, setStartDate] = useState<string>(initialData?.startDate || "");
+  const [endDate, setEndDate] = useState<string>(initialData?.endDate || "");
+  const initDuration = calculateDuration(initialData?.startDate || "", initialData?.endDate || "");
+  const [duration, setDuration] = useState<number | null>(initDuration);
 
-  useEffect(() => {
-    console.log("Period initialData:", initialData);
-
-    if (initialData?.startDate) {
-      setStartDate(initialData.startDate);
+  const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newStart = e.target.value;
+    setStartDate(newStart);
+    const newDuration = calculateDuration(newStart, endDate);
+    setDuration(newDuration);
+    if (onDataChange && newDuration !== null) {
+      onDataChange({ startDate: newStart, endDate, duration: newDuration });
     }
-    if (initialData?.endDate) {
-      setEndDate(initialData.endDate);
-    } 
-  }, [initialData]);
-
-  const calculateDuration = (start: string, end: string) => {
-    if (start && end) {
-      const startObj = new Date(start);
-      const endObj = new Date(end);
-      const diffTime = endObj.getTime() - startObj.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0 ? diffDays : 0;
-    }
-    return null;
   };
 
-  useEffect(() => {
-    const calculatedDuration = calculateDuration(startDate, endDate);
-    setDuration(calculatedDuration);
-
-    // Kirim data ke parent component
-    if (onDataChange && calculatedDuration !== null) {
-      onDataChange({
-        startDate,
-        endDate,
-        duration: calculatedDuration,
-      });
+  const handleEndChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEnd = e.target.value;
+    setEndDate(newEnd);
+    const newDuration = calculateDuration(startDate, newEnd);
+    setDuration(newDuration);
+    if (onDataChange && newDuration !== null) {
+      onDataChange({ startDate, endDate: newEnd, duration: newDuration });
     }
-  }, [startDate, endDate, onDataChange]);
+  };
+
   return (
     <div>
       <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -84,7 +81,7 @@ const Period = ({ onDataChange, initialData, error }: PeriodProps) => {
               label="Start Date"
               required
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={handleStartChange}
               error={error?.startDate}
             />
           </div>
@@ -95,7 +92,7 @@ const Period = ({ onDataChange, initialData, error }: PeriodProps) => {
               label="End Date"
               required
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={handleEndChange}
               error={error?.endDate}
             />
           </div>
