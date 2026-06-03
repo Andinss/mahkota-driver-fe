@@ -25,13 +25,15 @@ export const CurrencyInput = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (value !== undefined && value !== null && !isFocused) {
+    if (value !== undefined && value !== null) {
       const numValue = typeof value === "string" ? parseFloat(value) : value;
       if (!isNaN(numValue)) {
         setDisplayValue(formatNumber(numValue));
       }
+    } else {
+      setDisplayValue("");
     }
-  }, [value, isFocused]);
+  }, [value]);
 
   const formatNumber = (num: number): string => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
