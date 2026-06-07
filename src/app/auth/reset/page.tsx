@@ -1,5 +1,10 @@
-import ChangePasswordPage from "./reset";
+import ResetPasswordPage from "./reset";
 
-export default function Role() {
-  return <ChangePasswordPage />;
+interface PageProps {
+  searchParams: Promise<{ token?: string }>;
+}
+
+export default async function Role({ searchParams }: PageProps) {
+  const { token } = await searchParams;
+  return <ResetPasswordPage token={token || ""} />;
 }

@@ -9,9 +9,15 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [showAlert, setShowAlert] = useState(false);
+  const [isIntentionalLogout, setIsIntentionalLogout] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
+      const intentional = sessionStorage.getItem("intentional_logout") === "true";
+      if (intentional) {
+        sessionStorage.removeItem("intentional_logout");
+      }
+      setIsIntentionalLogout(intentional);
       setShowAlert(true);
     }
   }, [isLoading, isAuthenticated]);
@@ -32,9 +38,13 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
           <AlertDialog
             isOpen={showAlert}
             onClose={handleRedirect}
-            type="warning"
-            title="Access Denied"
-            message="You do not have permission to access this page. Please login first."
+            type={isIntentionalLogout ? "success" : "warning"}
+            title={isIntentionalLogout ? "Logout Successful" : "Access Denied"}
+            message={
+              isIntentionalLogout
+                ? "You have been successfully logged out."
+                : "You do not have permission to access this page. Please login first."
+            }
             autoCloseDelay={2000}
           />
         )}

@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
 import type { User } from "./types/auth";
 import { getAccessToken, clearTokens, getStoredUser } from "./token";
 import { authApi } from "./api/auth";
@@ -19,7 +18,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const token = getAccessToken();
@@ -52,10 +50,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
+    sessionStorage.setItem("intentional_logout", "true");
     clearTokens();
     setUser(null);
-    router.push("/auth/login");
-  }, [router]);
+  }, []);
 
   return (
     <AuthContext.Provider

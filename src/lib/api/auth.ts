@@ -1,5 +1,5 @@
 import { api } from "../api-http";
-import type { LoginRequest, LoginResponse, User } from "../types/auth";
+import type { LoginRequest, LoginResponse, User, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse } from "../types/auth";
 import { setAccessToken, setUser } from "../token";
 
 export const authApi = {
@@ -14,5 +14,13 @@ export const authApi = {
     const res = await api.get<User>("/auth/me");
     setUser(res);
     return res;
+  },
+
+  forgotPassword: async (payload: ForgotPasswordRequest) => {
+    return api.post<ForgotPasswordResponse>("/auth/forgot-password", payload);
+  },
+
+  resetPassword: async (payload: ResetPasswordRequest) => {
+    return api.post<ResetPasswordResponse>("/auth/reset-password", payload);
   },
 };
