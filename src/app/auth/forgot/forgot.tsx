@@ -1,7 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AlertDialog } from "@/components/ui/alert";
 import { useState } from "react";
+import { authApi } from "@/lib/api/auth";
+import { HttpClientError } from "@/lib/api-http";
 
 interface FormErrors {
   email?: string;
@@ -12,10 +15,16 @@ const ForgotPasswordPage = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [formValues, setFormValues] = useState({ email: "" });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [successMessage, setSuccessMessage] = useState("");
+  const [alert, setAlert] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: "success", title: "", message: "" });
 
   const handleInputChange = (value: string) => {
     setFormValues({ email: value });
+    setAlert((prev) => ({ ...prev, isOpen: false }));
     if (errors.email) {
       setErrors({ email: undefined });
     }
@@ -35,22 +44,44 @@ const ForgotPasswordPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setHasSubmitted(true);
-    setSuccessMessage("");
+    setAlert((prev) => ({ ...prev, isOpen: false }));
 
     if (!validateEmail()) {
       return;
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
+
+    try {
+      await authApi.forgotPassword({ email: formValues.email.trim() });
+      setAlert({
+        isOpen: true,
+        type: "success",
+        title: "Email Sent",
+        message: "Password reset instructions have been sent to your email.",
+      });
+    } catch (error) {
+      if (error instanceof HttpClientError) {
+        setAlert({
+          isOpen: true,
+          type: "error",
+          title: "Failed",
+          message: error.message,
+        });
+      } else {
+        setAlert({
+          isOpen: true,
+          type: "error",
+          title: "Failed",
+          message: "An unexpected error occurred. Please try again.",
+        });
+      }
+    } finally {
       setIsSubmitting(false);
-      setSuccessMessage(
-        "Password reset instructions have been sent to your email.",
-      );
-    }, 1000);
+    }
   };
 
   return (
@@ -87,11 +118,13 @@ const ForgotPasswordPage = () => {
             />
           </div>
 
-          {successMessage && (
-            <div className="p-3 bg-green-50 text-green-700 text-sm rounded-lg border border-green-200">
-              {successMessage}
-            </div>
-          )}
+          <AlertDialog
+            isOpen={alert.isOpen}
+            onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
+            type={alert.type}
+            title={alert.title}
+            message={alert.message}
+          />
 
           <Button
             type="submit"
