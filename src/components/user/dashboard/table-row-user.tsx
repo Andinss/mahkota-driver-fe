@@ -1,6 +1,10 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 
 interface User {
   id: string;
@@ -23,6 +27,9 @@ export const UserTableRow = ({
   onDelete,
   onResetPassword,
 }: UserTableRowProps) => {
+  const { user: currentUser } = useAuth();
+  const perms = currentUser?.permissions;
+
   return (
     <tr className="group hover:bg-gray-50 transition-colors">
       <td className="py-4 px-6 align-middle">
@@ -77,17 +84,21 @@ export const UserTableRow = ({
             </button>
           }
         >
-          <Link href={`/dashboard/users/new?id=${user.id}`}>
-            <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
-          </Link>
+          {canAccess(perms, "user.update") && (
+            <Link href={`/dashboard/users/new?id=${user.id}`}>
+              <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
+            </Link>
+          )}
 
-          <DropdownMenuItem
-            icon="delete"
-            danger
-            onClick={() => onDelete?.(user)}
-          >
-            Delete
-          </DropdownMenuItem>
+          {canAccess(perms, "user.delete") && (
+            <DropdownMenuItem
+              icon="delete"
+              danger
+              onClick={() => onDelete?.(user)}
+            >
+              Delete
+            </DropdownMenuItem>
+          )}
           <Link href={`/dashboard/users/detail/`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>

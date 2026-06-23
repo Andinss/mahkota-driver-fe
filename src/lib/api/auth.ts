@@ -1,19 +1,26 @@
 import { api } from "../api-http";
-import type { LoginRequest, LoginResponse, User, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse } from "../types/auth";
+import type { LoginRequest, LoginResponse, User, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse, SetPasswordRequest, SetPasswordResponse } from "../types/auth";
+import type { SuccessResponse } from "../types/api";
 import { setAccessToken, setUser } from "../token";
+
+function unwrap<T>(response: SuccessResponse<T> | T): T {
+  return (response as SuccessResponse<T>).data ?? (response as T);
+}
 
 export const authApi = {
   login: async (payload: LoginRequest) => {
-    const res = await api.post<LoginResponse>("/auth/login", payload);
-    setAccessToken(res.access_token);
-    setUser(res.user);
-    return res;
+    const res = await api.post<SuccessResponse<LoginResponse> | LoginResponse>("/auth/login", payload);
+    const data = unwrap(res);
+    setAccessToken(data.access_token);
+    setUser(data.user);
+    return data;
   },
 
   getMe: async () => {
-    const res = await api.get<User>("/auth/me");
-    setUser(res);
-    return res;
+    const res = await api.get<SuccessResponse<User> | User>("/auth/me");
+    const data = unwrap(res);
+    setUser(data);
+    return data;
   },
 
   forgotPassword: async (payload: ForgotPasswordRequest) => {
@@ -22,5 +29,9 @@ export const authApi = {
 
   resetPassword: async (payload: ResetPasswordRequest) => {
     return api.post<ResetPasswordResponse>("/auth/reset-password", payload);
+  },
+
+  setPassword: async (payload: SetPasswordRequest) => {
+    return api.post<SetPasswordResponse>("/auth/set-password", payload);
   },
 };

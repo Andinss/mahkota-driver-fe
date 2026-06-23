@@ -14,8 +14,11 @@ import { PageHeader } from "@/components/page-header";
 import { useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
 import { driverApi } from "@/lib/api/driver";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 
 export default function DriverPage() {
+  const { user } = useAuth();
   const router = useRouter();
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,8 +114,8 @@ export default function DriverPage() {
       <PageHeader
         title="Driver List Overview"
         description="Manage your drivers, track their performance, and monitor their status."
-        buttonText="Add New Driver"
-        buttonHref="/dashboard/driver/register"
+        buttonText={canAccess(user?.permissions, "driver.create") ? "Add New Driver" : undefined}
+        buttonHref={canAccess(user?.permissions, "driver.create") ? "/dashboard/driver/register" : undefined}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-5 mb-8">

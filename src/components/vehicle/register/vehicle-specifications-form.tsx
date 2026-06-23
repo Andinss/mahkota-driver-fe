@@ -4,7 +4,6 @@ import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export interface VehicleFormData {
   make: string;
@@ -234,11 +233,9 @@ export function VehicleSpecificationsForm({
       </div>
 
       <div className="flex items-center justify-end gap-4 mt-12 pt-6 border-t border-[#f0f2f4] dark:border-slate-800">
-        <Link href="/dashboard/vehicle">
           <Button variant="ghost" onClick={onCancel}>
             Cancel
           </Button>
-        </Link>
         <Button
           variant="primary"
           type="submit"

@@ -3,9 +3,29 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
+
+interface MenuItem {
+  path: string;
+  label: string;
+  icon: string;
+  permission: string;
+}
+
+const menuItems: MenuItem[] = [
+  { path: "/dashboard", label: "Dashboard", icon: "dashboard", permission: "" },
+  { path: "/dashboard/driver", label: "Driver Management", icon: "badge", permission: "driver.read" },
+  { path: "/dashboard/vehicle", label: "Vehicle Management", icon: "directions_car", permission: "vehicle.read" },
+  { path: "/dashboard/rent", label: "Rentals Management", icon: "contract", permission: "rental.read" },
+  { path: "/dashboard/users", label: "User Management", icon: "people", permission: "user.read" },
+  { path: "/dashboard/role", label: "Roles & Permissions", icon: "shield", permission: "role.read" },
+  { path: "/dashboard/finance", label: "Finance Management", icon: "finance", permission: "finance.read" },
+  { path: "/dashboard/monitoring", label: "Monitoring", icon: "monitoring", permission: "" },
+  { path: "/dashboard/setting", label: "Settings", icon: "settings", permission: "" },
+];
 
 const Sidebar = () => {
-  const { logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, height: 0 });
   const menuRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
@@ -13,6 +33,14 @@ const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [activeMenu, setActiveMenu] = useState(pathname);
+
+  const hasPermissions = Array.isArray(user?.permissions) && user.permissions.length > 0;
+
+  const filteredMenuItems = isLoading
+    ? []
+    : menuItems.filter((item) =>
+        !item.permission || !hasPermissions || canAccess(user?.permissions, item.permission),
+      );
 
   useEffect(() => {
     setActiveMenu(pathname);
@@ -90,21 +118,18 @@ const Sidebar = () => {
   };
 
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
-  e.preventDefault();
-  logout();
-};
+    e.preventDefault();
+    logout();
+  };
 
   return (
     <aside
-      className={`flex h-screen flex-col justify-between border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 transition-all duration-300 ${
+      className={`flex h-screen flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 transition-all duration-300 ${
         isCollapsed ? "w-16" : "w-64"
       }`}
     >
-      <div
-        className={`flex flex-col gap-4 ${isCollapsed ? "items-center" : ""}`}
-      >
         <div
-          className={`flex gap-3 ${isCollapsed ? "justify-center py-4" : "p-6"}`}
+          className={`flex gap-3 shrink-0 ${isCollapsed ? "justify-center py-4" : "p-6"}`}
         >
           <div
             className="bg-center bg-white bg-no-repeat bg-cover rounded-full size-10 shrink-0 bg-primary/10 flex items-center justify-center text-primary"
@@ -126,7 +151,7 @@ const Sidebar = () => {
         </div>
 
         <nav
-          className={`flex flex-col gap-2 mt-4 relative ${!isCollapsed ? "px-6" : ""}`}
+          className={`flex-1 overflow-y-auto flex flex-col gap-2 relative ${!isCollapsed ? "px-6" : "items-center"}`}
         >
           <div
             className="absolute bg-primary/10 rounded-lg transition-all duration-300 ease-in-out pointer-events-none"
@@ -139,201 +164,35 @@ const Sidebar = () => {
             }}
           />
 
-          <a
-            ref={(el) => {
-              menuRefs.current["/dashboard"] = el;
-            }}
-            className={`flex items-center rounded-lg relative z-10 transition-colors cursor-pointer ${
-              activeMenu === "/dashboard"
-                ? "text-primary"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            } ${
-              isCollapsed
-                ? "justify-center w-12 h-12 mx-auto"
-                : "gap-3 px-3 py-2.5"
-            }`}
-            onClick={(e) => handleMenuClick("/dashboard", e)}
-          >
-            <span className="material-symbols-outlined">dashboard</span>
-            {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">Dashboard</p>
-            )}
-          </a>
-          <a
-            ref={(el) => {
-              menuRefs.current["/dashboard/driver"] = el;
-            }}
-            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/driver"
-                ? "text-primary"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            } ${
-              isCollapsed
-                ? "justify-center w-12 h-12 mx-auto"
-                : "gap-3 px-3 py-2.5"
-            }`}
-            onClick={(e) => handleMenuClick("/dashboard/driver", e)}
-          >
-            <span className="material-symbols-outlined transition-colors">
-              badge
-            </span>
-            {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">
-                Driver Management
-              </p>
-            )}
-          </a>
-
-          <a
-            ref={(el) => {
-              menuRefs.current["/dashboard/vehicle"] = el;
-            }}
-            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/vehicle"
-                ? "text-primary"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            } ${
-              isCollapsed
-                ? "justify-center w-12 h-12 mx-auto"
-                : "gap-3 px-3 py-2.5"
-            }`}
-            onClick={(e) => handleMenuClick("/dashboard/vehicle", e)}
-          >
-            <span className="material-symbols-outlined transition-colors">
-              directions_car
-            </span>
-            {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">
-                Vehicle Management
-              </p>
-            )}
-          </a>
-          <a
-            ref={(el) => {
-              menuRefs.current["/dashboard/rent"] = el;
-            }}
-            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/rent"
-                ? "text-primary"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            } ${
-              isCollapsed
-                ? "justify-center w-12 h-12 mx-auto"
-                : "gap-3 px-3 py-2.5"
-            }`}
-            onClick={(e) => handleMenuClick("/dashboard/rent", e)}
-          >
-            <span className="material-symbols-outlined transition-colors">
-              contract
-            </span>
-            {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">
-                Rentals Management
-              </p>
-            )}
-          </a>
-          <a
-            ref={(el) => {
-              menuRefs.current["/dashboard/users"] = el;
-            }}
-            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/users"
-                ? "text-primary"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            } ${
-              isCollapsed
-                ? "justify-center w-12 h-12 mx-auto"
-                : "gap-3 px-3 py-2.5"
-            }`}
-            onClick={(e) => handleMenuClick("/dashboard/users", e)}
-          >
-            <span className="material-symbols-outlined transition-colors">
-              people
-            </span>
-            {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">
-                User Management
-              </p>
-            )}
-          </a>
-
-          <a
-            ref={(el) => {
-              menuRefs.current["/dashboard/finance"] = el;
-            }}
-            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/finance"
-                ? "text-primary"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            } ${
-              isCollapsed
-                ? "justify-center w-12 h-12 mx-auto"
-                : "gap-3 px-3 py-2.5"
-            }`}
-            onClick={(e) => handleMenuClick("/dashboard/finance", e)}
-          >
-            <span className="material-symbols-outlined transition-colors">
-              finance
-            </span>
-            {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">
-                Finance Management
-              </p>
-            )}
-          </a>
-
-          <a
-            ref={(el) => {
-              menuRefs.current["/dashboard/monitoring"] = el;
-            }}
-            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/dashboard/monitoring"
-                ? "text-primary"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            } ${
-              isCollapsed
-                ? "justify-center w-12 h-12 mx-auto"
-                : "gap-3 px-3 py-2.5"
-            }`}
-            onClick={(e) => handleMenuClick("/dashboard/monitoring", e)}
-          >
-            <span className="material-symbols-outlined transition-colors">
-              monitoring
-            </span>
-            {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">
-                Monitoring
-              </p>
-            )}
-          </a>
-
-          <a
-            ref={(el) => {
-              menuRefs.current["/dashboard/setting"] = el;
-            }}
-            className={`flex items-center rounded-lg relative z-10 transition-colors group cursor-pointer ${
-              activeMenu === "/settings"
-                ? "text-primary"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            } ${
-              isCollapsed
-                ? "justify-center w-12 h-12 mx-auto"
-                : "gap-3 px-3 py-2.5"
-            }`}
-            onClick={(e) => handleMenuClick("/dashboard/setting", e)}
-          >
-            <span className="material-symbols-outlined transition-colors">
-              settings
-            </span>
-            {!isCollapsed && (
-              <p className="text-sm font-medium leading-normal">Settings</p>
-            )}
-          </a>
+          {filteredMenuItems.map((item) => (
+            <a
+              key={item.path}
+              ref={(el) => {
+                menuRefs.current[item.path] = el;
+              }}
+              className={`flex items-center rounded-lg relative z-10 transition-colors cursor-pointer ${
+                activeMenu === item.path
+                  ? "text-primary"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              } ${
+                isCollapsed
+                  ? "justify-center w-12 h-12 mx-auto"
+                  : "gap-3 px-3 py-2.5"
+              }`}
+              onClick={(e) => handleMenuClick(item.path, e)}
+            >
+              <span className="material-symbols-outlined">{item.icon}</span>
+              {!isCollapsed && (
+                <p className="text-sm font-medium leading-normal">
+                  {item.label}
+                </p>
+              )}
+            </a>
+          ))}
         </nav>
-      </div>
 
       <div
-        className={`flex flex-col gap-1 border-t border-slate-200 dark:border-slate-800 pt-4 ${!isCollapsed ? "px-2" : ""}`}
+        className={`flex flex-col gap-1 shrink-0 border-t border-slate-200 dark:border-slate-800  ${!isCollapsed ? "px-2" : ""}`}
       >
         <a
           className={`flex items-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer ${
@@ -347,7 +206,7 @@ const Sidebar = () => {
           {!isCollapsed && (
             <p className="text-sm font-medium leading-normal">Logout</p>
           )}
-      </a>
+        </a>
       </div>
     </aside>
   );

@@ -26,15 +26,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const stored = getStoredUser<User>();
+    const stored = getStoredUser<Record<string, any>>();
     if (stored) {
-      setUser(stored);
+      const permissions = stored.permissions?.length
+        ? stored.permissions
+        : stored.role?.permissions?.map((p: any) => p.name) || [];
+      setUser({ ...stored, permissions } as User);
       setIsLoading(false);
     }
 
     authApi.getMe()
-      .then((freshUser) => {
-        setUser(freshUser);
+      .then((freshUser: any) => {
+        const permissions = freshUser?.permissions?.length
+          ? freshUser.permissions
+          : freshUser?.role?.permissions?.map((p: any) => p.name) || [];
+        setUser({ ...freshUser, permissions } as User);
         setIsLoading(false);
       })
       .catch(() => {
@@ -46,7 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string, turnstileToken?: string) => {
     const result = await authApi.login({ email, password, turnstile_token: turnstileToken });
-    setUser(result.user);
+    const raw = result.user as Record<string, unknown>;
+    const perms = raw.permissions as string[] | undefined;
+    const permissions = perms?.length
+      ? perms
+      : (raw.role as Record<string, unknown>)?.permissions?.map((p: unknown) => (p as Record<string, string>).name) || [];
+    setUser({ ...result.user, permissions } as User);
   }, []);
 
   const logout = useCallback(() => {

@@ -12,6 +12,8 @@ import { AlertDialog } from "@/components/ui/alert";
 import { useSearchParams } from "next/navigation";
 import { rentalApi } from "@/lib/api/rentals";
 import type { RentalTransaction } from "@/lib/types/rentals";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 
 interface RentalDisplay {
   id: string;
@@ -49,6 +51,7 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
 });
 
 export default function RentalManagementPage() {
+  const { user } = useAuth();
 const searchParams = useSearchParams();
 
   const handleExport = (options?: ExportOptions) => {
@@ -168,8 +171,8 @@ const handlePageChange = (page: number) => {
       <PageHeader
         title="Rentals List Overview"
         description="Monitor active rentals, handle pending and late payments, and review daily completed transactions."
-        buttonText="Add New Rentals"
-        buttonHref="/dashboard/rent/new"
+        buttonText={canAccess(user?.permissions, "rental.create") ? "Add New Rentals" : undefined}
+        buttonHref={canAccess(user?.permissions, "rental.create") ? "/dashboard/rent/new" : undefined}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -1,8 +1,7 @@
 "use client";
 
 import { Select } from "@/components/ui/select";
-
-export type VehicleStatus = "Available" | "Maintenance" | "Service" | "Reserved";
+import type { VehicleStatus } from "@/lib/types/vehicle";
 
 interface StatusSelectProps {
   value?: VehicleStatus;

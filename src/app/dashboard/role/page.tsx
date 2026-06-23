@@ -8,8 +8,13 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertDialog } from "@/components/ui/alert";
 import { ExportOptions } from "@/components/ui/export";
+import { rolesApi } from "@/lib/api/roles";
+import type { RoleItem } from "@/lib/types/role";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 
 const RolePage = () => {
+  const { user } = useAuth();
   const handleExport = (options: ExportOptions) => {
     console.log("Export options from role page:", options);
     alert(`Exporting role data as ${options.format} with ${options.type} data`);
@@ -17,15 +22,35 @@ const RolePage = () => {
 
   const searchParams = useSearchParams();
 
+  const [roles, setRoles] = useState<RoleItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   // confirm dialog delete
-  const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [selectedRole, setSelectedRole] = useState<RoleItem | null>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Alert
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState<"success" | "error">("success");
+
+  const fetchRoles = async () => {
+    setIsLoading(true);
+    try {
+      const res = await rolesApi.getList();
+      setRoles(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      setRoles([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRoles();
+  }, []);
 
   // Tampilkan alert jika ada success di param URL
   useEffect(() => {
@@ -41,7 +66,6 @@ const RolePage = () => {
       setAlertType("success");
       setIsAlertOpen(true);
 
-      // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
       window.history.replaceState({}, "", "/dashboard/role");
     }
   }, [searchParams]);
@@ -51,14 +75,27 @@ const RolePage = () => {
     setIsConfirmDeleteOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    console.log("Deleted role:", selectedRole);
-    setIsConfirmDeleteOpen(false);
-    setAlertTitle("Delete Successful");
-    setAlertMessage(`Role ${selectedRole?.name} has been deleted successfully`);
-    setAlertType("success");
-    setIsAlertOpen(true);
-    setSelectedRole(null);
+  const handleConfirmDelete = async () => {
+    if (!selectedRole) return;
+    setIsDeleting(true);
+    try {
+      await rolesApi.delete(selectedRole.id);
+      setIsConfirmDeleteOpen(false);
+      setAlertTitle("Delete Successful");
+      setAlertMessage(`Role ${selectedRole.name} has been deleted successfully`);
+      setAlertType("success");
+      setIsAlertOpen(true);
+      setSelectedRole(null);
+      fetchRoles();
+    } catch {
+      setIsConfirmDeleteOpen(false);
+      setAlertTitle("Delete Failed");
+      setAlertMessage("Failed to delete role. Please try again.");
+      setAlertType("error");
+      setIsAlertOpen(true);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleAlertClose = () => {
@@ -70,12 +107,18 @@ const RolePage = () => {
       <PageHeader
         title="Role Management"
         description="Manage roles and permissions for users in the system."
-        buttonText="Add New Role"
-        buttonHref="/dashboard/role/new"
+        buttonText={canAccess(user?.permissions, "role.create") ? "Add New Role" : undefined}
+        buttonHref={canAccess(user?.permissions, "role.create") ? "/dashboard/role/new" : undefined}
       />
 
       {/* table */}
-      <RoleTable onDelete={handleDeleteClick} onExport={handleExport} />
+      {isLoading ? (
+        <div className="bg-white rounded-2xl border border-gray-200 mt-5 p-12 text-center text-slate-500">
+          Loading roles...
+        </div>
+      ) : (
+        <RoleTable roles={roles} onDelete={handleDeleteClick} onExport={handleExport} />
+      )}
 
       <div className="mt-12 grid grid-cols-12 gap-6">
         {/*banner biru */}
@@ -86,12 +129,12 @@ const RolePage = () => {
         <div className="col-span-12 lg:col-span-5 space-y-6">
           {/* card */}
           <RoleCard
-            title="Total Users"
-            value="1,284"
+            title="Total Roles"
+            value={String(roles.length)}
             icon="group"
             iconColor="text-slate-600"
             trend={{
-              value: "+12%",
+              value: `${roles.filter((r) => r.is_active).length} active`,
               color: "text-emerald-500",
               icon: "trending_up",
             }}
@@ -99,12 +142,12 @@ const RolePage = () => {
 
           <RoleCard
             title="Active Roles"
-            value="5"
+            value={String(roles.filter((r) => r.is_active).length)}
             icon="verified_user"
             iconColor="text-blue-600"
             progressBar={{
-              percentage: 84,
-              label: "Utilization Capacity 84%",
+              percentage: roles.length > 0 ? Math.round((roles.filter((r) => r.is_active).length / roles.length) * 100) : 0,
+              label: "Utilization Capacity",
             }}
           />
         </div>
@@ -116,7 +159,7 @@ const RolePage = () => {
         onConfirm={handleConfirmDelete}
         title="Delete Role"
         message={`Are you sure you want to delete ${selectedRole?.name}? This action cannot be undone.`}
-        confirmText="Yes, Delete"
+        confirmText={isDeleting ? "Deleting..." : "Yes, Delete"}
         cancelText="Cancel"
         variant="danger"
       />

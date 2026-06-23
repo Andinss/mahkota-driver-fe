@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import PayerInfo from "@/components/finance/manual/payer-info";
 import Summary from "@/components/finance/manual/summary";
 import TransactionDetail from "@/components/finance/manual/transaction-detail";
@@ -12,6 +13,7 @@ interface ManualPaymentPageProps {
 }
 
 const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
+  const router = useRouter();
   const paymentIdParam = id;
 
   const [mode, setMode] = useState<"add" | "edit">("add");
@@ -105,7 +107,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
       const action = mode === "edit" ? "updated" : "registered";
       const ref = referenceNumber || "New Payment";
 
-      window.location.href = `/dashboard/finance?success=${action}&ref=${encodeURIComponent(ref)}`;
+      router.push(`/dashboard/finance?success=${action}&ref=${encodeURIComponent(ref)}`);
     } catch {
       setIsSubmitting(false);
       alert("Failed to save payment. Please check your input and try again.");
@@ -113,7 +115,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   };
 
   const handleCancel = () => {
-    window.location.href = "/dashboard/finance";
+    router.push("/dashboard/finance");
   };
 
   const handleClear = () => {

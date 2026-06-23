@@ -1,75 +1,21 @@
-import { PermissionItem } from "./permission";
+import type { PermissionItem } from "@/lib/types/permission";
 
 interface RoleHierarchyProps {
-  permissions: PermissionItem[];
+  allPermissions: PermissionItem[];
+  selectedIds: string[];
 }
 
-const RoleHierarchy = ({ permissions }: RoleHierarchyProps) => {
-  const getPreviewItems = (): { text: string; allowed: boolean }[] => {
-    const items: { text: string; allowed: boolean }[] = [];
+const RoleHierarchy = ({ allPermissions, selectedIds }: RoleHierarchyProps) => {
+  const selectedPermissions = allPermissions.filter((p) =>
+    selectedIds.includes(p.id)
+  );
 
-    permissions.forEach((item) => {
-      if (item.type === "toggle") {
-        if (item.id === "dashboard" && item.checked) {
-          items.push({ text: "Can view dashboard analytics", allowed: true });
-        }
-        if (item.id === "financial") {
-          items.push({
-            text: item.checked
-              ? "Can view financial reports"
-              : "Cannot view financial reports",
-            allowed: !!item.checked,
-          });
-        }
-      }
-
-      if (item.type === "checkbox-group" && item.options) {
-        const all = item.options.find((o) => o.value === "all");
-        if (all?.checked) {
-          items.push({ text: `Full access to ${item.title}`, allowed: true });
-        } else {
-          item.options
-            .filter((o) => o.value !== "all" && o.checked)
-            .forEach((o) => {
-              items.push({
-                text: `Can ${o.label.toLowerCase()} ${item.title}`,
-                allowed: true,
-              });
-            });
-        }
-      }
-
-      if (item.type === "radio-group" && item.options) {
-        const selected = item.options.find((o) => o.checked);
-        if (selected) {
-          items.push({
-            text:
-              selected.value === "full"
-                ? `Full access to ${item.title}`
-                : `Read-only access to ${item.title}`,
-            allowed: selected.value === "full",
-          });
-        }
-      }
-
-      if (item.type === "checkbox-pills" && item.options) {
-        item.options
-          .filter((o) => o.checked)
-          .forEach((o) => {
-            items.push({
-              text: `Can perform ${o.label.toLowerCase()} in ${item.title}`,
-              allowed: true,
-            });
-          });
-      }
-    });
-
-    return items.length > 0
-      ? items
-      : [{ text: "No permissions selected yet", allowed: false }];
-  };
-
-  const previewItems = getPreviewItems();
+  const previewItems = selectedPermissions.length > 0
+    ? selectedPermissions.map((p) => ({
+        text: `Can ${p.name.replace("_", " ")}`,
+        allowed: true,
+      }))
+    : [{ text: "No permissions selected yet", allowed: false }];
 
   return (
     <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">

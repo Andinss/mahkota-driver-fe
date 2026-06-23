@@ -10,12 +10,22 @@ import { UserPagination } from "@/components/user/dashboard/user-pagination";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { usersApi } from "@/lib/api/users";
-import type { UserItem } from "@/lib/types/user";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
+
+interface UserDisplay {
+  id: string;
+  username: string;
+  email: string;
+  is_active: boolean;
+  role?: string;
+}
 
 export default function UserList() {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
 
-  const [users, setUsers] = useState<UserItem[]>([]);
+  const [users, setUsers] = useState<UserDisplay[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
@@ -28,7 +38,7 @@ export default function UserList() {
     status: "",
   });
 
-  const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserDisplay | null>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -62,10 +72,17 @@ export default function UserList() {
         search: filters.search || undefined,
       });
 
-      const data = Array.isArray(res.data) ? res.data : [];
-      setUsers(data);
+      const items = Array.isArray(res.data) ? res.data : [];
+      const mapped = items.map((u: any) => ({
+        id: u.id,
+        username: u.username,
+        email: u.email,
+        is_active: u.is_active,
+        role: u.role?.name || "",
+      }));
+      setUsers(mapped);
       setTotalPages(1);
-      setTotalResults(data.length);
+      setTotalResults(mapped.length);
     } catch {
       setUsers([]);
     } finally {
@@ -86,7 +103,7 @@ export default function UserList() {
     setCurrentPage(page);
   };
 
-  const handleDeleteClick = (user: UserItem) => {
+  const handleDeleteClick = (user: UserDisplay) => {
     setSelectedUser(user);
     setIsConfirmDeleteOpen(true);
   };
@@ -124,8 +141,8 @@ export default function UserList() {
       <PageHeader
         title="User List Overview"
         description="Monitor active rentals, handle pending and late payments, and review daily completed transactions."
-        buttonText="Add New User"
-        buttonHref="/dashboard/users/new"
+        buttonText={canAccess(user?.permissions, "user.create") ? "Add New User" : undefined}
+        buttonHref={canAccess(user?.permissions, "user.create") ? "/dashboard/users/new" : undefined}
       />
       <SearchBar filters={filters} onFilterChange={handleFilterChange} />
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

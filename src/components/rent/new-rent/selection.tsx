@@ -78,7 +78,7 @@ interface SelectionFormProps {
 const SelectionForm = ({ onDataChange, initialData, error, driverOptions, vehicleOptions }: SelectionFormProps) => {
   const effectiveDriverOptions = driverDetails;
   const hasValidVehicles = vehicleOptions?.some(v => v.label && v.value);
-  const effectiveVehicleOptions = hasValidVehicles ? vehicleOptions : vehicleInfo;
+  const effectiveVehicleOptions = hasValidVehicles ? (vehicleOptions || []) : (vehicleInfo || []);
 
    const [selectedDriver, setSelectedDriver] = useState<string | undefined>(
     initialData?.driverId

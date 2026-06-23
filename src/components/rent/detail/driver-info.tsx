@@ -15,7 +15,7 @@ const DriverInfo = ({
   email = "a.thompson@corp.com",
   avatar = "https://lh3.googleusercontent.com/aida-public/AB6AXuBcXg_CETjrg2l5txB8tmexLnqcs2sPb6X8APwbYFIxzpUmHaJmo7eIG0LIZNJ7TZaTso55b6G6Rw25HDtAVPhg0CnUYL6htrcXoBbpiahAO_3_fVhZ4rX0B-bdrfwsxkzKCj2j-KS3USanbgeM4kvb2EakkyLdEUeSTcy2eGQ13bkA9PBid93qV5s6pYA9e-z3Gb9FjsHe21pD-aMhxfHhy50UghovvCuxoFcw7wy1uMpqyymJ8nf5iNMnCbFlVxk_mZYoTKYVNSQk",
 }: DriverInfoProps) => {
-  const imgSrc = avatar || null;
+  const imgSrc = avatar || undefined;
   const isLicenseVerified =
     licenseStatus?.toLowerCase() === "verified";
   return (

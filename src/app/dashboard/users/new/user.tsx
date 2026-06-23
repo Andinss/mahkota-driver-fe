@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { AddUserForm, UserFormData } from "@/components/user/new/add-user-form";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import CardUser from "@/components/user/new/card-user";
 import { usersApi } from "@/lib/api/users";
+import { rolesApi } from "@/lib/api/roles";
+import type { RoleItem } from "@/lib/types/role";
 import type { CreateUserPayload } from "@/lib/types/user";
 
 export default function AddNewUserPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const userIdParam = searchParams.get("id");
 
@@ -18,17 +21,27 @@ export default function AddNewUserPage() {
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingData, setPendingData] = useState<UserFormData | null>(null);
+  const [roles, setRoles] = useState<RoleItem[]>([]);
+
+  useEffect(() => {
+    rolesApi.getList().then((res) => {
+      const list = Array.isArray(res.data) ? res.data : [];
+      setRoles(list);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (userIdParam) {
       setMode("edit");
       usersApi
         .getById(userIdParam)
-        .then((u) => {
+        .then((res) => {
+          const u = res.data;
           setInitialData({
             username: u.username,
+            fullname: u.fullname,
             email: u.email,
-            role: u.role || "",
+            role: u.role_id || "",
             isActive: u.is_active,
           });
         })
@@ -57,16 +70,16 @@ export default function AddNewUserPage() {
         const payload: Partial<CreateUserPayload> = {
           username: pendingData.username,
           email: pendingData.email,
-          role: pendingData.role,
+          role_id: pendingData.role,
           is_active: pendingData.isActive,
         };
         await usersApi.update(userIdParam, payload);
       } else {
         const payload: CreateUserPayload = {
           username: pendingData.username,
+          fullname: pendingData.fullname,
           email: pendingData.email,
-          password: "changeme123",
-          role: pendingData.role,
+          role_id: pendingData.role,
           is_active: pendingData.isActive,
         };
         await usersApi.create(payload);
@@ -74,7 +87,7 @@ export default function AddNewUserPage() {
 
       const action = mode === "edit" ? "updated" : "registered";
       const userName = pendingData?.username || "New User";
-      window.location.href = `/dashboard/users?success=${action}&user=${encodeURIComponent(userName)}`;
+      router.push(`/dashboard/users?success=${action}&user=${encodeURIComponent(userName)}`);
     } catch {
       alert("Failed to save user. Please try again.");
     } finally {
@@ -83,7 +96,7 @@ export default function AddNewUserPage() {
   };
 
   const handleCancel = () => {
-    window.location.href = "/dashboard/users";
+    router.push("/dashboard/users");
   };
 
   const handleSaveDraft = () => {
@@ -95,6 +108,7 @@ export default function AddNewUserPage() {
       <AddUserForm
         mode={mode}
         initialData={initialData}
+        roles={roles}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         onSaveDraft={handleSaveDraft}

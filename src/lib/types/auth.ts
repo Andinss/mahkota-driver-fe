@@ -1,3 +1,9 @@
+export interface RoleInfo {
+  id: string;
+  name: string;
+  code: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -13,7 +19,8 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  profile_photo?: string;
+  role?: RoleInfo | null;
+  permissions?: string[];
 }
 
 export interface AuthState {
@@ -38,6 +45,17 @@ export interface ResetPasswordRequest {
 }
 
 export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface SetPasswordRequest {
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface SetPasswordResponse {
   success: boolean;
   message: string;
 }

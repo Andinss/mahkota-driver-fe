@@ -7,9 +7,15 @@ import { AlertDialog } from "@/components/ui/alert";
 
 export interface UserFormData {
   username: string;
+  fullname: string;
   email: string;
   role: string;
   isActive: boolean;
+}
+
+interface RoleOption {
+  id: string;
+  name: string;
 }
 
 interface AddUserFormProps {
@@ -19,10 +25,12 @@ interface AddUserFormProps {
   onCancel?: () => void;
   onSaveDraft?: () => void;
   isSubmitting?: boolean;
+  roles?: RoleOption[];
 }
 
 interface FormErrors {
   username?: string;
+  fullname?: string;
   email?: string;
   role?: string;
 }
@@ -34,10 +42,12 @@ export function AddUserForm({
   onCancel,
   onSaveDraft,
   isSubmitting = false,
+  roles = [],
 }: AddUserFormProps) {
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
   const [formValues, setFormValues] = useState({
     username: initialData?.username || "",
+    fullname: initialData?.fullname || "",
     email: initialData?.email || "",
     role: initialData?.role || "",
   });
@@ -49,6 +59,7 @@ export function AddUserForm({
       setIsActive(initialData.isActive);
       setFormValues({
         username: initialData.username || "",
+        fullname: initialData.fullname || "",
         email: initialData.email || "",
         role: initialData.role || "",
       });
@@ -62,6 +73,12 @@ export function AddUserForm({
       newErrors.username = "Username is required";
     } else if (formValues.username.trim().length < 2) {
       newErrors.username = "Username must be at least 2 characters";
+    }
+
+    if (!formValues.fullname?.trim()) {
+      newErrors.fullname = "Full name is required";
+    } else if (formValues.fullname.trim().length < 2) {
+      newErrors.fullname = "Full name must be at least 2 characters";
     }
 
     if (!formValues.email?.trim()) {
@@ -87,6 +104,7 @@ export function AddUserForm({
 
     const data: UserFormData = {
       username: formValues.username,
+      fullname: formValues.fullname,
       email: formValues.email,
       role: formValues.role,
       isActive: isActive,
@@ -98,6 +116,7 @@ export function AddUserForm({
   const handleSaveDraft = () => {
     const draftData: UserFormData = {
       username: formValues.username,
+      fullname: formValues.fullname,
       email: formValues.email,
       role: formValues.role,
       isActive: isActive,
@@ -189,6 +208,16 @@ export function AddUserForm({
                 onChange={(e) => handleInputChange("username", e.target.value)}
                 error={errors.username}
               />
+              <Input
+                id="fullname"
+                name="fullname"
+                label="Full Name"
+                placeholder="Enter full name"
+                required
+                value={formValues.fullname}
+                onChange={(e) => handleInputChange("fullname", e.target.value)}
+                error={errors.fullname}
+              />
 
               <Input
                 id="email"
@@ -212,13 +241,11 @@ export function AddUserForm({
                 error={errors.role}
               >
                 <option value="">Select a role</option>
-                <option value="owner">Owner</option>
-                <option value="finance">Finance</option>
-                <option value="supervisor">Supervisor</option>
-                <option value="field_officer">Field Officer</option>
-                <option value="driver">Driver</option>
-                <option value="admin">Admin</option>
-                <option value="operator">Operator</option>
+                {roles.map((role) => (
+                  <option key={role.id} value={role.id}>
+                    {role.name}
+                  </option>
+                ))}
               </Select>
             </div>
 

@@ -123,7 +123,7 @@ const Topbar = () => {
             <p className="text-xs text-slate-500">{user?.email || "—"}</p>
           </div>
           <Avatar
-            src={user?.profile_photo || ""}
+            src=""
             alt="User profile avatar"
           />
         </div>

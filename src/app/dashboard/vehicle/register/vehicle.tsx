@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { VehicleMediaUpload } from "@/components/vehicle/register/vehicle-media-upload";
-import {
-  StatusSelect,
-  VehicleStatus,
-} from "@/components/vehicle/register/status-select";
+import { StatusSelect } from "@/components/vehicle/register/status-select";
+import type { VehicleStatus } from "@/lib/types/vehicle";
 import {
   VehicleSpecificationsForm,
   VehicleFormData,
@@ -16,6 +14,7 @@ import { vehicleApi } from "@/lib/api/vehicle";
 import type { VehicleItem } from "@/lib/types/vehicle";
 
 export default function VehicleRegisterPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const plateParam = searchParams.get("plate");
 
@@ -119,7 +118,7 @@ export default function VehicleRegisterPage() {
       setIsSubmitting(false);
       const action = mode === "edit" ? "updated" : "registered";
       const vehicleName = `${pendingData.make} ${pendingData.model}`;
-      window.location.href = `/dashboard/vehicle?success=${action}&vehicle=${encodeURIComponent(vehicleName)}`;
+      router.push(`/dashboard/vehicle?success=${action}&vehicle=${encodeURIComponent(vehicleName)}`);
     } catch (err) {
       console.error("Failed to save vehicle:", err);
       setIsSubmitting(false);
@@ -128,7 +127,7 @@ export default function VehicleRegisterPage() {
   };
 
   const handleCancel = () => {
-    window.location.href = "/dashboard/vehicle";
+    router.push("/dashboard/vehicle");
   };
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl m-7 shadow-sm border border-[#f0f2f4] dark:border-slate-800 overflow-hidden">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import FinancialRental from "@/components/rent/new-rent/financial-rental";
 import Period from "@/components/rent/new-rent/rental-period";
@@ -45,6 +45,7 @@ interface SelectOption {
 }
 
 const NewRentPage = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const idParam = searchParams.get("id");
 
@@ -80,12 +81,17 @@ const NewRentPage = () => {
   useEffect(() => {
     driverApi.getList().then((res) => {
       const items = Array.isArray(res.data) ? res.data : [];
+      const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
       setDriverOptions(
-        items.map((d: DriverItem) => ({
-          label: d.name,
-          value: d.name,
-          image: d.imageUrl,
-        })),
+        items.map((d: DriverItem) => {
+          const photo = d.profile_photo || "";
+          const image = photo ? (photo.startsWith("http") ? photo : `${imageBase}/${photo.replace(/^\//, "")}`) : "";
+          return {
+            label: `${d.first_name} ${d.last_name}`,
+            value: `${d.first_name} ${d.last_name}`,
+            image,
+          };
+        }),
       );
     }).catch(() => {});
 
@@ -301,7 +307,7 @@ const NewRentPage = () => {
       setIsSubmitting(false);
       const action = mode === "edit" ? "updated" : "registered";
       const rentName = rentalData.vehicleId || "New Rental";
-      window.location.href = `/dashboard/rent?success=${action}&rent=${encodeURIComponent(rentName)}`;
+      router.push(`/dashboard/rent?success=${action}&rent=${encodeURIComponent(rentName)}`);
     } catch (err) {
       console.error("Failed to save rental:", err);
       setIsSubmitting(false);
@@ -310,7 +316,7 @@ const NewRentPage = () => {
   };
 
   const handleCancel = () => {
-    window.location.href = "/dashboard/rent";
+    router.push("/dashboard/rent");
   };
 
   return (

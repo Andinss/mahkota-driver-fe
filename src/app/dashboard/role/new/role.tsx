@@ -1,205 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { PageHeader } from "@/components/page-header";
+import { useSearchParams, useRouter } from "next/navigation";
 import Advice from "@/components/role/new/advice";
 import GeneralInformation from "@/components/role/new/general";
 import RoleHierarchy from "@/components/role/new/hierarchy";
-import Permission, { PermissionItem } from "@/components/role/new/permission";
+import { PermissionList } from "@/components/role/new/permission-list";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-
-const initialPermissions: PermissionItem[] = [
-  {
-    id: "dashboard",
-    icon: "dashboard",
-    title: "Dashboard View",
-    description: "Access to analytics and real-time status updates.",
-    iconColor: "text-blue-700",
-    iconBg: "bg-blue-100",
-    type: "toggle",
-    checked: true,
-  },
-  {
-    id: "user-mgmt",
-    icon: "group",
-    title: "User Management",
-    description: "Control access for staff and system operators.",
-    iconColor: "text-purple-700",
-    iconBg: "bg-purple-100",
-    type: "checkbox-group",
-    options: [
-      { value: "add", label: "Add", checked: false },
-      { value: "edit", label: "Edit", checked: false },
-      { value: "view", label: "View/Read", checked: false },
-      { value: "delete", label: "Delete", checked: false },
-      { value: "all", label: "All/Full Access", checked: false },
-    ],
-  },
-  {
-    id: "vehicle-mgmt",
-    icon: "directions_car",
-    title: "Vehicle Management",
-    description: "Manage fleet inventory, maintenance, and tracking.",
-    iconColor: "text-blue-700",
-    iconBg: "bg-blue-100",
-    type: "radio-group",
-    options: [
-      { value: "readonly", label: "Read-only" },
-      { value: "full", label: "Full Access", checked: true },
-    ],
-  },
-  {
-    id: "rental-ops",
-    icon: "event_note",
-    title: "Rental Operations",
-    description: "Daily workflow for assignments and returns.",
-    iconColor: "text-green-700",
-    iconBg: "bg-green-100",
-    type: "checkbox-pills",
-    options: [
-      { value: "assign", label: "Assign", checked: true },
-      { value: "retrieval", label: "Retrieval", checked: true },
-    ],
-  },
-  {
-    id: "financial",
-    icon: "payments",
-    title: "Financial Reporting",
-    description: "View revenue reports, invoices, and payment logs.",
-    iconColor: "text-red-700",
-    iconBg: "bg-red-100",
-    type: "toggle",
-    checked: false,
-  },
-];
-
-// MOCK DATA UNTUK EDIT
-const mockRoles: Record<string, any> = {
-   "1": {  
-    id: "1",
-    name: "Owner",
-    description: "Full access to all system features and settings.",
-    permissions: [
-      { ...initialPermissions[0], checked: true },  
-      { 
-        ...initialPermissions[1], 
-        options: initialPermissions[1].options?.map(opt => ({ ...opt, checked: true }))
-      },
-      { 
-        ...initialPermissions[2], 
-        options: initialPermissions[2].options?.map(opt => ({ ...opt, checked: opt.value === "full" }))
-      },
-      { 
-        ...initialPermissions[3], 
-        options: initialPermissions[3].options?.map(opt => ({ ...opt, checked: true }))
-      },
-      { ...initialPermissions[4], checked: true },
-    ]
-  },
-  "2": {  
-    id: "2",
-    name: "Finance",
-    description: "Manage financial reports and payments.",
-    permissions: [
-      { ...initialPermissions[0], checked: true }, 
-      { 
-        ...initialPermissions[1], 
-        options: initialPermissions[1].options?.map(opt => ({ 
-          ...opt, 
-          checked: opt.value === "view" 
-        }))
-      },
-      { 
-        ...initialPermissions[2], 
-        options: initialPermissions[2].options?.map(opt => ({ 
-          ...opt, 
-          checked: opt.value === "readonly" 
-        }))
-      },
-      { 
-        ...initialPermissions[3], 
-        options: initialPermissions[3].options?.map(opt => ({ ...opt, checked: false }))
-      },
-      { ...initialPermissions[4], checked: true },
-    ]
-  },
-  "3": {  
-    id: "3",
-    name: "Supervisor",
-    description: "Supervise daily operations.",
-    permissions: [
-      { ...initialPermissions[0], checked: true },  
-      { 
-        ...initialPermissions[1], 
-        options: initialPermissions[1].options?.map(opt => ({ 
-          ...opt, 
-          checked: opt.value === "view" 
-        }))
-      },
-      { 
-        ...initialPermissions[2], 
-        options: initialPermissions[2].options?.map(opt => ({ 
-          ...opt, 
-          checked: opt.value === "full" 
-        }))
-      },
-      { 
-        ...initialPermissions[3], 
-        options: initialPermissions[3].options?.map(opt => ({ ...opt, checked: true }))
-      },
-      { ...initialPermissions[4], checked: false },
-    ]
-  },
-  "4": {  
-    id: "4",
-    name: "Field Officer",
-    description: "Field operations and vehicle retrieval.",
-    permissions: [
-      { ...initialPermissions[0], checked: false },
-      { 
-        ...initialPermissions[1], 
-        options: initialPermissions[1].options?.map(opt => ({ 
-          ...opt, 
-          checked: false 
-        }))
-      },
-      { 
-        ...initialPermissions[2], 
-        options: initialPermissions[2].options?.map(opt => ({ 
-          ...opt, 
-          checked: opt.value === "full" 
-        }))
-      },
-      { 
-        ...initialPermissions[3], 
-        options: initialPermissions[3].options?.map(opt => ({ ...opt, checked: true }))
-      },
-      { ...initialPermissions[4], checked: false },
-    ]
-  },
-  "5": {  
-    id: "5",
-    name: "Administrator",
-    description: "System administrator with full access.",
-    permissions: [
-      { ...initialPermissions[0], checked: true }, 
-      { 
-        ...initialPermissions[1], 
-        options: initialPermissions[1].options?.map(opt => ({ ...opt, checked: true }))
-      },
-      { 
-        ...initialPermissions[2], 
-        options: initialPermissions[2].options?.map(opt => ({ ...opt, checked: opt.value === "full" }))
-      },
-      { 
-        ...initialPermissions[3], 
-        options: initialPermissions[3].options?.map(opt => ({ ...opt, checked: true }))
-      },
-      { ...initialPermissions[4], checked: true },
-    ]
-  },
-};
+import { rolesApi } from "@/lib/api/roles";
+import { permissionsApi } from "@/lib/api/permissions";
+import type { PermissionItem } from "@/lib/types/permission";
+import { AlertDialog } from "@/components/ui/alert";
 
 interface FormErrors {
   roleName?: string;
@@ -207,6 +18,7 @@ interface FormErrors {
 
 const RoleFormPage = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const roleIdParam = searchParams.get("id");
 
   const [mode, setMode] = useState<"add" | "edit">("add");
@@ -217,10 +29,20 @@ const RoleFormPage = () => {
     roleDescription: ""
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [permissions, setPermissions] = useState<PermissionItem[]>(initialPermissions);
+  const [allPermissions, setAllPermissions] = useState<PermissionItem[]>([]);
+  const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
   const [lastSaved, setLastSaved] = useState<string>("Never (Draft)");
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    permissionsApi.getList().then((res) => {
+      const list = Array.isArray(res.data) ? res.data : [];
+      setAllPermissions(list);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     setErrors({});
@@ -251,29 +73,42 @@ const RoleFormPage = () => {
     return isValid;
   };
 
-  // Load data when in edit mode
   useEffect(() => {
-    if (roleIdParam && mockRoles[roleIdParam]) {
-      const role = mockRoles[roleIdParam];
+    if (roleIdParam) {
       setMode("edit");
-      setFormValues({
-        roleName: role.name,
-        roleDescription: role.description
+      rolesApi.getById(roleIdParam).then((res) => {
+        const role = res.data;
+        setFormValues({
+          roleName: role.name,
+          roleDescription: role.description || "",
+        });
+
+        rolesApi.getPermissions(roleIdParam).then((permRes) => {
+          const perms = Array.isArray(permRes.data) ? permRes.data : [];
+          setSelectedPermissionIds(perms.map((p: any) => p.id));
+        }).catch(() => {});
+
+        setLastSaved("Draft saved");
+      }).catch(() => {
+        setMode("add");
+        setFormValues({
+          roleName: "",
+          roleDescription: "",
+        });
+        setSelectedPermissionIds([]);
+        setLastSaved("Never (Draft)");
       });
-      setPermissions(role.permissions);
-      setLastSaved("Draft saved");
     } else {
       setMode("add");
       setFormValues({
         roleName: "",
         roleDescription: ""
       });
-      setPermissions(initialPermissions);
+      setSelectedPermissionIds([]);
       setLastSaved("Never (Draft)");
     }
   }, [roleIdParam]);
 
-  
   const handleSaveClick = () => {
     setHasSubmitted(true);
 
@@ -284,32 +119,43 @@ const RoleFormPage = () => {
     setIsConfirmOpen(true);
   };
 
-
   const handleConfirmSave = async () => {
     setIsSubmitting(true);
-    setIsConfirmOpen(false);    
+    setIsConfirmOpen(false);
 
-    const roleData = {
-      id: roleIdParam || undefined,
-      name: formValues.roleName,
-      description: formValues.roleDescription,
-      permissions: permissions,
-    };
+    try {
+      const code = formValues.roleName.toLowerCase().replace(/\s+/g, "_");
+      const payload = {
+        name: formValues.roleName,
+        code,
+        description: formValues.roleDescription || undefined,
+      };
 
-    console.log("Role Data:", roleData);
-    console.log("roleName value:", formValues.roleName);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
+      if (mode === "edit" && roleIdParam) {
+        await rolesApi.update(roleIdParam, payload);
+        await rolesApi.assignPermissions(roleIdParam, { permissionIds: selectedPermissionIds });
+      } else {
+        const created = await rolesApi.create(payload);
+        const newRoleId = created.data?.id || (created as any)?.id;
+        if (newRoleId && selectedPermissionIds.length > 0) {
+          await rolesApi.assignPermissions(newRoleId, { permissionIds: selectedPermissionIds });
+        }
+      }
 
-    const action = mode === "edit" ? "updated" : "registered";
-     const roleNameForRedirect = formValues.roleName || "New Role";
+      setIsSubmitting(false);
+      const action = mode === "edit" ? "updated" : "registered";
+      const roleNameForRedirect = formValues.roleName || "New Role";
 
-    window.location.href = `/dashboard/role?success=${action}&role=${encodeURIComponent(roleNameForRedirect)}`;
+      router.push(`/dashboard/role?success=${action}&role=${encodeURIComponent(roleNameForRedirect)}`);
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setErrorMessage(err?.message || "Failed to save role. Please try again.");
+      setIsErrorOpen(true);
+    }
   };
 
-
   const handleCancel = () => {
-      window.location.href = "/dashboard/role";
+      router.push("/dashboard/role");
   };
 
   return (
@@ -323,10 +169,16 @@ const RoleFormPage = () => {
             setRoleDescription={(value) => handleInputChange("roleDescription", value)}
             error={hasSubmitted ? errors.roleName : undefined}
           />
-          <Permission permissions={permissions} onChange={setPermissions} />
+          {allPermissions.length > 0 && (
+            <PermissionList
+              allPermissions={allPermissions}
+              selectedIds={selectedPermissionIds}
+              onChange={setSelectedPermissionIds}
+            />
+          )}
         </div>
         <div className="lg:col-span-4 space-y-6">
-          <RoleHierarchy permissions={permissions} />
+          <RoleHierarchy allPermissions={allPermissions} selectedIds={selectedPermissionIds} />
           <Advice />
         </div>
       </div>
@@ -355,21 +207,28 @@ const RoleFormPage = () => {
           </button>
         </div>
       </div>
-      {/* confirm dialog */}
-             <ConfirmDialog
-              isOpen={isConfirmOpen}
-              onClose={() => setIsConfirmOpen(false)}
-              onConfirm={handleConfirmSave}
-              title={mode === "add" ? "Confirm Registration" : "Confirm Update"}
-              message={
-              mode === "add"
-                          ? `Are you sure you want to create this role? Please review all information carefully. This action cannot be undone.`
-                          : `Are you sure you want to update this role? Please review all information carefully.`
-                          }
-              confirmText={mode === "add" ? "Yes, Create Role" : "Yes, Update Role"}
-              cancelText="Review Again"
-              variant="info"
-            />
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmSave}
+        title={mode === "add" ? "Confirm Registration" : "Confirm Update"}
+        message={
+          mode === "add"
+            ? `Are you sure you want to create this role? Please review all information carefully. This action cannot be undone.`
+            : `Are you sure you want to update this role? Please review all information carefully.`
+        }
+        confirmText={mode === "add" ? "Yes, Create Role" : "Yes, Update Role"}
+        cancelText="Review Again"
+        variant="info"
+      />
+
+      <AlertDialog
+        isOpen={isErrorOpen}
+        onClose={() => setIsErrorOpen(false)}
+        title="Error"
+        message={errorMessage}
+        type="error"
+      />
     </div>
   );
 };

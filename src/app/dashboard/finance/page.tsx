@@ -8,13 +8,17 @@ import { FinancePagination } from "@/components/finance/payment-list/payment-pag
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
 import { PageHeader } from "@/components/page-header";
 import { AlertDialog } from "@/components/ui/alert";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
 import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
 import { financeApi } from "@/lib/api/finances";
 import type { FinanceItem, FinanceListParams } from "@/lib/types/finances";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 
 export default function PaymentList() {
+  const router = useRouter();
+  const { user } = useAuth();
   const searchParams = useSearchParams();
 
   const [finances, setFinances] = useState<FinanceItem[]>([]);
@@ -120,7 +124,7 @@ export default function PaymentList() {
   };
 
   const handleDetails = (finance: FinanceItem) => {
-    window.location.href = `/dashboard/finance/detail?id=${finance.id}`;
+    router.push(`/dashboard/finance/detail?id=${finance.id}`);
   };
 
   const handleSearchChange = (value: string) => {
@@ -146,8 +150,8 @@ export default function PaymentList() {
           <PageHeader
             title="Finance Dashboard"
             description={`Total Records: ${meta.total}`}
-            buttonText="Manual Entry"
-            buttonHref="/dashboard/finance/payment"
+            buttonText={canAccess(user?.permissions, "finance.create") ? "Manual Entry" : undefined}
+            buttonHref={canAccess(user?.permissions, "finance.create") ? "/dashboard/finance/payment" : undefined}
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -214,7 +218,7 @@ export default function PaymentList() {
                   payment={finances}
                   onDetails={handleDetails}
                   onEdit={(f) => {
-                    window.location.href = `/dashboard/finance/payment?id=${f.id}`;
+                    router.push(`/dashboard/finance/payment?id=${f.id}`);
                   }}
                   onDelete={handleDelete}
                   onExport={handleExport}

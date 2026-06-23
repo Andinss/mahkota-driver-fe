@@ -12,6 +12,8 @@ import { VehiclePagination } from "@/components/vehicle/dashboard/vehicle-pagina
 import { ExportOptions } from "@/components/ui/export";
 import { vehicleApi } from "@/lib/api/vehicle";
 import type { VehicleItem } from "@/lib/types/vehicle";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 
 type VehicleStatus = "available" | "rented" | "maintenance";
 
@@ -29,6 +31,7 @@ interface VehicleDisplay {
 }
 
 export default function DashboardVehiclePage() {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,6 +74,8 @@ export default function DashboardVehiclePage() {
           Maintenance: "maintenance",
           Service: "rented",
           Reserved: "available",
+          rented: "rented",
+          retrieved: "maintenance",
         };
         return {
           id: item.id,
@@ -161,8 +166,8 @@ export default function DashboardVehiclePage() {
         <PageHeader
           title="Vehicle List Overview"
           description="Manage your fleet, add new vehicles, and track their status."
-          buttonText="Add New Vehicle"
-          buttonHref="/dashboard/vehicle/register"
+          buttonText={canAccess(user?.permissions, "vehicle.create") ? "Add New Vehicle" : undefined}
+          buttonHref={canAccess(user?.permissions, "vehicle.create") ? "/dashboard/vehicle/register" : undefined}
         />
         <section className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           <VehicleStatsCard
