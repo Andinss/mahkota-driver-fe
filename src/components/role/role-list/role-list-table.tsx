@@ -1,31 +1,31 @@
 "use client";
 import { useState } from "react";
 import { RoleTableRow } from "./role-list-table-row";
-import { ModalExport, ExportOptions, ExportColumn } from "@/components/ui/export";
+import {
+  ModalExport,
+  ExportOptions,
+  ExportColumn,
+} from "@/components/ui/export";
 import type { RoleItem } from "@/lib/types/role";
-
-type PermissionLevel = "full" | "readonly" | "none" | "check";
 
 interface RoleDisplay {
   id: string;
   name: string;
   color: string;
-  viewDashboards: PermissionLevel;
-  managePayments: PermissionLevel;
-  manageDrivers: PermissionLevel;
-  assignVehicles: PermissionLevel;
-  vehicleRetrieval: PermissionLevel;
-  userManagement: PermissionLevel;
+  permissionsByModule: Record<string, string[]>;
 }
 
-const getPermissionLevel = (role: RoleItem, module: string): PermissionLevel => {
-  const perm = role.permissions?.find((p) => p.module === module);
-  if (!perm) return "none";
-  const name = perm.name.toLowerCase();
-  if (name.includes("full") || name.includes("all")) return "full";
-  if (name.includes("read") || name.includes("view")) return "readonly";
-  if (name.includes("assign") || name.includes("manage")) return "full";
-  return "check";
+const getModulePermissions = (role: RoleItem): Record<string, string[]> => {
+  const result: Record<string, string[]> = {};
+  if (!role.permissions) return result;
+  for (const perm of role.permissions) {
+    const [module, action] = perm.name.split(".");
+    if (action) {
+      if (!result[module]) result[module] = [];
+      result[module].push(action);
+    }
+  }
+  return result;
 };
 
 const COLORS = [
@@ -39,15 +39,13 @@ const COLORS = [
   "bg-orange-500",
 ];
 
-const columns = [
-  "Role Name",
-  "View Dashboards",
-  "Manage Payments",
-  "Manage Drivers",
-  "Assign Vehicles",
-  "Vehicle Retrieval",
-  "User Management",
-  "Actions",
+const MODULE_COLUMNS = [
+  { key: "driver", label: "Driver Management" },
+  { key: "vehicle", label: "Vehicle Management" },
+  { key: "rental", label: "Rentals Management" },
+  { key: "user", label: "User Management" },
+  { key: "role", label: "Roles & Permissions" },
+  { key: "finance", label: "Finance Management" },
 ];
 
 interface RoleTableProps {
@@ -58,12 +56,11 @@ interface RoleTableProps {
 
 const roleColumns: ExportColumn[] = [
   { id: "name", label: "Role Name", defaultChecked: true },
-  { id: "viewDashboards", label: "View Dashboards", defaultChecked: true },
-  { id: "managePayments", label: "Manage Payments", defaultChecked: true },
-  { id: "manageDrivers", label: "Manage Drivers", defaultChecked: true },
-  { id: "assignVehicles", label: "Assign Vehicles", defaultChecked: true },
-  { id: "vehicleRetrieval", label: "Vehicle Retrieval", defaultChecked: true },
-  { id: "userManagement", label: "User Management", defaultChecked: true },
+  ...MODULE_COLUMNS.map((col) => ({
+    id: col.key,
+    label: col.label,
+    defaultChecked: true,
+  })),
 ];
 
 export const RoleTable = ({ roles, onDelete, onExport }: RoleTableProps) => {
@@ -74,12 +71,7 @@ export const RoleTable = ({ roles, onDelete, onExport }: RoleTableProps) => {
     id: role.id,
     name: role.name,
     color: COLORS[i % COLORS.length],
-    viewDashboards: getPermissionLevel(role, "dashboard"),
-    managePayments: getPermissionLevel(role, "finance"),
-    manageDrivers: getPermissionLevel(role, "driver"),
-    assignVehicles: getPermissionLevel(role, "vehicle"),
-    vehicleRetrieval: getPermissionLevel(role, "rental"),
-    userManagement: getPermissionLevel(role, "user"),
+    permissionsByModule: getModulePermissions(role),
   }));
 
   return (
@@ -93,21 +85,29 @@ export const RoleTable = ({ roles, onDelete, onExport }: RoleTableProps) => {
             onClick={() => setIsExportModalOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
           >
-            <span className="material-symbols-outlined text-base">download</span>
+            <span className="material-symbols-outlined text-base">
+              download
+            </span>
             Export
           </button>
         </div>
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50/50">
-              {columns.map((col, i) => (
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 text-left">
+                Role Name
+              </th>
+              {MODULE_COLUMNS.map((col) => (
                 <th
-                  key={i}
-                  className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 first:text-left text-center"
+                  key={col.key}
+                  className="px-2 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 text-center"
                 >
-                  {col}
+                  {col.label}
                 </th>
               ))}
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 text-right">
+                Actions
+              </th>
             </tr>
           </thead>
 
@@ -124,7 +124,10 @@ export const RoleTable = ({ roles, onDelete, onExport }: RoleTableProps) => {
             ))}
             {mappedRoles.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
+                <td
+                  colSpan={MODULE_COLUMNS.length + 2}
+                  className="px-6 py-12 text-center text-slate-500"
+                >
                   No roles found
                 </td>
               </tr>

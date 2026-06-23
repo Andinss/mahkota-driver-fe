@@ -10,10 +10,11 @@ export interface UserFormData {
   fullname: string;
   email: string;
   role: string;
+  driver: string;
   isActive: boolean;
 }
 
-interface RoleOption {
+interface Option {
   id: string;
   name: string;
 }
@@ -25,7 +26,8 @@ interface AddUserFormProps {
   onCancel?: () => void;
   onSaveDraft?: () => void;
   isSubmitting?: boolean;
-  roles?: RoleOption[];
+  roles?: Option[];
+  drivers?: Option[];
 }
 
 interface FormErrors {
@@ -33,6 +35,7 @@ interface FormErrors {
   fullname?: string;
   email?: string;
   role?: string;
+  driver?: string;
 }
 
 export function AddUserForm({
@@ -43,6 +46,7 @@ export function AddUserForm({
   onSaveDraft,
   isSubmitting = false,
   roles = [],
+  drivers = [],
 }: AddUserFormProps) {
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
   const [formValues, setFormValues] = useState({
@@ -50,6 +54,7 @@ export function AddUserForm({
     fullname: initialData?.fullname || "",
     email: initialData?.email || "",
     role: initialData?.role || "",
+    driver: initialData?.driver || "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isDraftAlertOpen, setIsDraftAlertOpen] = useState(false);
@@ -62,6 +67,7 @@ export function AddUserForm({
         fullname: initialData.fullname || "",
         email: initialData.email || "",
         role: initialData.role || "",
+        driver: initialData.driver || "",
       });
     }
   }, [initialData]);
@@ -107,6 +113,7 @@ export function AddUserForm({
       fullname: formValues.fullname,
       email: formValues.email,
       role: formValues.role,
+      driver: formValues.driver,
       isActive: isActive,
     };
 
@@ -119,6 +126,7 @@ export function AddUserForm({
       fullname: formValues.fullname,
       email: formValues.email,
       role: formValues.role,
+      driver: formValues.driver,
       isActive: isActive,
     };
 
@@ -244,6 +252,21 @@ export function AddUserForm({
                 {roles.map((role) => (
                   <option key={role.id} value={role.id}>
                     {role.name}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                id="driver"
+                name="driver"
+                label="Assign Driver"
+                value={formValues.driver}
+                onChange={(e) => handleInputChange("driver", e.target.value)}
+                error={errors.driver}
+              >
+                <option value="">Select a driver</option>
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.name}
                   </option>
                 ))}
               </Select>

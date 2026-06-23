@@ -1,18 +1,11 @@
 import Link from "next/link";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 
-type PermissionLevel = "full" | "readonly" | "none" | "check";
-
 interface Role {
   id: string;
   name: string;
   color: string;
-  viewDashboards: PermissionLevel;
-  managePayments: PermissionLevel;
-  manageDrivers: PermissionLevel;
-  assignVehicles: PermissionLevel;
-  vehicleRetrieval: PermissionLevel;
-  userManagement: PermissionLevel;
+  permissionsByModule: Record<string, string[]>;
 }
 
 interface RoleTableRowProps {
@@ -21,84 +14,96 @@ interface RoleTableRowProps {
   onDelete?: (role: Role) => void;
 }
 
-function PermissionCell({ level }: { level: PermissionLevel }) {
-  if (level === "full")
+const MODULES = ["driver", "vehicle", "rental", "user", "role", "finance"];
+const ALL_ACTIONS = ["create", "read", "update", "delete"];
+
+const ACTION_LABELS: Record<string, string> = {
+  create: "CREATE",
+  read: "VIEW",
+  update: "EDIT",
+  delete: "DELETE",
+};
+
+function PermissionCell({ actions }: { actions: string[] }) {
+  const hasAll = actions.length > 0 && ALL_ACTIONS.every((a) => actions.includes(a));
+  const hasRead = actions.length === 1 && actions[0] === "read";
+
+  if (hasAll) {
     return (
-      <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-tight">
-        Full Access
+      <span className="inline-block px-2 py-1 rounded bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-tight">
+        FULL ACCESS
       </span>
     );
-  if (level === "readonly")
+  }
+
+  if (hasRead) {
     return (
-      <span className="px-2 py-1 rounded bg-gray-100 text-gray-500 text-[10px] font-bold uppercase tracking-tight">
-        Read Only
+      <span className="inline-block px-2 py-1 rounded bg-gray-100 text-gray-500 text-[10px] font-bold uppercase tracking-tight">
+        READ ONLY
       </span>
     );
-  if (level === "check")
+  }
+
+  if (actions.length === 0) {
     return (
-      <span className="material-symbols-outlined text-emerald-500 font-bold">
-        check_circle
+      <span className="inline-block px-2 py-1 rounded bg-gray-50 text-gray-300 text-[10px] font-bold uppercase tracking-tight">
+        NO ACCESS
       </span>
     );
+  }
+
   return (
-    <span className="material-symbols-outlined text-gray-300">
-      do_not_disturb_on
-    </span>
+    <div className="flex flex-wrap gap-1 justify-center">
+      {actions.sort().map((action) => (
+        <span
+          key={action}
+          className="inline-block px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-bold"
+        >
+          {ACTION_LABELS[action] || action.toUpperCase()}
+        </span>
+      ))}
+    </div>
   );
 }
 
-export const RoleTableRow = ({
-  role,
-  onEdit,
-  onDelete,
-}: RoleTableRowProps) => {
-  const permissions: { label: string; value: PermissionLevel }[] = [
-    { label: "viewDashboards",   value: role.viewDashboards   },
-    { label: "managePayments",   value: role.managePayments   },
-    { label: "manageDrivers",    value: role.manageDrivers    },
-    { label: "assignVehicles",   value: role.assignVehicles   },
-    { label: "vehicleRetrieval", value: role.vehicleRetrieval },
-    { label: "userManagement",   value: role.userManagement   },
-  ];
-
+export const RoleTableRow = ({ role, onEdit, onDelete }: RoleTableRowProps) => {
   return (
     <tr className="hover:bg-gray-50/50 transition-colors">
-
-      {/* Role Name + dot warna */}
       <td className="px-6 py-5">
         <div className="flex items-center gap-3">
           <div className={`w-2 h-2 rounded-full shrink-0 ${role.color}`} />
-          <span className="font-bold text-gray-900">
-            {role.name}
-          </span>
+          <span className="font-bold text-gray-900">{role.name}</span>
         </div>
       </td>
 
-      {/* 6 kolom permission */}
-      {permissions.map(({ label, value }) => (
-        <td key={label} className="px-2 py-5 text-center">
-          <PermissionCell level={value} />
+      {MODULES.map((module) => (
+        <td key={module} className="px-2 py-5 text-center">
+          <PermissionCell actions={role.permissionsByModule[module] || []} />
         </td>
       ))}
 
-      {/* Dropdown actions */}
       <td className="py-4 px-6 text-right">
         <Dropdown
           trigger={
             <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
-              <span className="material-symbols-outlined text-[20px]">more_vert</span>
+              <span className="material-symbols-outlined text-[20px]">
+                more_vert
+              </span>
             </button>
           }
         >
           <Link href={`/dashboard/role/new?id=${role.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
-          <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(role)}>
+          <DropdownMenuItem
+            icon="delete"
+            danger
+            onClick={() => onDelete?.(role)}
+          >
             Delete
           </DropdownMenuItem>
         </Dropdown>
       </td>
-
     </tr>
   );
 };
