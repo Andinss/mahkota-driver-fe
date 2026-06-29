@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import {
   VehicleHeader,
   VehicleHeaderData,
@@ -121,6 +122,7 @@ const VehicleDetail = () => {
   };
 
   return (
+    <PermissionGuard permission="vehicle.read">
     <div className="m-7">
       <VehicleHeader data={vehicleData} />
 
@@ -161,6 +163,7 @@ const VehicleDetail = () => {
         columns={rentalHistoryColumns}
       />
     </div>
+    </PermissionGuard>
   );
 };
 

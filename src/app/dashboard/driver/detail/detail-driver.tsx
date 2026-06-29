@@ -18,6 +18,7 @@ import { VehicleHistoryTable } from "@/components/driver/detail/vehicle-history-
 import { VehicleHistoryPagination } from "@/components/driver/detail/vehicle-history-pagination";
 import { VehicleHistory } from "@/components/driver/detail/vehicle-history-table-row";
 import { DriverOverview } from "@/components/driver/detail/overview";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 
 // Mock data
 const mockDriver: DriverHeaderData = {
@@ -124,6 +125,7 @@ const DriverDetailPage = () => {
   };
 
   return (
+    <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
     <div className="p-7">
       <DriverHeader driver={mockDriver} />
 
@@ -186,6 +188,7 @@ const DriverDetailPage = () => {
         </div>
       )}
     </div>
+    </PermissionGuard>
   );
 };
 

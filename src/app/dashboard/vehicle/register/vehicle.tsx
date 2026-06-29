@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { VehicleMediaUpload } from "@/components/vehicle/register/vehicle-media-upload";
 import { StatusSelect } from "@/components/vehicle/register/status-select";
@@ -130,6 +131,7 @@ export default function VehicleRegisterPage() {
     router.push("/dashboard/vehicle");
   };
   return (
+    <PermissionGuard permission="vehicle.create">
     <div className="bg-white dark:bg-slate-900 rounded-xl m-7 shadow-sm border border-[#f0f2f4] dark:border-slate-800 overflow-hidden">
       <div className="flex flex-col md:flex-row min-h-[600px]">
         <div className="w-full md:w-1/3 bg-gray-50/50 dark:bg-slate-800/50 p-8 border-r border-[#f0f2f4] dark:border-slate-800 flex flex-col gap-8">
@@ -168,5 +170,6 @@ export default function VehicleRegisterPage() {
       />
 
     </div>
+    </PermissionGuard>
   );
 }

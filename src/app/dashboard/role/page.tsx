@@ -12,6 +12,7 @@ import { rolesApi } from "@/lib/api/roles";
 import type { RoleItem } from "@/lib/types/role";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 
 const RolePage = () => {
   const { user } = useAuth();
@@ -37,6 +38,10 @@ const RolePage = () => {
   const [alertType, setAlertType] = useState<"success" | "error">("success");
 
   const fetchRoles = async () => {
+    if (!canAccess(user?.permissions, 'role.read')) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await rolesApi.getList();
@@ -103,6 +108,7 @@ const RolePage = () => {
   };
 
   return (
+    <PermissionGuard permission="role.read">
     <div className="m-8">
       <PageHeader
         title="Role Management"
@@ -174,6 +180,7 @@ const RolePage = () => {
         confirmText="OK"
       />
     </div>
+    </PermissionGuard>
   );
 };
 

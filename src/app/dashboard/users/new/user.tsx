@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import { AddUserForm, UserFormData } from "@/components/user/new/add-user-form";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import CardUser from "@/components/user/new/card-user";
 import { usersApi } from "@/lib/api/users";
 import { rolesApi } from "@/lib/api/roles";
-import { driverApi } from "@/lib/api/driver";
 import { useAuth } from "@/lib/auth-context";
 import type { RoleItem } from "@/lib/types/role";
 import type { CreateUserPayload } from "@/lib/types/user";
@@ -25,7 +25,6 @@ export default function AddNewUserPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingData, setPendingData] = useState<UserFormData | null>(null);
   const [roles, setRoles] = useState<RoleItem[]>([]);
-  const [drivers, setDrivers] = useState<{ id: string; name: string }[]>([]);
 
   const isAdmin = user?.permissions?.includes("role.create") ?? false;
   const filteredRoles = isAdmin
@@ -36,13 +35,6 @@ export default function AddNewUserPage() {
     rolesApi.getList().then((res) => {
       const list = Array.isArray(res.data) ? res.data : [];
       setRoles(list);
-    }).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    driverApi.getList().then((res) => {
-      const list = Array.isArray(res.data) ? res.data : [];
-      setDrivers(list.map((d) => ({ id: d.id, name: `${d.first_name} ${d.last_name}` })));
     }).catch(() => {});
   }, []);
 
@@ -120,12 +112,12 @@ export default function AddNewUserPage() {
   };
 
   return (
+    <PermissionGuard permission="user.create">
     <div className="p-8">
       <AddUserForm
         mode={mode}
         initialData={initialData}
         roles={filteredRoles}
-        drivers={drivers}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         onSaveDraft={handleSaveDraft}
@@ -148,5 +140,6 @@ export default function AddNewUserPage() {
         variant="info"
       />
     </div>
+    </PermissionGuard>
   );
 }

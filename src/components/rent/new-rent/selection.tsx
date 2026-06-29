@@ -2,47 +2,6 @@
 
 import { SelectSearch } from "@/components/ui/select-input-search";
 import { useState } from "react";
-const driverDetails = [
-   { label: "Marco Polo", 
-     value: "Marco Polo",
-     image: "https://i.pravatar.cc/40?img=1" 
-    },   
-  { label: "Sarah Smith", 
-    value: "Sarah Smith", 
-    image: "https://i.pravatar.cc/40?img=2" 
-  },   
-  { label: "Robert Chen", 
-    value: "Robert Chen", 
-    image: "https://i.pravatar.cc/40?img=3" 
-  },   
-  { label: "Anita Wijaya", 
-    value: "Anita Wijaya", 
-    image: "https://i.pravatar.cc/40?img=4" 
-  },  
-];
-
-const vehicleInfo = [
-  {
-    label: "B 11234 XYZ - Toyota Avanza",
-    value: "B 11234 XYZ",
-  },
-  {
-    label: "B 5678 ABC - Honda CR-V",
-    value: "B 5678 ABC",
-  },
-  {
-    label: "B 9910 DEF - Mitsubishi Pajero",
-    value: "B 9910 DEF",
-  },
-  {
-    label: "B 2233 GHI - Toyota Innova ",
-    value: "B 2233 GHI",
-  },
-];
-
-const rentalPeriod = [
-  
-];
 
   interface FormErrors {
   vehicleId?: string;
@@ -76,9 +35,8 @@ interface SelectionFormProps {
 
 
 const SelectionForm = ({ onDataChange, initialData, error, driverOptions, vehicleOptions }: SelectionFormProps) => {
-  const effectiveDriverOptions = driverDetails;
-  const hasValidVehicles = vehicleOptions?.some(v => v.label && v.value);
-  const effectiveVehicleOptions = hasValidVehicles ? (vehicleOptions || []) : (vehicleInfo || []);
+  const effectiveDriverOptions = driverOptions || [];
+  const effectiveVehicleOptions = vehicleOptions || [];
 
    const [selectedDriver, setSelectedDriver] = useState<string | undefined>(
     initialData?.driverId

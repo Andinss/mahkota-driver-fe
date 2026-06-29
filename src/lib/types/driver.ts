@@ -18,6 +18,9 @@ export interface DriverItem {
   sim_card?: string;
   garage_photo?: string;
   npwp_photo?: string;
+  user_id?: string;
+  created_by_id?: string;
+  created_by?: { id: string; username: string; email: string };
   created_at?: string;
   updated_at?: string;
 }

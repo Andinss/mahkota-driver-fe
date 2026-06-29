@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import Advice from "@/components/role/new/advice";
 import GeneralInformation from "@/components/role/new/general";
 import RoleHierarchy from "@/components/role/new/hierarchy";
@@ -31,6 +32,7 @@ const RoleFormPage = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [allPermissions, setAllPermissions] = useState<PermissionItem[]>([]);
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
+  const [initialPermissionIds, setInitialPermissionIds] = useState<string[]>([]);
   const [lastSaved, setLastSaved] = useState<string>("Never (Draft)");
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -85,7 +87,9 @@ const RoleFormPage = () => {
 
         rolesApi.getPermissions(roleIdParam).then((permRes) => {
           const perms = Array.isArray(permRes.data) ? permRes.data : [];
-          setSelectedPermissionIds(perms.map((p: any) => p.id));
+          const ids = perms.map((p: any) => p.id);
+          setSelectedPermissionIds(ids);
+          setInitialPermissionIds(ids);
         }).catch(() => {});
 
         setLastSaved("Draft saved");
@@ -133,7 +137,14 @@ const RoleFormPage = () => {
 
       if (mode === "edit" && roleIdParam) {
         await rolesApi.update(roleIdParam, payload);
-        await rolesApi.assignPermissions(roleIdParam, { permissionIds: selectedPermissionIds });
+        const toAdd = selectedPermissionIds.filter((id) => !initialPermissionIds.includes(id));
+        const toRemove = initialPermissionIds.filter((id) => !selectedPermissionIds.includes(id));
+        if (toAdd.length > 0) {
+          await rolesApi.assignPermissions(roleIdParam, { permissionIds: toAdd });
+        }
+        if (toRemove.length > 0) {
+          await rolesApi.removePermissions(roleIdParam, { permissionIds: toRemove });
+        }
       } else {
         const created = await rolesApi.create(payload);
         const newRoleId = created.data?.id || (created as any)?.id;
@@ -159,6 +170,7 @@ const RoleFormPage = () => {
   };
 
   return (
+    <PermissionGuard permission="role.create">
     <div className="m-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-5">
         <div className="lg:col-span-8 space-y-6">
@@ -230,6 +242,7 @@ const RoleFormPage = () => {
         type="error"
       />
     </div>
+    </PermissionGuard>
   );
 };
 

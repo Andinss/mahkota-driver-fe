@@ -13,6 +13,7 @@ import { ExportOptions } from "@/components/ui/export";
 import { vehicleApi } from "@/lib/api/vehicle";
 import type { VehicleItem } from "@/lib/types/vehicle";
 import { useAuth } from "@/lib/auth-context";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import { canAccess } from "@/lib/can-access";
 
 type VehicleStatus = "available" | "rented" | "maintenance";
@@ -55,6 +56,10 @@ export default function DashboardVehiclePage() {
   ).replace(/\/api\/?$/, "");
 
   const fetchVehicles = useCallback(async () => {
+    if (!canAccess(user?.permissions, 'vehicle.read')) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await vehicleApi.getList({ page: currentPage, limit: itemsPerPage });
@@ -161,6 +166,7 @@ export default function DashboardVehiclePage() {
   };
 
   return (
+    <PermissionGuard permission="vehicle.read">
     <div className="flex-1 overflow-y-auto p-4 md:p-8">
       <div className="max-w-[1200px] mx-auto flex flex-col gap-6">
         <PageHeader
@@ -268,5 +274,6 @@ export default function DashboardVehiclePage() {
         confirmText="OK"
       />
     </div>
+    </PermissionGuard>
   );
 }

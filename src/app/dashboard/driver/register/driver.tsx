@@ -18,16 +18,22 @@ import {
 import { ReviewStep } from "@/components/driver/register/review-step";
 import { useSearchParams, useRouter } from "next/navigation";
 import { driverApi } from "@/lib/api/driver";
+import { supervisorApi } from "@/lib/api/supervisor";
+import { useAuth } from "@/lib/auth-context";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import { renameFile } from "@/lib/utils/file";
 import { AlertDialog } from "@/components/ui/alert";
-
+import { Button } from "@/components/ui/button";
 type Step = 1 | 2 | 3 | 4;
 
 export default function DriverRegisterPage() {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const driverIdParam = searchParams.get("id");
   const [mode, setMode] = useState<"add" | "edit">("add");
+
+  const isSupervisor = user?.role?.code === "SUPERVISOR";
 
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -141,9 +147,17 @@ export default function DriverRegisterPage() {
 
     try {
       if (mode === "edit" && driverIdParam) {
-        await driverApi.update(driverIdParam, fd);
+        if (isSupervisor) {
+          await supervisorApi.update(driverIdParam, fd);
+        } else {
+          await driverApi.update(driverIdParam, fd);
+        }
       } else {
-        await driverApi.create(fd);
+        if (isSupervisor) {
+          await supervisorApi.create(fd);
+        } else {
+          await driverApi.create(fd);
+        }
       }
 
       const driverName = `${personal.firstName} ${personal.lastName}`;
@@ -218,6 +232,7 @@ export default function DriverRegisterPage() {
   };
 
   return (
+    <PermissionGuard permission="driver.create">
     <div className="p-7">
       <Stepper currentStep={currentStep} />
       {renderStep()}
@@ -230,5 +245,6 @@ export default function DriverRegisterPage() {
         type="error"
       />
     </div>
+    </PermissionGuard>
   );
 }

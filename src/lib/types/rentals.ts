@@ -1,8 +1,27 @@
+export interface DriverBrief {
+  id: string;
+  first_name: string;
+  last_name: string;
+  employee_id?: string;
+  phone?: string;
+  email?: string;
+  profile_photo?: string;
+}
+
+export interface VehicleBrief {
+  id: string;
+  merk: string;
+  model: string;
+  license_plate: string;
+}
+
 export interface RentalTransaction {
   id: string;
   rental_number: string;
-  driver_active: string;
-  car_model: string;
+  driver_id: string;
+  driver?: DriverBrief;
+  vehicle_id: string;
+  vehicle?: VehicleBrief;
   start_date: string;
   end_date: string;
   total_duration: number;

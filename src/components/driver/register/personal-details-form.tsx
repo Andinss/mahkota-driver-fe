@@ -93,7 +93,7 @@ export function PersonalDetailsForm({
             isSubmitting={isSubmitting}
           />
 
-          <div className="mt-12 flex items-center justify-end gap-6">
+          <div className="mt-6 flex items-center justify-end gap-6">
             <Link href="/dashboard/driver">
               <button
                 type="button"

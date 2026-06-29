@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import PayerInfo from "@/components/finance/manual/payer-info";
 import Summary from "@/components/finance/manual/summary";
 import TransactionDetail from "@/components/finance/manual/transaction-detail";
@@ -153,6 +154,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   }
 
   return (
+    <PermissionGuard permission="finance.create">
     <div className="m-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col gap-6">
@@ -195,6 +197,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
         />
       </div>
     </div>
+    </PermissionGuard>
   );
 };
 

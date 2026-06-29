@@ -13,6 +13,7 @@ import { useSearchParams } from "next/navigation";
 import { rentalApi } from "@/lib/api/rentals";
 import type { RentalTransaction } from "@/lib/types/rentals";
 import { useAuth } from "@/lib/auth-context";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import { canAccess } from "@/lib/can-access";
 
 interface RentalDisplay {
@@ -34,12 +35,12 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
   id: item.id,
   transactionId: item.rental_number || `#${item.id?.slice(0, 8).toUpperCase()}`,
   driver: {
-    name: item.driver_active || "-",
-    id: item.driver_active || "-",
+    name: item.driver ? `${item.driver.first_name} ${item.driver.last_name}` : "-",
+    id: item.driver_id || "-",
   },
   vehicle: {
-    name: item.car_model || "-",
-    id: item.car_model || "-",
+    name: item.vehicle ? `${item.vehicle.license_plate} - ${item.vehicle.merk} ${item.vehicle.model}` : "-",
+    id: item.vehicle_id || "-",
   },
   rentalPeriod: {
     start: formatDateShort(item.start_date),
@@ -95,6 +96,10 @@ const searchParams = useSearchParams();
   }, [searchParams]);
 
   const fetchRentals = useCallback(async () => {
+    if (!canAccess(user?.permissions, 'rental.read')) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await rentalApi.getList({ page: currentPage, limit: itemsPerPage });
@@ -167,6 +172,7 @@ const handlePageChange = (page: number) => {
 
 
   return (
+    <PermissionGuard permission="rental.read">
     <div className="p-8 space-y-8">
       <PageHeader
         title="Rentals List Overview"
@@ -273,5 +279,6 @@ const handlePageChange = (page: number) => {
       />
 
     </div>
+    </PermissionGuard>
   );
 }

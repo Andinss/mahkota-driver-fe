@@ -52,11 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string, turnstileToken?: string) => {
     const result = await authApi.login({ email, password, turnstile_token: turnstileToken });
-    const raw = result.user as Record<string, unknown>;
-    const perms = raw.permissions as string[] | undefined;
-    const permissions = perms?.length
-      ? perms
-      : (raw.role as Record<string, unknown>)?.permissions?.map((p: unknown) => (p as Record<string, string>).name) || [];
+    const raw = result.user as any;
+    const permissions = raw.permissions?.length
+      ? raw.permissions
+      : raw.role?.permissions?.map((p: any) => p.name) || [];
     setUser({ ...result.user, permissions } as User);
   }, []);
 

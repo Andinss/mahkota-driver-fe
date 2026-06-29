@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import DetailInfo from "@/components/finance/detail-finance/detail-info";
 import FinanceSummary from "@/components/finance/detail-finance/finance-summry";
 import FlowFinance from "@/components/finance/detail-finance/flow";
@@ -50,6 +51,7 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
   }
 
   return (
+    <PermissionGuard permission="finance.read">
     <div className="m-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mt-5">
         <div className="lg:col-span-8 space-y-6 lg:space-y-8">
@@ -64,6 +66,7 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
         </div>
       </div>
     </div>
+    </PermissionGuard>
   );
 };
 export default FinanceDetailPage;
