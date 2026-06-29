@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback } from "react";
 import { usersApi } from "@/lib/api/users";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 
 interface UserDisplay {
   id: string;
@@ -64,6 +65,10 @@ export default function UserList() {
   }, [searchParams]);
 
   const fetchUsers = useCallback(async () => {
+    if (!canAccess(user?.permissions, 'user.read')) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await usersApi.getList({
@@ -137,6 +142,7 @@ export default function UserList() {
   };
 
   return (
+    <PermissionGuard permission="user.read">
     <div className="m-8">
       <PageHeader
         title="User List Overview"
@@ -185,5 +191,6 @@ export default function UserList() {
         confirmText="OK"
       />
     </div>
+    </PermissionGuard>
   );
 }

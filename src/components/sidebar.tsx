@@ -14,7 +14,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { path: "/dashboard", label: "Dashboard", icon: "dashboard", permission: "" },
-  { path: "/dashboard/driver", label: "Driver Management", icon: "badge", permission: "driver.read" },
+  { path: "/dashboard/driver", label: "Driver Management", icon: "badge", permission: "driver.read.all" },
   { path: "/dashboard/vehicle", label: "Vehicle Management", icon: "directions_car", permission: "vehicle.read" },
   { path: "/dashboard/rent", label: "Rentals Management", icon: "contract", permission: "rental.read" },
   { path: "/dashboard/users", label: "User Management", icon: "people", permission: "user.read" },
@@ -30,17 +30,22 @@ const Sidebar = () => {
   const [menuPosition, setMenuPosition] = useState({ top: 0, height: 0 });
   const menuRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
   const isCollapsedRef = useRef(isCollapsed);
+  const navRef = useRef<HTMLElement | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const [activeMenu, setActiveMenu] = useState(pathname);
+  const activeMenuRef = useRef(activeMenu);
 
   const hasPermissions = Array.isArray(user?.permissions) && user.permissions.length > 0;
 
   const filteredMenuItems = isLoading
     ? []
-    : menuItems.filter((item) =>
-        !item.permission || !hasPermissions || canAccess(user?.permissions, item.permission),
-      );
+    : menuItems.filter((item) => {
+        if (!item.permission || !hasPermissions) return true;
+        if (canAccess(user?.permissions, item.permission)) return true;
+        if (item.permission === 'driver.read.all' && canAccess(user?.permissions, 'driver.read.own')) return true;
+        return false;
+      });
 
   useEffect(() => {
     setActiveMenu(pathname);
@@ -49,6 +54,10 @@ const Sidebar = () => {
   useEffect(() => {
     isCollapsedRef.current = isCollapsed;
   }, [isCollapsed]);
+
+  useEffect(() => {
+    activeMenuRef.current = activeMenu;
+  }, [activeMenu]);
 
   useEffect(() => {
     const handleToggle = () => {
@@ -70,25 +79,18 @@ const Sidebar = () => {
   }, []);
 
   const updateMenuPosition = () => {
-    const activeElement = menuRefs.current[activeMenu];
+    const currentActive = activeMenuRef.current;
+    const activeElement = menuRefs.current[currentActive];
     if (activeElement) {
-      const rect = activeElement.getBoundingClientRect();
-      const parentRect = activeElement.parentElement?.getBoundingClientRect();
-      if (parentRect) {
-        setMenuPosition({
-          top: rect.top - parentRect.top,
-          height: rect.height,
-        });
-      }
+      setMenuPosition({
+        top: activeElement.offsetTop,
+        height: activeElement.offsetHeight,
+      });
     }
   };
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      updateMenuPosition();
-    }, 50);
-
-    return () => clearTimeout(timeout);
+    updateMenuPosition();
   }, [activeMenu]);
 
   useEffect(() => {
@@ -100,13 +102,24 @@ const Sidebar = () => {
   }, [isCollapsed]);
 
   useEffect(() => {
+    const navEl = navRef.current;
+    if (!navEl) return;
+
+    const handleScroll = () => {
+      updateMenuPosition();
+    };
+
     const handleWindowResize = () => {
       updateMenuPosition();
     };
 
+    navEl.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleWindowResize);
-    return () => window.removeEventListener("resize", handleWindowResize);
-  }, [activeMenu, isCollapsed]);
+    return () => {
+      navEl.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleWindowResize);
+    };
+  }, []);
 
   const handleMenuClick = (
     path: string,
@@ -151,6 +164,7 @@ const Sidebar = () => {
         </div>
 
         <nav
+          ref={navRef}
           className={`flex-1 overflow-y-auto flex flex-col gap-2 relative ${!isCollapsed ? "px-6" : "items-center"}`}
         >
           <div

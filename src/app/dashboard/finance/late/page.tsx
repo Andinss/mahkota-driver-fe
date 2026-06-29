@@ -3,6 +3,7 @@
 import { CardDetail } from "@/components/finance/late-payment/card-detail";
 import { CardDriver } from "@/components/finance/late-payment/card-driver";
 import { StatsCard } from "@/components/finance/late-payment/card-stats";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AlertDialog } from "@/components/ui/alert";
 import React, { useState } from "react";
@@ -103,6 +104,7 @@ export default function LatePaymentPage() {
   const currentDriver = driversData[selectedDriver as keyof typeof driversData];
 
   return (
+    <PermissionGuard permission="finance.read">
     <div className="p-8 space-y-8">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -185,5 +187,6 @@ export default function LatePaymentPage() {
         />
       </div>
     </div>
+    </PermissionGuard>
   );
 }

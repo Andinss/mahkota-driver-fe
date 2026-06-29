@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import CardCarInfo from "@/components/rent/detail/car-info";
 import DriverInfo from "@/components/rent/detail/driver-info";
 import Duration from "@/components/rent/detail/duration";
@@ -48,12 +49,13 @@ const DetailRentPage = () => {
   }
 
   return (
+    <PermissionGuard permission="rental.read">
     <div className="m-8">
       <div className="grid grid-cols-12 gap-6 lg:gap-8">
         {/* Large Vehicle Card (Span 8) */}
         <CardCarInfo
-          vehicleName={rental.car_model || "Vehicle"}
-          licensePlate={rental.car_model || "-"}
+          vehicleName={rental.vehicle ? `${rental.vehicle.merk} ${rental.vehicle.model}` : "Vehicle"}
+          licensePlate={rental.vehicle?.license_plate || "-"}
           color="N/A"
           fuelLevel={85}
           odometer={0}
@@ -63,11 +65,11 @@ const DetailRentPage = () => {
 
         {/* Driver Information (Span 4) */}
         <DriverInfo
-          name={rental.driver_active || "-"}
+          name={rental.driver ? `${rental.driver.first_name} ${rental.driver.last_name}` : "-"}
           accountType="-"
           licenseStatus="Verified"
-          contact="-"
-          email="-"
+          contact={rental.driver?.phone || "-"}
+          email={rental.driver?.email || "-"}
           avatar=""
         />
 
@@ -92,6 +94,7 @@ const DetailRentPage = () => {
         <Button>Generate Return Report</Button>
       </div>
     </div>
+    </PermissionGuard>
   );
 };
 

@@ -22,6 +22,9 @@ export const rolesApi = {
   assignPermissions: (id: string, payload: AddPermissionsToRolePayload) =>
     api.post<SuccessResponse<RoleItem>>(`/roles/${id}/permissions`, payload),
 
+  removePermissions: (id: string, payload: AddPermissionsToRolePayload) =>
+    api.deleteWithBody<SuccessResponse<RoleItem>>(`/roles/${id}/permissions`, payload),
+
   getPermissions: (id: string) =>
     api.get<SuccessResponse<PermissionItem[]>>(`/roles/${id}/permissions`),
 };

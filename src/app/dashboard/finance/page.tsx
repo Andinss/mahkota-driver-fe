@@ -13,6 +13,7 @@ import type { ExportOptions } from "@/components/ui/export";
 import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
 import { financeApi } from "@/lib/api/finances";
 import type { FinanceItem, FinanceListParams } from "@/lib/types/finances";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 
@@ -39,6 +40,10 @@ export default function PaymentList() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchFinances = useCallback(async () => {
+    if (!canAccess(user?.permissions, 'finance.read')) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const params: FinanceListParams = {
@@ -144,6 +149,7 @@ export default function PaymentList() {
   };
 
   return (
+    <PermissionGuard permission="finance.read">
     <div className="m-8">
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 pb-10">
@@ -258,5 +264,6 @@ export default function PaymentList() {
         confirmText="OK"
       />
     </div>
+    </PermissionGuard>
   );
 }

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { PermissionGuard } from "@/components/auth-guard-permission";
+import { useAuth } from "@/lib/auth-context";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import FinancialRental from "@/components/rent/new-rent/financial-rental";
 import Period from "@/components/rent/new-rent/rental-period";
@@ -10,6 +12,7 @@ import Summary from "@/components/rent/new-rent/summry";
 import { DocumentsForm } from "@/components/rent/new-rent/upload-document";
 import { rentalApi } from "@/lib/api/rentals";
 import { driverApi } from "@/lib/api/driver";
+import { supervisorApi } from "@/lib/api/supervisor";
 import { vehicleApi } from "@/lib/api/vehicle";
 import type { DriverItem } from "@/lib/types/driver";
 import type { VehicleItem } from "@/lib/types/vehicle";
@@ -74,12 +77,16 @@ const NewRentPage = () => {
   const [driverOptions, setDriverOptions] = useState<SelectOption[]>([]);
   const [vehicleOptions, setVehicleOptions] = useState<SelectOption[]>([]);
 
+  const { user } = useAuth();
+  const isSupervisor = user?.role?.code === "SUPERVISOR";
+
   useEffect(() => {
     setErrors({});
   }, []);
 
   useEffect(() => {
-    driverApi.getList().then((res) => {
+    const fetchDrivers = isSupervisor ? supervisorApi.getList() : driverApi.getList();
+    fetchDrivers.then((res: any) => {
       const items = Array.isArray(res.data) ? res.data : [];
       const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
       setDriverOptions(
@@ -88,7 +95,7 @@ const NewRentPage = () => {
           const image = photo ? (photo.startsWith("http") ? photo : `${imageBase}/${photo.replace(/^\//, "")}`) : "";
           return {
             label: `${d.first_name} ${d.last_name}`,
-            value: `${d.first_name} ${d.last_name}`,
+            value: d.id,
             image,
           };
         }),
@@ -100,11 +107,11 @@ const NewRentPage = () => {
       setVehicleOptions(
         items.map((v: VehicleItem) => ({
           label: `${v.license_plate} - ${v.merk} ${v.model}`,
-          value: v.license_plate,
+          value: v.id,
         })),
       );
     }).catch(() => {});
-  }, []);
+  }, [isSupervisor]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -163,8 +170,8 @@ const NewRentPage = () => {
         if (!rental) { setMode("add"); return; }
         setRentalData({
           rentalId: rental.id,
-          vehicleId: rental.car_model,
-          driverId: rental.driver_active,
+          vehicleId: rental.vehicle_id,
+          driverId: rental.driver_id,
           startDate: rental.start_date || "",
           endDate: rental.end_date || "",
           duration: rental.total_duration || 0,
@@ -174,8 +181,8 @@ const NewRentPage = () => {
           methodPayment: rental.method_payment,
         });
         setFormValues({
-          vehicleId: rental.car_model || "",
-          driverId: rental.driver_active || "",
+          vehicleId: rental.vehicle_id || "",
+          driverId: rental.driver_id || "",
           startDate: rental.start_date || "",
           endDate: rental.end_date || "",
           dailyRate: Number(rental.daily_rate) || 0,
@@ -279,8 +286,8 @@ const NewRentPage = () => {
       const totalRevenue = totalDailyRate + depositAmount + serviceFee;
 
       const formData = new FormData();
-      formData.append("driver_active", rentalData.driverId || "");
-      formData.append("car_model", rentalData.vehicleId || "");
+      formData.append("driver_id", rentalData.driverId || "");
+      formData.append("vehicle_id", rentalData.vehicleId || "");
       formData.append("start_date", rentalData.startDate);
       formData.append("end_date", rentalData.endDate);
       formData.append("total_duration", String(totalDuration));
@@ -320,6 +327,7 @@ const NewRentPage = () => {
   };
 
   return (
+    <PermissionGuard permission="rental.create">
     <div className="p-8">
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
         {/* Form Sections */}
@@ -392,6 +400,7 @@ const NewRentPage = () => {
         variant="info"
       />
     </div>
+    </PermissionGuard>
   );
 };
 
