@@ -11,7 +11,7 @@ import { ExportOptions } from "@/components/ui/export";
 import { AlertDialog } from "@/components/ui/alert";
 import { useSearchParams } from "next/navigation";
 import { rentalApi } from "@/lib/api/rentals";
-import type { RentalTransaction } from "@/lib/types/rentals";
+import type { RentalTransaction, RentalSummary } from "@/lib/types/rentals";
 import { useAuth } from "@/lib/auth-context";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { canAccess } from "@/lib/can-access";
@@ -26,6 +26,13 @@ interface RentalDisplay {
   paymentStatus: string;
 }
 
+const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+
+const buildPhotoUrl = (path?: string) =>
+  path
+    ? path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`
+    : "";
+
 const formatDateShort = (d?: string) => {
   if (!d) return "-";
   return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -36,11 +43,12 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
   transactionId: item.rental_number || `#${item.id?.slice(0, 8).toUpperCase()}`,
   driver: {
     name: item.driver ? `${item.driver.first_name} ${item.driver.last_name}` : "-",
-    id: item.driver_id || "-",
+    id: item.driver?.employee_id || item.driver_id?.slice(0, 8) || "-",
+    avatar: buildPhotoUrl(item.driver?.profile_photo) || undefined,
   },
   vehicle: {
-    name: item.vehicle ? `${item.vehicle.license_plate} - ${item.vehicle.merk} ${item.vehicle.model}` : "-",
-    id: item.vehicle_id || "-",
+    name: item.vehicle ? `${item.vehicle.merk} ${item.vehicle.model}` : "-",
+    id: item.vehicle?.license_plate || item.vehicle_id?.slice(0, 8) || "-",
   },
   rentalPeriod: {
     start: formatDateShort(item.start_date),
@@ -48,7 +56,7 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
     duration: item.total_duration || 0,
   },
   deposit: item.deposit_amount > 0 ? "held" : "pending",
-  paymentStatus: "paid",
+  paymentStatus: item.payment_status || "unpaid",
 });
 
 export default function RentalManagementPage() {
@@ -75,7 +83,17 @@ const searchParams = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [summary, setSummary] = useState<RentalSummary | null>(null);
   const itemsPerPage = 10;
+
+  const fetchSummary = useCallback(async () => {
+    try {
+      const res = await rentalApi.getSummary();
+      setSummary(res.data);
+    } catch {
+      // non-critical
+    }
+  }, []);
 
   // Tampilkan alert jika ada succes param di url
   useEffect(() => {
@@ -106,8 +124,13 @@ const searchParams = useSearchParams();
       const items = Array.isArray(res.data) ? res.data : [];
       const mapped = items.map(mapToDisplay);
       setRentals(mapped);
-      setTotalResults(mapped.length);
-      setTotalPages(1);
+      if (res.meta) {
+        setTotalResults(res.meta.total);
+        setTotalPages(res.meta.totalPages);
+      } else {
+        setTotalResults(mapped.length);
+        setTotalPages(1);
+      }
     } catch {
       setRentals([]);
       setTotalResults(0);
@@ -115,22 +138,26 @@ const searchParams = useSearchParams();
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage]);
+  }, [currentPage, user]);
 
   useEffect(() => {
     fetchRentals();
   }, [fetchRentals]);
 
-  const activeRentals = rentals.filter(
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
+
+  const activeRentals = summary?.total_rentals ?? rentals.filter(
     (r) => r.paymentStatus === "paid" && r.deposit === "held",
   ).length;
-  const pendingPayments = rentals.filter(
+  const pendingPayments = summary ? 0 : rentals.filter(
     (r) => r.paymentStatus === "partial" || r.deposit === "pending",
   ).length;
-  const latePayments = rentals.filter(
+  const latePayments = summary ? 0 : rentals.filter(
     (r) => r.paymentStatus === "late",
   ).length;
-  const completedToday = rentals.filter(
+  const completedToday = summary ? 0 : rentals.filter(
     (r) => r.rentalPeriod.end === new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
   ).length;
 
@@ -139,6 +166,22 @@ const handlePageChange = (page: number) => {
     setCurrentPage(page);
   }
 };
+
+  const handleStatusChange = async (rental: RentalDisplay, status: string) => {
+    try {
+      await rentalApi.updatePaymentStatus(rental.id, status);
+      setAlertTitle("Payment Status Updated");
+      setAlertMessage(`Payment status for ${rental.transactionId} changed to ${status.replace(/_/g, " ")}.`);
+      setAlertType("success");
+      setIsAlertOpen(true);
+      fetchRentals();
+    } catch {
+      setAlertTitle("Update Failed");
+      setAlertMessage("Failed to update payment status. Please try again.");
+      setAlertType("error");
+      setIsAlertOpen(true);
+    }
+  };
 
 // Handler Delete
    const handleDeleteClick = (rental: RentalDisplay) => {
@@ -157,6 +200,7 @@ const handlePageChange = (page: number) => {
       setIsAlertOpen(true);
       setSelectedRental(null);
       fetchRentals();
+      fetchSummary();
     } catch {
       setIsConfirmDeleteOpen(false);
       setAlertTitle("Delete Failed");
@@ -183,50 +227,50 @@ const handlePageChange = (page: number) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <RentalCard
-          title="Active Rentals"
-          value={activeRentals.toString()}
+          title="Total Rentals"
+          value={(summary?.total_rentals ?? rentals.length).toString()}
           icon="key"
           iconColor="text-primary"
           trend={{
-            value: "+5% from last month",
+            value: summary ? `Revenue: Rp ${(summary.total_revenue / 1000000).toFixed(1)}M` : "Viewing current page",
             color: "text-green-600",
             icon: "trending_up",
           }}
         />
 
         <RentalCard
-          title="Pending Payments"
-          value={pendingPayments.toString()}
-          icon="pending_actions"
-          iconColor="text-amber-600"
-          trend={{
-            value: "-2% from last week",
-            color: "text-rose-600",
-            icon: "trending_down",
-          }}
-        />
-
-        <RentalCard
-          title="Late Payments"
-          value={latePayments.toString()}
-          icon="error"
-          iconColor="text-rose-600"
-          trend={{
-            value: "+8% priority",
-            color: "text-green-600",
-            icon: "trending_up",
-          }}
-        />
-
-        <RentalCard
-          title="Completed Today"
-          value={completedToday.toString()}
-          icon="task_alt"
+          title="Total Revenue"
+          value={`Rp ${(summary?.total_revenue ?? 0).toLocaleString("id-ID")}`}
+          icon="payments"
           iconColor="text-emerald-600"
           trend={{
-            value: "-4% daily goal",
-            color: "text-rose-600",
-            icon: "trending_down",
+            value: summary ? `Avg rate: Rp ${Math.round(summary.avg_daily_rate).toLocaleString("id-ID")}/day` : "-",
+            color: "text-emerald-600",
+            icon: "trending_up",
+          }}
+        />
+
+        <RentalCard
+          title="Total Deposit"
+          value={`Rp ${(summary?.total_deposit_amount ?? 0).toLocaleString("id-ID")}`}
+          icon="account_balance"
+          iconColor="text-blue-600"
+          trend={{
+            value: summary ? `Service fee: Rp ${(summary.total_service_fee / 1000000).toFixed(1)}M` : "-",
+            color: "text-blue-600",
+            icon: "info",
+          }}
+        />
+
+        <RentalCard
+          title="Security Deposit"
+          value={`Rp ${(summary?.total_deposit ?? 0).toLocaleString("id-ID")}`}
+          icon="verified"
+          iconColor="text-amber-600"
+          trend={{
+            value: summary ? `${summary.amount_by_method?.Bank ? 'Bank: Rp' + (summary.amount_by_method.Bank / 1000000).toFixed(1) + 'M' : ''}` : "-",
+            color: "text-amber-600",
+            icon: "info",
           }}
         />
       </div>
@@ -235,13 +279,14 @@ const handlePageChange = (page: number) => {
 
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500">Loading rentals...</div>
+          <div className="p-12 text-center text-slate-500 dark:text-slate-400">Loading rentals...</div>
         ) : (
           <>
             <RentalTable
               rentals={rentals}
               onExport={handleExport}
               onDelete={handleDeleteClick}
+              onStatusChange={handleStatusChange}
             />
             <div className="border-t border-slate-200 dark:border-slate-800">
               <RentPagination

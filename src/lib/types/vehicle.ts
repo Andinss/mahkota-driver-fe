@@ -16,6 +16,16 @@ export interface VehicleItem {
   updated_at?: string;
 }
 
+export interface VehicleSummary {
+  total_vehicles: number;
+  rented: number;
+  available: number;
+  maintenance: number;
+  service: number;
+  retrieved: number;
+  status_breakdown: Record<string, number>;
+}
+
 export interface VehicleListParams {
   page?: number;
   limit?: number;

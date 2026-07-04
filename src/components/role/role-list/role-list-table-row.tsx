@@ -14,23 +14,45 @@ interface RoleTableRowProps {
   onDelete?: (role: Role) => void;
 }
 
-const MODULES = ["driver", "vehicle", "rental", "user", "role", "finance"];
+const MODULES = ["driver", "vehicle", "rental", "user", "role", "finance", "late_payment", "monitoring"];
 const ALL_ACTIONS = ["create", "read", "update", "delete"];
 
-const ACTION_LABELS: Record<string, string> = {
-  create: "CREATE",
-  read: "VIEW",
-  update: "EDIT",
-  delete: "DELETE",
-};
+function formatAction(action: string): string {
+  const parts = action.split(".");
+  const base = parts[0];
+  const scope = parts.slice(1).join(".");
+
+  const labelMap: Record<string, string> = {
+    create: "CREATE",
+    read: "VIEW",
+    update: "EDIT",
+    delete: "DELETE",
+    approve: "APPROVE",
+    reject: "REJECT",
+    activate: "ACTIVATE",
+    assign_vehicle: "ASSIGN VEHICLE",
+    assign_permissions: "ASSIGN PERMS",
+    manage_role: "MANAGE ROLE",
+    change_status: "CHANGE STATUS",
+  };
+
+  let label = labelMap[base] || base.replace(/_/g, " ").toUpperCase();
+
+  if (scope === "own") label = `${label} (OWN)`;
+  else if (scope === "all") label = `${label} (ALL)`;
+  else if (scope) label = `${label} ${scope.replace(/_/g, " ").toUpperCase()}`;
+
+  return label;
+}
 
 function PermissionCell({ actions }: { actions: string[] }) {
-  const hasAll = actions.length > 0 && ALL_ACTIONS.every((a) => actions.includes(a));
-  const hasRead = actions.length === 1 && actions[0] === "read";
+  const baseActions = actions.map((a) => a.split(".")[0]);
+  const hasAll = actions.length > 0 && ALL_ACTIONS.every((a) => baseActions.includes(a));
+  const hasRead = actions.length === 1 && baseActions[0] === "read";
 
   if (hasAll) {
     return (
-      <span className="inline-block px-2 py-1 rounded bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-tight">
+      <span className="inline-block px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-bold uppercase tracking-tight">
         FULL ACCESS
       </span>
     );
@@ -38,7 +60,7 @@ function PermissionCell({ actions }: { actions: string[] }) {
 
   if (hasRead) {
     return (
-      <span className="inline-block px-2 py-1 rounded bg-gray-100 text-gray-500 text-[10px] font-bold uppercase tracking-tight">
+      <span className="inline-block px-2 py-1 rounded bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-tight">
         READ ONLY
       </span>
     );
@@ -46,7 +68,7 @@ function PermissionCell({ actions }: { actions: string[] }) {
 
   if (actions.length === 0) {
     return (
-      <span className="inline-block px-2 py-1 rounded bg-gray-50 text-gray-300 text-[10px] font-bold uppercase tracking-tight">
+      <span className="inline-block px-2 py-1 rounded bg-gray-50 dark:bg-slate-800/50 text-gray-300 dark:text-gray-600 text-[10px] font-bold uppercase tracking-tight">
         NO ACCESS
       </span>
     );
@@ -57,9 +79,9 @@ function PermissionCell({ actions }: { actions: string[] }) {
       {actions.sort().map((action) => (
         <span
           key={action}
-          className="inline-block px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-bold"
+          className="inline-block px-1.5 py-0.5 rounded bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 text-[10px] font-bold whitespace-nowrap"
         >
-          {ACTION_LABELS[action] || action.toUpperCase()}
+          {formatAction(action)}
         </span>
       ))}
     </div>
@@ -68,11 +90,11 @@ function PermissionCell({ actions }: { actions: string[] }) {
 
 export const RoleTableRow = ({ role, onEdit, onDelete }: RoleTableRowProps) => {
   return (
-    <tr className="hover:bg-gray-50/50 transition-colors">
+    <tr className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors">
       <td className="px-6 py-5">
         <div className="flex items-center gap-3">
           <div className={`w-2 h-2 rounded-full shrink-0 ${role.color}`} />
-          <span className="font-bold text-gray-900">{role.name}</span>
+          <span className="font-bold text-gray-900 dark:text-white">{role.name}</span>
         </div>
       </td>
 

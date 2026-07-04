@@ -151,9 +151,9 @@ export default function UserList() {
         buttonHref={canAccess(user?.permissions, "user.create") ? "/dashboard/users/new" : undefined}
       />
       <SearchBar filters={filters} onFilterChange={handleFilterChange} />
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500">Loading users...</div>
+          <div className="p-12 text-center text-slate-500 dark:text-slate-400">Loading users...</div>
         ) : (
           <>
             <UserTable

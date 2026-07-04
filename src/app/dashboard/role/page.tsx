@@ -119,7 +119,7 @@ const RolePage = () => {
 
       {/* table */}
       {isLoading ? (
-        <div className="bg-white rounded-2xl border border-gray-200 mt-5 p-12 text-center text-slate-500">
+        <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-gray-200 dark:border-gray-700 mt-5 p-12 text-center text-slate-500 dark:text-gray-400">
           Loading roles...
         </div>
       ) : (
@@ -138,7 +138,7 @@ const RolePage = () => {
             title="Total Roles"
             value={String(roles.length)}
             icon="group"
-            iconColor="text-slate-600"
+            iconColor="text-slate-600 dark:text-gray-400"
             trend={{
               value: `${roles.filter((r) => r.is_active).length} active`,
               color: "text-emerald-500",

@@ -1,13 +1,20 @@
 import { SearchInput } from "@/components/ui/search-input";
 import { Select } from "@/components/ui/select";
 
-export const AuditLogFilters = () => {
+interface AuditLogFiltersProps {
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+}
+
+export const AuditLogFilters = ({ searchValue = "", onSearchChange }: AuditLogFiltersProps) => {
   return (
     <div className="rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] bg-white dark:bg-[#1a2632] p-4 shadow-sm">
       <div className="flex flex-col lg:flex-row gap-4">
         <SearchInput
           className="flex-1"
           placeholder="Search by user, action, or target entity..."
+          value={searchValue}
+          onChange={(e) => onSearchChange?.(e.target.value)}
         />
         <div className="flex gap-3">
           <Select

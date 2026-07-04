@@ -2,6 +2,7 @@ import { api } from "../api-http";
 import type { SuccessResponse } from "../types/api";
 import type {
   UserItem,
+  UserSummary,
   CreateUserPayload,
   UpdateUserPayload,
   UserListParams,
@@ -13,6 +14,9 @@ export const usersApi = {
       "/users",
       params as Record<string, string | number | undefined>,
     ),
+
+  getSummary: () =>
+    api.get<SuccessResponse<UserSummary>>("/users/summary"),
 
   getById: (id: string) =>
     api.get<SuccessResponse<UserItem>>(`/users/${id}`),

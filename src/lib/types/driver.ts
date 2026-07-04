@@ -25,6 +25,11 @@ export interface DriverItem {
   updated_at?: string;
 }
 
+export interface DriverSummary {
+  total_drivers: number;
+  gender_breakdown: Record<string, number>;
+}
+
 export interface DriverListParams {
   page?: number;
   limit?: number;

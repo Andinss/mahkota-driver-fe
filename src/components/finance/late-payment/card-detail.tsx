@@ -20,8 +20,8 @@ interface CardDetailProps {
   message: string;
   proofImageUrl: string;
   submittedTime?: string;
-  onReject?: () => void;
-  onApprove?: () => void;
+  onReject?: (note?: string) => void;
+  onApprove?: (note?: string) => void;
   onViewProfile?: () => void;
 }
 
@@ -35,7 +35,7 @@ export function CardDetail({
   dueDate,
   paymentDate,
   amount,
-  justification,
+  justification: _justification,
   justificationReason,
   message,
   proofImageUrl,
@@ -46,13 +46,14 @@ export function CardDetail({
 }: CardDetailProps) {
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+  const [adminNote, setAdminNote] = useState("");
 
   return (
     <>
       <ConfirmDialog
         isOpen={showRejectConfirm}
         onClose={() => setShowRejectConfirm(false)}
-        onConfirm={onReject ?? (() => {})}
+        onConfirm={() => onReject?.(adminNote)}
         title="Reject Request?"
         message="This action cannot be undone. The driver will be notified of the rejection."
         confirmText="Yes, Reject"
@@ -62,7 +63,7 @@ export function CardDetail({
       <ConfirmDialog
         isOpen={showApproveConfirm}
         onClose={() => setShowApproveConfirm(false)}
-        onConfirm={onApprove ?? (() => {})}
+        onConfirm={() => onApprove?.(adminNote)}
         title="Approve Request?"
         message="This will mark the late payment as resolved. A confirmation will be sent to the driver."
         confirmText="Yes, Approve"
@@ -83,8 +84,10 @@ export function CardDetail({
               {name}
             </h2>
             <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
-              <span className="material-icons-round text-lg">badge</span>
+              <span className="material-symbols-outlined text-lg">badge</span>
               <span>Driver ID: {driverId}</span>
+              <span>•</span>
+              <span className="capitalize">{name}</span>
               <span>•</span>
               <span>Joined {joinedDate}</span>
             </div>
@@ -105,7 +108,7 @@ export function CardDetail({
         {/* Transaction Info Grid */}
         <div className="mb-8">
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span className="material-icons-round text-primary text-lg">
+            <span className="material-symbols-outlined text-primary text-lg">
               receipt_long
             </span>
             Transaction Details
@@ -153,7 +156,7 @@ export function CardDetail({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="material-icons-round text-primary text-lg">
+              <span className="material-symbols-outlined text-primary text-lg">
                 chat_bubble_outline
               </span>
               Driver Justification
@@ -169,7 +172,7 @@ export function CardDetail({
           </div>
           <div>
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <span className="material-icons-round text-primary text-lg">
+              <span className="material-symbols-outlined text-primary text-lg">
                 image
               </span>
               Proof of Issue
@@ -181,7 +184,7 @@ export function CardDetail({
               ></div>
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
               <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1">
-                <span className="material-icons-round text-sm">visibility</span>{" "}
+                <span className="material-symbols-outlined text-sm">visibility</span>{" "}
                 Click to view
               </div>
             </div>
@@ -192,7 +195,7 @@ export function CardDetail({
         <div>
           <div className="flex justify-between items-center mb-4">
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <span className="material-icons-round text-primary text-lg">
+              <span className="material-symbols-outlined text-primary text-lg">
                 history
               </span>
               Recent History
@@ -254,6 +257,8 @@ export function CardDetail({
           <Input
             label="Note for Driver (Optional)"
             placeholder="e.g., Waiving fee due to system outage verified..."
+            value={adminNote}
+            onChange={(e) => setAdminNote(e.target.value)}
           />
         </div>
         <div className="flex items-center justify-end gap-3">

@@ -62,23 +62,23 @@ const Permission = ({ permissions, onChange }: PermissionProps) => {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-gray-200">
+    <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div className="p-6 border-b border-gray-200 dark:border-slate-700">
         <h2 className="text-lg font-bold flex items-center gap-2">
           <span className="material-symbols-outlined text-blue-600">
             rule_settings
           </span>
           Permissions Configuration
         </h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Define which modules and actions this role can access.
         </p>
       </div>
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200 dark:divide-slate-700">
         {permissions.map((item, index) => (
           <div
             key={item.id}
-            className={`p-6 group hover:bg-gray-50 transition-colors ${
+            className={`p-6 group hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors ${
               item.type === "toggle"
                 ? "flex items-center justify-between"
                 : ""
@@ -95,8 +95,8 @@ const Permission = ({ permissions, onChange }: PermissionProps) => {
                 <span className="material-symbols-outlined">{item.icon}</span>
               </div>
               <div>
-                <p className="font-semibold text-gray-900">{item.title}</p>
-                <p className="text-xs text-gray-500">{item.description}</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{item.title}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{item.description}</p>
               </div>
             </div>
 
@@ -110,7 +110,7 @@ const Permission = ({ permissions, onChange }: PermissionProps) => {
                   className="sr-only peer"
                   type="checkbox"
                 />
-                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-[#1a2632] after:border-gray-300 dark:after:border-gray-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             )}
 
@@ -120,7 +120,7 @@ const Permission = ({ permissions, onChange }: PermissionProps) => {
                   {item.options.slice(0, -1).map((opt, optIndex) => (
                     <label
                       key={opt.value}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-white transition-colors bg-white/50"
+                      className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-white dark:hover:bg-[#1a2632] transition-colors bg-white/50 dark:bg-[#1a2632]/50"
                     >
                       <Checkbox
                         checked={opt.checked}
@@ -134,7 +134,7 @@ const Permission = ({ permissions, onChange }: PermissionProps) => {
                   ))}
                 </div>
                 {item.options.length > 0 && (
-                  <label className="flex items-center gap-3 p-3 rounded-lg border border-blue-300 bg-blue-50 cursor-pointer">
+                  <label className="flex items-center gap-3 p-3 rounded-lg border border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20 cursor-pointer">
                     <Checkbox
                       checked={item.options[item.options.length - 1].checked}
                       onChange={(e) =>
@@ -146,7 +146,7 @@ const Permission = ({ permissions, onChange }: PermissionProps) => {
                       }
                       value={item.options[item.options.length - 1].value}
                     />
-                    <span className="text-sm font-medium text-blue-700">
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                       {item.options[item.options.length - 1].label}
                     </span>
                   </label>
@@ -161,8 +161,8 @@ const Permission = ({ permissions, onChange }: PermissionProps) => {
                     key={opt.value}
                     className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                       opt.checked
-                        ? "border-blue-300 bg-blue-50"
-                        : "border-gray-200 hover:bg-white"
+                        ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-[#1a2632]"
                     }`}
                   >
                     <Radio
@@ -173,7 +173,7 @@ const Permission = ({ permissions, onChange }: PermissionProps) => {
                     />
                     <span
                       className={`text-sm font-medium ${
-                        opt.checked ? "text-blue-700" : ""
+                        opt.checked ? "text-blue-700 dark:text-blue-300" : ""
                       }`}
                     >
                       {opt.label}
@@ -188,7 +188,7 @@ const Permission = ({ permissions, onChange }: PermissionProps) => {
                 {item.options.map((opt, optIndex) => (
                   <label
                     key={opt.value}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full cursor-pointer hover:bg-gray-200 transition-colors border border-transparent"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-800 rounded-full cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors border border-transparent"
                   >
                     <Checkbox
                       checked={opt.checked}

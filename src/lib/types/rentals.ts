@@ -33,8 +33,21 @@ export interface RentalTransaction {
   security_deposit: number;
   service_fee: number;
   total_revenue: number;
+  payment_status?: string;
+  finances?: any[];
+  late_payments?: any[];
   created_at?: string;
   updated_at?: string;
+}
+
+export interface RentalSummary {
+  total_rentals: number;
+  total_revenue: number;
+  total_deposit: number;
+  total_service_fee: number;
+  total_deposit_amount: number;
+  avg_daily_rate: number;
+  amount_by_method: Record<string, number>;
 }
 
 export interface RentalListParams {

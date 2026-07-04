@@ -6,7 +6,7 @@ const DocumentSign = ({ documentUrl }: DocumentSignProps) => {
   const hasDocument = !!documentUrl;
 
   return (
-    <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md border border-gray-200 h-full">
+    <div className="bg-white dark:bg-[#1a2632] rounded-xl p-6 sm:p-8 shadow-md border border-gray-200 dark:border-gray-700 h-full">
       <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-6">
         Signed Documents
       </h3>
@@ -19,7 +19,7 @@ const DocumentSign = ({ documentUrl }: DocumentSignProps) => {
               </span>
             </div>
             <div>
-              <p className="text-xs sm:text-sm font-bold text-gray-900">
+              <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                 Rental Agreement.pdf
               </p>
               <p className="text-[9px] text-gray-500 uppercase">
@@ -50,7 +50,7 @@ const DocumentSign = ({ documentUrl }: DocumentSignProps) => {
               </span>
             </div>
             <div>
-              <p className="text-xs sm:text-sm font-bold text-gray-900">
+              <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                 Vehicle Checklist.pdf
               </p>
               <p className="text-[9px] text-gray-500 uppercase">
@@ -68,7 +68,7 @@ const DocumentSign = ({ documentUrl }: DocumentSignProps) => {
               <span className="material-symbols-outlined text-xl">policy</span>
             </div>
             <div>
-              <p className="text-xs sm:text-sm font-bold text-gray-900">
+              <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                 Insurance Policy.pdf
               </p>
               <p className="text-[9px] text-gray-500 uppercase">

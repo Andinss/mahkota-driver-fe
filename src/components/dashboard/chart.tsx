@@ -1,36 +1,48 @@
 "use client";
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { QuickAction } from "./quick-action";
-import { ChartVisual } from "./chart-visual";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
-const ChartCard = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState("Last 30 Days");
+interface ChartData {
+  name: string;
+  value: number;
+  fill: string;
+}
+
+interface ChartCardProps {
+  financeByMethod?: ChartData[];
+  rentalByMethod?: ChartData[];
+  totalRevenue?: number;
+}
+
+const COLORS = ["#137fec", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+
+export const ChartCard = ({ financeByMethod = [], rentalByMethod = [] }: ChartCardProps) => {
   const router = useRouter();
 
-  const stats: Record<string, { count: string; label: string }> = {
-  "Last 30 Days": { count: "145", label: "New Users (Last 30 Days)" },
-  "Last 7 Days": { count: "21", label: "New Users (Last 7 Days)" },
-  "This Year": { count: "1.740", label: "New Users (This Year)" },
-};
+  const chartData = financeByMethod.length > 0
+    ? financeByMethod
+    : [
+        { name: "Cash", value: 0, fill: COLORS[0] },
+        { name: "Transfer", value: 0, fill: COLORS[1] },
+        { name: "E-Wallet", value: 0, fill: COLORS[2] },
+      ];
 
-const currentStat = stats[selectedPeriod];
-const handleAddUser = () => {
-  router.push("/dashboard/users/new");
-};
+  const rentalChartData = rentalByMethod.length > 0
+    ? rentalByMethod
+    : [];
 
-const handleResetPassword = () => {
-  router.push("/auth/reset");
-};
-
-const handleEditRoles = () => {
-  router.push("/dashboard/role");
-};
-
-const handleViewAuditLogs = () => {
-  router.push("/dashboard/audit-logs");
-};
+  const hasRentalData = rentalChartData.length > 0;
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-5">
@@ -39,34 +51,118 @@ const handleViewAuditLogs = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-slate-900 dark:text-white text-lg font-bold">
-              User Registration Growth
+              Revenue Overview
             </h3>
-            <span className="text-2xl font-bold text-slate-900 dark:text-white">
-  {currentStat.count}
-    </span>
-    <span className="text-slate-500 dark:text-slate-400 text-sm">
-      {currentStat.label}
-    </span>
-          </div>
-          <div className="flex gap-2">
-            <select  value={selectedPeriod}
-                     onChange={(e) => setSelectedPeriod(e.target.value)} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/50 outline-none">
-              <option>Last 30 Days</option>
-              <option>Last 7 Days</option>
-              <option>This Year</option>
-            </select>
+            <span className="text-slate-500 dark:text-slate-400 text-sm">
+              Amount received by payment method
+            </span>
           </div>
         </div>
 
-        {/* Chart Visualization */}
-        <ChartVisual />
-
-        <div className="flex justify-between mt-4 text-xs text-slate-400 font-medium px-2">
-          <span>Week 1</span>
-          <span>Week 2</span>
-          <span>Week 3</span>
-          <span>Week 4</span>
+        <div className="flex-1 w-full min-h-[280px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                axisLine={{ stroke: "#e2e8f0" }}
+              />
+              <YAxis
+                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                axisLine={{ stroke: "#e2e8f0" }}
+                tickFormatter={(v) =>
+                  v >= 1000000
+                    ? `${(v / 1000000).toFixed(1)}M`
+                    : v >= 1000
+                    ? `${(v / 1000).toFixed(0)}K`
+                    : v.toString()
+                }
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#1e293b",
+                  border: "none",
+                  borderRadius: "8px",
+                  color: "#fff",
+                  fontSize: "12px",
+                }}
+                formatter={(value: any) => [
+                  `Rp ${(Number(value) || 0).toLocaleString("id-ID")}`,
+                  "Amount",
+                ]}
+              />
+              <Legend />
+              <Bar
+                dataKey="value"
+                name="Finance Amount"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={60}
+              >
+                {chartData.map((_, index) => (
+                  <rect key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
+
+        {hasRentalData && (
+          <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+              Rental Revenue by Payment Method
+            </h4>
+            <div className="flex-1 w-full min-h-[200px]">
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart
+                  data={rentalChartData}
+                  margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fill: "#94a3b8", fontSize: 12 }}
+                    axisLine={{ stroke: "#e2e8f0" }}
+                  />
+                  <YAxis
+                    tick={{ fill: "#94a3b8", fontSize: 12 }}
+                    axisLine={{ stroke: "#e2e8f0" }}
+                    tickFormatter={(v) =>
+                      v >= 1000000
+                        ? `${(v / 1000000).toFixed(1)}M`
+                        : v >= 1000
+                        ? `${(v / 1000).toFixed(0)}K`
+                        : v.toString()
+                    }
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e293b",
+                      border: "none",
+                      borderRadius: "8px",
+                      color: "#fff",
+                      fontSize: "12px",
+                    }}
+                    formatter={(value: any) => [
+                      `Rp ${(Number(value) || 0).toLocaleString("id-ID")}`,
+                      "Revenue",
+                    ]}
+                  />
+                  <Bar
+                    dataKey="value"
+                    name="Rental Revenue"
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={60}
+                    fill="#10b981"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Quick Actions Section */}
@@ -77,32 +173,32 @@ const handleViewAuditLogs = () => {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
             <QuickAction
-              icon="person_add"
-              title="Add New User"
-              description="Register manually"
+              icon="payments"
+              title="Finance Entry"
+              description="Record payment"
               variant="primary"
-              onClick={handleAddUser}
+              onClick={() => router.push("/dashboard/finance/payment")}
             />
             <QuickAction
-              icon="lock_reset"
-              title="Reset Password"
-              description="Send recovery email"
+              icon="add_car"
+              title="New Rental"
+              description="Create rental contract"
               variant="amber"
-              onClick={handleResetPassword}
+              onClick={() => router.push("/dashboard/rent/new")}
             />
             <QuickAction
-              icon="manage_accounts"
-              title="Edit Roles"
-              description="Manage permissions"
+              icon="person_add"
+              title="Add Driver"
+              description="Register new driver"
               variant="indigo"
-              onClick={handleEditRoles}
+              onClick={() => router.push("/dashboard/driver/register")}
             />
             <QuickAction
-              icon="summarize"
-              title="View Audit Logs"
-              description="Track system changes"
+              icon="local_taxi"
+              title="Add Vehicle"
+              description="Register new vehicle"
               variant="slate"
-              onClick={handleViewAuditLogs}
+              onClick={() => router.push("/dashboard/vehicle/register")}
             />
           </div>
         </Card>
@@ -110,5 +206,3 @@ const handleViewAuditLogs = () => {
     </div>
   );
 };
-
-export default ChartCard;

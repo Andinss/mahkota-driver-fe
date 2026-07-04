@@ -1,25 +1,25 @@
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
+import type { AuditLogItem } from "@/lib/types/audit";
 
-interface AuditLog {
-  id: number;
-  timestamp: {
-    date: string;
-    time: string;
+const formatTimestamp = (dateStr: string) => {
+  const d = new Date(dateStr);
+  return {
+    date: d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    time: d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
   };
-  user: {
-    name: string;
-    role: string;
-    avatar?: string | null;
-    isSystem?: boolean;
-  };
-  action: string;
-  target: string;
-  status: "success" | "failed" | "pending";
-}
+};
+
+const parseUserAgent = (ua?: string) => {
+  if (!ua) return "-";
+  const match = ua.match(/(Chrome\/\S+|Firefox\/\S+|Safari\/\S+|Edge\/\S+|Opera\/\S+|MSIE\s+\S+)/i);
+  if (match) return match[1].replace(/\/\d+.*$/, "");
+  const os = ua.match(/\(([^)]+)\)/);
+  return os ? os[1].split(";")[0] : ua.substring(0, 30) + "...";
+};
 
 interface AuditTableRowProps {
-  log: AuditLog;
-  onViewDetails?: (log: AuditLog) => void;
+  log: AuditLogItem;
+  onViewDetails?: (log: AuditLogItem) => void;
 }
 
 const statusConfig = {
@@ -44,34 +44,32 @@ const statusConfig = {
 };
 
 export const AuditTableRow = ({ log, onViewDetails }: AuditTableRowProps) => {
-  const status = statusConfig[log.status];
-  
+  const ts = formatTimestamp(log.created_at);
+  const statusKey = (log.status === "success" || log.status === "failed" || log.status === "pending") ? log.status : "success";
+  const status = statusConfig[statusKey];
+  const isSystem = log.username === "System";
+
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
       <td className="px-6 py-5">
-        <div className="text-sm font-medium">{log.timestamp.date}</div>
-        <div className="text-xs text-slate-500">{log.timestamp.time}</div>
+        <div className="text-sm font-medium">{ts.date}</div>
+        <div className="text-xs text-slate-500">{ts.time}</div>
       </td>
       <td className="px-6 py-5">
         <div className="flex items-center gap-3">
-          {log.user.isSystem ? (
+          {isSystem ? (
             <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-[10px] font-bold">
               SYS
             </div>
-          ) : log.user.avatar ? (
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100">
-              <img alt={log.user.name} src={log.user.avatar} className="w-full h-full object-cover" />
-            </div>
           ) : (
-            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium">
-              {log.user.name.charAt(0)}
+            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-xs font-medium">
+              {log.username.charAt(0).toUpperCase()}
             </div>
           )}
           <div>
-            <div className={`text-sm font-semibold ${log.user.isSystem ? 'text-primary' : ''}`}>
-              {log.user.name}
+            <div className={`text-sm font-semibold ${isSystem ? 'text-primary' : ''}`}>
+              {log.username}
             </div>
-            <div className="text-xs text-slate-500">{log.user.role}</div>
           </div>
         </div>
       </td>
@@ -79,7 +77,12 @@ export const AuditTableRow = ({ log, onViewDetails }: AuditTableRowProps) => {
         <div className="text-sm font-medium">{log.action}</div>
       </td>
       <td className="px-6 py-5">
-        <div className="text-sm text-slate-600 dark:text-slate-400">{log.target}</div>
+        <div className="text-sm text-slate-600 dark:text-slate-400">{log.target || "-"}</div>
+      </td>
+      <td className="px-6 py-5">
+        <div className="text-xs text-slate-500 dark:text-slate-400 max-w-[120px] truncate" title={log.user_agent || ""}>
+          {parseUserAgent(log.user_agent)}
+        </div>
       </td>
       <td className="px-6 py-5 text-center">
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.textColor}`}>

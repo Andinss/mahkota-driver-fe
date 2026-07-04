@@ -29,7 +29,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentDetail, setPaymentDetail] = useState("");
-  const [selectedPayer, setSelectedPayer] = useState<{name: string; id: string} | null>(null);
+  const [selectedPayer, setSelectedPayer] = useState<{name: string; id: string; employeeId?: string} | null>(null);
 
   useEffect(() => {
     if (paymentIdParam) {
@@ -38,16 +38,16 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
       const fetchFinance = async () => {
         try {
           const response = await financeApi.getById(paymentIdParam);
-          const item = (response?.data ?? response) as unknown as FinanceItem;
+          const item = (response as any)?.data ?? (response as any);
           if (!item?.payer) {
             throw new Error("Invalid response format");
           }
-          setSelectedPayer({ name: item.payer, id: item.id });
+          setSelectedPayer({ name: item.payer, id: item.driver_id });
           setSearchValue(item.payer);
           setPaymentDate(item.payment_date);
           setReferenceNumber(item.reference_number);
           setPaymentMethod(item.payment_method);
-          setAmount(item.amount_received);
+          setAmount(String(item.amount_received));
           setNotes(item.notes || "");
         } catch (err) {
           console.error("Failed to fetch finance:", err);
@@ -87,6 +87,13 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
 
   const handleSubmit = async () => {
     setHasSubmitted(true);
+
+    if (!selectedPayer?.id) {
+      setIsSubmitting(false);
+      alert("Please select a valid payer/driver before submitting.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -94,9 +101,10 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
         payment_date: paymentDate,
         reference_number: referenceNumber,
         payment_method: paymentMethod as FinanceItem["payment_method"],
-        amount_received: amount,
+        amount_received: parseFloat(amount.replace(/[^\d.]/g, "")) || 0,
         notes,
         payer: selectedPayer?.name || "",
+        driver_id: selectedPayer.id,
       };
 
       if (mode === "edit" && paymentIdParam) {
@@ -131,8 +139,8 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     setHasSubmitted(false);
   };
 
-  const handlePayerSelect = (name: string, id: string) => {
-    setSelectedPayer({ name, id });
+  const handlePayerSelect = (name: string, id: string, employeeId?: string) => {
+    setSelectedPayer({ name, id, employeeId });
   };
 
   const validateAll = (): boolean => {
@@ -182,7 +190,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
         </div>
         <Summary
           payerName={selectedPayer?.name || ""}
-          payerId={selectedPayer?.id || ""}
+          payerId={selectedPayer?.employeeId || selectedPayer?.id || ""}
           paymentDate={paymentDate}
           paymentMethod={paymentMethod}
           amount={amount}

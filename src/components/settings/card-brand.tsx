@@ -125,7 +125,7 @@ const CardBrandUpload = () => {
                   <img
                     src={logo}
                     alt="Logo"
-                    className="w-24 h-24 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 object-contain"
+                    className="w-24 h-24 bg-gray-50 dark:bg-slate-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-slate-600 object-contain"
                   />
                   <button
                     onClick={() => fileInputRef.current?.click()}

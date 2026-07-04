@@ -13,6 +13,7 @@ const vehicleColumns: ExportColumn[] = [
 ];
 
 interface Vehicle {
+  id?: string;
   name: string;
   year: number;
   transmission: string;
@@ -89,7 +90,8 @@ export const VehicleTable = ({
           ))}
         </tbody>
       </table>
-      <ModalExport 
+    </div>
+    <ModalExport 
       isOpen={isExportModalOpen}
       onClose={() => setIsExportModalOpen(false)}
       onExport={(options) => {
@@ -100,8 +102,7 @@ export const VehicleTable = ({
       title="Export Vehicle Data"
       description="Generate vehicle fleet report and status data."
       columns={vehicleColumns}
-      />
-    </div>
+    />
     </>
   );
 };

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   DriverHeader,
   DriverHeaderData,
@@ -19,81 +20,119 @@ import { VehicleHistoryPagination } from "@/components/driver/detail/vehicle-his
 import { VehicleHistory } from "@/components/driver/detail/vehicle-history-table-row";
 import { DriverOverview } from "@/components/driver/detail/overview";
 import { PermissionGuard } from "@/components/auth-guard-permission";
+import { driverApi } from "@/lib/api/driver";
+import { rentalApi } from "@/lib/api/rentals";
+import type { DriverItem } from "@/lib/types/driver";
+import type { RentalTransaction } from "@/lib/types/rentals";
 
-// Mock data
-const mockDriver: DriverHeaderData = {
-  name: "Marcus Wright",
-  imageUrl:
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuD-qYfFL3In7JL4maoOxB8QqNbOANCIYNhsY-l1AGrUUadhZ0roktjb5ib4cNoakVh_oO__7Z4RZhjXwWeAzcra7WLVqKA8KiZ6Hyl_FqEE5p19pJCWIFFe-6P_hDEvf_LZnm0vUD03dfgzwIMZ0zZhy3YHHoX-gZ5gY90BD8zmSeBpJoQ6y0ivDnU6ckC0HAMrzAvJ2BVNqeSZVYnlBxyWLH8LzYWuXuRhMaAgU0M_pozCE96pLx3mDrVtr1TGEBz19KoRro9nKAo",
-  employeeId: "MD-0042",
-  totalTrips: 128,
-  joinedDate: "Joined June 2023",
-  status: "Active",
-};
+const detailDriverPage = () => {
+  const searchParams = useSearchParams();
+  const driverId = searchParams.get("id");
 
-const mockVehicles: VehicleHistory[] = [
-  {
-    name: "Toyota Camry Hybrid",
-    plateNumber: "B 1234 ABC",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCc9FSWkfM3spshnei9tUEoPe6HLeukSzhvhA3FzIwqC0QcA4IWzHDDWfgHeC1Dd7LEQmKfC71RVrq6iE8St-GS4AlQwE_oMR3WJW7xRC4yA8dJU7Ie1zbRZN57Yw-tpHj5VfROLu1GveQ0X2_YKGfFSjPCxupwGPeQZMCwlCIvxjC-yjlJ-OyM6_QSbkU5XWMU_n_Zte-2FDrlZsCiCOq_TRMdcjW0M5lxfhZM2AZCKWQ6O4lnsfGe4FGuubSdQLhfPVp_aTHyn9U",
-    period: "Apr 2024 - Present",
-    activeDuration: "2 months active",
-    totalDistance: "4,250 km",
-    fuelEfficiency: "18.5 km/L",
-    fuelEfficiencyLabel: "Optimal",
-    fuelEfficiencyColor: "text-emerald-500",
-    maintenanceCount: 0,
-    maintenanceIcon: "check_circle",
-    maintenanceColor: "text-emerald-500",
-    status: "Current",
-  },
-  {
-    name: "Hiace Luxury",
-    plateNumber: "B 7788 XYZ",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCc9FSWkfM3spshnei9tUEoPe6HLeukSzhvhA3FzIwqC0QcA4IWzHDDWfgHeC1Dd7LEQmKfC71RVrq6iE8St-GS4AlQwE_oMR3WJW7xRC4yA8dJU7Ie1zbRZN57Yw-tpHj5VfROLu1GveQ0X2_YKGfFSjPCxupwGPeQZMCwlCIvxjC-yjlJ-OyM6_QSbkU5XWMU_n_Zte-2FDrlZsCiCOq_TRMdcjW0M5lxfhZM2AZCKWQ6O4lnsfGe4FGuubSdQLhfPVp_aTHyn9U",
-    period: "Jan 2024 - Mar 2024",
-    activeDuration: "3 months active",
-    totalDistance: "12,180 km",
-    fuelEfficiency: "12.2 km/L",
-    fuelEfficiencyLabel: "Moderate",
-    fuelEfficiencyColor: "text-amber-500",
-    maintenanceCount: 2,
-    maintenanceIcon: "report_problem",
-    maintenanceColor: "text-amber-500",
-    status: "Previous",
-  },
-  {
-    name: "Honda Civic RS",
-    plateNumber: "B 3321 TUV",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCc9FSWkfM3spshnei9tUEoPe6HLeukSzhvhA3FzIwqC0QcA4IWzHDDWfgHeC1Dd7LEQmKfC71RVrq6iE8St-GS4AlQwE_oMR3WJW7xRC4yA8dJU7Ie1zbRZN57Yw-tpHj5VfROLu1GveQ0X2_YKGfFSjPCxupwGPeQZMCwlCIvxjC-yjlJ-OyM6_QSbkU5XWMU_n_Zte-2FDrlZsCiCOq_TRMdcjW0M5lxfhZM2AZCKWQ6O4lnsfGe4FGuubSdQLhfPVp_aTHyn9U",
-    period: "Jun 2023 - Dec 2023",
-    activeDuration: "6 months active",
-    totalDistance: "28,500 km",
-    fuelEfficiency: "14.8 km/L",
-    fuelEfficiencyLabel: "Optimal",
-    fuelEfficiencyColor: "text-emerald-500",
-    maintenanceCount: 5,
-    maintenanceIcon: "warning",
-    maintenanceColor: "text-red-500",
-    status: "Previous",
-  },
-];
+  const [driver, setDriver] = useState<DriverItem | null>(null);
+  const [currentRental, setCurrentRental] = useState<RentalTransaction | null>(null);
+  const [driverRentals, setDriverRentals] = useState<RentalTransaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-const DriverDetailPage = () => {
+  const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+  const buildUrl = (path: string) => path ? (path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`) : "";
+
+  useEffect(() => {
+    if (!driverId) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+
+    const fetchDriver = async () => {
+      try {
+        const res = await driverApi.getById(driverId);
+        const item = (res as any)?.data ?? (res as any);
+        if (item?.employee_id) {
+          setDriver(item);
+          return;
+        }
+      } catch {
+        // fallback
+      }
+
+      try {
+        const res = await driverApi.getDetail(driverId);
+        const item = (res as any)?.data ?? (res as any);
+        if (item?.employee_id) {
+          setDriver(item);
+        } else {
+          setDriver(null);
+        }
+      } catch {
+        setDriver(null);
+      }
+    };
+
+    const fetchRental = async () => {
+      try {
+        const res = await rentalApi.getList({ limit: 1000 });
+        const rentals = (res as any)?.data ?? [];
+        const driverRentalsList = rentals
+          .filter((r: RentalTransaction) => r.driver_id === driverId)
+          .sort((a: RentalTransaction, b: RentalTransaction) => new Date(b.created_at || b.start_date).getTime() - new Date(a.created_at || a.start_date).getTime());
+
+        setDriverRentals(driverRentalsList);
+
+        if (driverRentalsList.length > 0) {
+          setCurrentRental(driverRentalsList[0]);
+        }
+      } catch {
+        // rental not found
+      }
+    };
+
+    fetchDriver().then(fetchRental).finally(() => setIsLoading(false));
+  }, [driverId]);
+
+  const driverHeader: DriverHeaderData = driver ? {
+    name: `${driver.first_name || ""} ${driver.last_name || ""}`.trim() || "-",
+    imageUrl: buildUrl(driver.profile_photo || ""),
+    employeeId: driver.employee_id || "-",
+    totalTrips: 0,
+    joinedDate: driver.created_at
+      ? new Date(driver.created_at).toLocaleDateString("id-ID", { year: "numeric", month: "long" })
+      : "-",
+    status: "Active",
+  } : {
+    name: "-",
+    imageUrl: "",
+    employeeId: "-",
+    totalTrips: 0,
+    joinedDate: "-",
+    status: "Active",
+  };
+
   const [activeTab, setActiveTab] = useState<TabValue>("overview");
   const [filters, setFilters] = useState<FilterType>({
     search: "",
     status: "All Status",
   });
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-   // Filter vehicles based on search and status
-  const filteredVehicles = mockVehicles.filter((vehicle) => {
+  const vehicleHistoryList: VehicleHistory[] = driverRentals.map((r, index) => ({
+    name: r.vehicle ? `${r.vehicle.merk} ${r.vehicle.model}` : "-",
+    plateNumber: r.vehicle?.license_plate || "-",
+    imageUrl: "",
+    period: `${new Date(r.start_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })} - ${new Date(r.end_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })}`,
+    activeDuration: `${r.total_duration} days`,
+    totalDistance: "-",
+    fuelEfficiency: "-",
+    fuelEfficiencyLabel: "",
+    fuelEfficiencyColor: "text-slate-400",
+    maintenanceCount: 0,
+    maintenanceIcon: "build",
+    maintenanceColor: "text-slate-400",
+    status: index === 0 ? "Current" : "Previous",
+  }));
+
+  const filteredVehicles = vehicleHistoryList.filter((vehicle) => {
     const matchesSearch = filters.search === "" || 
       vehicle.name.toLowerCase().includes(filters.search.toLowerCase()) ||
       vehicle.plateNumber.toLowerCase().includes(filters.search.toLowerCase());
@@ -102,9 +141,7 @@ const DriverDetailPage = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Pagination
   const totalResults = filteredVehicles.length;
-  const totalPages = Math.ceil(totalResults / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentVehicles = filteredVehicles.slice(startIndex, endIndex);
@@ -114,20 +151,31 @@ const DriverDetailPage = () => {
     setCurrentPage(1);
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-   const handleExport = (options?: any) => {
+  const handleExport = (options?: any) => {
     if (!options) return;
-    console.log("Export options from driver detail:", options);
     alert(`Exporting vehicle history as ${options.format} with ${options.type} data`);
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-7 flex items-center justify-center min-h-[400px]">
+        <p className="text-slate-500">Loading driver details...</p>
+      </div>
+    );
+  }
+
+  if (!driver) {
+    return (
+      <div className="p-7 flex items-center justify-center min-h-[400px]">
+        <p className="text-slate-500">Driver not found</p>
+      </div>
+    );
+  }
 
   return (
     <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
     <div className="p-7">
-      <DriverHeader driver={mockDriver} />
+      <DriverHeader driver={driverHeader} />
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <DriverStatsCard
@@ -141,7 +189,7 @@ const DriverDetailPage = () => {
         />
         <DriverStatsCard
           title="Total Earnings"
-          value="$12,450.00"
+          value="Rp 12.450.000"
           icon="payments"
           iconBgColor="bg-blue-50 dark:bg-blue-900/20"
           iconColor="text-blue-500"
@@ -170,7 +218,7 @@ const DriverDetailPage = () => {
 
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {activeTab === "overview" && <DriverOverview />}
+      {activeTab === "overview" && <DriverOverview driver={driver} buildUrl={buildUrl} rental={currentRental} />}
 
       {activeTab === "vehicle-history" && (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
@@ -192,4 +240,4 @@ const DriverDetailPage = () => {
   );
 };
 
-export default DriverDetailPage;
+export default detailDriverPage;

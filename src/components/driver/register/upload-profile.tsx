@@ -60,6 +60,17 @@ export function DriverProfileUpload({
       alert(`File size exceeds ${maxSizeMB}MB limit`);
       return false;
     }
+    const accepted = acceptedFormats.flatMap((f) => {
+      const lower = f.toLowerCase();
+      if (lower === "jpg" || lower === "jpeg") return ["jpg", "jpeg"];
+      return [lower];
+    });
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    const mime = file.type.split("/")[1]?.toLowerCase() || "";
+    if (!accepted.includes(ext) && !accepted.includes(mime)) {
+      alert(`Invalid file format. Accepted: ${acceptedFormats.join(", ")}`);
+      return false;
+    }
     return true;
   };
 
@@ -156,7 +167,14 @@ export function DriverProfileUpload({
         </div>
         <input
           ref={fileInputRef}
-          accept=".jpg,.jpeg,.png"
+          accept={acceptedFormats
+            .flatMap((f) => {
+              const lower = f.toLowerCase();
+              if (lower === "jpg" || lower === "jpeg")
+                return [".jpg", ".jpeg"];
+              return [`.${lower}`];
+            })
+            .join(",")}
           className="hidden"
           type="file"
           onChange={handleFileSelect}

@@ -124,13 +124,13 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-[1px]">
-      <div className="bg-white rounded-xl p-5 sm:p-12 flex flex-col">
+    <div className="bg-white dark:bg-[#1a2632] rounded-xl p-[1px]">
+      <div className="bg-white dark:bg-[#1a2632] rounded-xl p-5 sm:p-12 flex flex-col">
         <div className="mb-4">
-          <h1 className="text-4xl font-black text-on-surface tracking-tighter leading-none mb-4 font-headline">
+          <h1 className="text-4xl font-black text-on-surface dark:text-white tracking-tighter leading-none mb-4 font-headline">
             Sign In
           </h1>
-          <p className="text-gray-700 text-base">
+          <p className="text-gray-700 dark:text-gray-400 text-base">
             Please sign in to manage your vehicle fleet.
           </p>
         </div>
@@ -170,7 +170,7 @@ const LoginPage = () => {
               </div>
             </label>
             <a
-              className="text-sm font-bold text-primary-container hover:text-primary transition-colors"
+              className="text-sm font-bold text-primary-container dark:text-blue-400 hover:text-primary dark:hover:text-blue-300 transition-colors"
               href="/auth/forgot"
             >
               Forgot Password?
@@ -216,7 +216,7 @@ const LoginPage = () => {
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.82c.88-2.6 3.31-4.53 6.17-4.53z" />
             </svg>
 
-            <span className="text-sm font-semibold text-on-surface">
+            <span className="text-sm font-semibold text-on-surface dark:text-white">
               Continue with Google
             </span>
           </div>

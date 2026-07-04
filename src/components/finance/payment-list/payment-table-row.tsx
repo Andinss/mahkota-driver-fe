@@ -5,6 +5,13 @@ import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 import Link from "next/link";
 import type { FinanceItem } from "@/lib/types/finances";
 
+const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+
+const photoUrl = (path?: string) =>
+  path
+    ? path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`
+    : "";
+
 interface PaymentTableRowProps {
   payment: FinanceItem;
   onValidate?: (payment: FinanceItem) => void;
@@ -14,15 +21,13 @@ interface PaymentTableRowProps {
   onDelete?: (payment: FinanceItem) => void;
 }
 
-const formatCurrency = (value: string) => {
-  const num = parseFloat(value.replace(/[^\d.]/g, ""));
-  if (isNaN(num)) return "Rp 0";
+const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(num);
+  }).format(value);
 };
 
 const formatDate = (dateStr: string) => {
@@ -34,6 +39,18 @@ const formatDate = (dateStr: string) => {
     day: "numeric",
     year: "numeric",
   });
+};
+
+const typeLabel: Record<string, string> = {
+  manual: "Manual",
+  rental: "Rental",
+  late_payment: "Late Payment",
+};
+
+const typeVariant: Record<string, "success" | "info" | "warning" | "neutral"> = {
+  manual: "neutral",
+  rental: "success",
+  late_payment: "warning",
 };
 
 const methodLabel: Record<string, string> = {
@@ -50,7 +67,10 @@ export const PaymentTableRow = ({
   onEdit,
   onDelete,
 }: PaymentTableRowProps) => {
-  const isActive = payment.is_active;
+  const driverName = payment.driver
+    ? `${payment.driver.first_name} ${payment.driver.last_name}`
+    : payment.payer;
+  const avatarUrl = photoUrl(payment.driver?.profile_photo) || "";
 
   return (
     <tr
@@ -62,12 +82,19 @@ export const PaymentTableRow = ({
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0 flex items-center justify-center bg-slate-300 dark:bg-slate-600 text-xs font-medium">
-            {payment.payer.charAt(0).toUpperCase()}
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={driverName} className="w-full h-full rounded-full object-cover" />
+            ) : (
+              driverName.charAt(0).toUpperCase()
+            )}
           </div>
           <div>
             <p className="font-semibold text-slate-900 dark:text-white">
-              {payment.payer}
+              {driverName}
             </p>
+            {payment.driver?.employee_id && (
+              <p className="text-xs text-slate-400">{payment.driver.employee_id}</p>
+            )}
           </div>
         </div>
       </td>
@@ -82,10 +109,10 @@ export const PaymentTableRow = ({
 
       <td className="px-6 py-4">
         <Badge
-          variant={isActive ? "success" : "neutral"}
+          variant={typeVariant[payment.finance_type] || "neutral"}
           dot
         >
-          {isActive ? "Active" : "Inactive"}
+          {typeLabel[payment.finance_type] || payment.finance_type}
         </Badge>
       </td>
 

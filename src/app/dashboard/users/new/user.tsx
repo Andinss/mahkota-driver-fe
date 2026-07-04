@@ -18,9 +18,10 @@ export default function AddNewUserPage() {
   const userIdParam = searchParams.get("id");
   const { user } = useAuth();
 
-  const [mode, setMode] = useState<"add" | "edit">("add");
+  const [mode, setMode] = useState<"add" | "edit">(userIdParam ? "edit" : "add");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialData, setInitialData] = useState<UserFormData | undefined>();
+  const [isLoadingUser, setIsLoadingUser] = useState(!!userIdParam);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingData, setPendingData] = useState<UserFormData | null>(null);
@@ -41,20 +42,25 @@ export default function AddNewUserPage() {
   useEffect(() => {
     if (userIdParam) {
       setMode("edit");
+      setIsLoadingUser(true);
       usersApi
         .getById(userIdParam)
-        .then((res) => {
-          const u = res.data;
-          setInitialData({
-            username: u.username,
-            fullname: u.fullname,
-            email: u.email,
-            role: u.role_id || "",
-            isActive: u.is_active,
-          });
+        .then((res: any) => {
+          const u = res?.data ?? res;
+          if (u?.username || u?.email) {
+            setInitialData({
+              username: u.username || "",
+              fullname: u.fullname || "",
+              email: u.email || "",
+              role: u.role_id || "",
+              isActive: u.is_active !== undefined ? u.is_active : true,
+            });
+          }
+          setIsLoadingUser(false);
         })
         .catch(() => {
           setMode("add");
+          setIsLoadingUser(false);
         });
     } else {
       setMode("add");
@@ -111,10 +117,21 @@ export default function AddNewUserPage() {
     console.log("Save draft:", initialData);
   };
 
+  if (isLoadingUser) {
+    return (
+      <PermissionGuard permission="user.create">
+      <div className="p-8 flex items-center justify-center min-h-[400px]">
+        <p className="text-slate-500 dark:text-slate-400">Loading user data...</p>
+      </div>
+      </PermissionGuard>
+    );
+  }
+
   return (
     <PermissionGuard permission="user.create">
     <div className="p-8">
       <AddUserForm
+        key={mode === "edit" ? userIdParam : "add"}
         mode={mode}
         initialData={initialData}
         roles={filteredRoles}

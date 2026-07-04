@@ -31,8 +31,14 @@
   background: #cbd5e1;
   border-radius: 4px;
 }
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }
 .material-symbols-outlined {
   font-variation-settings:
@@ -88,9 +94,15 @@
 .editorial-gradient {
   background: linear-gradient(135deg, #004ac6 0%, #2563eb 100%);
 }
+.dark .editorial-gradient {
+  background: linear-gradient(135deg, #1a56db 0%, #3b82f6 100%);
+}
 .frosted-glass {
   backdrop-filter: blur(20px);
   background-color: rgba(255, 255, 255, 0.6);
+}
+.dark .frosted-glass {
+  background-color: rgba(26, 38, 50, 0.8);
 }
 
 @keyframes fadeIn {

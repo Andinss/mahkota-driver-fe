@@ -164,10 +164,9 @@ const NewRentPage = () => {
   useEffect(() => {
     if (idParam) {
       setMode("edit");
-      rentalApi.getList({ search: idParam, limit: 1 }).then((res) => {
-        const items = Array.isArray(res.data) ? res.data : [];
-        const rental = items.find((r) => r.id === idParam);
-        if (!rental) { setMode("add"); return; }
+      rentalApi.getById(idParam).then((res) => {
+        const rental = (res as any)?.data ?? (res as any);
+        if (!rental?.id) { setMode("add"); return; }
         setRentalData({
           rentalId: rental.id,
           vehicleId: rental.vehicle_id,

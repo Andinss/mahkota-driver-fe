@@ -70,7 +70,7 @@ const Topbar = () => {
     <header className="h-16 flex items-center justify-between border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shrink-0 z-10">
       <button
         onClick={handleToggleSidebar}
-        className="md:hidden mr-4 p-2 -ml-2 text-slate-500 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+        className="mr-4 p-2 -ml-2 text-slate-500 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
       >
         <span className="material-symbols-outlined">menu</span>
       </button>
@@ -81,7 +81,7 @@ const Topbar = () => {
           <>
             {breadcrumbs.map((crumb, index) => (
               <div key={index} className="flex items-center gap-2">
-                <span className="text-slate-300">/</span>
+                <span className="text-slate-300 dark:text-slate-600">/</span>
                 {crumb.isLast ? (
                   <span className="text-slate-900 dark:text-white font-medium">
                     {crumb.label}

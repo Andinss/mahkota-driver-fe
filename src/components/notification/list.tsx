@@ -43,7 +43,7 @@ const ListNotification = ({ activeFilter }: ListNotificationProps) => {
       type: "received" as const,
       title: "Payment Received: ID #9928",
       description:
-        "Institutional payment of $4,500.00 confirmed for Fleet Group Alpha. Transaction ledger synchronized.",
+        "Institutional payment of Rp 67.500.000 confirmed for Fleet Group Alpha. Transaction ledger synchronized.",
       timestamp: "2 days ago",
       filterKey: "payment",
     },
@@ -62,7 +62,7 @@ const ListNotification = ({ activeFilter }: ListNotificationProps) => {
             notifications_off
           </span>
         </div>
-        <h3 className="text-2xl font-bold text-gray-900">No notifications</h3>
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">No notifications</h3>
         <p className="text-gray-600 mt-2">
           No notifications found for this category.
         </p>

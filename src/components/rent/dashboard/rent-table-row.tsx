@@ -24,12 +24,34 @@ interface Rental {
   paymentStatus: string;
 }
 
+const paymentStatusLabels: Record<string, string> = {
+  paid: "Paid",
+  late: "Late",
+  pending_confirmation: "Pending Confirmation",
+  partial: "Partial",
+  unpaid: "Unpaid",
+};
+
+const allowedTransitions: Record<string, string[]> = {
+  unpaid: ["paid", "late", "pending_confirmation", "partial"],
+  late: ["paid", "pending_confirmation"],
+  pending_confirmation: ["paid", "late", "unpaid"],
+  partial: ["paid"],
+  paid: [],
+};
+
+const getStatusOptions = (currentStatus: string) =>
+  Object.entries(paymentStatusLabels)
+    .filter(([value]) => allowedTransitions[currentStatus]?.includes(value))
+    .map(([value, label]) => ({ value, label }));
+
 interface RentalTableRowProps {
   rental: Rental;
   onEdit?: (rental: Rental) => void;
   onDelete?: (rental: Rental) => void;
   onDetails?: (rental: Rental) => void;
   onEndRental?: (rental: Rental) => void;
+  onStatusChange?: (rental: Rental, status: string) => void;
 }
 
 export const RentalTableRow = ({
@@ -38,6 +60,7 @@ export const RentalTableRow = ({
   onDelete,
   onDetails,
   onEndRental,
+  onStatusChange,
 }: RentalTableRowProps) => {
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
@@ -67,7 +90,7 @@ export const RentalTableRow = ({
               {rental.driver.name}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              ID: {rental.driver.id}
+              {rental.driver.id}
             </p>
           </div>
         </div>
@@ -75,11 +98,11 @@ export const RentalTableRow = ({
 
       {/* Vehicle Info */}
       <td className="px-6 py-4">
-        <p className="font-medium text-slate-900 dark:text-white">
-          {rental.vehicle.name}
-        </p>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           {rental.vehicle.id}
+        </p>
+        <p className="font-medium text-slate-900 dark:text-white">
+          {rental.vehicle.name}
         </p>
       </td>
 
@@ -119,13 +142,13 @@ export const RentalTableRow = ({
                 ? "warning"
                 : rental.paymentStatus === "late"
                   ? "danger"
-                  : rental.paymentStatus === "unpaid"
-                    ? "neutral"
+                  : rental.paymentStatus === "pending_confirmation"
+                    ? "info"
                     : "neutral"
           }
           dot
         >
-          {rental.paymentStatus}
+          {paymentStatusLabels[rental.paymentStatus] || rental.paymentStatus}
         </Badge>
       </td>
 
@@ -154,6 +177,18 @@ export const RentalTableRow = ({
           <Link href={`/dashboard/rent/detail/?id=${rental.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
+
+          <div className="border-t border-slate-200 dark:border-slate-700 my-1"></div>
+
+          {getStatusOptions(rental.paymentStatus).map((opt) => (
+            <DropdownMenuItem
+              key={opt.value}
+              icon={opt.value === "paid" ? "check_circle" : opt.value === "late" ? "warning" : opt.value === "pending_confirmation" ? "hourglass_empty" : opt.value === "partial" ? "payments" : "cancel"}
+              onClick={() => onStatusChange?.(rental, opt.value)}
+            >
+              Set {opt.label}
+            </DropdownMenuItem>
+          ))}
         </Dropdown>
       </td>
     </tr>

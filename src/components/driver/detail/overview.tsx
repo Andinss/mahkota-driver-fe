@@ -1,47 +1,25 @@
-import { IconButton } from "@/components/ui/icon-button";
+import type { DriverItem } from "@/lib/types/driver";
+import type { RentalTransaction } from "@/lib/types/rentals";
 
-export interface DriverOverviewProps {
-  name?: string;
-  employeeId?: string;
-  totalTrips?: number;
-  joinedDate?: string;
-  status?: string;
+interface OverviewDocument {
+  name: string;
+  icon: string;
+  iconColor: string;
+  url: string;
 }
 
-export function DriverOverview(_props: DriverOverviewProps) {
-  const rentalHistory = [
-    {
-      date: "May 24, 2024",
-      vehicle: "Toyota Camry (B 1234 ABC)",
-      vehicleIcon: "local_taxi",
-      route: "Jakarta → Bandung",
-      earnings: "$120.00",
-    },
-    {
-      date: "May 22, 2024",
-      vehicle: "Hiace Luxury (B 7788 XYZ)",
-      vehicleIcon: "airport_shuttle",
-      route: "Airport Transfer",
-      earnings: "$85.00",
-    },
-  ];
+interface DriverOverviewProps {
+  driver: DriverItem;
+  buildUrl: (path: string) => string;
+  rental?: RentalTransaction | null;
+}
 
-  const documents = [
-    {
-      name: "Driver License",
-      type: "PDF",
-      size: "2.4 MB",
-      icon: "description",
-      iconColor: "text-red-500",
-    },
-    {
-      name: "Health Certificate",
-      type: "PDF",
-      size: "1.1 MB",
-      icon: "description",
-      iconColor: "text-blue-500",
-    },
-  ];
+export function DriverOverview({ driver, buildUrl, rental }: DriverOverviewProps) {
+  const documents: OverviewDocument[] = [];
+  if (driver.national_id_card) documents.push({ name: "National ID Card (KTP)", icon: "badge", iconColor: "text-red-500", url: buildUrl(driver.national_id_card) });
+  if (driver.sim_card) documents.push({ name: "Driver License (SIM)", icon: "credit_card", iconColor: "text-blue-500", url: buildUrl(driver.sim_card) });
+  if (driver.garage_photo) documents.push({ name: "Garage Photo", icon: "garage", iconColor: "text-green-500", url: buildUrl(driver.garage_photo) });
+  if (driver.npwp_photo) documents.push({ name: "NPWP Photo", icon: "description", iconColor: "text-amber-500", url: buildUrl(driver.npwp_photo) });
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -61,25 +39,39 @@ export function DriverOverview(_props: DriverOverviewProps) {
               <div className="flex justify-between">
                 <span className="text-sm text-slate-500">Date of Birth</span>
                 <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                  May 14, 1988
+                  {driver.date_of_birth
+                    ? new Date(driver.date_of_birth).toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })
+                    : "-"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-slate-500">Gender</span>
                 <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                  Male
+                  {driver.gender || "-"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-slate-500">Identity ID</span>
+                <span className="text-sm text-slate-500">Employee ID</span>
                 <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                  3204910405880003
+                  {driver.employee_id || "-"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-slate-500">License Class</span>
-                <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded text-[10px] font-bold uppercase">
-                  Class A
+                <span className="text-sm text-slate-500">House Type</span>
+                <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                  {driver.house_type || "-"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-slate-500">Ready Sign Contract</span>
+                <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                  {driver.ready_sign_contract ? "Yes" : "No"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-slate-500">Willing to be Surveyed</span>
+                <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                  {driver.willing_to_be_survey ? "Yes" : "No"}
                 </span>
               </div>
             </div>
@@ -105,7 +97,7 @@ export function DriverOverview(_props: DriverOverviewProps) {
                     Phone Number
                   </p>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                    +62 812-3456-7890
+                    {driver.phone || "-"}
                   </p>
                 </div>
               </div>
@@ -120,7 +112,37 @@ export function DriverOverview(_props: DriverOverviewProps) {
                     Email Address
                   </p>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                    marcus.wright@email.com
+                    {driver.email || "-"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-slate-500 text-[20px]">
+                    contact_emergency
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase">
+                    Emergency Contact
+                  </p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                    {driver.emergency_contact || "-"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-slate-500 text-[20px]">
+                    contact_emergency
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase">
+                    Emergency Email
+                  </p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                    {driver.emergency_email || "-"}
                   </p>
                 </div>
               </div>
@@ -135,66 +157,11 @@ export function DriverOverview(_props: DriverOverviewProps) {
                     Home Address
                   </p>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                    Jl. Merdeka No. 42, Jakarta Pusat
+                    {driver.permanent_address || "-"}
                   </p>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Rental Transaction History */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-            <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">
-                history
-              </span>
-              Rental Transaction History
-            </h3>
-            <button className="text-sm font-bold text-primary hover:underline">
-              View All
-            </button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/50 text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">
-                  <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4">Vehicle</th>
-                  <th className="px-6 py-4">Route</th>
-                  <th className="px-6 py-4">Earnings</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {rentalHistory.map((item, index) => (
-                  <tr
-                    key={index}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors"
-                  >
-                    <td className="px-6 py-4 text-sm font-medium">
-                      {item.date}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                          <span className="material-symbols-outlined text-[18px]">
-                            {item.vehicleIcon}
-                          </span>
-                        </div>
-                        <span className="text-sm">{item.vehicle}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">
-                      {item.route}
-                    </td>
-                    <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
-                      {item.earnings}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </div>
       </div>
@@ -209,43 +176,33 @@ export function DriverOverview(_props: DriverOverviewProps) {
             </span>
             Assigned Vehicle
           </h3>
-          <div className="relative rounded-xl overflow-hidden mb-4 aspect-video bg-slate-100 dark:bg-slate-800">
-            <img
-              alt="Assigned Vehicle"
-              className="w-full h-full object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCc9FSWkfM3spshnei9tUEoPe6HLeukSzhvhA3FzIwqC0QcA4IWzHDDWfgHeC1Dd7LEQmKfC71RVrq6iE8St-GS4AlQwE_oMR3WJW7xRC4yA8dJU7Ie1zbRZN57Yw-tpHj5VfROLu1GveQ0X2_YKGfFSjPCxupwGPeQZMCwlCIvxjC-yjlJ-OyM6_QSbkU5XWMU_n_Zte-2FDrlZsCiCOq_TRMdcjW0M5lxfhZM2AZCKWQ6O4lnsfGe4FGuubSdQLhfPVp_aTHyn9U"
-            />
-            <div className="absolute top-2 right-2 px-2 py-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded text-[10px] font-bold shadow-sm">
-              B 1234 ABC
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
-                Toyota Camry Hybrid 2023
-              </p>
-              <p className="text-xs text-slate-500">
-                Luxury Sedan • Silver Metallic
-              </p>
-            </div>
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500">Last Maintenance</span>
-                <span className="font-semibold">April 12, 2024</span>
+          {rental?.vehicle ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary text-2xl">directions_car</span>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{rental.vehicle.merk} {rental.vehicle.model}</p>
+                  <p className="text-xs text-slate-500">{rental.vehicle.license_plate}</p>
+                </div>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500">Fuel Level</span>
-                <span className="font-semibold text-emerald-500">85%</span>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Rental Period</span>
+                <span className="font-semibold text-slate-900 dark:text-white">
+                  {new Date(rental.start_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })} - {new Date(rental.end_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })}
+                </span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500">Odometer</span>
-                <span className="font-semibold">12,450 km</span>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Rental Number</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{rental.rental_number}</span>
               </div>
             </div>
-            <button className="w-full mt-2 py-2.5 text-sm font-bold text-primary bg-primary/5 hover:bg-primary/10 rounded-xl transition-colors">
-              View Vehicle Details
-            </button>
-          </div>
+          ) : (
+            <div className="flex items-center justify-center h-32 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+              <p className="text-sm text-slate-400">No vehicle assigned</p>
+            </div>
+          )}
         </div>
 
         {/* Driver's Document List */}
@@ -257,25 +214,29 @@ export function DriverOverview(_props: DriverOverviewProps) {
             Driver&apos;s Document List
           </h3>
           <div className="space-y-3">
-            {documents.map((doc, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800"
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`material-symbols-outlined ${doc.iconColor}`}>
-                    {doc.icon}
-                  </span>
-                  <div className="text-sm">
-                    <p className="font-semibold">{doc.name}</p>
-                    <p className="text-xs text-slate-500">
-                      {doc.type} • {doc.size}
-                    </p>
+            {documents.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-4">No documents uploaded</p>
+            ) : (
+              documents.map((doc, index) => (
+                <a
+                  key={index}
+                  href={doc.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`material-symbols-outlined ${doc.iconColor}`}>
+                      {doc.icon}
+                    </span>
+                    <div className="text-sm">
+                      <p className="font-semibold">{doc.name}</p>
+                    </div>
                   </div>
-                </div>
-                <IconButton name="download" />
-              </div>
-            ))}
+                  <span className="material-symbols-outlined text-slate-400 text-lg">open_in_new</span>
+                </a>
+              ))
+            )}
           </div>
         </div>
       </div>

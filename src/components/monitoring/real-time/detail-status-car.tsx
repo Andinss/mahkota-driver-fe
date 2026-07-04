@@ -1,12 +1,16 @@
 "use client";
 import { useState } from "react";
+import type { FleetVehicle } from "./monitoring-map";
 
 interface DetailStatusCardProps {
   onClose?: () => void;
+  vehicle?: FleetVehicle | null;
 }
 
-const DetailStatusCard = ({ onClose }: DetailStatusCardProps) => {
+const DetailStatusCard = ({ onClose, vehicle }: DetailStatusCardProps) => {
   const [isOpen, setIsOpen] = useState(true);
+
+  if (!vehicle) return null;
 
   const handleClose = () => {
     setIsOpen(false);
@@ -15,17 +19,12 @@ const DetailStatusCard = ({ onClose }: DetailStatusCardProps) => {
 
   if (!isOpen) return null;
 
+  const statusColor = vehicle.status === "emergency" ? "red" : vehicle.status === "moving" ? "blue" : "gray";
+  const statusLabel = vehicle.status === "emergency" ? "Emergency" : vehicle.status === "moving" ? "Moving" : "Idle";
+
   return (
     <div className="absolute top-4 right-4 bottom-auto w-80 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 z-30 flex flex-col overflow-hidden">
       <div className="relative h-36 bg-slate-200 dark:bg-slate-700">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          data-alt="Vehicle photo for B 1234 KKY"
-          style={{
-            backgroundImage:
-              'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAE1ma1HuIqhziMDl5-boBMzO_s86g4Xqdmeqf42oUQGgibCUSbwRPKdyV9EEkyx_xzCa-K0UaAUwPpvow0wPpq52zxW77Qgm44-lnmc_UZONyLZtIYxSj_jvV1FceVMT_cl-2lMOoOcEBdY-dPuDRfxzSArSSkpJdkPqvvF2Cgy_6nI0eGu71kz264wpd6W3hR2YuMTRlaYCJo0okPstoCKftcxRjGBlycro5i39WuNaKlFNYD90kJSflAKAS5SNCAhK3yeUNcZNw9")',
-          }}
-        ></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
         <div className="absolute top-3 right-3">
           <button
@@ -37,37 +36,38 @@ const DetailStatusCard = ({ onClose }: DetailStatusCardProps) => {
         </div>
         <div className="absolute bottom-3 left-4 text-white w-full pr-8">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-bold">B 1234 KKY</h3>
-            <span className="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide border border-red-400">
-              Emergency
+            <h3 className="text-lg font-bold">{vehicle.plate}</h3>
+            <span className={`${
+              statusColor === "red" ? "bg-red-600" : statusColor === "blue" ? "bg-blue-600" : "bg-gray-500"
+            } text-white text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide`}>
+              {statusLabel}
             </span>
           </div>
           <p className="text-xs opacity-90 font-medium">
-            Updated: <span className="text-green-400">Just now</span>
+            Updated: <span className="text-green-400">{vehicle.lastUpdated || "Just now"}</span>
           </p>
         </div>
       </div>
       <div className="p-4 space-y-4">
         <div className="flex items-center gap-3">
-          <div
-            className="size-11 rounded-full bg-slate-100 dark:bg-slate-600 bg-cover bg-center ring-2 ring-white dark:ring-slate-700 shadow-sm"
-            data-alt="Driver Budi Santoso Avatar"
-            style={{
-              backgroundImage:
-                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuD_2aHU3kAo-K9_5k_3pymhquhqw_vpD457mf4Xo7b2IIIDzEHutSC0zW-ftTtd0Ex-EZ4tKuViedpSIxBMyEyhuf8kvRv9ValMkECP9E0CXFwfVrPrUz49rGwK917jxY_9ypGp9R6w2HGTI-wtyk5ZfoYOrmUU6b6CLzmAnU0sZdcrTgCPUCkplvmKpubfI_poYQ2OVJaogs6z67BW-rM6eR8ZwdGuN5nhUungbsNNlAP_bwnuc24G7MmvaNb-qrs2banlKes45KKj")',
-            }}
-          ></div>
+          <div className="size-11 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-300 font-bold text-lg ring-2 ring-white dark:ring-slate-700 shadow-sm">
+            {vehicle.driverName.charAt(0).toUpperCase()}
+          </div>
           <div>
             <p className="text-sm font-bold text-slate-900 dark:text-white">
-              Budi Santoso
+              {vehicle.driverName}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              +62 812 3456 7890
-            </p>
+            {vehicle.driverPhone && (
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {vehicle.driverPhone}
+              </p>
+            )}
           </div>
-          <button className="ml-auto size-9 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors ring-1 ring-green-100 dark:ring-green-900/30">
-            <span className="material-symbols-outlined text-xl">call</span>
-          </button>
+          {vehicle.driverPhone && (
+            <button className="ml-auto size-9 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors ring-1 ring-green-100 dark:ring-green-900/30">
+              <span className="material-symbols-outlined text-xl">call</span>
+            </button>
+          )}
         </div>
         <div className="h-px bg-slate-100 dark:bg-slate-700"></div>
         <div className="grid grid-cols-2 gap-4">
@@ -79,7 +79,7 @@ const DetailStatusCard = ({ onClose }: DetailStatusCardProps) => {
               <span className="material-symbols-outlined text-slate-400 text-base">
                 speed
               </span>
-              0 km/h
+              {vehicle.speed !== undefined ? `${vehicle.speed} km/h` : "N/A"}
             </p>
           </div>
           <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
@@ -90,34 +90,37 @@ const DetailStatusCard = ({ onClose }: DetailStatusCardProps) => {
               <span className="material-symbols-outlined text-slate-400 text-base">
                 local_gas_station
               </span>
-              45%
+              {vehicle.fuelLevel !== undefined ? `${vehicle.fuelLevel}%` : "N/A"}
             </p>
           </div>
           <div className="col-span-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-              Current Location
+              Status
             </p>
-            <p className="text-sm font-medium leading-snug text-slate-800 dark:text-slate-200">
-              Jl. Jend. Sudirman No. 12, Jakarta Pusat, DKI Jakarta
+            <p className="text-sm font-medium leading-snug text-slate-800 dark:text-slate-200 capitalize">
+              {vehicle.status === "emergency" ? "Geofence Violation - Emergency" : 
+               vehicle.status === "moving" ? `Moving at ${vehicle.speed} km/h` : 
+               "Parked / Idle"}
             </p>
           </div>
         </div>
-        <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/30 animate-pulse-slow">
-          <div className="flex items-start gap-2">
-            <span className="material-symbols-outlined text-red-500 mt-0.5 text-lg">
-              warning
-            </span>
-            <div>
-              <p className="text-xs font-bold text-red-700 dark:text-red-400">
-                Geofence Violation Alert
-              </p>
-              <p className="text-[11px] text-red-600 dark:text-red-300/80 leading-relaxed mt-1">
-                Vehicle has exited the designated "Central Zone" without
-                authorization.
-              </p>
+        {vehicle.status === "emergency" && (
+          <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/30 animate-pulse-slow">
+            <div className="flex items-start gap-2">
+              <span className="material-symbols-outlined text-red-500 mt-0.5 text-lg">
+                warning
+              </span>
+              <div>
+                <p className="text-xs font-bold text-red-700 dark:text-red-400">
+                  Geofence Violation Alert
+                </p>
+                <p className="text-[11px] text-red-600 dark:text-red-300/80 leading-relaxed mt-1">
+                  Vehicle has exited the designated zone without authorization.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
         <div className="grid grid-cols-2 gap-3 pt-2">
           <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 transition-colors">
             History

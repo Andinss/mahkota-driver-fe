@@ -14,6 +14,11 @@ export interface UserItem {
   updated_at?: string;
 }
 
+export interface UserSummary {
+  total_users: number;
+  active_users: number;
+}
+
 export interface CreateUserPayload {
   username: string;
   fullname: string;

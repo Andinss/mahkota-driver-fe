@@ -25,8 +25,8 @@ const methodIcon: Record<string, string> = {
   "e-wallet": "account_balance_wallet",
 };
 
-const formatCurrency = (value: string) => {
-  const num = parseFloat(value.replace(/[^\d.]/g, ""));
+const formatCurrency = (value: string | number) => {
+  const num = typeof value === "string" ? parseFloat(value.replace(/[^\d.]/g, "")) : value;
   if (isNaN(num)) return "Rp 0";
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -65,7 +65,7 @@ const Summary = ({
 
    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const parsedAmount = parseFloat(amount.replace(/[^\d.]/g, "")) || 0;
+  const parsedAmount = typeof amount === "string" ? (parseFloat(amount.replace(/[^\d.]/g, "")) || 0) : (amount || 0);
   const newBalance = currentBalance + parsedAmount;
 
   const buttonText = isSubmitting
@@ -203,9 +203,9 @@ const Summary = ({
               <p className="text-xs text-[#617589] dark:text-gray-400 mt-0.5">
                 Cash • Ref: 9921
               </p>
-              <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-1">
-                +$50.00
-              </p>
+                  <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-1">
+                    +Rp 50.000
+                  </p>
             </div>
           </div>
 
@@ -223,9 +223,9 @@ const Summary = ({
               <p className="text-xs text-[#617589] dark:text-gray-400 mt-0.5">
                 System Auto-debit
               </p>
-              <p className="text-sm font-bold text-[#111418] dark:text-white mt-1">
-                -$250.00
-              </p>
+                <p className="text-sm font-bold text-[#111418] dark:text-white mt-1">
+                  -Rp 250.000
+                </p>
             </div>
           </div>
         </div>

@@ -106,13 +106,13 @@ const SetPasswordPage = ({ token }: SetPasswordPageProps) => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-[1px]">
-      <div className="bg-white rounded-xl p-6 sm:p-12 flex flex-col">
-        <div className="flex items-center gap-2 mb-1 text-primary"></div>
-        <h1 className="text-[2rem] font-bold leading-tight tracking-tight text-on-surface mb-2">
+    <div className="bg-white dark:bg-[#1a2632] rounded-xl p-[1px]">
+      <div className="bg-white dark:bg-[#1a2632] rounded-xl p-6 sm:p-12 flex flex-col">
+        <div className="flex items-center gap-2 mb-1 text-primary dark:text-blue-400"></div>
+        <h1 className="text-[2rem] font-bold leading-tight tracking-tight text-on-surface dark:text-white mb-2">
           Set Your Password
         </h1>
-        <p className="text-on-surface-variant font-body leading-relaxed opacity-80">
+        <p className="text-on-surface-variant dark:text-gray-400 font-body leading-relaxed opacity-80">
           Create a password for your account to get started.
         </p>
         <form className="flex flex-col gap-4 mt-2" onSubmit={handleSubmit}>

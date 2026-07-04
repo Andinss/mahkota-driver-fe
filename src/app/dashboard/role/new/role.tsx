@@ -129,11 +129,14 @@ const RoleFormPage = () => {
 
     try {
       const code = formValues.roleName.toLowerCase().replace(/\s+/g, "_");
-      const payload = {
+      const payload: Record<string, any> = {
         name: formValues.roleName,
-        code,
         description: formValues.roleDescription || undefined,
       };
+
+      if (mode === "add") {
+        payload.code = code;
+      }
 
       if (mode === "edit" && roleIdParam) {
         await rolesApi.update(roleIdParam, payload);
@@ -195,22 +198,22 @@ const RoleFormPage = () => {
         </div>
       </div>
 
-      <div className="mt-12 mb-8 flex items-center justify-between p-6 bg-white border border-gray-200 rounded-xl shadow-lg sticky bottom-8 z-10">
+      <div className="mt-12 mb-8 flex items-center justify-between p-6 bg-white dark:bg-[#1a2632] border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg sticky bottom-8 z-10">
         <div className="hidden sm:block">
-          <p className="text-xs text-gray-500">Last saved: {lastSaved}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Last saved: {lastSaved}</p>
         </div>
         <div className="flex items-center gap-4 w-full sm:w-auto">
           <button 
             onClick={handleCancel}
             disabled={isSubmitting}
-            className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg border border-gray-300 font-semibold text-gray-700 hover:bg-gray-50 transition-colors active:opacity-80 disabled:opacity-50"
+            className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors active:opacity-80 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSaveClick}
             disabled={isSubmitting || (hasSubmitted && !formValues.roleName.trim())}
-            className="flex-1 sm:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20 hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:bg-gray-400 flex items-center gap-2"
+            className="flex-1 sm:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20 hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:bg-gray-400 dark:disabled:bg-gray-600 flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-sm">
               {mode === "add" ? "add" : "save"}
