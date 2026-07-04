@@ -18,7 +18,7 @@ export function AuditPagination({
 
   const getPageNumbers = () => {
     const pages = [];
-    const maxVisible = 5;
+    const maxVisible = 3;
 
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) {
@@ -41,6 +41,7 @@ export function AuditPagination({
       }
       pages.push(totalPages);
     }
+
     return pages;
   };
 
@@ -48,52 +49,61 @@ export function AuditPagination({
   const isNextDisabled = currentPage === totalPages;
 
   return (
-    <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 flex flex-col md:flex-row gap-4 items-center justify-between">
-      <p className="text-sm text-slate-500">
-        Showing <span className="font-medium text-slate-900 dark:text-white">{startResult}</span> to{" "}
-        <span className="font-medium text-slate-900 dark:text-white">{endResult}</span> of{" "}
-        <span className="font-medium text-slate-900 dark:text-white">{totalResults.toLocaleString()}</span> results
+    <div className="p-6 bg-slate-50 dark:bg-slate-800/50 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+        Showing{" "}
+        <span className="font-bold text-slate-900 dark:text-white">
+          {startResult}
+        </span>{" "}
+        to{" "}
+        <span className="font-bold text-slate-900 dark:text-white">
+          {endResult}
+        </span>{" "}
+        of{" "}
+        <span className="font-bold text-slate-900 dark:text-white">
+          {totalResults}
+        </span>{" "}
+        results
       </p>
       <div className="flex items-center gap-2">
         <button
-          className={`px-3 py-1.5 border rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
+          className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
             isPreviousDisabled
-              ? "border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed"
-              : "border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800"
+              ? "text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-not-allowed"
+              : "text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer"
           }`}
           disabled={isPreviousDisabled}
           onClick={() => onPageChange(currentPage - 1)}
         >
           Previous
         </button>
-        
-        <div className="flex items-center gap-1">
-          {getPageNumbers().map((page, index) =>
-            typeof page === "number" ? (
-              <button
-                key={index}
-                className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                  page === currentPage
-                    ? "bg-primary text-white"
-                    : "hover:bg-slate-200 dark:hover:bg-slate-800"
-                }`}
-                onClick={() => onPageChange(page)}
-              >
-                {page}
-              </button>
-            ) : (
-              <span key={index} className="px-1 text-slate-400">
-                {page}
-              </span>
-            )
-          )}
-        </div>
-        
+
+        {getPageNumbers().map((page, index) =>
+          typeof page === "number" ? (
+            <button
+              key={index}
+              className={`w-10 h-10 flex items-center justify-center text-sm font-bold rounded-lg transition-all ${
+                page === currentPage
+                  ? "bg-primary text-white cursor-default"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:border-slate-200 dark:hover:border-slate-600 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 cursor-pointer"
+              }`}
+              onClick={() => onPageChange(page)}
+              disabled={page === currentPage}
+            >
+              {page}
+            </button>
+          ) : (
+            <span key={index} className="px-2 text-slate-400">
+              {page}
+            </span>
+          ),
+        )}
+
         <button
-          className={`px-3 py-1.5 border rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
+          className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
             isNextDisabled
-              ? "border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed"
-              : "border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800"
+              ? "text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-not-allowed"
+              : "text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer"
           }`}
           disabled={isNextDisabled}
           onClick={() => onPageChange(currentPage + 1)}

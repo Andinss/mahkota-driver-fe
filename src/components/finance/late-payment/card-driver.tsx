@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 interface CardDriverProps {
   id: string;
   name: string;
@@ -21,6 +23,9 @@ export function CardDriver({
   isSelected = false,
   onClick,
 }: CardDriverProps) {
+  const [imgError, setImgError] = useState(false);
+  const showImg = imageUrl && !imgError;
+
   return (
     <div
       className={`cursor-pointer p-4 rounded-xl bg-white dark:bg-slate-900 transition-all shadow-sm ${
@@ -32,11 +37,18 @@ export function CardDriver({
     >
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-3">
-          <img
-            alt={name}
-            className="size-10 rounded-full object-cover"
-            src={imageUrl}
-          />
+          {showImg ? (
+            <img
+              alt={name}
+              className="size-10 rounded-full object-cover"
+              src={imageUrl}
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+              {name.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">{name}</h3>
             <p className="text-[11px] text-slate-500">ID: {id}</p>

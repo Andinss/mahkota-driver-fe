@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import DetailInfo from "@/components/finance/detail-finance/detail-info";
-import FinanceSummary from "@/components/finance/detail-finance/finance-summry";
+import FinanceSummary from "@/components/finance/detail-finance/finance-summary";
 import FlowFinance from "@/components/finance/detail-finance/flow";
 import RecordCard from "@/components/finance/detail-finance/record";
 import { financeApi } from "@/lib/api/finances";
@@ -21,13 +21,24 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
     if (id) {
       setIsLoading(true);
       financeApi
-        .getById(id)
+        .getDetail(id)
         .then((res) => {
-          const item = (res?.data ?? res) as unknown as FinanceItem;
-          if (!item?.payer) throw new Error("Invalid response");
-          setFinance(item);
+          const item = (res as any)?.data ?? (res as any);
+          if (item?.payer) {
+            setFinance(item);
+          } else {
+            throw new Error("Invalid response");
+          }
         })
-        .catch(() => setFinance(null))
+        .catch(() => {
+          // fallback to regular getById
+          financeApi.getById(id).then((res) => {
+            const item = (res as any)?.data ?? (res as any);
+            if (item?.payer) {
+              setFinance(item);
+            }
+          }).catch(() => setFinance(null));
+        })
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
@@ -61,7 +72,9 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
         </div>
 
         <div className="lg:col-span-4 space-y-6 lg:space-y-8">
-          <FlowFinance />
+          <FlowFinance
+            status={finance.is_active ? "completed" : "pending"}
+          />
           <RecordCard />
         </div>
       </div>

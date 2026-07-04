@@ -2,7 +2,7 @@ interface StatsCardProps  {
   title: string;
   value: string;
   icon: string;
-  iconColor: string;
+  iconColor?: string;
   trend: {
     icon: string;
     value: string;  
@@ -15,7 +15,6 @@ export function StatsCard({
   title,
   value,
   icon,
-  iconColor,
   trend,
 }: StatsCardProps) {
   return (

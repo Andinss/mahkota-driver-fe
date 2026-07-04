@@ -10,7 +10,7 @@ const GeneralParamaters = () => {
   return (
     <div>
       <section
-        className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm"
+        className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm"
         id="parameters"
       >
         <div className="flex items-center gap-3 mb-6">
@@ -20,7 +20,7 @@ const GeneralParamaters = () => {
           >
             tune
           </span>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             General Parameters
           </h3>
         </div>
@@ -51,10 +51,11 @@ const GeneralParamaters = () => {
                 name="currency"
                 label="Currency"
                 className="flex-1"
+                defaultValue="IDR - Indonesian Rupiah (Rp)"
               >
+                <option>IDR - Indonesian Rupiah (Rp)</option>
                 <option>USD - US Dollar ($)</option>
                 <option>EUR - Euro (€)</option>
-                <option>GBP - British Pound (£)</option>
               </Select>
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <Checkbox

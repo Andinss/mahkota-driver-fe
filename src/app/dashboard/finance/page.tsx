@@ -12,7 +12,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
 import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
 import { financeApi } from "@/lib/api/finances";
-import type { FinanceItem, FinanceListParams } from "@/lib/types/finances";
+import type { FinanceItem, FinanceListParams, FinanceSummary } from "@/lib/types/finances";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
@@ -25,6 +25,7 @@ export default function PaymentList() {
   const [finances, setFinances] = useState<FinanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [meta, setMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+  const [summary, setSummary] = useState<FinanceSummary | null>(null);
 
   const [searchValue, setSearchValue] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -38,6 +39,15 @@ export default function PaymentList() {
   const [selectedFinance, setSelectedFinance] = useState<FinanceItem | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const fetchSummary = useCallback(async () => {
+    try {
+      const res = await financeApi.getSummary();
+      setSummary(res.data);
+    } catch {
+      // summary non-critical
+    }
+  }, []);
 
   const fetchFinances = useCallback(async () => {
     if (!canAccess(user?.permissions, 'finance.read')) {
@@ -65,11 +75,15 @@ export default function PaymentList() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, searchValue, paymentMethod]);
+  }, [currentPage, searchValue, paymentMethod, user]);
 
   useEffect(() => {
     fetchFinances();
   }, [fetchFinances]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -85,13 +99,12 @@ export default function PaymentList() {
     }
   }, [searchParams]);
 
-  const totalAmount = finances.reduce((sum, f) => {
-    const num = parseFloat(f.amount_received.replace(/[^\d.]/g, ""));
-    return sum + (isNaN(num) ? 0 : num);
+  const totalAmount = summary?.total_amount_received ?? finances.reduce((sum, f) => {
+    return sum + (Number(f.amount_received) || 0);
   }, 0);
 
-  const activeCount = finances.filter((f) => f.is_active).length;
-  const inactiveCount = finances.filter((f) => !f.is_active).length;
+  const activeCount = summary?.total_active ?? finances.filter((f) => f.is_active).length;
+  const inactiveCount = summary?.total_inactive ?? finances.filter((f) => !f.is_active).length;
 
   const handleExport = (options: ExportOptions) => {
     alert(`Exporting payment data as ${options.format} with ${options.type} data`);
@@ -112,6 +125,7 @@ export default function PaymentList() {
       setAlertType("success");
       setIsAlertOpen(true);
       fetchFinances();
+      fetchSummary();
     } catch {
       setAlertTitle("Error");
       setAlertMessage("Failed to delete finance record");
@@ -155,7 +169,7 @@ export default function PaymentList() {
         <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 pb-10">
           <PageHeader
             title="Finance Dashboard"
-            description={`Total Records: ${meta.total}`}
+            description={`Total Records: ${summary?.total_records ?? meta.total}`}
             buttonText={canAccess(user?.permissions, "finance.create") ? "Manual Entry" : undefined}
             buttonHref={canAccess(user?.permissions, "finance.create") ? "/dashboard/finance/payment" : undefined}
           />
@@ -167,7 +181,7 @@ export default function PaymentList() {
               icon="payments"
               iconColor="text-primary"
               trend={{
-                value: `${finances.length} transactions`,
+                value: `${summary?.total_records ?? finances.length} transactions`,
                 color: "text-green-600",
                 icon: "trending_up",
               }}
@@ -178,7 +192,7 @@ export default function PaymentList() {
               icon="verified"
               iconColor="text-green-700"
               trend={{
-                value: `${((activeCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
+                value: `${summary ? ((activeCount / (summary.total_records || 1)) * 100).toFixed(0) : ((activeCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
                 color: "text-green-700",
                 icon: "trending_up",
               }}
@@ -189,7 +203,7 @@ export default function PaymentList() {
               icon="warning"
               iconColor="text-orange-700"
               trend={{
-                value: `${((inactiveCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
+                value: `${summary ? ((inactiveCount / (summary.total_records || 1)) * 100).toFixed(0) : ((inactiveCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
                 color: "text-[#e73908]",
                 icon: "trending_down",
               }}

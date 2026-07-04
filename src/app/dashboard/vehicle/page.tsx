@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/page-header";
 import { VehiclePagination } from "@/components/vehicle/dashboard/vehicle-pagination";
 import { ExportOptions } from "@/components/ui/export";
 import { vehicleApi } from "@/lib/api/vehicle";
-import type { VehicleItem } from "@/lib/types/vehicle";
+import type { VehicleItem, VehicleSummary } from "@/lib/types/vehicle";
 import { useAuth } from "@/lib/auth-context";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { canAccess } from "@/lib/can-access";
@@ -39,6 +39,7 @@ export default function DashboardVehiclePage() {
   const [vehicles, setVehicles] = useState<VehicleDisplay[]>([]);
   const [totalResults, setTotalResults] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [summary, setSummary] = useState<VehicleSummary | null>(null);
   const itemsPerPage = 10;
 
   // State Confirm Dialog
@@ -54,6 +55,15 @@ export default function DashboardVehiclePage() {
   const imageBase = (
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
   ).replace(/\/api\/?$/, "");
+
+  const fetchSummary = useCallback(async () => {
+    try {
+      const res = await vehicleApi.getSummary();
+      setSummary(res.data);
+    } catch {
+      // non-critical
+    }
+  }, []);
 
   const fetchVehicles = useCallback(async () => {
     if (!canAccess(user?.permissions, 'vehicle.read')) {
@@ -89,22 +99,27 @@ export default function DashboardVehiclePage() {
           transmission: "Automatic",
           plate: item.license_plate,
           type: "Sedan",
-          rate: `Rp ${(item.daily_rate || 0).toLocaleString("id-ID")}`,
+          rate: `Rp ${Number(item.daily_rate || 0).toLocaleString("id-ID")}`,
           status: statusMap[item.status] || "available",
           image,
           imageAlt: `${name} side view`,
         };
       });
       setVehicles(mapped);
-      setTotalPages(1);
-      setTotalResults(mapped.length);
+      if (res.meta) {
+        setTotalResults(res.meta.total);
+        setTotalPages(res.meta.totalPages);
+      } else {
+        setTotalPages(1);
+        setTotalResults(mapped.length);
+      }
     } catch (err) {
       console.error("Failed to fetch vehicles:", err);
       setVehicles([]);
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage]);
+  }, [currentPage, user]);
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -121,6 +136,10 @@ export default function DashboardVehiclePage() {
 
     fetchVehicles();
   }, [searchParams, fetchVehicles]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
 
   const handleDeleteClick = (vehicle: any) => {
     const full = vehicles.find((v) => v.plate === vehicle.plate);
@@ -141,6 +160,7 @@ export default function DashboardVehiclePage() {
       setIsAlertOpen(true);
       setSelectedVehicle(null);
       fetchVehicles();
+      fetchSummary();
     } catch (err) {
       console.error("Failed to delete vehicle:", err);
       setIsConfirmOpen(false);
@@ -178,51 +198,51 @@ export default function DashboardVehiclePage() {
         <section className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           <VehicleStatsCard
             title="Total Vehicles"
-            value="124"
+            value={(summary?.total_vehicles ?? 0).toString()}
             icon="local_taxi"
             iconColor="text-primary"
             trend={{
-              value: "+2% from last month",
+              value: `Rented: ${summary?.rented ?? 0} | Available: ${summary?.available ?? 0}`,
               color: "text-green-600",
               icon: "trending_up",
             }}
           />
           <VehicleStatsCard
             title="Rented"
-            value="85"
+            value={(summary?.rented ?? 0).toString()}
             icon="key"
             iconColor="text-blue-500"
             trend={{
-              value: "+5% peak hours",
+              value: `${((summary?.rented ?? 0) / (summary?.total_vehicles || 1) * 100).toFixed(0)}% of fleet`,
               color: "text-green-600",
               icon: "trending_up",
             }}
           />
           <VehicleStatsCard
             title="Available"
-            value="22"
+            value={(summary?.available ?? 0).toString()}
             icon="check_circle"
             iconColor="text-green-500"
             trend={{
-              value: "-3% decrease",
+              value: `${((summary?.available ?? 0) / (summary?.total_vehicles || 1) * 100).toFixed(0)}% of fleet`,
               color: "text-red-600",
               icon: "trending_down",
             }}
           />
           <VehicleStatsCard
             title="Maintenance"
-            value="12"
+            value={(summary?.maintenance ?? 0).toString()}
             icon="settings"
             iconColor="text-orange-500"
             trend={{
-              value: "Stable status",
+              value: `Service: ${summary?.service ?? 0}`,
               color: "text-gray-500",
               icon: "equal",
             }}
           />
           <VehicleStatsCard
             title="Retrieved"
-            value="5"
+            value={(summary?.retrieved ?? 0).toString()}
             icon="assignment_return"
             iconColor="text-purple-500"
             trend={{

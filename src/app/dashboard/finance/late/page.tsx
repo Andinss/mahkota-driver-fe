@@ -1,192 +1,293 @@
 "use client";
 
-import { CardDetail } from "@/components/finance/late-payment/card-detail";
 import { CardDriver } from "@/components/finance/late-payment/card-driver";
 import { StatsCard } from "@/components/finance/late-payment/card-stats";
-import { PermissionGuard } from "@/components/auth-guard-permission";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AlertDialog } from "@/components/ui/alert";
-import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { rentalApi } from "@/lib/api/rentals";
+import React, { useState, useEffect, useCallback } from "react";
 
-const driversData = {
-  "DRV-009": {
-    id: "DRV-009",
-    name: "Budi Santoso",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCgFMRuuzJMfExZiTiflbrrGbXprn693ZmzTEhCCjOUpbtnjxHKJM234zc9Iv5_ZQ6AYdHVjHXV3mjFjtCoJLwnGG-aD2h2YgLAxY0U8tbv2wRn72Jq6LUb9K0WCrrs4lRpjW__SWwUeCcC5MUpEt3ELhZO-1Php47jFGS3aV4co4yQYEFfm6X8D8ceoPJG8-9FgEx2iA2DUUg_ZJCV3rmZkV1sJnjK6Gh7gGYeQolixzSRp1GMohWAqnRU_qtMgCVc4wijC_G5yzoY",
-    amount: "Rp 1.500.000",
-    time: "2 hrs ago",
-    status: "Pending",
-    vehicle: "Toyota Avanza",
-    plate: "B 1234 XYZ",
-    dueDate: "Oct 12, 2023",
-    paymentDate: "Oct 14, 2023",
-    justification: "Bank System Offline",
-    justificationReason: "Bank System Offline",
-    message:
-      '"I attempted to transfer the payment on Oct 12th at 13:45, but the BCA mobile banking system was down for maintenance. I tried again every hour until 8 PM. By the time it was back up, I was already on another shift in a remote area with poor signal. I have attached the screenshot of the error message."',
-    proofImageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCQq0_J3jO-qWrEz3WnC_i3MDl7Gme96m15lq6iGBzXWP8lP6ZqwXdcWwrglUd3EmoUFjm6x7WCYiY-BoYEkNLuIdjlLqDCy4ExK1gNQsboKKYW6cRyRyRCGpgxI0EgN8hE7FUTi9CpTyVF99hNfmo7XZ2wgkWAlgcIDPO05QPNapICFYIy0gpIxSrDD4N3xF0A-FkjfVM761V2AoxeSNs4E5nw6wk3Vfah-rT77dNlAUkkOxKWlFUfYtv1jTF-MW1f_khdBglUOjXs",
-  },
+function formatTime(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHrs = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
 
-  "DRV-112": {
-    id: "DRV-112",
-    name: "Siti Aminah",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBt58FAvKitEQXvE-LZ85BwZVPbF7UY3MoLOGJ9IAt1zf6UVwd71em0pAozmk6mnsXXF81jtbNPG84f37r5unCJeblhdKuO0OqCyZLJteZAD5crRnHtbwFGR4SFkXp25NU3kXTCdtNjqkD_nROv1J_NT912COaCBPpz-rNBrRWI_DCbNIGOxRwg7A4n6bUVb3r8CadYtjLhsWhjaGnAtIwPQBtDX1O-WY5l_CaT_Nwk4PHAFHkNyh8Q1-SLIJqNowLP_MAiGVKyou9a",
-    amount: "Rp 750.000",
-    time: "5 hrs ago",
-    status: "Pending",
-    vehicle: "Honda Brio",
-    plate: "D 5678 ABC",
-    dueDate: "Oct 10, 2023",
-    paymentDate: "Oct 12, 2023",
-    justification: "Emergency Situation",
-    justificationReason: "Emergency Situation",
-    message:
-      '"There was a family emergency that required me to be at the hospital. I could not make the payment on time due to this urgent situation. I have attached the hospital documents as proof."',
-    proofImageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBt58FAvKitEQXvE-LZ85BwZVPbF7UY3MoLOGJ9IAt1zf6UVwd71em0pAozmk6mnsXXF81jtbNPG84f37r5unCJeblhdKuO0OqCyZLJteZAD5crRnHtbwFGR4SFkXp25NU3kXTCdtNjqkD_nROv1J_NT912COaCBPpz-rNBrRWI_DCbNIGOxRwg7A4n6bUVb3r8CadYtjLhsWhjaGnAtIwPQBtDX1O-WY5l_CaT_Nwk4PHAFHkNyh8Q1-SLIJqNowLP_MAiGVKyou9a",
-  },
+  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffHrs < 24) return `${diffHrs} hrs ago`;
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return date.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+}
 
-  "DRV-045": {
-    id: "DRV-045",
-    name: "Ahmad Dhani",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBkX66pns_aW4oQ-ZFIfevxLJP5Aan3TFJI1rQe9M2JoUGlV_BHXXcfMaZThTbIIIn7K3lUFRWNjxd2ZBYyAy1cHp0P2KTRD881nxJrrYCgm33T_zWioHw5DlnJ-mYy39ODRA1UQO_VFoCNPxTMsHztdDTSA4gAisYMOctSMEsbuQiWliP0_reaTOsgJY0Nf8tpotHH4Tk2WTd161fpTWYHKAvIA4BkNZInrGjuvS-aUhPSCNd6KLYFmm7seUtsC-24EksHdflR29du",
-    amount: "Rp 2.100.000",
-    time: "Yesterday",
-    status: "Pending",
-    vehicle: "Mitsubishi Xpander",
-    plate: "F 9012 DEF",
-    dueDate: "Oct 8, 2023",
-    paymentDate: "Oct 10, 2023",
-    justification: "Technical Issues",
-    justificationReason: "Technical Issues",
-    message:
-      '"The payment gateway was experiencing technical difficulties. I tried multiple times but the transaction kept failing. I have attached screenshots of the error messages."',
-    proofImageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBkX66pns_aW4oQ-ZFIfevxLJP5Aan3TFJI1rQe9M2JoUGlV_BHXXcfMaZThTbIIIn7K3lUFRWNjxd2ZBYyAy1cHp0P2KTRD881nxJrrYCgm33T_zWioHw5DlnJ-mYy39ODRA1UQO_VFoCNPxTMsHztdDTSA4gAisYMOctSMEsbuQiWliP0_reaTOsgJY0Nf8tpotHH4Tk2WTd161fpTWYHKAvIA4BkNZInrGjuvS-aUhPSCNd6KLYFmm7seUtsC-24EksHdflR29du",
-  },
-};
+function formatCurrency(amount: number): string {
+  return `Rp ${Math.round(amount).toLocaleString("id-ID")}`;
+}
 
-// List driver untuk ditampilkan di sidebar
-const driverList = [
-  {
-    id: "DRV-009",
-    name: "Budi Santoso",
-    imageUrl: driversData["DRV-009"].imageUrl,
-    amount: driversData["DRV-009"].amount,
-    time: driversData["DRV-009"].time,
-    status: driversData["DRV-009"].status,
-  },
-  {
-    id: "DRV-112",
-    name: "Siti Aminah",
-    imageUrl: driversData["DRV-112"].imageUrl,
-    amount: driversData["DRV-112"].amount,
-    time: driversData["DRV-112"].time,
-    status: driversData["DRV-112"].status,
-  },
-  {
-    id: "DRV-045",
-    name: "Ahmad Dhani",
-    imageUrl: driversData["DRV-045"].imageUrl,
-    amount: driversData["DRV-045"].amount,
-    time: driversData["DRV-045"].time,
-    status: driversData["DRV-045"].status,
-  },
-];
+interface LateRentalItem {
+  id: string;
+  rental_number: string;
+  driver_id: string;
+  driver_name: string;
+  driver_photo: string;
+  vehicle_name: string;
+  plate: string;
+  end_date: string;
+  total_revenue: number;
+  days_late: number;
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 export default function LatePaymentPage() {
-  const [selectedDriver, setSelectedDriver] = useState<string>("DRV-009");
+  const [rentals, setRentals] = useState<LateRentalItem[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
-  const currentDriver = driversData[selectedDriver as keyof typeof driversData];
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState<"success" | "error">("success");
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await rentalApi.getList({ limit: 1000 });
+      const items = Array.isArray(res.data) ? res.data : [];
+      const now = new Date();
+      const late = items
+        .filter((r) => r.payment_status === "late")
+        .map((r) => ({
+          id: r.id,
+          rental_number: r.rental_number || r.id.slice(0, 8).toUpperCase(),
+          driver_id: r.driver_id,
+          driver_name: r.driver ? `${r.driver.first_name} ${r.driver.last_name}` : "-",
+          driver_photo: r.driver?.profile_photo || "",
+          vehicle_name: r.vehicle
+            ? `${r.vehicle.merk} ${r.vehicle.model}`
+            : "-",
+          plate: r.vehicle?.license_plate || "-",
+          end_date: r.end_date,
+          total_revenue: Number(r.total_revenue),
+          days_late: Math.max(
+            0,
+            Math.floor(
+              (now.getTime() - new Date(r.end_date).getTime()) /
+                (1000 * 60 * 60 * 24),
+            ),
+          ),
+        }));
+      setRentals(late);
+    } catch {
+      setRentals([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    if (rentals.length > 0 && !selectedId) {
+      setSelectedId(rentals[0].id);
+    }
+  }, [rentals, selectedId]);
+
+  const currentItem =
+    rentals.find((r) => r.id === selectedId) || rentals[0];
+
+  const handleMarkPaid = async () => {
+    if (!currentItem) return;
+    try {
+      await rentalApi.updatePaymentStatus(currentItem.id, "paid");
+      setAlertTitle("Berhasil");
+      setAlertMessage(`${currentItem.rental_number} berhasil ditandai Lunas.`);
+      setAlertType("success");
+      setIsAlertOpen(true);
+      setSelectedId("");
+      fetchData();
+    } catch {
+      setAlertTitle("Gagal");
+      setAlertMessage("Gagal memperbarui status pembayaran.");
+      setAlertType("error");
+      setIsAlertOpen(true);
+    }
+  };
+
+  const totalLate = rentals.length;
+  const totalAmount = rentals.reduce((s, r) => s + Number(r.total_revenue), 0);
+  const avgDaysLate = totalLate > 0 ? Math.round(rentals.reduce((s, r) => s + r.days_late, 0) / totalLate) : 0;
 
   return (
-    <PermissionGuard permission="finance.read">
     <div className="p-8 space-y-8">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <StatsCard
-          title="Pending Request"
-          value="12"
-          icon=""
-          iconColor=""
+          title="Total Late Payments"
+          value={String(totalLate)}
+          icon="warning"
+          iconColor="text-red-600"
           trend={{
             icon: "arrow_upward",
-            value: "+2 today",
+            value: `${totalLate} rental(s)`,
+            trendColor: "text-red-700",
+            bgColor: "bg-red-100 dark:bg-red-900/30",
+          }}
+        />
+        <StatsCard
+          title="Total Outstanding"
+          value={formatCurrency(totalAmount)}
+          icon="payments"
+          iconColor="text-amber-600"
+          trend={{
+            icon: "info",
+            value: "Belum dibayar",
             trendColor: "text-amber-700",
             bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
           }}
         />
         <StatsCard
-          title="Approved Today"
-          value="3"
-          icon=""
-          iconColor=""
+          title="Rata-rata Keterlambatan"
+          value={`${avgDaysLate} hari`}
+          icon="schedule"
+          iconColor="text-blue-600"
           trend={{
-            icon: "",
-            value: "",
-            trendColor: "",
-            bgColor: "",
-          }}
-        />
-        <StatsCard
-          title="Rejected Today"
-          value="1"
-          icon=""
-          iconColor=""
-          trend={{
-            icon: "",
-            value: "",
-            trendColor: "",
-            bgColor: "",
+            icon: "calendar_today",
+            value: `${totalLate} transaksi`,
+            trendColor: "text-blue-700",
+            bgColor: "bg-blue-100 dark:bg-blue-900/30",
           }}
         />
       </div>
 
-      {/* Content Split View */}
       <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-320px)] min-h-[600px]">
-        {/* List Column - Driver Cards */}
         <div className="w-full lg:w-4/12 flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-2">
-          {driverList.map((driver) => (
-            <CardDriver
-              key={driver.id}
-              id={driver.id}
-              name={driver.name}
-              imageUrl={driver.imageUrl}
-              amount={driver.amount}
-              time={driver.time}
-              status={driver.status}
-              isSelected={selectedDriver === driver.id}
-              onClick={() => setSelectedDriver(driver.id)}
-            />
-          ))}
+          {loading ? (
+            <div className="text-center text-slate-400 py-8">Loading...</div>
+          ) : rentals.length === 0 ? (
+            <div className="text-center text-slate-400 py-8">
+              No late payments found.
+            </div>
+          ) : (
+            rentals.map((rental) => (
+              <CardDriver
+                key={rental.id}
+                id={rental.driver_id}
+                name={rental.driver_name}
+                imageUrl={rental.driver_photo}
+                amount={formatCurrency(rental.total_revenue)}
+                time={formatTime(rental.end_date)}
+                status="Late"
+                isSelected={selectedId === rental.id}
+                onClick={() => setSelectedId(rental.id)}
+              />
+            ))
+          )}
         </div>
 
-        {/* Detail Column - Dynamic berdasarkan driver yang dipilih */}
-        <CardDetail
-          driverId={currentDriver.id}
-          name={currentDriver.name}
-          imageUrl={currentDriver.imageUrl}
-          vehicle={currentDriver.vehicle}
-          plate={currentDriver.plate}
-          dueDate={currentDriver.dueDate}
-          paymentDate={currentDriver.paymentDate}
-          amount={currentDriver.amount}
-          justification={currentDriver.justification}
-          justificationReason={currentDriver.justificationReason}
-          message={currentDriver.message}
-          proofImageUrl={currentDriver.proofImageUrl}
-          onReject={() => console.log(`Rejected ${currentDriver.name}`)}
-          onApprove={() => console.log(`Approved ${currentDriver.name}`)}
-          onViewProfile={() =>
-            console.log(`View profile ${currentDriver.name}`)
-          }
-        />
+        {currentItem ? (
+          <div className="flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+              <div className="flex items-center gap-4">
+                <div className="size-14 rounded-full border-2 border-white dark:border-slate-700 shadow-sm overflow-hidden bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-lg font-bold text-slate-500">
+                  {currentItem.driver_name.charAt(0)}
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                    {currentItem.driver_name}
+                  </h2>
+                  <p className="text-sm text-slate-500">
+                    ID: {currentItem.driver_id.slice(0, 8)}
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">
+                Late Payment
+              </span>
+            </div>
+
+            <div className="p-8 overflow-y-auto flex-1">
+              <div className="mb-8">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-lg">
+                    receipt_long
+                  </span>
+                  Rental Details
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+                      Vehicle
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {currentItem.vehicle_name}
+                    </p>
+                    <p className="text-[11px] text-slate-400">
+                      {currentItem.plate}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+                      Rental #
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {currentItem.rental_number}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20">
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 uppercase font-bold tracking-tight mb-1">
+                      Due Date
+                    </p>
+                    <p className="text-sm font-bold text-rose-700 dark:text-rose-300">
+                      {formatDate(currentItem.end_date)}
+                    </p>
+                    <p className="text-[11px] text-rose-500 font-medium">
+                      {currentItem.days_late} day
+                      {currentItem.days_late > 1 ? "s" : ""} late
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+                    <p className="text-[11px] text-primary uppercase font-bold tracking-tight mb-1">
+                      Total Amount
+                    </p>
+                    <p className="text-lg font-black text-primary">
+                      {formatCurrency(currentItem.total_revenue)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex justify-end gap-3">
+              <Button icon="check" onClick={handleMarkPaid}>
+                Mark as Paid
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-center text-slate-400">
+            Select a driver to view details
+          </div>
+        )}
       </div>
+
+      <AlertDialog
+        isOpen={isAlertOpen}
+        onClose={() => setIsAlertOpen(false)}
+        title={alertTitle}
+        message={alertMessage}
+        type={alertType}
+        confirmText="OK"
+        autoCloseDelay={3000}
+      />
     </div>
-    </PermissionGuard>
   );
 }

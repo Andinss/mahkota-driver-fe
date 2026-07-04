@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/page-header";
 import { TaskListCard } from "@/components/monitoring/task-list/task-list-card";
 import EmergencyResponse from "@/components/monitoring/task-list/emergency-response";
@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 import { Task } from "@/components/monitoring/task-list/task-table-row";
 import { TaskPagination } from "@/components/monitoring/task-list/task-pagination";
 import { AlertDialog } from "@/components/ui/alert";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 
 // All tasks data 
 const allTasks: Task[] = [
@@ -82,9 +84,25 @@ const allTasks: Task[] = [
 ];
 
 export default function TaskList() {
-   const router = useRouter();
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
+  const [denied, setDenied] = useState(false);
 
-   // Alert state
+  const hasAccess = canAccess(user?.permissions, "monitoring.read");
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!hasAccess) {
+      setDenied(true);
+    }
+  }, [isLoading, hasAccess]);
+
+  const handleDeniedClose = () => {
+    setDenied(false);
+    router.replace("/dashboard");
+  };
+
+  // Alert state
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
@@ -125,87 +143,108 @@ export default function TaskList() {
     setIsAlertOpen(true);
   };
 
+  const handleEdit = (task: Task) => {
+    console.log("Edit:", task);
+  };
 
+  const handleDelete = (task: Task) => {
+    console.log("Delete:", task);
+  };
 
   const handleExport = (options?: any) => {
     console.log("Export with options:", options);
   };
 
   return (
-    <div className="p-8 space-y-8">
-      <PageHeader 
-        title="Welcome, Officer Budi"
-        description="You have 1 urgent emergency and 5 scheduled tasks today."
-      />
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <TaskListCard 
-          title="Pending Emergencies"
-          value="1"
-          icon="warning"
-          iconColor="text-orange-500"
-          trend={{
-            value: "Requires immediate action",
-            color: "text-orange-600",
-            icon: "warning"
-          }}
-        />
-        <TaskListCard 
-          title="Retrievals Today"
-          value="5"
-          icon="directions_car"
-          iconColor="text-primary"
-          trend={{
-            value: "2 completed",
-            color: "text-[#617589]",
-            icon: "check"
-          }}
-        />
-        <TaskListCard 
-          title="Completed Tasks"
-          value="12"
-          icon="check_circle"
-          iconColor="text-green-600"
-          trend={{
-            value: "+3 from yesterday",
-            color: "text-green-600",
-            icon: "trending_up"
-          }}
-        />
-      </div>
-
-      <EmergencyResponse />
-      <TaskFilters />
-
-      {/* Table Container - SAME CONCEPT AS RENTAL PAGE */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-        <TaskTable 
-          tasks={currentTasks}
-          onDetails={handleDetails}
-          onViewMap={handleViewMap}
-          onComplete={handleComplete}
-          onExport={handleExport}
-        />
-
-        {/* Pagination */}
-        <TaskPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalResults={totalResults}
-          resultsPerPage={itemsPerPage}
-          onPageChange={handlePageChange}
-        />
-      </div>
+    <>
       <AlertDialog
-        isOpen={isAlertOpen}
-        onClose={() => setIsAlertOpen(false)}
-        title={alertTitle}
-        message={alertMessage}
-        type={alertType}
+        isOpen={denied}
+        onClose={handleDeniedClose}
+        title="Akses Ditolak"
+        message="Anda tidak memiliki izin untuk mengakses halaman ini."
         confirmText="OK"
-        autoCloseDelay={3000}
+        type="error"
+        autoCloseDelay={0}
       />
-    </div>
+      {isLoading || !hasAccess ? null : (
+      <div className="p-8 space-y-8">
+        <PageHeader 
+          title="Welcome, Officer Budi"
+          description="You have 1 urgent emergency and 5 scheduled tasks today."
+        />
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <TaskListCard 
+            title="Pending Emergencies"
+            value="1"
+            icon="warning"
+            iconColor="text-orange-500"
+            trend={{
+              value: "Requires immediate action",
+              color: "text-orange-600",
+              icon: "warning"
+            }}
+          />
+          <TaskListCard 
+            title="Retrievals Today"
+            value="5"
+            icon="directions_car"
+            iconColor="text-primary"
+            trend={{
+              value: "2 completed",
+              color: "text-[#617589]",
+              icon: "check"
+            }}
+          />
+          <TaskListCard 
+            title="Completed Tasks"
+            value="12"
+            icon="check_circle"
+            iconColor="text-green-600"
+            trend={{
+              value: "+3 from yesterday",
+              color: "text-green-600",
+              icon: "trending_up"
+            }}
+          />
+        </div>
+
+        <EmergencyResponse />
+        <TaskFilters />
+
+        {/* Table Container - SAME CONCEPT AS RENTAL PAGE */}
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+          <TaskTable 
+            tasks={currentTasks}
+            onDetails={handleDetails}
+            onViewMap={handleViewMap}
+            onComplete={handleComplete}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onExport={handleExport}
+          />
+
+          {/* Pagination */}
+          <TaskPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalResults={totalResults}
+            resultsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+          />
+        </div>
+        <AlertDialog
+          isOpen={isAlertOpen}
+          onClose={() => setIsAlertOpen(false)}
+          title={alertTitle}
+          message={alertMessage}
+          type={alertType}
+          confirmText="OK"
+          autoCloseDelay={3000}
+        />
+      </div>
+      )}
+    </>
   );
 }

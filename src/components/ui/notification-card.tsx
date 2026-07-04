@@ -73,7 +73,7 @@ const NotificationCard = ({
 
   return (
     <div
-      className={`group relative flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-6 bg-white hover:bg-gray-50 transition-all duration-300 rounded-xl shadow-sm ${config.borderColor} ${isRead ? "opacity-50" : ""}`}
+      className={`group relative flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-6 bg-white dark:bg-[#1a2632] hover:bg-gray-50 dark:hover:bg-[#243040] transition-all duration-300 rounded-xl shadow-sm ${config.borderColor} ${isRead ? "opacity-50" : ""}`}
     >
       {/* Timestamp & Status Badge - Repositioned for mobile */}
       <div className="sm:absolute sm:top-6 sm:right-6 flex sm:flex-row flex-row-reverse justify-between items-center gap-3 mb-3 sm:mb-0">
@@ -105,7 +105,7 @@ const NotificationCard = ({
       {/* Content - Takes full width on mobile */}
       <div className="flex-1 pt-0 sm:pt-1">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2 sm:mb-1">
-          <h3 className="text-base sm:text-lg font-bold text-gray-900 text-center sm:text-left">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white text-center sm:text-left">
             {title}
           </h3>
           <span
@@ -126,7 +126,7 @@ const NotificationCard = ({
                 {getButtonText(type)}
               </button>
               {!isReceived && (
-                <button className="text-xs font-bold text-gray-500 hover:text-gray-900">
+                <button className="text-xs font-bold text-gray-500 hover:text-gray-900 dark:text-white">
                   Acknowledge
                 </button>
               )}

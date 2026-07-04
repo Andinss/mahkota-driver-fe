@@ -1,60 +1,28 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
-import { SearchInputWithClear } from "@/components/ui/search-input-with-clear";
+import { driverApi } from "@/lib/api/driver";
+import type { DriverItem } from "@/lib/types/driver";
 
+const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
 
-// Mock Data Driver
-const mockDrivers = [
-  { 
-    id: "DRV-8822", 
-    name: "Sarah Connor", 
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDyfv7iIobUo0yuS3OZSQpcwA_Q4P6OEp2BEv6Bwbfp5QdycOcW7dDrS_hRancDVUPPRaQKAJrwLOyxoV37O58AKHH0OHUX0RKiGjTpkOO_Fw89UQZGeSixjgPyTP0zqaGppeRd-jhD5sLc68crgFtEIOhQ2Nn4n8z7MwG0PJYnaqRpECVNooa_bCz7gY61QwZtkisx13u-gb-0t8A7slICPMoKqD6hBs_HMRMHG_bLDfwToOpWm8WmFhtJuwirFjrquGGHdcAHzCu-", 
-    balance: -1200 
-  },
-  { 
-    id: "DRV-8823", 
-    name: "Emma Watson", 
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuD6QO9PL8jNr1d60A9pOnhJXK_msEq2QVp9QrkI9JKgiMRzewJp7yECe9-d3SWRWyTzkDZ3nXlb9SuQYKG19H1dutrDHNP6iazRBH4uaveVN0RxYwum0l6Ul5ah1HTYv-f56lFYn6JJmnXXobYEf6ueTww7FCQXfyF1jiIWRT910Q3xkk-m2xy2zsxZCu_YiDS008JPEAyzqmbm27ubUfYG6AAQSbggNbmI5MFc358Wiq_Kr2DnRFz6SIiefnhSYaTuDJzaHLe1wf-m", 
-    balance: -850 
-  },
-  { 
-    id: "DRV-8824", 
-    name: "Michael Chen", 
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuC4-mRZKk3sqc11M4-sgdg-mZ9I5zyhANPAmdKmeqj7Iw5Q18dIJsIrBrF_d3HIegqAQF3CVoWTLy9B3LiaKdX2AvWyLFPmmX5ZTxAUwqH8rxIO-Gq3dBmsb4rThS8lQfTfZr0gs82-lWf4XIUr4H-B4ewbtq8_wcz-AueRROyj6MaLydH7bffTSjJFW95b81j9f0kKQh7UDd0NUgIhq7b-gK4s4JiOJ4Fph6tXyN8PnpssPowxaTHEOORPGbR65EN2OuzGgASXQXOm", 
-    balance: -320 
-  },
-  { 
-    id: "DRV-8825", 
-    name: "James Anderson", 
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCcgquo3s1Gm9UWljE7Yx8CgDUShF68J6fkgw1QvJ5OY4Yi2YzBIR_mdrI8wMWujABWw_8vsHbygbpYbgqBM5o6LBdaJNvGR8cQS8Loj8VvD3G18m5AUrXkuEbRUFb0n2zJFsSZxH5ROqS9ReASBv8Z79k6f6jw6z5dQr37SpsRhKvVgrzA5Oi0_54ygMxCPhm31EX4bMSnxf4i1OggQBnvb8Q3cZ6XmBTkAoo-PacjlfHNUo2yx-p-rIQHrGzFcM8KDdC3f0yGWk0q", 
-    balance: -450 
-  },
-  { 
-    id: "DRV-8826", 
-    name: "Robert Fox", 
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDi1kPQgCgdKaBias77134VvG-U5cHjmNvAkyjUxDQND6pcV1Tl2ewWUXIVrAQkt_IDqUWWkt17S2Tgb0VpatU3NLXeUS9Uw3sH3Eo7rt3e0IoDm15GHyBthB0U6OYS9L_6V5kHzz_TbsbdgJ7TOcwYVHEZgr4SRoUagMxckIfOHdPNyuZvfnl6SGm_hi2ltiFvt4kStP8sCBx8Axb-4Y1QWdeYCaiQJdJKpwYX1S2x6HvIT8ReGDBhLAM12kql2fvOt1xIPUP_EyeB", 
-    balance: -150 
-  },
-  { 
-    id: "DRV-8831", 
-    name: "Frank Lee", 
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCcgquo3s1Gm9UWljE7Yx8CgDUShF68J6fkgw1QvJ5OY4Yi2YzBIR_mdrI8wMWujABWw_8vsHbygbpYbgqBM5o6LBdaJNvGR8cQS8Loj8VvD3G18m5AUrXkuEbRUFb0n2zJFsSZxH5ROqS9ReASBv8Z79k6f6jw6z5dQr37SpsRhKvVgrzA5Oi0_54ygMxCPhm31EX4bMSnxf4i1OggQBnvb8Q3cZ6XmBTkAoo-PacjlfHNUo2yx-p-rIQHrGzFcM8KDdC3f0yGWk0q", 
-    balance: -430 
-  },
-  { 
-    id: "DRV-8832", 
-    name: "Grace Kim", 
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDyfv7iIobUo0yuS3OZSQpcwA_Q4P6OEp2BEv6Bwbfp5QdycOcW7dDrS_hRancDVUPPRaQKAJrwLOyxoV37O58AKHH0OHUX0RKiGjTpkOO_Fw89UQZGeSixjgPyTP0zqaGppeRd-jhD5sLc68crgFtEIOhQ2Nn4n8z7MwG0PJYnaqRpECVNooa_bCz7gY61QwZtkisx13u-gb-0t8A7slICPMoKqD6hBs_HMRMHG_bLDfwToOpWm8WmFhtJuwirFjrquGGHdcAHzCu-", 
-    balance: -1500 
-  },
-];
+const photoUrl = (path?: string) =>
+  path
+    ? path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`
+    : "";
+
+interface DriverOption {
+  id: string;
+  employeeId: string;
+  name: string;
+  avatar: string;
+}
 
 interface PayerInfoProps {
   searchValue?: string;
   onSearchChange?: (value: string) => void;
-  onPayerSelect?: (name: string, id: string) => void;
+  onPayerSelect?: (name: string, id: string, employeeId: string) => void;
   selectedPayerId?: string; 
   hasSubmitted?: boolean;
 }
@@ -66,122 +34,224 @@ const PayerInfo = ({
   selectedPayerId,
   hasSubmitted = false
 }: PayerInfoProps) => {
-  const [filteredDrivers, setFilteredDrivers] = useState(mockDrivers);
+  const [filteredDrivers, setFilteredDrivers] = useState<DriverOption[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState<typeof mockDrivers[0] | null>(null);
+  const [selectedDriver, setSelectedDriver] = useState<DriverOption | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (searchValue) {
-      const filtered = mockDrivers.filter(driver =>
-        driver.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-        driver.id.toLowerCase().includes(searchValue.toLowerCase())
-      );
-      setFilteredDrivers(filtered);
-      setShowDropdown(true);
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (selectedDriver && searchValue === selectedDriver.name) return;
+    if (searchValue && searchValue.length >= 1) {
+      setIsSearching(true);
+      driverApi.getList({ search: searchValue, limit: 10 })
+        .then((res) => {
+          const items = (res?.data ?? []) as DriverItem[];
+          const mapped: DriverOption[] = items.map((d) => ({
+            id: d.id,
+            employeeId: d.employee_id,
+            name: `${d.first_name} ${d.last_name}`.trim(),
+            avatar: photoUrl(d.profile_photo) || "",
+          }));
+          setFilteredDrivers(mapped);
+          setShowDropdown(true);
+        })
+        .catch(() => {
+          setFilteredDrivers([]);
+        })
+        .finally(() => setIsSearching(false));
     } else {
-      setFilteredDrivers(mockDrivers);
+      setFilteredDrivers([]);
       setShowDropdown(false);
     }
-  }, [searchValue]);
+  }, [searchValue, selectedDriver]);
 
-  // TAMBAHKAN INI (Load selected driver when editing)
   useEffect(() => {
     if (selectedPayerId) {
-      const driver = mockDrivers.find(d => d.id === selectedPayerId);
-      if (driver) {
-        setSelectedDriver(driver);
-        onSearchChange?.(driver.name);
-      }
+      driverApi.getList({ search: selectedPayerId, limit: 1 })
+        .then((res) => {
+          const items = (res?.data ?? []) as DriverItem[];
+          if (items.length > 0) {
+            const d = items[0];
+            const driver: DriverOption = {
+              id: d.id,
+              employeeId: d.employee_id,
+              name: `${d.first_name} ${d.last_name}`.trim(),
+              avatar: photoUrl(d.profile_photo) || "",
+            };
+            setSelectedDriver(driver);
+            onSearchChange?.(driver.name);
+          }
+        })
+        .catch(() => {});
     }
   }, [selectedPayerId]);
 
-  // TAMBAHKAN INI (Handle driver selection)
-  const handleSelectDriver = (driver: typeof mockDrivers[0]) => {
+  const handleSelectDriver = (driver: DriverOption) => {
     setSelectedDriver(driver);
     onSearchChange?.(driver.name);
-    onPayerSelect?.(driver.name, driver.id);
+    onPayerSelect?.(driver.name, driver.id, driver.employeeId);
     setShowDropdown(false);
   };
+
+  const handleClearSelection = () => {
+    onSearchChange?.("");
+    setSelectedDriver(null);
+    onPayerSelect?.("", "", "");
+  };
+
   return (
-    <Card className="rounded-xl bg-white dark:bg-[#1e2732] border border-[#e5e7eb] dark:border-gray-800 shadow-sm p-6">
-      <h3 className="text-base font-semibold text-[#111418] dark:text-white mb-4">
-        Payer Information
-      </h3>
-      {hasSubmitted && !selectedDriver && (
-        <p className="text-xs text-red-500 mb-4">Payer is required</p>
-      )}
-      <div className="relative mb-6">
-      <SearchInputWithClear
-        placeholder="Search Driver ID or Name..."
-        className="mb-6"
-        value={searchValue}
-        onChange={(e) => onSearchChange?.(e.target.value)}
-        onClear={() => {
-            onSearchChange?.("");
-            setSelectedDriver(null);
-            onPayerSelect?.("", "");
-          }}
-      />
-
-       {showDropdown && filteredDrivers.length > 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg max-h-60 overflow-auto">
-            {filteredDrivers.map((driver) => (
-              <div
-                key={driver.id}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-slate-700 last:border-0"
-                onClick={() => handleSelectDriver(driver)}
-              >
-                <Avatar
-                  src={driver.avatar}
-                  alt={driver.name}
-                  size="md"
-                  className="size-10 rounded-full bg-gray-200 dark:bg-gray-700 bg-center bg-cover"
-                />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-[#111418] dark:text-white">{driver.name}</p>
-                  <p className="text-xs text-[#617589] dark:text-gray-400">ID: {driver.id}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-[#617589] dark:text-gray-400">Balance</p>
-                  <p className={`text-sm font-bold ${driver.balance < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                    {driver.balance < 0 ? `-$${Math.abs(driver.balance)}` : `$${driver.balance}`}
-                  </p>
-                </div>
-              </div>
-            ))}
+    <Card className="rounded-xl bg-white dark:bg-[#1e2732] border border-[#e5e7eb] dark:border-gray-800 shadow-sm">
+      <div className="p-6">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="size-9 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-primary text-lg">credit_card</span>
           </div>
-        )}
-      </div>
-
-      {/* UBAH INI - Tampilkan driver yang dipilih */}
-      {selectedDriver && (
-        <div className="flex flex-col sm:flex-row gap-4 p-4 rounded-lg bg-primary/5 border border-primary/20 dark:bg-primary/10 dark:border-primary/30 items-start sm:items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar
-              src={selectedDriver.avatar}
-              alt={selectedDriver.name}
-              size="lg"
-              className="size-12 rounded-full bg-gray-200 dark:bg-gray-700 bg-center bg-cover"
-            />
-            <div>
-              <h4 className="text-base font-bold text-[#111418] dark:text-white">
-                {selectedDriver.name}
-              </h4>
-              <p className="text-sm text-[#617589] dark:text-gray-400">
-                ID: <span className="font-mono text-[#111418] dark:text-gray-200">{selectedDriver.id}</span> • Active
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col items-end min-w-[120px]">
-            <span className="text-xs text-[#617589] dark:text-gray-400 uppercase tracking-wide">
-              Current Balance
-            </span>
-            <span className={`text-lg font-bold ${selectedDriver.balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600'}`}>
-              {selectedDriver.balance < 0 ? `-$${Math.abs(selectedDriver.balance)}` : `$${selectedDriver.balance}`}
-            </span>
+          <div>
+            <h3 className="text-base font-semibold text-[#111418] dark:text-white">
+              Payer Information
+            </h3>
+            <p className="text-xs text-[#617589] dark:text-gray-400">
+              Search and select a driver as the payer
+            </p>
           </div>
         </div>
-      )}
+
+        {hasSubmitted && !selectedDriver && (
+          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2.5">
+            <div className="size-6 rounded-full bg-red-100 dark:bg-red-800/40 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-red-500 text-sm">error</span>
+            </div>
+            <p className="text-xs text-red-600 dark:text-red-400 font-medium">Please select a valid driver as payer</p>
+          </div>
+        )}
+
+        <div className="relative" ref={wrapperRef}>
+          {selectedDriver ? (
+            <div className="group flex items-center gap-4 rounded-xl bg-blue-50/80 dark:bg-blue-900/15 border border-blue-200 dark:border-blue-800/50 p-4">
+              <div className="relative shrink-0">
+                <Avatar
+                  src={selectedDriver.avatar}
+                  alt={selectedDriver.name}
+                  size="lg"
+                  className="size-12 rounded-full bg-gray-200 dark:bg-gray-700 bg-center bg-cover shrink-0 ring-2 ring-white dark:ring-gray-800 shadow-sm"
+                />
+                <div className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-900" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-base font-bold text-[#111418] dark:text-white truncate">
+                  {selectedDriver.name}
+                </h4>
+                <div className="flex items-center gap-3 mt-1">
+                  {selectedDriver.employeeId && (
+                    <span className="inline-flex items-center gap-1.5 text-xs text-[#617589] dark:text-gray-400">
+                      <span className="material-symbols-outlined text-[11px]">badge</span>
+                      <span className="font-mono text-[11px] font-medium">{selectedDriver.employeeId}</span>
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                    <span className="size-1.5 rounded-full bg-green-500" />
+                    Active
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={handleClearSelection}
+                className="p-2 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-[#617589] hover:text-red-500 transition-colors"
+                title="Change payer"
+              >
+                <span className="material-symbols-outlined text-base">edit</span>
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center w-full rounded-lg border border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] ring-1 ring-inset ring-transparent focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary focus-within:border-primary transition-all h-12">
+                <div className="flex items-center justify-center pl-4 text-[#617589] dark:text-gray-400">
+                  <span className="material-symbols-outlined text-xl">search</span>
+                </div>
+                <input
+                  placeholder="Search by driver name or employee ID..."
+                  className="flex w-full flex-1 bg-transparent border-none text-[#111418] dark:text-white placeholder:text-[#9aa6b5] dark:placeholder:text-gray-500 px-3 focus:ring-0 focus:outline-none h-full text-sm"
+                  value={searchValue}
+                  onChange={(e) => onSearchChange?.(e.target.value)}
+                  autoComplete="off"
+                />
+                {searchValue && (
+                  <button
+                    onClick={() => {
+                      onSearchChange?.("");
+                      setShowDropdown(false);
+                    }}
+                    className="flex items-center justify-center mr-2 size-8 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-[#617589] transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+                )}
+              </div>
+
+              {isSearching && (
+                <div className="absolute z-10 w-full mt-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl p-5 text-center text-sm text-gray-500">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="material-symbols-outlined text-base animate-spin">sync</span>
+                    Searching drivers...
+                  </div>
+                </div>
+              )}
+
+              {!isSearching && showDropdown && filteredDrivers.length > 0 && (
+                <div className="absolute z-10 w-full mt-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl max-h-72 overflow-auto">
+                  {filteredDrivers.map((driver) => (
+                    <div
+                      key={driver.id}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border-b border-gray-100 dark:border-slate-700 last:border-0 transition-colors"
+                      onClick={() => handleSelectDriver(driver)}
+                    >
+                      <Avatar
+                        src={driver.avatar}
+                        alt={driver.name}
+                        size="md"
+                        className="size-10 rounded-full bg-gray-200 dark:bg-gray-700 bg-center bg-cover shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#111418] dark:text-white truncate">{driver.name}</p>
+                        <p className="text-xs text-[#617589] dark:text-gray-400">
+                          {driver.employeeId && (
+                            <span className="inline-flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[10px]">badge</span>
+                              {driver.employeeId}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <span className="material-symbols-outlined text-[#617589] dark:text-gray-400 text-base">chevron_right</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!isSearching && showDropdown && searchValue.length >= 1 && filteredDrivers.length === 0 && (
+                <div className="absolute z-10 w-full mt-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl p-6 text-center">
+                  <div className="size-12 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mx-auto mb-3">
+                    <span className="material-symbols-outlined text-2xl text-[#617589]">search_off</span>
+                  </div>
+                  <p className="text-sm font-medium text-[#111418] dark:text-white">No drivers found</p>
+                  <p className="text-xs text-[#617589] dark:text-gray-400 mt-1">Try a different name or employee ID</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </Card>
   );
 };

@@ -20,7 +20,7 @@ export function DriverStatsCard({
   return (
     <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
       <div className="flex justify-between items-start mb-4">
-        <span className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-tight">
+        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
           {title}
         </span>
         <span className={`material-icons-round ${iconColor}`}>{icon}</span>

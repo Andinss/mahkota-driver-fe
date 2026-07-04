@@ -79,12 +79,14 @@ export function VehicleMediaUpload({
       alert(`File size exceeds ${maxSizeMB}MB limit`);
       return false;
     }
-    const accepted = acceptedFormats.map((f) => f.toLowerCase());
+    const accepted = acceptedFormats.flatMap((f) => {
+      const lower = f.toLowerCase();
+      if (lower === "jpg" || lower === "jpeg") return ["jpg", "jpeg"];
+      return [lower];
+    });
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
-    if (
-      !accepted.includes(ext) &&
-      !accepted.includes(file.type.split("/")[1])
-    ) {
+    const mime = file.type.split("/")[1]?.toLowerCase() || "";
+    if (!accepted.includes(ext) && !accepted.includes(mime)) {
       alert(`Invalid file format. Accepted: ${acceptedFormats.join(", ")}`);
       return false;
     }
@@ -397,7 +399,12 @@ export function VehicleMediaUpload({
           <input
             ref={fileInputRef}
             accept={acceptedFormats
-              .map((f) => `image/${f.toLowerCase()}`)
+              .flatMap((f) => {
+                const lower = f.toLowerCase();
+                if (lower === "jpg" || lower === "jpeg")
+                  return [".jpg", ".jpeg"];
+                return [`.${lower}`];
+              })
               .join(",")}
             className="hidden"
             type="file"
@@ -412,7 +419,12 @@ export function VehicleMediaUpload({
         <input
           ref={fileInputRef}
           accept={acceptedFormats
-            .map((f) => `image/${f.toLowerCase()}`)
+            .flatMap((f) => {
+              const lower = f.toLowerCase();
+              if (lower === "jpg" || lower === "jpeg")
+                return [".jpg", ".jpeg"];
+              return [`.${lower}`];
+            })
             .join(",")}
           className="hidden"
           type="file"

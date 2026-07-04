@@ -1,14 +1,12 @@
 import type { FinanceItem } from "@/lib/types/finances";
 
-const formatCurrency = (value: string) => {
-  const num = parseFloat(value.replace(/[^\d.]/g, ""));
-  if (isNaN(num)) return "Rp 0";
+const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(num);
+  }).format(value);
 };
 
 const formatDate = (dateStr: string) => {
@@ -33,15 +31,19 @@ interface FinanceSummaryProps {
 }
 
 const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
+  const driverName = finance.driver
+    ? `${finance.driver.first_name} ${finance.driver.last_name}`
+    : finance.payer;
+
   return (
-    <div className="bg-white rounded-2xl p-6 lg:p-8 border border-gray-200 shadow-sm overflow-hidden relative">
+    <div className="bg-white dark:bg-[#1a2632] rounded-2xl p-6 lg:p-8 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden relative">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-10">
         <div>
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">
             Reference Number
           </h3>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl lg:text-4xl font-black tracking-tighter text-gray-900">
+            <span className="text-2xl lg:text-4xl font-black tracking-tighter text-gray-900 dark:text-white">
               {finance.reference_number}
             </span>
           </div>
@@ -59,7 +61,7 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
           </h3>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-semibold text-gray-500">Rp</span>
-            <span className="text-5xl lg:text-7xl font-black tracking-tighter text-gray-900">
+            <span className="text-5xl lg:text-7xl font-black tracking-tighter text-gray-900 dark:text-white">
               {formatCurrency(finance.amount_received).replace("Rp", "").trim()}
             </span>
           </div>
@@ -70,7 +72,7 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
             {finance.is_active ? "Active" : "Inactive"}
           </span>
           <p className="text-[10px] text-gray-500 mt-3 font-medium">
-            {finance.payer}
+            {driverName}
           </p>
         </div>
       </div>
@@ -88,7 +90,7 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
                 account_balance_wallet
               </span>
             </div>
-            <span className="font-bold text-gray-900">
+            <span className="font-bold text-gray-900 dark:text-white">
               {methodLabel[finance.payment_method] || finance.payment_method}
             </span>
           </div>
@@ -97,24 +99,35 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
             Payer
           </p>
-          <p className="font-mono text-sm font-medium text-gray-900">
-            {finance.payer}
+          <p className="font-mono text-sm font-medium text-gray-900 dark:text-white">
+            {driverName}
           </p>
+          {finance.driver?.employee_id && (
+            <p className="text-xs text-gray-400">ID: {finance.driver.employee_id}</p>
+          )}
         </div>
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
             Notes
           </p>
-          <p className="text-sm font-medium text-gray-900">
+          <p className="text-sm font-medium text-gray-900 dark:text-white">
             {finance.notes || "-"}
           </p>
         </div>
 
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+            Finance Type
+          </p>
+          <p className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+            {finance.finance_type}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
             Created At
           </p>
-          <p className="text-sm font-medium text-gray-900">
+          <p className="text-sm font-medium text-gray-900 dark:text-white">
             {formatDate(finance.created_at || "")}
           </p>
         </div>
@@ -122,16 +135,8 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
             Updated At
           </p>
-          <p className="text-sm font-medium text-gray-900">
+          <p className="text-sm font-medium text-gray-900 dark:text-white">
             {formatDate(finance.updated_at || "")}
-          </p>
-        </div>
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Status
-          </p>
-          <p className="text-sm font-medium text-gray-900">
-            {finance.is_active ? "Active" : "Inactive"}
           </p>
         </div>
       </div>

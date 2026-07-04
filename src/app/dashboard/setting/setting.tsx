@@ -7,6 +7,7 @@ import GeneralParamaters from "@/components/settings/general-parameters";
 import SecurityCard from "@/components/settings/system-security";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { PermissionGuard } from "@/components/auth-guard-permission";
 
 const SettingPage = () => {
   const [mfaEnabled, setMfaEnabled] = useState(true);
@@ -14,7 +15,7 @@ const SettingPage = () => {
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
   return (
-    <>
+    <PermissionGuard permission="setting.read">
       <ConfirmDialog
         isOpen={showSaveConfirm}
         onClose={() => setShowSaveConfirm(false)}
@@ -42,7 +43,7 @@ const SettingPage = () => {
           </div>
         </div>
       </div>
-    </>
+    </PermissionGuard>
   );
 };
 export default SettingPage;

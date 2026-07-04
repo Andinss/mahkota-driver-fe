@@ -33,6 +33,7 @@ interface RentalTableProps {
   onDelete?: (rental: Rental) => void;
   onDetails?: (rental: Rental) => void;
   onEndRental?: (rental: Rental) => void;
+  onStatusChange?: (rental: Rental, status: string) => void;
   onExport?: (options?: any) => void;
 }
 
@@ -59,6 +60,7 @@ export const RentalTable = ({
   onDelete,
   onDetails,
   onEndRental,
+  onStatusChange,
   onExport,
 }: RentalTableProps) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -101,6 +103,7 @@ export const RentalTable = ({
                 onDelete={onDelete}
                 onDetails={onDetails}
                 onEndRental={onEndRental}
+                onStatusChange={onStatusChange}
               />
             ))}
           </tbody>

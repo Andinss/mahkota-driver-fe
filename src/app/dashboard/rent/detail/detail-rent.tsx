@@ -21,11 +21,24 @@ const DetailRentPage = () => {
   useEffect(() => {
     if (transactionId) {
       setIsLoading(true);
-      rentalApi.getList({ limit: 10 }).then((res) => {
-        const items = Array.isArray(res.data) ? res.data : [];
-        const found = items.find((r) => r.id === transactionId);
-        setRental(found || null);
-      }).catch(() => setRental(null))
+      rentalApi.getDetail(transactionId)
+        .then((res) => {
+          const item = (res as any)?.data ?? (res as any);
+          if (item?.rental_number) {
+            setRental(item);
+          } else {
+            throw new Error("Invalid response");
+          }
+        })
+        .catch(() => {
+          // fallback to getById
+          rentalApi.getById(transactionId).then((res) => {
+            const item = (res as any)?.data ?? (res as any);
+            if (item?.rental_number) {
+              setRental(item);
+            }
+          }).catch(() => setRental(null));
+        })
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
@@ -48,6 +61,24 @@ const DetailRentPage = () => {
     );
   }
 
+  const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+  const rawVehiclePhoto = (rental.vehicle as any)?.vehicle_photo;
+  const vehiclePhoto = rawVehiclePhoto
+    ? (Array.isArray(rawVehiclePhoto) ? rawVehiclePhoto[0] : rawVehiclePhoto)
+    : "";
+  const vehicleImageUrl = vehiclePhoto
+    ? vehiclePhoto.startsWith("http")
+      ? vehiclePhoto
+      : `${imageBase}/${vehiclePhoto.replace(/^\//, "")}`
+    : "";
+
+  const rawDriverPhoto = rental.driver?.profile_photo || "";
+  const driverPhotoUrl = rawDriverPhoto
+    ? rawDriverPhoto.startsWith("http")
+      ? rawDriverPhoto
+      : `${imageBase}/${rawDriverPhoto.replace(/^\//, "")}`
+    : "";
+
   return (
     <PermissionGuard permission="rental.read">
     <div className="m-8">
@@ -60,7 +91,7 @@ const DetailRentPage = () => {
           fuelLevel={85}
           odometer={0}
           depositAmount={Number(rental.security_deposit) || 0}
-          imageUrl=""
+          imageUrl={vehicleImageUrl}
         />
 
         {/* Driver Information (Span 4) */}
@@ -70,7 +101,7 @@ const DetailRentPage = () => {
           licenseStatus="Verified"
           contact={rental.driver?.phone || "-"}
           email={rental.driver?.email || "-"}
-          avatar=""
+          avatar={driverPhotoUrl}
         />
 
         {/* Duration & Rates (Span 7) */}

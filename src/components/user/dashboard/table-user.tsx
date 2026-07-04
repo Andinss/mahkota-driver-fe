@@ -47,8 +47,8 @@ export const UserTable = ({
 
   return (
     <div>
-      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <h2 className="font-bold text-lg text-gray-900">User Management</h2>
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center">
+        <h2 className="font-bold text-lg text-gray-900 dark:text-white">User Management</h2>
         <button
           onClick={() => setIsExportModalOpen(true)}
           className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
@@ -60,11 +60,11 @@ export const UserTable = ({
 
       <div className="overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-semibold">
+          <thead className="bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
               <th className="px-6 py-4 w-12">
                 <input
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                  className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4"
                   type="checkbox"
                 />
               </th>
@@ -74,7 +74,7 @@ export const UserTable = ({
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 text-sm">
+          <tbody className="divide-y divide-gray-200 dark:divide-slate-700 text-sm">
             {users.map((user, index) => (
               <UserTableRow
                 key={user.id || index}

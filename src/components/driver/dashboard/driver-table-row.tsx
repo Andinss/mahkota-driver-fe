@@ -76,7 +76,7 @@ export function DriverTableRow({
           >
             Delete
           </DropdownMenuItem>
-          <Link href={`/dashboard/driver/detail?id=${driver.employeeId}`}>
+          <Link href={`/dashboard/driver/detail?id=${driver.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>

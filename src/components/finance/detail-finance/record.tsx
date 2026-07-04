@@ -1,4 +1,8 @@
+import { useRouter } from "next/navigation";
+
 const RecordCard = () => {
+  const router = useRouter();
+
   return (
     <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-8 text-white shadow-xl shadow-blue-600/20 relative overflow-hidden group">
       <div className="absolute -bottom-10 -right-10 text-white/10 group-hover:scale-110 transition-transform duration-500">
@@ -7,7 +11,6 @@ const RecordCard = () => {
       <div className="relative z-10">
         <span
           className="material-symbols-outlined text-3xl mb-4 block"
-          data-icon="security"
         >
           security
         </span>
@@ -16,7 +19,10 @@ const RecordCard = () => {
           This transaction is digitally signed and locked within the vehicle
           management ledger for compliance.
         </p>
-        <button className="w-full sm:w-auto px-6 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg text-xs font-bold uppercase tracking-widest transition-all">
+        <button
+          onClick={() => router.push("/dashboard/audit-logs")}
+          className="w-full sm:w-auto px-6 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg text-xs font-bold uppercase tracking-widest transition-all"
+        >
           View Audit Log
         </button>
       </div>

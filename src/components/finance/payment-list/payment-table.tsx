@@ -24,6 +24,7 @@ const paymentColumns: ExportColumn[] = [
   { id: "payment_date", label: "Payment Date", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
   { id: "payment_method", label: "Payment Method", defaultChecked: true },
+  { id: "finance_type", label: "Finance Type", defaultChecked: false },
 ];
 
 export function PaymentTable({

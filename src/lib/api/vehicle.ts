@@ -1,10 +1,22 @@
 import { api } from "../api-http";
-import type { SuccessResponse } from "../types/api";
-import type { VehicleItem, VehicleListParams } from "../types/vehicle";
+import type { SuccessResponse, SuccessResponsePaginated } from "../types/api";
+import type { VehicleItem, VehicleListParams, VehicleSummary } from "../types/vehicle";
 
 export const vehicleApi = {
   getList: (params?: VehicleListParams) =>
-    api.get<SuccessResponse<VehicleItem[]>>("/vehicles", params as Record<string, string | number | undefined>),
+    api.get<SuccessResponsePaginated<VehicleItem>>(
+      "/vehicles",
+      params as Record<string, string | number | undefined>,
+    ),
+
+  getSummary: () =>
+    api.get<SuccessResponse<VehicleSummary>>("/vehicles/summary"),
+
+  getById: (id: string) =>
+    api.get<SuccessResponse<VehicleItem>>(`/vehicles/${id}`),
+
+  getDetail: (id: string) =>
+    api.get<SuccessResponse<VehicleItem>>(`/vehicles/detail/${id}`),
 
   create: (formData: FormData) =>
     api.upload<SuccessResponse<VehicleItem>>("/vehicles/create", formData),

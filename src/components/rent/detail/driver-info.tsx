@@ -20,7 +20,7 @@ const DriverInfo = ({
     licenseStatus?.toLowerCase() === "verified";
   return (
     <div className="col-span-12 lg:col-span-4">
-      <div className="bg-white rounded-xl p-6 sm:p-8 shadow-md border border-gray-200 h-full flex flex-col">
+      <div className="bg-white dark:bg-[#1a2632] rounded-xl p-6 sm:p-8 shadow-md border border-gray-200 dark:border-gray-700 h-full flex flex-col">
         <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-6">
           Driver Information
         </h3>
@@ -33,7 +33,7 @@ const DriverInfo = ({
             />
           </div>
           <div>
-            <h4 className="text-lg sm:text-xl font-bold text-gray-900">
+            <h4 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
               {name}
             </h4>
             <p className="text-xs sm:text-sm text-gray-500">
@@ -52,19 +52,19 @@ const DriverInfo = ({
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-200">
             <span className="text-xs font-medium text-gray-500">Contact</span>
-            <span className="text-xs font-bold text-gray-900">
+            <span className="text-xs font-bold text-gray-900 dark:text-white">
               {contact}
             </span>
           </div>
           <div className="flex justify-between items-center py-2">
             <span className="text-xs font-medium text-gray-500">Email</span>
-            <span className="text-xs font-bold text-gray-900 break-all">
+            <span className="text-xs font-bold text-gray-900 dark:text-white break-all">
               {email}
             </span>
           </div>
         </div>
         <div className="mt-8">
-          <button className="w-full py-3 bg-gray-100 text-gray-900 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+          <button className="w-full py-3 bg-gray-100 text-gray-900 dark:text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
             <span className="material-symbols-outlined text-sm">
               chat_bubble
             </span>

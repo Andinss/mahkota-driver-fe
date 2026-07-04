@@ -30,11 +30,17 @@ export function DriverHeader({ driver }: DriverHeaderProps) {
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
       <div className="p-8 flex flex-col md:flex-row items-center gap-8">
         <div className="relative">
-          <img
-            alt={driver.name}
-            className="w-32 h-32 rounded-2xl object-cover ring-4 ring-slate-50 dark:ring-slate-800"
-            src={driver.imageUrl}
-          />
+          {driver.imageUrl ? (
+            <img
+              alt={driver.name}
+              className="w-32 h-32 rounded-2xl object-cover ring-4 ring-slate-50 dark:ring-slate-800"
+              src={driver.imageUrl}
+            />
+          ) : (
+            <div className="w-32 h-32 rounded-2xl ring-4 ring-slate-50 dark:ring-slate-800 bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+              <span className="material-symbols-outlined text-4xl text-slate-400">person</span>
+            </div>
+          )}
           <span className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-1 rounded-lg border-4 border-white dark:border-slate-900">
             <span className="material-symbols-outlined text-sm block">
               verified

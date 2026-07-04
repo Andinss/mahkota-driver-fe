@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/page-header";
 import { useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
 import { driverApi } from "@/lib/api/driver";
+import type { DriverSummary } from "@/lib/types/driver";
 import { supervisorApi } from "@/lib/api/supervisor";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
@@ -28,16 +29,18 @@ export default function DriverPage() {
     search: "",
   });
   const [driverCount, setDriverCount] = useState<{ count: number; max: number; remaining: number } | null>(null);
+  const [summary, setSummary] = useState<DriverSummary | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const itemsPerPage = 10;
 
-  const isSupervisor = user?.role?.code === "SUPERVISOR";
+  const hasReadAll = canAccess(user?.permissions, 'driver.read.all');
+  const hasReadOwn = canAccess(user?.permissions, 'driver.read.own');
 
   const fetchDrivers = useCallback(async () => {
-    if (!canAccess(user?.permissions, 'driver.read.all') && !canAccess(user?.permissions, 'driver.read.own')) {
+    if (!hasReadAll && !hasReadOwn) {
       setIsLoading(false);
       return;
     }
@@ -45,7 +48,7 @@ export default function DriverPage() {
     try {
       let items: Record<string, any>[] = [];
 
-      if (isSupervisor) {
+      if (!hasReadAll && hasReadOwn) {
         const res = await supervisorApi.getList();
         items = Array.isArray((res as any).data) ? (res as any).data : [];
       } else {
@@ -86,20 +89,30 @@ export default function DriverPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, filters.search, isSupervisor]);
+  }, [currentPage, filters.search, hasReadAll, hasReadOwn]);
 
   const fetchCount = useCallback(async () => {
-    if (!isSupervisor) return;
+    if (hasReadAll || !hasReadOwn) return;
     try {
       const res = await supervisorApi.getCount();
       setDriverCount((res as any).data);
     } catch {}
-  }, [isSupervisor]);
+  }, [hasReadAll, hasReadOwn]);
+
+  const fetchSummary = useCallback(async () => {
+    try {
+      const res = await driverApi.getSummary();
+      setSummary(res.data);
+    } catch {
+      // non-critical
+    }
+  }, []);
 
   useEffect(() => {
     fetchDrivers();
     fetchCount();
-  }, [fetchDrivers, fetchCount]);
+    fetchSummary();
+  }, [fetchDrivers, fetchCount, fetchSummary]);
 
   const handleFilterChange = (newFilters: DriverFilters) => {
     setFilters(newFilters);
@@ -125,7 +138,7 @@ export default function DriverPage() {
 
   const handleDeleteDriver = async (driverId: string) => {
     try {
-      if (isSupervisor) {
+      if (!hasReadAll && hasReadOwn) {
         await supervisorApi.delete(driverId);
       } else {
         await driverApi.delete(driverId);
@@ -141,13 +154,13 @@ export default function DriverPage() {
     <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
     <div className="m-8">
       <PageHeader
-        title={isSupervisor ? "My Drivers" : "Driver List Overview"}
-        description={isSupervisor ? "Manage your assigned drivers" : "Manage your drivers, track their performance, and monitor their status."}
+        title={!hasReadAll && hasReadOwn ? "My Drivers" : "Driver List Overview"}
+        description={!hasReadAll && hasReadOwn ? "Manage your assigned drivers" : "Manage your drivers, track their performance, and monitor their status."}
         buttonText={canAccess(user?.permissions, "driver.create") ? "Add New Driver" : undefined}
         buttonHref={canAccess(user?.permissions, "driver.create") ? "/dashboard/driver/register" : undefined}
       />
 
-      {isSupervisor && driverCount && (
+      {!hasReadAll && hasReadOwn && driverCount && (
         <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30">
           <div className="flex items-center justify-between">
             <div>
@@ -176,13 +189,13 @@ export default function DriverPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-5 mb-8">
         <DriverStatsCard
-          title={isSupervisor ? "My Drivers" : "Total Drivers"}
-          value={totalResults.toString()}
+          title={!hasReadAll && hasReadOwn ? "My Drivers" : "Total Drivers"}
+          value={(summary?.total_drivers ?? totalResults).toString()}
           icon="groups"
           iconColor="text-primary"
           trend={{
             icon: "trending_up",
-            text: isSupervisor ? "Drivers under your supervision" : "All registered drivers",
+            text: summary ? `Male: ${summary.gender_breakdown?.Male ?? 0} | Female: ${summary.gender_breakdown?.Female ?? 0}` : (hasReadOwn ? "Drivers under your supervision" : "All registered drivers"),
             textColor: "text-emerald-500",
           }}
         />
@@ -235,7 +248,7 @@ export default function DriverPage() {
       </Suspense>
       <div className="bg-white mt-5 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500">
+          <div className="p-12 text-center text-slate-500 dark:text-slate-400">
             Loading drivers...
           </div>
         ) : (

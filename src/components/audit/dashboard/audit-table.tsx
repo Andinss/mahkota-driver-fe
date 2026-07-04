@@ -1,26 +1,10 @@
 import { ExportColumn, ModalExport } from "@/components/ui/export";
 import { useState } from "react";
 import { AuditTableRow } from "./audit-table-row";
-
-interface AuditLog {
-  id: number;
-  timestamp: {
-    date: string;
-    time: string;
-  };
-  user: {
-    name: string;
-    role: string;
-    avatar?: string | null;
-    isSystem?: boolean;
-  };
-  action: string;
-  target: string;
-  status: "success" | "failed" | "pending";
-}
+import type { AuditLogItem } from "@/lib/types/audit";
 
 interface AuditTableProps {
-  logs: AuditLog[];
+  logs: AuditLogItem[];
   onExport?: (options?: any) => void;
 }
 
@@ -29,6 +13,7 @@ const auditColumns: ExportColumn[] = [
   { id: "user", label: "User", defaultChecked: true },
   { id: "action", label: "Action", defaultChecked: true },
   { id: "target", label: "Target", defaultChecked: true },
+  { id: "device", label: "Device", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
 ];
 
@@ -58,6 +43,7 @@ export const AuditLogTable = ({ logs, onExport }: AuditTableProps) => {
               <th className="px-6 py-4">User</th>
               <th className="px-6 py-4">Action</th>
               <th className="px-6 py-4">Target</th>
+              <th className="px-6 py-4">Device</th>
               <th className="px-6 py-4 text-center">Status</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>

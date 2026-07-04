@@ -31,24 +31,24 @@ export const UserTableRow = ({
   const perms = currentUser?.permissions;
 
   return (
-    <tr className="group hover:bg-gray-50 transition-colors">
+    <tr className="group hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
       <td className="py-4 px-6 align-middle">
         <input
-          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+          className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4"
           type="checkbox"
         />
       </td>
 
       <td className="py-4 px-6 align-middle">
         <div className="flex items-center gap-4">
-          <div className="size-10 rounded-full bg-cover bg-center overflow-hidden shrink-0 bg-gray-200">
-            <div className="w-full h-full flex items-center justify-center bg-gray-300 text-xs font-medium text-gray-600">
+          <div className="size-10 rounded-full bg-cover bg-center overflow-hidden shrink-0 bg-gray-200 dark:bg-slate-700">
+            <div className="w-full h-full flex items-center justify-center bg-gray-300 dark:bg-gray-600 text-xs font-medium text-gray-600 dark:text-gray-400">
               {user.username.charAt(0).toUpperCase()}
             </div>
           </div>
           <div>
-            <p className="text-sm font-bold text-gray-900">{user.username}</p>
-            <p className="text-xs text-gray-500">{user.email}</p>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">{user.username}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
           </div>
         </div>
       </td>
@@ -99,7 +99,7 @@ export const UserTableRow = ({
               Delete
             </DropdownMenuItem>
           )}
-          <Link href={`/dashboard/users/detail/`}>
+          <Link href={`/dashboard/users/detail?id=${user.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>

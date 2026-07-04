@@ -19,7 +19,7 @@ interface SearchBarProps {
 const SearchBar = ({ filters, onFilterChange }: SearchBarProps) => {
   return (
     <div className="flex-1 overflow-y-auto mt-5">
-      <div className="flex flex-wrap items-end gap-4 mb-6 bg-white dark:bg-[#111418] p-4 rounded-xl border border-[#dbe0e6] dark:border-gray-800 shadow-sm">
+      <div className="flex flex-wrap items-end gap-4 mb-6 bg-white dark:bg-[#1a2632] p-4 rounded-xl border border-[#dbe0e6] dark:border-gray-700 shadow-sm">
         <label className="flex flex-col min-w-64 flex-1">
           <p className="text-[#111418] dark:text-gray-300 text-sm font-semibold leading-normal pb-2">
             Search Users

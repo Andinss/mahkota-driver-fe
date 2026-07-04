@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import {
   VehicleHeader,
@@ -16,81 +17,137 @@ import {
 } from "@/components/vehicle/detail/rental-history-filters";
 import { RentalHistoryTable } from "@/components/vehicle/detail/rental-history-table";
 import { ModalExport, ExportOptions, ExportColumn } from "@/components/ui/export";
+import { vehicleApi } from "@/lib/api/vehicle";
+import { rentalApi } from "@/lib/api/rentals";
+import type { VehicleItem } from "@/lib/types/vehicle";
+import type { RentalTransaction } from "@/lib/types/rentals";
+
+const statusMap: Record<string, string> = {
+  Available: "ACTIVE",
+  Reserved: "ACTIVE",
+  rented: "RENTED",
+  Maintenance: "MAINTENANCE",
+  Service: "SERVICE",
+  retrieved: "RETRIEVED",
+};
 
 const VehicleDetail = () => {
-  const [activeTab, setActiveTab] = useState<"information" | "rental">(
-    "information",
-  );
+  const searchParams = useSearchParams();
+  const vehicleId = searchParams.get("id");
+
+  const [activeTab, setActiveTab] = useState<"information" | "rental">("information");
   const [currentFilters, setCurrentFilters] = useState<RentalFilters>({
     dateRange: "",
     driver: "",
   });
-
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [vehicle, setVehicle] = useState<VehicleItem | null>(null);
+  const [vehicleRentals, setVehicleRentals] = useState<RentalTransaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data - ini nanti diganti dengan fetch dari API
-  const vehicleData: VehicleHeaderData = {
-    plate: "B 1234 ABC",
-    name: "Toyota Hiace Previa • Silver Metallic",
+  useEffect(() => {
+    if (vehicleId) {
+      setIsLoading(true);
+
+      const fetchVehicle = async () => {
+        try {
+          const res = await vehicleApi.getDetail(vehicleId);
+          const item = (res as any)?.data ?? (res as any);
+          if (item?.merk) {
+            setVehicle(item);
+            return;
+          }
+        } catch {
+          // fallback
+        }
+        try {
+          const res = await vehicleApi.getById(vehicleId);
+          const item = (res as any)?.data ?? (res as any);
+          if (item?.merk) setVehicle(item);
+          else setVehicle(null);
+        } catch {
+          setVehicle(null);
+        }
+      };
+
+      const fetchRentals = async () => {
+        try {
+          const res = await rentalApi.getList({ limit: 1000 });
+          const rentals = (res as any)?.data ?? [];
+          const filtered = rentals.filter((r: RentalTransaction) => r.vehicle_id === vehicleId);
+          setVehicleRentals(filtered);
+        } catch {
+          // ignore
+        }
+      };
+
+      fetchVehicle().then(fetchRentals).finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
+    }
+  }, [vehicleId]);
+
+  const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+  const rawPhoto = vehicle?.vehicle_photo
+    ? Array.isArray(vehicle.vehicle_photo)
+      ? vehicle.vehicle_photo[0]
+      : vehicle.vehicle_photo
+    : "";
+  const vehiclePhoto = rawPhoto
+    ? rawPhoto.startsWith("http")
+      ? rawPhoto
+      : `${imageBase}/${rawPhoto.replace(/^\//, "")}`
+    : "";
+
+  const vehicleData: VehicleHeaderData = vehicle ? {
+    plate: vehicle.license_plate || "-",
+    name: `${vehicle.merk || ""} ${vehicle.model || ""}`.trim() || "Unknown Vehicle",
+    status: statusMap[vehicle.status] || vehicle.status,
+    totalRevenue: "-",
+    totalRentals: "-",
+    avgUtilization: "-",
+    maintenance: vehicle.status === "Maintenance" ? "Required" : "None",
+    imageUrl: vehiclePhoto,
+    imageAlt: `${vehicle.license_plate || ""} ${vehicle.merk || ""}`.trim() || "Vehicle",
+  } : {
+    plate: "-",
+    name: "Loading...",
     status: "ACTIVE",
-    totalRevenue: "Rp 142.500.000",
-    totalRentals: "128 Trips",
-    avgUtilization: "84%",
-    maintenance: "Scheduled",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDIm8qQWyUiKTmp5lJnvCLfXwpvURihINSlIaPoouO-nEyR5JMaJ7hEGfxSoYP8v8_Ckv5FgrlEMUIGmJ41dzXy4FsF9OqilsrogvckzdnhHMH0GpkJXbCUIg7T3OUA8MGgNmCqdLeeMZ0aMpIHlImczhC1NPjBeXC5trxsm1BJ1EHlc0JyMdhiVzdEGNZcNE0VuLqFudcdm9sW__cOolRJQMzzlwf79hprOhm3CVDBrKKsb0cRktW48ympTEG1QQdPDnk27oIJjtap",
-    imageAlt: "Side view of a silver passenger van parked outside",
+    totalRevenue: "-",
+    totalRentals: "-",
+    avgUtilization: "-",
+    maintenance: "None",
+    imageUrl: "",
+    imageAlt: "",
   };
 
-  const technicalSpecs = [
-    { label: "Engine Capacity", value: "2,755 cc" },
-    { label: "Fuel Type", value: "Diesel" },
-    { label: "Transmission", value: "Automatic" },
-    { label: "Passenger Capacity", value: "16 Seats" },
-  ];
+  const technicalSpecs = vehicle ? [
+    { label: "Merk", value: vehicle.merk },
+    { label: "Model", value: vehicle.model },
+    { label: "Color", value: vehicle.color },
+    { label: "Launching Year", value: vehicle.launching_year ? new Date(vehicle.launching_year).getFullYear().toString() : "-" },
+  ] : [];
 
-  const registrationDetails = [
-    { label: "VIN Number", value: "MHFB123K123456" },
-    { label: "Engine Number", value: "1GD-FTV-8923" },
-    { label: "STNK Expiry", value: "12 Nov 2028" },
-    { label: "Insurance Policy", value: "All-Risk Premium" },
-  ];
+  const registrationDetails = vehicle ? [
+    { label: "License Plate", value: vehicle.license_plate || "-" },
+    { label: "VIN Number", value: vehicle.vin_number || "-" },
+    { label: "Engine Number", value: vehicle.engine_number || "-" },
+    { label: "Status", value: vehicle.status || "-" },
+  ] : [];
 
-  const rentalPricing = {
-    baseRate: "Rp 1.200.000",
-    features: [
-      { text: "Includes Basic Insurance" },
-      { text: "Free Driver (Optional)" },
-      { text: "Maintenance Included" },
-    ],
-  };
+  const rentalPricing = vehicle ? {
+    baseRate: `Rp ${Number(vehicle.daily_rate || 0).toLocaleString("id-ID")}`,
+    features: [{ text: `Status: ${vehicle.status}` }],
+  } : { baseRate: "-", features: [] };
 
-  const rentalHistory = [
-    {
-      dateRange: "12 Oct - 15 Oct 2023",
-      tripDuration: "3 Days Trip",
-      driverName: "Budi Santoso",
-      dailyRate: "Rp 850.000",
-      totalFee: "Rp 2.550.000",
-      status: "PAID" as const,
-    },
-    {
-      dateRange: "05 Oct - 10 Oct 2023",
-      tripDuration: "5 Days Trip",
-      driverName: "Siti Aminah",
-      dailyRate: "Rp 850.000",
-      totalFee: "Rp 4.250.000",
-      status: "LATE" as const,
-    },
-    {
-      dateRange: "28 Sep - 30 Sep 2023",
-      tripDuration: "2 Days Trip",
-      driverName: "Dedi Kurniawan",
-      dailyRate: "Rp 900.000",
-      totalFee: "Rp 1.800.000",
-      status: "PAID" as const,
-    },
-  ];
+  const rentalHistory = vehicleRentals.map((r) => ({
+    dateRange: `${new Date(r.start_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })} - ${new Date(r.end_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })}`,
+    tripDuration: `${r.total_duration} days`,
+    driverName: r.driver ? `${r.driver.first_name} ${r.driver.last_name}` : "-",
+    dailyRate: `Rp ${Number(r.daily_rate).toLocaleString("id-ID")}`,
+    totalFee: `Rp ${Number(r.total_revenue).toLocaleString("id-ID")}`,
+    status: "PAID" as const,
+  }));
 
   const rentalHistoryColumns: ExportColumn[] = [
     { id: "dateRange", label: "Date Range", defaultChecked: true },
@@ -103,12 +160,10 @@ const VehicleDetail = () => {
 
   const handleFilterChange = (filters: RentalFilters) => {
     setCurrentFilters(filters);
-    console.log("Filters changed:", filters);
   };
 
   const handleClearFilters = () => {
     setCurrentFilters({ dateRange: "", driver: "" });
-    console.log("Filters cleared");
   };
 
   const handleExport = () => {
@@ -116,10 +171,25 @@ const VehicleDetail = () => {
   };
 
   const handleExportConfirm = (options: ExportOptions) => {
-    console.log("Export options:", options);
     alert(`Exporting rental history as ${options.format}`);
     setIsExportModalOpen(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="m-7 flex items-center justify-center min-h-[400px]">
+        <p className="text-slate-500">Loading vehicle details...</p>
+      </div>
+    );
+  }
+
+  if (!vehicle) {
+    return (
+      <div className="m-7 flex items-center justify-center min-h-[400px]">
+        <p className="text-slate-500">Vehicle not found</p>
+      </div>
+    );
+  }
 
   return (
     <PermissionGuard permission="vehicle.read">

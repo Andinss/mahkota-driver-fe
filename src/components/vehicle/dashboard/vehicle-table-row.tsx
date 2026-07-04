@@ -3,6 +3,7 @@ import { StatusBadge } from "../../status-badge";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 
 interface Vehicle {
+  id?: string;
   name: string;
   year: number;
   transmission: string;
@@ -78,7 +79,7 @@ export const VehicleTableRow = ({
             Delete
           </DropdownMenuItem>
 
-          <Link href={`/dashboard/vehicle/detail/`}>
+          <Link href={`/dashboard/vehicle/detail?id=${vehicle.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>

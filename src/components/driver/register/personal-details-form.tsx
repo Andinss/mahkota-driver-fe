@@ -80,7 +80,7 @@ export function PersonalDetailsForm({
           <DriverProfileUpload
             onImageSelect={handlePhotoSelect}
             initialImageUrl={initialProfilePhotoUrl}
-            acceptedFormats={["JPG", "PNG"]}
+            acceptedFormats={["JPG", "JPEG", "PNG"]}
             maxSizeMB={5}
           />
         </div>

@@ -85,10 +85,10 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-[1px]">
-      <div className="bg-white rounded-xl p-5 sm:p-12 flex flex-col">
+    <div className="bg-white dark:bg-[#1a2632] rounded-xl p-[1px]">
+      <div className="bg-white dark:bg-[#1a2632] rounded-xl p-5 sm:p-12 flex flex-col">
         <div className="mb-8">
-          <div className="flex items-center gap-2 text-primary-container mb-6">
+          <div className="flex items-center gap-2 text-primary-container dark:text-blue-400 mb-6">
             <span className="material-symbols-outlined" data-icon="lock_reset">
               lock_reset
             </span>
@@ -96,10 +96,10 @@ const ForgotPasswordPage = () => {
               Security Portal
             </span>
           </div>
-          <h1 className="text-on-surface text-[2rem] font-black leading-tight tracking-tight mb-4">
+          <h1 className="text-on-surface dark:text-white text-[2rem] font-black leading-tight tracking-tight mb-4">
             Forgot Password?
           </h1>
-          <p className="text-on-surface-variant text-base leading-relaxed max-w-sm">
+          <p className="text-on-surface-variant dark:text-gray-400 text-base leading-relaxed max-w-sm">
             Enter your email to receive password reset instructions.
           </p>
         </div>

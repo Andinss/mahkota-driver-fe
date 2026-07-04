@@ -1,6 +1,17 @@
-const FlowFinance = () => {
+interface FlowFinanceProps {
+  status?: "pending" | "completed" | "verified";
+}
+
+const FlowFinance = ({ status = "completed" }: FlowFinanceProps) => {
+  const steps = [
+    { label: "Invoice Generated", done: true },
+    { label: "Payment Recorded", done: status !== "pending" },
+    { label: "Amount Verified", done: status === "completed" || status === "verified" },
+    { label: "Ledger Reconciled", done: status === "verified" },
+  ];
+
   return (
-    <div className="bg-white rounded-2xl p-6 lg:p-8 border border-gray-200 shadow-sm relative overflow-hidden">
+    <div className="bg-white dark:bg-[#1a2632] rounded-2xl p-6 lg:p-8 border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
       <div className="absolute -top-4 -right-4 text-blue-600/5 pointer-events-none">
         <span className="material-symbols-outlined text-9xl">verified</span>
       </div>
@@ -9,67 +20,34 @@ const FlowFinance = () => {
       </h3>
       <div className="space-y-8 relative">
         <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-gray-200"></div>
-        <div className="relative flex items-start gap-4">
-          <div className="z-10 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
-            <span
-              className="material-symbols-outlined text-white text-xs"
-              style={{ fontVariationSettings: "'wght' 700" }}
-            >
-              check
-            </span>
+        {steps.map((step, index) => (
+          <div key={index} className="relative flex items-start gap-4">
+            <div className={`z-10 w-6 h-6 rounded-full flex items-center justify-center ${
+              step.done
+                ? "bg-blue-600"
+                : "bg-gray-100 border-2 border-gray-300"
+            }`}>
+              {step.done ? (
+                <span
+                  className="material-symbols-outlined text-white text-xs"
+                  style={{ fontVariationSettings: "'wght' 700" }}
+                >
+                  check
+                </span>
+              ) : (
+                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+              )}
+            </div>
+            <div>
+              <p className={`text-sm font-bold ${step.done ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
+                {step.label}
+              </p>
+              <p className="text-[10px] text-gray-500 font-medium uppercase mt-0.5">
+                {step.done ? "Completed" : "Pending"}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900">Invoice Generated</p>
-            <p className="text-[10px] text-gray-500 font-medium uppercase mt-0.5">
-              Oct 23, 2023 • 09:00 AM
-            </p>
-          </div>
-        </div>
-        <div className="relative flex items-start gap-4">
-          <div className="z-10 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
-            <span
-              className="material-symbols-outlined text-white text-xs"
-              style={{ fontVariationSettings: "'wght' 700" }}
-            >
-              check
-            </span>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900">Payment Link Sent</p>
-            <p className="text-[10px] text-gray-500 font-medium uppercase mt-0.5">
-              Oct 23, 2023 • 09:15 AM
-            </p>
-          </div>
-        </div>
-        <div className="relative flex items-start gap-4">
-          <div className="z-10 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
-            <span
-              className="material-symbols-outlined text-white text-xs"
-              style={{ fontVariationSettings: "'wght' 700" }}
-            >
-              check
-            </span>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900">
-              Transfer Confirmation
-            </p>
-            <p className="text-[10px] text-gray-500 font-medium uppercase mt-0.5">
-              Oct 24, 2023 • 14:10 PM
-            </p>
-          </div>
-        </div>
-        <div className="relative flex items-start gap-4">
-          <div className="z-10 w-6 h-6 rounded-full bg-gray-100 border-2 border-blue-600 flex items-center justify-center">
-            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900">Ledger Reconciled</p>
-            <p className="text-[10px] text-gray-500 font-medium uppercase mt-0.5">
-              Oct 24, 2023 • 14:32 PM
-            </p>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

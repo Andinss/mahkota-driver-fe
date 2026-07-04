@@ -62,12 +62,18 @@ export function VehicleHeader({ data }: VehicleHeaderProps) {
       </div>
       <div className="md:w-1/3 h-48 md:h-auto relative overflow-hidden bg-slate-200">
         <div className="absolute inset-0 bg-gradient-to-r from-white dark:from-slate-900 via-transparent to-transparent z-10 hidden md:block"></div>
-        <img
-          alt={data.imageAlt}
-          className="w-full h-full object-cover"
-          data-alt={data.imageAlt}
-          src={data.imageUrl}
-        />
+        {data.imageUrl ? (
+          <img
+            alt={data.imageAlt}
+            className="w-full h-full object-cover"
+            data-alt={data.imageAlt}
+            src={data.imageUrl}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-slate-400">
+            No Image
+          </div>
+        )}
       </div>
     </div>
   );
