@@ -1,10 +1,10 @@
 import type { UserItem } from "@/lib/types/user";
 
-interface AssignDriverProps {
+interface AccountDetailsProps {
   user: UserItem;
 }
 
-const AssignDriver = ({ user }: AssignDriverProps) => {
+const AccountDetails = ({ user }: AccountDetailsProps) => {
   return (
     <div className="bg-white dark:bg-[#1a2632] p-6 lg:p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
       <h4 className="text-[0.7rem] font-black text-gray-500 dark:text-gray-400 uppercase tracking-[0.25em] mb-6 flex items-center gap-2">
@@ -19,7 +19,7 @@ const AssignDriver = ({ user }: AssignDriverProps) => {
             <span className="material-symbols-outlined text-blue-600 text-sm">
               fingerprint
             </span>
-            <span className="font-medium text-sm lg:text-base text-gray-900 dark:text-white font-mono text-xs">
+            <span className="font-medium text-sm lg:text-base text-gray-900 dark:text-white font-mono">
               {user.id}
             </span>
           </div>
@@ -68,4 +68,4 @@ const AssignDriver = ({ user }: AssignDriverProps) => {
   );
 };
 
-export default AssignDriver;
+export default AccountDetails;
