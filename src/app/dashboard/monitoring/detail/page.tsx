@@ -10,6 +10,7 @@ import { LocationMapCard } from "@/components/monitoring/detail/location-map-car
 import { CustomerDetailsCard } from "@/components/monitoring/detail/customer-details-card";
 import { WorkflowStepper } from "@/components/monitoring/detail/workflow-stepper";
 import { FieldReportForm } from "@/components/monitoring/detail/field-report-form";
+import { monitoringApi } from "@/lib/api/monitoring";
 
 interface TaskDetail {
   id: string;
@@ -50,35 +51,21 @@ export default function MonitoringDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Replace with API call: GET /tasks/:id
-    // tasksApi.getById(taskId).then(...)
-    setTimeout(() => {
-      setTaskDetail({
-        id: taskId || "unknown",
-        vehicle: {
-          name: "Toyota Avanza - Silver",
-          year: "2022",
-          transmission: "Automatic",
-          plateNumber: "B 1234 XYZ",
-          imageUrl: "",
-          odometerOut: 45200,
-          fuelLevel: 75,
-          type: "Rental",
-        },
-        location: {
-          address: "Km 45, Jagorawi Toll Road",
-          mapUrl: "",
-          reportedIssue: "Engine overheated and stopped working. Smoke coming from the hood.",
-        },
-        customer: {
-          name: "John Doe",
-          initials: "JD",
-          contractNumber: "CTR-9921",
-          phoneNumber: "+6281234567890",
-        },
-      });
+    if (!taskId) {
       setLoading(false);
-    }, 300);
+      return;
+    }
+
+    monitoringApi.getTaskById(taskId)
+      .then((res) => {
+        if (res.success && res.data) {
+          setTaskDetail(res.data);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   }, [taskId]);
 
   const handleNavigateToSite = () => {

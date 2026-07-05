@@ -1,68 +1,69 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { FleetVehicle } from "@/components/monitoring/real-time/monitoring-map";
 import DetailStatusCard from "@/components/monitoring/real-time/detail-status-car";
 import SideStatus from "@/components/monitoring/real-time/side-status";
 import { PermissionGuard } from "@/components/auth-guard-permission";
+import { monitoringApi } from "@/lib/api/monitoring";
 
 const MonitoringMap = dynamic(
   () => import("@/components/monitoring/real-time/monitoring-map"),
   { ssr: false },
 );
 
-const defaultVehicles: FleetVehicle[] = [
-  {
-    id: "1",
-    plate: "B 1234 KKY",
-    driverName: "Budi Santoso",
-    driverPhone: "+62 812 3456 7890",
-    latitude: -6.2088,
-    longitude: 106.8456,
-    status: "emergency",
-    speed: 0,
-    fuelLevel: 45,
-    lastUpdated: "Just now",
-  },
-  {
-    id: "2",
-    plate: "D 5678 AB",
-    driverName: "Siti Aminah",
-    latitude: -6.175,
-    longitude: 106.827,
-    status: "moving",
-    speed: 45,
-    fuelLevel: 72,
-    lastUpdated: "1 min ago",
-  },
-  {
-    id: "3",
-    plate: "B 9988 XYZ",
-    driverName: "Ahmad Dhani",
-    latitude: -6.255,
-    longitude: 106.89,
-    status: "moving",
-    speed: 62,
-    fuelLevel: 55,
-    lastUpdated: "30s ago",
-  },
-  {
-    id: "4",
-    plate: "F 2233 LL",
-    driverName: "Eko Prasetyo",
-    latitude: -6.18,
-    longitude: 106.8,
-    status: "idle",
-    speed: 0,
-    fuelLevel: 30,
-    lastUpdated: "2h ago",
-  },
-];
+const POLL_INTERVAL = 10000;
+
+function mapFleetLocationToVehicle(loc: any): FleetVehicle {
+  return {
+    id: loc.vehicle_id,
+    plate: loc.plate,
+    driverName: loc.driver_name || loc.vehicle_name || loc.plate,
+    driverPhone: loc.driver_phone || undefined,
+    latitude: Number(loc.latitude),
+    longitude: Number(loc.longitude),
+    status: loc.status,
+    speed: Number(loc.speed) || 0,
+    fuelLevel: loc.fuel_level !== null ? Number(loc.fuel_level) : undefined,
+    lastUpdated: loc.last_updated
+      ? new Date(loc.last_updated).toLocaleTimeString()
+      : undefined,
+  };
+}
 
 const RealtimeMonitoring = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<FleetVehicle | null>(null);
-  const [vehicles] = useState<FleetVehicle[]>(defaultVehicles);
+  const [vehicles, setVehicles] = useState<FleetVehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
+
+  const fetchLocations = useCallback(async () => {
+    try {
+      const res = await monitoringApi.getFleetLocations();
+      if (mountedRef.current && res.success) {
+        const mapped = (res.data || []).map(mapFleetLocationToVehicle);
+        setVehicles(mapped);
+      }
+    } catch {
+      // silent fail — keep last known positions
+    } finally {
+      if (mountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    fetchLocations();
+
+    const interval = setInterval(fetchLocations, POLL_INTERVAL);
+    return () => {
+      mountedRef.current = false;
+      clearInterval(interval);
+    };
+  }, [fetchLocations]);
 
   const handleVehicleClick = (vehicle: FleetVehicle) => {
     setSelectedVehicle(vehicle);
@@ -72,18 +73,30 @@ const RealtimeMonitoring = () => {
     setSelectedVehicle(null);
   };
 
+  const emergencyCount = vehicles.filter((v) => v.status === "emergency").length;
+
   return (
     <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
     <div className="relative flex flex-1 mx-2 my-2 md:mx-4 md:my-4 lg:m-8 overflow-hidden">
-      <SideStatus />
+      <SideStatus
+        vehicles={vehicles}
+        onVehicleClick={handleVehicleClick}
+        selectedVehicleId={selectedVehicle?.id}
+      />
 
       <div className="flex-1 relative">
-        <MonitoringMap
-          vehicles={vehicles}
-          center={[-6.2088, 106.8456]}
-          zoom={12}
-          onVehicleClick={handleVehicleClick}
-        />
+        {loading ? (
+          <div className="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+            <div className="text-slate-400 text-sm">Loading fleet locations...</div>
+          </div>
+        ) : (
+          <MonitoringMap
+            vehicles={vehicles}
+            center={[-6.2088, 106.8456]}
+            zoom={12}
+            onVehicleClick={handleVehicleClick}
+          />
+        )}
 
         <div className="absolute top-4 left-4 z-10 flex flex-col sm:flex-row gap-3 pointer-events-none">
           <div className="bg-white dark:bg-surface-dark p-3 pr-6 rounded-lg shadow-lg border border-red-100 dark:border-red-900/30 flex items-center gap-3 pointer-events-auto">
@@ -95,7 +108,7 @@ const RealtimeMonitoring = () => {
                 Active Emergencies
               </p>
               <p className="text-xl font-bold text-slate-900 dark:text-white leading-none">
-                {vehicles.filter((v) => v.status === "emergency").length}
+                {emergencyCount}
               </p>
             </div>
           </div>
@@ -108,7 +121,7 @@ const RealtimeMonitoring = () => {
                 Geofence Alerts
               </p>
               <p className="text-xl font-bold text-slate-900 dark:text-white leading-none">
-                {vehicles.filter((v) => v.status === "emergency").length * 4}
+                {emergencyCount}
               </p>
             </div>
           </div>

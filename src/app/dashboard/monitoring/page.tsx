@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/page-header";
 import { TaskListCard } from "@/components/monitoring/task-list/task-list-card";
 import EmergencyResponse from "@/components/monitoring/task-list/emergency-response";
@@ -12,81 +12,29 @@ import { TaskPagination } from "@/components/monitoring/task-list/task-paginatio
 import { AlertDialog } from "@/components/ui/alert";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
+import { monitoringApi } from "@/lib/api/monitoring";
 
-// All tasks data 
-const allTasks: Task[] = [
-  {
-    id: "1",
-    priority: "Normal",
+function mapApiTaskToTask(apiTask: any, index: number): Task {
+  return {
+    id: apiTask.id || String(index + 1),
+    priority: apiTask.priority || "Normal",
     vehicleInfo: {
-      name: "Honda CRV",
-      plate: "B 2891 UJK"
+      name: apiTask.vehicle_name || "Unknown",
+      plate: apiTask.plate || "N/A",
     },
-    location: "Soekarno-Hatta Terminal 3",
-    timeWindow: "Today, 14:00",
-    status: "Pending"
-  },
-  {
-    id: "2",
-    priority: "Normal",
-    vehicleInfo: {
-      name: "Toyota Innova",
-      plate: "B 1567 RFS"
-    },
-    location: "Grand Indonesia West Mall",
-    timeWindow: "Today, 16:30",
-    status: "Scheduled"
-  },
-  {
-    id: "3",
-    priority: "Normal",
-    vehicleInfo: {
-      name: "Daihatsu Xenia",
-      plate: "B 9981 KLP"
-    },
-    location: "Kemang Village Residence",
-    timeWindow: "Started 20m ago",
-    status: "In Progress"
-  },
-  {
-    id: "4",
-    priority: "Normal",
-    vehicleInfo: {
-      name: "Mitsubishi Pajero",
-      plate: "B 1234 ABC"
-    },
-    location: "Plaza Indonesia",
-    timeWindow: "Tomorrow, 10:00",
-    status: "Scheduled"
-  },
-  {
-    id: "5",
-    priority: "High",
-    vehicleInfo: {
-      name: "Suzuki Ertiga",
-      plate: "B 5678 DEF"
-    },
-    location: "Central Park Mall",
-    timeWindow: "Tomorrow, 14:30",
-    status: "Pending"
-  },
-  {
-    id: "6",
-    priority: "Normal",
-    vehicleInfo: {
-      name: "Nissan X-Trail",
-      plate: "B 9012 GHI"
-    },
-    location: "Pondok Indah Mall",
-    timeWindow: "Tomorrow, 09:00",
-    status: "Scheduled"
-  }
-];
+    location: apiTask.location || "N/A",
+    timeWindow: apiTask.time_window || "N/A",
+    status: apiTask.status || "Pending",
+  };
+}
 
 export default function TaskList() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [denied, setDenied] = useState(false);
+
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(true);
 
   const hasAccess = canAccess(user?.permissions, "monitoring.read");
 
@@ -96,6 +44,27 @@ export default function TaskList() {
       setDenied(true);
     }
   }, [isLoading, hasAccess]);
+
+  const fetchTasks = useCallback(async () => {
+    try {
+      const res = await monitoringApi.getTasks();
+      if (res.success && Array.isArray(res.data)) {
+        setAllTasks(res.data.map(mapApiTaskToTask));
+      } else {
+        console.warn("monitoring.getTasks response:", res);
+      }
+    } catch (e) {
+      console.error("monitoring.getTasks error:", e);
+    } finally {
+      setTasksLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (hasAccess && !isLoading) {
+      fetchTasks();
+    }
+  }, [hasAccess, isLoading, fetchTasks]);
 
   const handleDeniedClose = () => {
     setDenied(false);
@@ -108,7 +77,7 @@ export default function TaskList() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState<"success" | "error">("success");
 
-  //  PAGINATION STATE 
+  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
   const totalResults = allTasks.length;
@@ -125,18 +94,15 @@ export default function TaskList() {
     }
   };
 
-  //  HANDLERS
   const handleDetails = (task: Task) => {
-    console.log("Details:", task);
-   router.push(`/dashboard/monitoring/detail`);
+    router.push(`/dashboard/monitoring/detail?id=${task.id}`);
   };
 
   const handleViewMap = (task: Task) => {
-    router.push(`/dashboard/monitoring/real-time`)
+    router.push(`/dashboard/monitoring/real-time`);
   };
 
-   const handleComplete = (task: Task) => {
-    console.log("Complete:", task);
+  const handleComplete = (task: Task) => {
     setAlertTitle("Task Completed");
     setAlertMessage(`Successfully completed retrieval for ${task.vehicleInfo.name} (${task.vehicleInfo.plate})`);
     setAlertType("success");
@@ -168,16 +134,16 @@ export default function TaskList() {
       />
       {isLoading || !hasAccess ? null : (
       <div className="p-8 space-y-8">
-        <PageHeader 
-          title="Welcome, Officer Budi"
-          description="You have 1 urgent emergency and 5 scheduled tasks today."
+        <PageHeader
+          title="Monitoring Dashboard"
+          description={allTasks.length > 0 ? `You have ${allTasks.length} task(s) today.` : "No active tasks at the moment."}
         />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <TaskListCard 
+          <TaskListCard
             title="Pending Emergencies"
-            value="1"
+            value={String(allTasks.filter(t => t.priority === "High").length)}
             icon="warning"
             iconColor="text-orange-500"
             trend={{
@@ -186,24 +152,24 @@ export default function TaskList() {
               icon: "warning"
             }}
           />
-          <TaskListCard 
+          <TaskListCard
             title="Retrievals Today"
-            value="5"
+            value={String(allTasks.length)}
             icon="directions_car"
             iconColor="text-primary"
             trend={{
-              value: "2 completed",
+              value: "0 completed",
               color: "text-[#617589]",
               icon: "check"
             }}
           />
-          <TaskListCard 
+          <TaskListCard
             title="Completed Tasks"
-            value="12"
+            value="0"
             icon="check_circle"
             iconColor="text-green-600"
             trend={{
-              value: "+3 from yesterday",
+              value: "Ready for review",
               color: "text-green-600",
               icon: "trending_up"
             }}
@@ -213,26 +179,34 @@ export default function TaskList() {
         <EmergencyResponse />
         <TaskFilters />
 
-        {/* Table Container - SAME CONCEPT AS RENTAL PAGE */}
+        {/* Table Container */}
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-          <TaskTable 
-            tasks={currentTasks}
-            onDetails={handleDetails}
-            onViewMap={handleViewMap}
-            onComplete={handleComplete}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onExport={handleExport}
-          />
-
-          {/* Pagination */}
-          <TaskPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalResults={totalResults}
-            resultsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-          />
+          {tasksLoading ? (
+            <div className="p-8 text-center text-slate-400 text-sm">Loading tasks...</div>
+          ) : allTasks.length === 0 ? (
+            <div className="p-8 text-center text-slate-400 text-sm">
+              No tasks yet. Tasks will appear here when retrieval operations are created.
+            </div>
+          ) : (
+            <>
+              <TaskTable
+                tasks={currentTasks}
+                onDetails={handleDetails}
+                onViewMap={handleViewMap}
+                onComplete={handleComplete}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onExport={handleExport}
+              />
+              <TaskPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalResults={totalResults}
+                resultsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+              />
+            </>
+          )}
         </div>
         <AlertDialog
           isOpen={isAlertOpen}

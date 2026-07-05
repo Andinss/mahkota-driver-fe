@@ -1,7 +1,26 @@
 "use client";
 import React from "react";
+import type { FleetVehicle } from "./monitoring-map";
 
-const SideStatus = () => {
+interface SideStatusProps {
+  vehicles: FleetVehicle[];
+  onVehicleClick?: (vehicle: FleetVehicle) => void;
+  selectedVehicleId?: string | null;
+}
+
+const statusColorMap: Record<string, string> = {
+  emergency: "red",
+  moving: "blue",
+  idle: "gray",
+};
+
+const statusLabelMap: Record<string, string> = {
+  emergency: "SOS",
+  moving: "MOVING",
+  idle: "IDLE",
+};
+
+const SideStatus = ({ vehicles = [], onVehicleClick, selectedVehicleId }: SideStatusProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
@@ -18,7 +37,7 @@ const SideStatus = () => {
                 Fleet Status
               </h2>
               <span className="text-xs font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500">
-                145 Total
+                {vehicles.length} Total
               </span>
             </div>
 
@@ -53,117 +72,73 @@ const SideStatus = () => {
           </div>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 cursor-pointer shadow-sm relative">
-              <div className="absolute left-0 top-3 bottom-3 w-1 bg-red-500 rounded-r"></div>
-              <div className="size-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-red-500 shadow-sm shrink-0 border border-red-100 dark:border-red-900/50">
-                <span className="material-symbols-outlined">warning</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-bold text-slate-900 dark:text-white truncate">
-                    B 1234 KKY
-                  </h3>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
-                    SOS
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                  Driver: Budi Santoso
-                </p>
-                <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 font-medium flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">
-                    near_me
-                  </span>
-                  Geofence Violation
-                </p>
-              </div>
-            </div>
+            {vehicles.map((vehicle) => {
+              const color = statusColorMap[vehicle.status] || "gray";
+              const label = statusLabelMap[vehicle.status] || "IDLE";
+              const isSelected = selectedVehicleId === vehicle.id;
 
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border border-transparent transition-all group">
-              <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-white dark:group-hover:bg-slate-700 shadow-sm shrink-0 transition-colors">
-                <span className="material-symbols-outlined">
-                  local_shipping
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-bold text-slate-900 dark:text-white truncate">
-                    D 5678 AB
-                  </h3>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                    MOVING
-                  </span>
+              return (
+                <div
+                  key={vehicle.id}
+                  onClick={() => onVehicleClick?.(vehicle)}
+                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer border transition-all ${
+                    isSelected
+                      ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                      : vehicle.status === "emergency"
+                        ? "bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/20"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800/50 border-transparent"
+                  } shadow-sm relative`}
+                >
+                  {vehicle.status === "emergency" && (
+                    <div className="absolute left-0 top-3 bottom-3 w-1 bg-red-500 rounded-r"></div>
+                  )}
+                  <div className={`size-10 rounded-full flex items-center justify-center shadow-sm shrink-0 ${
+                    vehicle.status === "emergency"
+                      ? "bg-white dark:bg-slate-800 text-red-500 border border-red-100 dark:border-red-900/50"
+                      : vehicle.status === "moving"
+                        ? "bg-slate-100 dark:bg-slate-800 text-primary group-hover:bg-white dark:group-hover:bg-slate-700"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                  }`}>
+                    <span className="material-symbols-outlined">
+                      {vehicle.status === "emergency" ? "warning" : "local_shipping"}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-bold text-slate-900 dark:text-white truncate">
+                        {vehicle.plate}
+                      </h3>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                        color === "red"
+                          ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                          : color === "blue"
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                            : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                      }`}>
+                        {label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      Driver: {vehicle.driverName}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">
+                        {vehicle.status === "emergency" ? "near_me" : vehicle.status === "moving" ? "speed" : "history"}
+                      </span>
+                      {vehicle.status === "emergency"
+                        ? "Geofence Violation"
+                        : vehicle.status === "moving"
+                          ? `${vehicle.speed} km/h`
+                          : vehicle.lastUpdated || "Idle"}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                  Driver: Siti Aminah
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">
-                    speed
-                  </span>
-                  45 km/h
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border border-transparent transition-all group">
-              <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-white dark:group-hover:bg-slate-700 shadow-sm shrink-0 transition-colors">
-                <span className="material-symbols-outlined">
-                  local_shipping
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-bold text-slate-900 dark:text-white truncate">
-                    B 9988 XYZ
-                  </h3>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                    MOVING
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                  Driver: Ahmad Dhani
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">
-                    speed
-                  </span>
-                  62 km/h
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border border-transparent transition-all opacity-70 group">
-              <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-white dark:group-hover:bg-slate-700 shadow-sm shrink-0 transition-colors">
-                <span className="material-symbols-outlined">
-                  local_shipping
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-bold text-slate-900 dark:text-white truncate">
-                    F 2233 LL
-                  </h3>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                    IDLE
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                  Driver: Eko Prasetyo
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">
-                    history
-                  </span>
-                  2h ago
-                </p>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </aside>
 
-      {/* Toggle Button — di luar aside supaya tidak trigger overflow */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="absolute -right-5 top-1/2 -translate-y-1/2 w-5 h-14 bg-white dark:bg-surface-dark border border-l-0 border-slate-200 dark:border-slate-700 rounded-r-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors z-30 shadow-md"
