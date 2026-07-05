@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import AssignDriver from "@/components/user/detail-user/assign-driver";
+import AccountDetails from "@/components/user/detail-user/account-details";
 import ContactInformation from "@/components/user/detail-user/contact-information";
 import ActivityLog from "@/components/user/detail-user/log";
 import ProfileCard from "@/components/user/detail-user/profile-card";
@@ -60,8 +60,8 @@ const UserDetailPage = () => {
         <div className="col-span-12 lg:col-span-8 xl:col-span-9 space-y-6 lg:space-y-8">
           {/* Contact Information */}
           <ContactInformation user={user} />
-          {/* Assigned Drivers */}
-          <AssignDriver user={user} />
+          {/* Account Details */}
+          <AccountDetails user={user} />
           {/* Activity Log */}
           <ActivityLog user={user} />
         </div>
