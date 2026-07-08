@@ -39,4 +39,20 @@ export const financeApi = {
 
   lateReject: (id: string, adminNote?: string) =>
     api.post<SuccessResponse<LatePaymentItem>>(`/late-payments/${id}/reject`, { admin_note: adminNote }),
+
+  exportData: async (params: Record<string, string | number | undefined>) => {
+    const { blob, filename } = await api.download("/finances/export", params);
+    triggerDownload(blob, filename);
+  },
 };
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}

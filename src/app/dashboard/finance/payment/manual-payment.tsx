@@ -146,7 +146,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   const validateAll = (): boolean => {
     if (!selectedPayer) return false;
     if (!paymentDate) return false;
-    if (!referenceNumber?.trim() || referenceNumber.length < 3) return false;
+    if (!referenceNumber?.trim() || !/^[a-zA-Z0-9\/\-_]+$/.test(referenceNumber) || referenceNumber.length < 3) return false;
     if (!paymentMethod) return false;
     if (!amount || parseFloat(amount) <= 0) return false;
     return true;

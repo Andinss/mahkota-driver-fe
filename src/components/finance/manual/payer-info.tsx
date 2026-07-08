@@ -183,7 +183,7 @@ const PayerInfo = ({
                   placeholder="Search by driver name or employee ID..."
                   className="flex w-full flex-1 bg-transparent border-none text-[#111418] dark:text-white placeholder:text-[#9aa6b5] dark:placeholder:text-gray-500 px-3 focus:ring-0 focus:outline-none h-full text-sm"
                   value={searchValue}
-                  onChange={(e) => onSearchChange?.(e.target.value)}
+                  onChange={(e) => onSearchChange?.(e.target.value.replace(/[^a-zA-Z0-9\s'-]/g, ""))}
                   autoComplete="off"
                 />
                 {searchValue && (

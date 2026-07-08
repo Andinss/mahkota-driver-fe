@@ -26,4 +26,20 @@ export const vehicleApi = {
 
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/vehicles/delete/${id}`),
+
+  exportData: async (params: Record<string, string | number | undefined>) => {
+    const { blob, filename } = await api.download("/vehicles/export", params);
+    triggerDownload(blob, filename);
+  },
 };
+
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}

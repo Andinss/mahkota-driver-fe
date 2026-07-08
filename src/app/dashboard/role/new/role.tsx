@@ -11,7 +11,9 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { rolesApi } from "@/lib/api/roles";
 import { permissionsApi } from "@/lib/api/permissions";
 import type { PermissionItem } from "@/lib/types/permission";
+import type { CreateRolePayload } from "@/lib/types/role";
 import { AlertDialog } from "@/components/ui/alert";
+
 
 interface FormErrors {
   roleName?: string;
@@ -51,6 +53,9 @@ const RoleFormPage = () => {
   }, []);
 
   const handleInputChange = (field: string, value: string) => {
+    if (field === "roleName") {
+      value = value.replace(/[^a-zA-Z0-9\s'-]/g, "");
+    }
     setFormValues(prev => ({ ...prev, [field]: value }));
     if (hasSubmitted && errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -65,6 +70,9 @@ const RoleFormPage = () => {
 
     if (!roleNameValue) {
       newErrors.roleName = "Role name is required";
+      isValid = false;
+    } else if (!/^[a-zA-Z0-9\s'-]+$/.test(roleNameValue)) {
+      newErrors.roleName = "Role name can only contain letters, numbers, spaces, hyphens, and apostrophes";
       isValid = false;
     } else if (roleNameValue.length < 2) {
       newErrors.roleName = "Role name must be at least 2 characters";
@@ -129,14 +137,11 @@ const RoleFormPage = () => {
 
     try {
       const code = formValues.roleName.toLowerCase().replace(/\s+/g, "_");
-      const payload: Record<string, any> = {
+      const payload: CreateRolePayload = {
         name: formValues.roleName,
         description: formValues.roleDescription || undefined,
+        code,
       };
-
-      if (mode === "add") {
-        payload.code = code;
-      }
 
       if (mode === "edit" && roleIdParam) {
         await rolesApi.update(roleIdParam, payload);

@@ -8,6 +8,17 @@ import type {
   UserListParams,
 } from "../types/user";
 
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export const usersApi = {
   getList: (params?: UserListParams) =>
     api.get<SuccessResponse<UserItem[]>>(
@@ -29,4 +40,9 @@ export const usersApi = {
 
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/users/delete/${id}`),
+
+  exportData: async (params: Record<string, string | number | undefined>) => {
+    const { blob, filename } = await api.download("/users/export", params);
+    triggerDownload(blob, filename);
+  },
 };

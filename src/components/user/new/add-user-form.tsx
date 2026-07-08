@@ -4,6 +4,14 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { AlertDialog } from "@/components/ui/alert";
+import {
+  containsSymbols,
+  containsInvalidEmailChars,
+  containsNameSymbols,
+  sanitizeInput,
+  sanitizeEmailInput,
+  sanitizeNameInput,
+} from "@/lib/utils/validation";
 
 export interface UserFormData {
   username: string;
@@ -71,18 +79,24 @@ export function AddUserForm({
 
     if (!formValues.username?.trim()) {
       newErrors.username = "Username is required";
+    } else if (containsSymbols(formValues.username.trim())) {
+      newErrors.username = "Username can only contain letters and numbers";
     } else if (formValues.username.trim().length < 2) {
       newErrors.username = "Username must be at least 2 characters";
     }
 
     if (!formValues.fullname?.trim()) {
       newErrors.fullname = "Full name is required";
+    } else if (containsNameSymbols(formValues.fullname.trim())) {
+      newErrors.fullname = "Full name can only contain letters and spaces";
     } else if (formValues.fullname.trim().length < 2) {
       newErrors.fullname = "Full name must be at least 2 characters";
     }
 
     if (!formValues.email?.trim()) {
       newErrors.email = "Email is required";
+    } else if (containsInvalidEmailChars(formValues.email.trim())) {
+      newErrors.email = "Email contains invalid characters";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)) {
       newErrors.email = "Please enter a valid email address";
     }
@@ -133,7 +147,15 @@ export function AddUserForm({
   };
 
   const handleInputChange = (field: keyof typeof formValues, value: string) => {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
+    let sanitized = value;
+    if (field === "username") {
+      sanitized = sanitizeInput(value);
+    } else if (field === "fullname") {
+      sanitized = sanitizeNameInput(value);
+    } else if (field === "email") {
+      sanitized = sanitizeEmailInput(value);
+    }
+    setFormValues((prev) => ({ ...prev, [field]: sanitized }));
   };
 
   const buttonText = isSubmitting

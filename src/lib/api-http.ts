@@ -128,6 +128,60 @@ export const api = {
       method: "PUT",
       body: formData,
     }),
+
+  download: async (
+    endpoint: string,
+    params?: Record<string, string | number | undefined>,
+  ): Promise<{ blob: Blob; filename: string; contentType: string }> => {
+    const url = buildUrl(endpoint, params);
+    const accessToken = getAccessToken();
+
+    const headers: Record<string, string> = {};
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+
+    const response = await fetch(url, { headers });
+
+    if (response.status === 401) {
+      clearTokens();
+      if (typeof window !== "undefined") {
+        window.location.href = "/auth/login";
+      }
+      throw new HttpClientError("Unauthorized", 401);
+    }
+
+    if (!response.ok) {
+      let errorData: ApiError;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = {
+          statusCode: response.status,
+          message: response.statusText || "An error occurred",
+        };
+      }
+      throw new HttpClientError(
+        errorData.message || "Request failed",
+        response.status,
+        errorData.errors,
+      );
+    }
+
+    const blob = await response.blob();
+    const disposition = response.headers.get("Content-Disposition") || "";
+    let filename = `export_${Date.now()}`;
+    const match = disposition.match(/filename\*?=(?:UTF-8'')?["']?(.+?)["']?$/);
+    if (match) {
+      filename = match[1];
+    }
+
+    return {
+      blob,
+      filename,
+      contentType: response.headers.get("Content-Type") || "",
+    };
+  },
 };
 
 export { HttpClientError };

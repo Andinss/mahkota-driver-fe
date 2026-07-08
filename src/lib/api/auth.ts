@@ -1,5 +1,5 @@
 import { api } from "../api-http";
-import type { LoginRequest, LoginResponse, User, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse, SetPasswordRequest, SetPasswordResponse } from "../types/auth";
+import type { LoginRequest, LoginResponse, User, ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest, ResetPasswordResponse, SetPasswordRequest, SetPasswordResponse, VerifyTokenResponse } from "../types/auth";
 import type { SuccessResponse } from "../types/api";
 import { setAccessToken, setUser } from "../token";
 
@@ -33,5 +33,13 @@ export const authApi = {
 
   setPassword: async (payload: SetPasswordRequest) => {
     return api.post<SetPasswordResponse>("/auth/set-password", payload);
+  },
+
+  verifyResetToken: async (token: string) => {
+    return api.post<VerifyTokenResponse>("/auth/reset-password", { token });
+  },
+
+  verifySetToken: async (token: string) => {
+    return api.post<VerifyTokenResponse>("/auth/set-password", { token });
   },
 };
