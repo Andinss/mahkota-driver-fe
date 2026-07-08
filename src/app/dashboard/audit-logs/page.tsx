@@ -9,6 +9,7 @@ import { AuditPagination } from "@/components/audit/dashboard/audit-pagination";
 import { PageHeader } from "@/components/page-header";
 import { auditApi } from "@/lib/api/audit";
 import type { AuditLogItem, AuditStats } from "@/lib/types/audit";
+import type { ExportOptions } from "@/components/ui/export";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 
 export default function AuditLogPage() {
@@ -72,12 +73,18 @@ export default function AuditLogPage() {
     setCurrentPage(1);
   };
 
-  const handleExport = (options?: any) => {
-    console.log("Exporting audit logs with options:", options);
-    setAlertTitle("Export Successful");
-    setAlertMessage("Audit logs have been exported successfully.");
-    setAlertType("success");
-    setIsAlertOpen(true);
+  const handleExport = async (options?: ExportOptions) => {
+    if (!options) return;
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+      type: options.type,
+    };
+    if (options.type === "filtered") {
+      if (options.dateRange?.start) params.start_date = options.dateRange.start;
+      if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    }
+    await auditApi.exportData(params);
   };
 
   return (

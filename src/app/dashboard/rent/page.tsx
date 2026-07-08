@@ -63,10 +63,18 @@ export default function RentalManagementPage() {
   const { user } = useAuth();
 const searchParams = useSearchParams();
 
-  const handleExport = (options?: ExportOptions) => {
+  const handleExport = async (options?: ExportOptions) => {
       if (!options) return;
-      console.log("Export options from rental page:", options);
-      alert(`Exporting rental data as ${options.format} with ${options.type} data`);
+      const params: Record<string, string | number | undefined> = {
+        format: options.format,
+        columns: options.columns.join(","),
+        type: options.type,
+      };
+      if (options.type === "filtered") {
+        if (options.dateRange?.start) params.start_date = options.dateRange.start;
+        if (options.dateRange?.end) params.end_date = options.dateRange.end;
+      }
+      await rentalApi.exportData(params);
     };
   // State Confirm dialog Delete
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);

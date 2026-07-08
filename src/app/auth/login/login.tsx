@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { HttpClientError } from "@/lib/api-http";
+import { sanitizeEmailInput, sanitizeInput, containsInvalidEmailChars, containsSymbols } from "@/lib/utils/validation";
 
 interface FormErrors {
   email?: string;
@@ -36,7 +37,8 @@ const LoginPage = () => {
   const [errors, setErrors] = useState<FormErrors>({});
 
   const handleInputChange = (field: string, value: string) => {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
+    const sanitized = field === "email" ? sanitizeEmailInput(value) : sanitizeInput(value);
+    setFormValues((prev) => ({ ...prev, [field]: sanitized }));
     setAlert((prev) => ({ ...prev, isOpen: false }));
     if (hasSubmitted && errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -53,6 +55,9 @@ const LoginPage = () => {
     if (!emailValue) {
       newErrors.email = "Email or Employee ID is required";
       isValid = false;
+    } else if (containsInvalidEmailChars(emailValue)) {
+      newErrors.email = "Email or Employee ID cannot contain symbols";
+      isValid = false;
     } else if (emailValue.length < 3) {
       newErrors.email = "Email or Employee ID must be at least 3 characters";
       isValid = false;
@@ -61,8 +66,11 @@ const LoginPage = () => {
     if (!passwordValue) {
       newErrors.password = "Password is required";
       isValid = false;
-    } else if (passwordValue.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    } else if (containsSymbols(passwordValue)) {
+      newErrors.password = "Password cannot contain symbols";
+      isValid = false;
+    } else if (passwordValue.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
       isValid = false;
     }
 

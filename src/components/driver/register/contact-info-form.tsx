@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Radio } from "@/components/ui/radio";
+import { sanitizeEmailInput } from "@/lib/utils/validation";
 
 export interface ContactInfoData {
   emergencyContactName: string;
@@ -148,6 +149,11 @@ export function ContactInfoForm({
               label="Emergency Contact Number"
               placeholder="Phone number of emergency contact"
               defaultValue={initialData?.emergencyContactName}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, "");
+                const nativeInput = e.target;
+                nativeInput.value = val;
+              }}
               required
               error={errors.emergencyContactNumber}
             />
@@ -159,6 +165,11 @@ export function ContactInfoForm({
               placeholder="Email address of emergency contact"
               type="email"
               defaultValue={initialData?.emergencyContactRelationship}
+              onChange={(e) => {
+                const val = sanitizeEmailInput(e.target.value);
+                const nativeInput = e.target;
+                nativeInput.value = val;
+              }}
               required
               error={errors.emergencyContactEmail}
             />

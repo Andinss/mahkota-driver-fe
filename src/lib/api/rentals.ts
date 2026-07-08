@@ -2,6 +2,17 @@ import { api } from "../api-http";
 import type { SuccessResponse, SuccessResponsePaginated } from "../types/api";
 import type { RentalTransaction, RentalListParams, RentalSummary } from "../types/rentals.ts";
 
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export const rentalApi = {
   getList: (params?: RentalListParams) =>
     api.get<SuccessResponsePaginated<RentalTransaction>>(
@@ -32,4 +43,9 @@ export const rentalApi = {
 
   updatePaymentStatus: (id: string, paymentStatus: string) =>
     api.patch<SuccessResponse<RentalTransaction>>(`/rentals/${id}/status`, { payment_status: paymentStatus }),
+
+  exportData: async (params: Record<string, string | number | undefined>) => {
+    const { blob, filename } = await api.download("/rentals/export", params);
+    triggerDownload(blob, filename);
+  },
 };

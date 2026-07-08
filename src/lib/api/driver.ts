@@ -2,6 +2,17 @@ import { api } from "../api-http";
 import type { SuccessResponse, SuccessResponsePaginated } from "../types/api";
 import type { DriverItem, DriverListParams, DriverSummary } from "../types/driver";
 
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export const driverApi = {
   getList: (params?: DriverListParams) =>
     api.get<SuccessResponsePaginated<DriverItem>>(
@@ -26,4 +37,9 @@ export const driverApi = {
 
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/drivers/delete/${id}`),
+
+  exportData: async (params: Record<string, string | number | undefined>) => {
+    const { blob, filename } = await api.download("/drivers/export", params);
+    triggerDownload(blob, filename);
+  },
 };

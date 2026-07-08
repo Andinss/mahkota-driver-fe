@@ -5,6 +5,7 @@ import { AlertDialog } from "@/components/ui/alert";
 import { useState } from "react";
 import { authApi } from "@/lib/api/auth";
 import { HttpClientError } from "@/lib/api-http";
+import { sanitizeEmailInput, containsInvalidEmailChars } from "@/lib/utils/validation";
 
 interface FormErrors {
   email?: string;
@@ -23,7 +24,8 @@ const ForgotPasswordPage = () => {
   }>({ isOpen: false, type: "success", title: "", message: "" });
 
   const handleInputChange = (value: string) => {
-    setFormValues({ email: value });
+    const sanitized = sanitizeEmailInput(value);
+    setFormValues({ email: sanitized });
     setAlert((prev) => ({ ...prev, isOpen: false }));
     if (errors.email) {
       setErrors({ email: undefined });
@@ -36,6 +38,8 @@ const ForgotPasswordPage = () => {
 
     if (!emailValue) {
       newErrors.email = "Email is required";
+    } else if (containsInvalidEmailChars(emailValue)) {
+      newErrors.email = "Email cannot contain symbols";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
       newErrors.email = "Please enter a valid email address";
     }

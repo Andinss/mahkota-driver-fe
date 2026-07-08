@@ -130,7 +130,8 @@ export const SelectSearch = ({
             setQuery(""); // reset saat buka
           }}
           onChange={(e) => {
-            setQuery(e.target.value);
+            const sanitized = e.target.value.replace(/[^a-zA-Z0-9\s'-]/g, "");
+            setQuery(sanitized);
             setSelected(null); // reset pilihan saat ngetik
             setOpen(true);
           }}

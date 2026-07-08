@@ -6,6 +6,7 @@ import { DateInput } from "@/components/ui/date-input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { sanitizeNameInput, containsNameSymbols, sanitizeEmailInput } from "@/lib/utils/validation";
 
 export interface PersonalFormData {
   firstName: string;
@@ -25,6 +26,7 @@ interface FormErrors {
   lastName?: string;
   dateOfBirth?: string;
   gender?: string;
+  employeeId?: string;
   citizenship?: string;
   phoneNumber?: string;
   email?: string;
@@ -47,13 +49,14 @@ export function PersonalDetailsForm({
 }: PersonalDetailsFormProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const formRef = useRef<HTMLFormElement>(null);
+  const [firstName, setFirstName] = useState(sanitizeNameInput(initialValues?.firstName || ""));
+  const [lastName, setLastName] = useState(sanitizeNameInput(initialValues?.lastName || ""));
+  const [employeeId, setEmployeeId] = useState(initialValues?.employeeId || "");
 
   const validateForm = (): boolean => {
     const formData = new FormData(formRef.current || undefined);
     const newErrors: FormErrors = {};
 
-    const firstName = formData.get("firstName") as string;
-    const lastName = formData.get("lastName") as string;
     const dateOfBirth = formData.get("dateOfBirth") as string;
     const gender = formData.get("gender") as string;
     const citizenship = formData.get("citizenship") as string;
@@ -62,14 +65,22 @@ export function PersonalDetailsForm({
 
     if (!firstName?.trim()) {
       newErrors.firstName = "First name is required";
+    } else if (containsNameSymbols(firstName.trim())) {
+      newErrors.firstName = "First name cannot contain symbols";
     } else if (firstName.trim().length < 2) {
       newErrors.firstName = "First name must be at least 2 characters";
     }
 
     if (!lastName?.trim()) {
       newErrors.lastName = "Last name is required";
+    } else if (containsNameSymbols(lastName.trim())) {
+      newErrors.lastName = "Last name cannot contain symbols";
     } else if (lastName.trim().length < 2) {
       newErrors.lastName = "Last name must be at least 2 characters";
+    }
+
+    if (employeeId && !/^[a-zA-Z0-9-]+$/.test(employeeId)) {
+      newErrors.employeeId = "Employee ID can only contain letters, numbers, and hyphens";
     }
 
     if (!dateOfBirth) {
@@ -109,11 +120,11 @@ export function PersonalDetailsForm({
 
     const formData = new FormData(e.currentTarget);
     const data: PersonalFormData = {
-      firstName: formData.get("firstName") as string,
-      lastName: formData.get("lastName") as string,
+      firstName,
+      lastName,
       dateOfBirth: formData.get("dateOfBirth") as string,
       gender: formData.get("gender") as string,
-      employeeId: formData.get("employeeId") as string,
+      employeeId,
       citizenship: formData.get("citizenship") as string,
       phoneNumber: formData.get("phoneNumber") as string,
       email: formData.get("email") as string,
@@ -140,7 +151,8 @@ export function PersonalDetailsForm({
           name="firstName"
           label="First Name"
           placeholder="Enter first name"
-          defaultValue={initialValues?.firstName}
+          value={firstName}
+          onChange={(e) => setFirstName(sanitizeNameInput(e.target.value))}
           required
           error={errors.firstName}
         />
@@ -150,7 +162,8 @@ export function PersonalDetailsForm({
           name="lastName"
           label="Last Name"
           placeholder="Enter last name"
-          defaultValue={initialValues?.lastName}
+          value={lastName}
+          onChange={(e) => setLastName(sanitizeNameInput(e.target.value))}
           required
           error={errors.lastName}
         />
@@ -179,7 +192,16 @@ export function PersonalDetailsForm({
             name="employeeId"
             label="Employee ID"
             placeholder="DRV-0000"
-            defaultValue={initialValues?.employeeId}
+            value={employeeId}
+            onChange={(e) => {
+              let val = e.target.value.replace(/[^a-zA-Z0-9-]/g, "");
+              val = val.replace(/^(DRV)+-?/i, "");
+              if (val) {
+                val = "DRV-" + val;
+              }
+              setEmployeeId(val);
+            }}
+            error={errors.employeeId}
           />
           <p className="text-[11px] text-slate-400">
             Leave blank to auto-generate.
@@ -201,6 +223,11 @@ export function PersonalDetailsForm({
           placeholder="Enter phone number"
           type="tel"
           defaultValue={initialValues?.phoneNumber}
+          onChange={(e) => {
+            const val = e.target.value.replace(/[^0-9]/g, "");
+            const nativeInput = e.target;
+            nativeInput.value = val;
+          }}
           required
           error={errors.phoneNumber}
         />
@@ -212,6 +239,11 @@ export function PersonalDetailsForm({
           placeholder="Enter email address"
           type="email"
           defaultValue={initialValues?.email}
+          onChange={(e) => {
+            const val = sanitizeEmailInput(e.target.value);
+            const nativeInput = e.target;
+            nativeInput.value = val;
+          }}
           required
           error={errors.email}
         />

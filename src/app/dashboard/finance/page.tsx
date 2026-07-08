@@ -106,8 +106,18 @@ export default function PaymentList() {
   const activeCount = summary?.total_active ?? finances.filter((f) => f.is_active).length;
   const inactiveCount = summary?.total_inactive ?? finances.filter((f) => !f.is_active).length;
 
-  const handleExport = (options: ExportOptions) => {
-    alert(`Exporting payment data as ${options.format} with ${options.type} data`);
+  const handleExport = async (options?: ExportOptions) => {
+    if (!options) return;
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+      type: options.type,
+    };
+    if (options.type === "filtered") {
+      if (options.dateRange?.start) params.start_date = options.dateRange.start;
+      if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    }
+    await financeApi.exportData(params);
   };
 
   const handleDelete = (finance: FinanceItem) => {

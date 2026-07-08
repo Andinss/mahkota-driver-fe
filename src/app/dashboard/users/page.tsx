@@ -136,9 +136,16 @@ export default function UserList() {
     setIsAlertOpen(false);
   };
 
-  const handleExport = (options: ExportOptions) => {
-    console.log("Export options from user page:", options);
-    alert(`Exporting user data as ${options.format} with ${options.type} data`);
+  const handleExport = async (options: ExportOptions) => {
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+      type: options.type,
+    };
+    if (options.type === "filtered") {
+      if (filters.search) params.search = filters.search;
+    }
+    await usersApi.exportData(params);
   };
 
   return (

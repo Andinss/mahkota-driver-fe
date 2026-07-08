@@ -57,6 +57,9 @@ const TransactionDetail = ({
 
       if (!referenceNumber?.trim()) {
         newErrors.referenceNumber = "Reference number is required";
+      } else if (!/^[a-zA-Z0-9\/\-_]+$/.test(referenceNumber)) {
+        newErrors.referenceNumber =
+          "Reference number can only contain letters, numbers, hyphens, slashes, and underscores";
       } else if (referenceNumber.length < 3) {
         newErrors.referenceNumber =
           "Reference number must be at least 3 characters";
@@ -85,6 +88,9 @@ const TransactionDetail = ({
 
     if (!referenceNumber?.trim()) {
       newErrors.referenceNumber = "Reference number is required";
+    } else if (!/^[a-zA-Z0-9\/\-_]+$/.test(referenceNumber)) {
+      newErrors.referenceNumber =
+        "Reference number can only contain letters, numbers, hyphens, slashes, and underscores";
     } else if (referenceNumber.length < 3) {
       newErrors.referenceNumber =
         "Reference number must be at least 3 characters";
@@ -119,8 +125,9 @@ const TransactionDetail = ({
   };
 
   const handleReferenceNumberChange = (value: string) => {
-    onReferenceNumberChange?.(value);
-    if (errors.referenceNumber && value) {
+    const sanitized = value.replace(/[^a-zA-Z0-9\/\-_]/g, "");
+    onReferenceNumberChange?.(sanitized);
+    if (errors.referenceNumber && sanitized) {
       setErrors((prev) => ({ ...prev, referenceNumber: undefined }));
     }
   };

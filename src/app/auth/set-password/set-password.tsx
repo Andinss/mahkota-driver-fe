@@ -2,9 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { AlertDialog } from "@/components/ui/alert";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { authApi } from "@/lib/api/auth";
 import { HttpClientError } from "@/lib/api-http";
+import { sanitizeInput, containsSymbols } from "@/lib/utils/validation";
 import { useRouter } from "next/navigation";
 
 interface FormErrors {
@@ -18,6 +19,8 @@ interface SetPasswordPageProps {
 
 const SetPasswordPage = ({ token }: SetPasswordPageProps) => {
   const router = useRouter();
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [isTokenValid, setIsTokenValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [formValues, setFormValues] = useState({
@@ -32,12 +35,41 @@ const SetPasswordPage = ({ token }: SetPasswordPageProps) => {
     message: string;
   }>({ isOpen: false, type: "success", title: "", message: "" });
 
+  useEffect(() => {
+    if (!token) {
+      router.replace("/auth/login");
+      return;
+    }
+
+    authApi
+      .verifySetToken(token)
+      .then((res) => {
+        if (!res.valid) {
+          router.replace("/auth/login");
+        } else {
+          setIsTokenValid(true);
+        }
+      })
+      .catch((err) => {
+        if (err instanceof HttpClientError && (err.statusCode === 404 || err.statusCode === 400)) {
+          setIsTokenValid(true);
+        } else {
+          router.replace("/auth/login");
+        }
+      })
+      .finally(() => {
+        setIsVerifying(false);
+      });
+  }, [token, router]);
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
     const { password, password_confirmation } = formValues;
 
     if (!password) {
       newErrors.password = "Password is required";
+    } else if (containsSymbols(password)) {
+      newErrors.password = "Password cannot contain symbols";
     } else if (password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
     }
@@ -98,12 +130,28 @@ const SetPasswordPage = ({ token }: SetPasswordPageProps) => {
   };
 
   const handleInputChange = (field: keyof typeof formValues, value: string) => {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
+    const sanitized = sanitizeInput(value);
+    setFormValues((prev) => ({ ...prev, [field]: sanitized }));
     setAlert((prev) => ({ ...prev, isOpen: false }));
     if (hasSubmitted && errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
+
+  if (isVerifying) {
+    return (
+      <div className="bg-white dark:bg-[#1a2632] rounded-xl p-[1px]">
+        <div className="bg-white dark:bg-[#1a2632] rounded-xl p-6 sm:p-12 flex flex-col items-center justify-center min-h-[300px]">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="mt-4 text-on-surface-variant dark:text-gray-400">Verifying link...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isTokenValid) {
+    return null;
+  }
 
   return (
     <div className="bg-white dark:bg-[#1a2632] rounded-xl p-[1px]">

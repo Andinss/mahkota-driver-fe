@@ -47,6 +47,17 @@ export function VehicleSpecificationsForm({
   const [errors, setErrors] = useState<FormErrors>({});
   const formRef = useRef<HTMLFormElement>(null);
 
+  const sanitizeInput = (
+    e: React.FormEvent<HTMLInputElement>,
+    denyPattern: RegExp
+  ) => {
+    const input = e.currentTarget;
+    const sanitized = input.value.replace(denyPattern, "");
+    if (sanitized !== input.value) {
+      input.value = sanitized;
+    }
+  };
+
   const validateForm = (): boolean => {
     const formData = new FormData(formRef.current || undefined);
     const newErrors: FormErrors = {};
@@ -62,10 +73,16 @@ export function VehicleSpecificationsForm({
 
     if (!make?.trim()) {
       newErrors.make = "Make is required";
+    } else if (!/^[a-zA-Z\s'-]+$/.test(make.trim())) {
+      newErrors.make =
+        "Make can only contain letters, spaces, hyphens, and apostrophes";
     }
 
     if (!model?.trim()) {
       newErrors.model = "Model is required";
+    } else if (!/^[a-zA-Z0-9\s'-]+$/.test(model.trim())) {
+      newErrors.model =
+        "Model can only contain letters, numbers, spaces, and hyphens";
     }
 
     if (!year) {
@@ -80,22 +97,32 @@ export function VehicleSpecificationsForm({
 
     if (!licensePlate?.trim()) {
       newErrors.licensePlate = "License plate is required";
+    } else if (!/^[A-Za-z0-9\s]+$/.test(licensePlate.trim())) {
+      newErrors.licensePlate =
+        "License plate can only contain letters, numbers, and spaces";
     } else if (licensePlate.length < 4) {
       newErrors.licensePlate = "License plate must be at least 4 characters";
     }
 
     if (!color?.trim()) {
       newErrors.color = "Color is required";
+    } else if (!/^[a-zA-Z\s]+$/.test(color.trim())) {
+      newErrors.color = "Color can only contain letters and spaces";
     }
 
     if (!vin?.trim()) {
       newErrors.vin = "VIN is required";
+    } else if (!/^[A-Za-z0-9]+$/.test(vin.trim())) {
+      newErrors.vin = "VIN can only contain letters and numbers";
     } else if (vin.length !== 17) {
       newErrors.vin = "VIN must be exactly 17 characters";
     }
 
     if (!engineNumber?.trim()) {
       newErrors.engineNumber = "Engine number is required";
+    } else if (!/^[A-Za-z0-9-]+$/.test(engineNumber.trim())) {
+      newErrors.engineNumber =
+        "Engine number can only contain letters, numbers, and hyphens";
     }
 
     if (!dailyRate) {
@@ -155,6 +182,7 @@ export function VehicleSpecificationsForm({
             defaultValue={initialValues?.make}
             required
             error={errors.make}
+            onInput={(e) => sanitizeInput(e, /[^a-zA-Z\s'-]/g)}
           />
 
           <Input
@@ -165,6 +193,7 @@ export function VehicleSpecificationsForm({
             defaultValue={initialValues?.model}
             required
             error={errors.model}
+            onInput={(e) => sanitizeInput(e, /[^a-zA-Z0-9\s'-]/g)}
           />
 
           <Input
@@ -187,6 +216,7 @@ export function VehicleSpecificationsForm({
             defaultValue={initialValues?.licensePlate}
             required
             error={errors.licensePlate}
+            onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9\s]/g)}
           />
 
           <Input
@@ -197,6 +227,7 @@ export function VehicleSpecificationsForm({
             defaultValue={initialValues?.color}
             required
             error={errors.color}
+            onInput={(e) => sanitizeInput(e, /[^a-zA-Z\s]/g)}
           />
 
           <Input
@@ -208,6 +239,7 @@ export function VehicleSpecificationsForm({
             defaultValue={initialValues?.vin}
             required
             error={errors.vin}
+            onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9]/g)}
           />
 
           <Input
@@ -218,6 +250,7 @@ export function VehicleSpecificationsForm({
             defaultValue={initialValues?.engineNumber}
             required
             error={errors.engineNumber}
+            onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9-]/g)}
           />
 
           <CurrencyInput

@@ -135,15 +135,18 @@ const NewRentPage = () => {
     if (!rentalData.endDate) {
       newErrors.endDate = "End date is required";
       isValid = false;
+    } else if (rentalData.startDate && new Date(rentalData.endDate) <= new Date(rentalData.startDate)) {
+      newErrors.endDate = "End date must be after start date";
+      isValid = false;
     }
 
     if (!rentalData.dailyRate || rentalData.dailyRate <= 0) {
-      newErrors.dailyRate = "Daily rate is required";
+      newErrors.dailyRate = "Daily rate must be greater than 0";
       isValid = false;
     }
 
     if (!rentalData.depositAmount || rentalData.depositAmount <= 0) {
-      newErrors.depositAmount = "Deposit amount is required";
+      newErrors.depositAmount = "Deposit amount must be greater than 0";
       isValid = false;
     }
 
