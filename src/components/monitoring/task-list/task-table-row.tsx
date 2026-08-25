@@ -77,7 +77,7 @@ export const TaskTableRow = ({
       {/* Location */}
       <td className="px-6 py-4">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 text-[18px]">
+          <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 text-lg">
             location_on
           </span>
           <span className="text-slate-600 dark:text-slate-400">{task.location}</span>
@@ -112,7 +112,7 @@ export const TaskTableRow = ({
   <Dropdown
     trigger={
       <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
-        <span className="material-symbols-outlined text-[20px]">more_vert</span>
+        <span className="material-symbols-outlined text-xl">more_vert</span>
       </button>
     }
   >

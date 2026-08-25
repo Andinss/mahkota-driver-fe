@@ -11,6 +11,7 @@ import SelectionForm from "@/components/rent/new-rent/selection";
 import Summary from "@/components/rent/new-rent/summry";
 import { DocumentsForm } from "@/components/rent/new-rent/upload-document";
 import { rentalApi } from "@/lib/api/rentals";
+import { HttpClientError } from "@/lib/api-http";
 import { driverApi } from "@/lib/api/driver";
 import { supervisorApi } from "@/lib/api/supervisor";
 import { vehicleApi } from "@/lib/api/vehicle";
@@ -24,6 +25,8 @@ interface FormErrors {
   endDate?: string;
   dailyRate?: string;
   depositAmount?: string;
+  serverDriverId?: string;
+  serverVehicleId?: string;
 }
 
 interface RentalData {
@@ -73,6 +76,8 @@ const NewRentPage = () => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
+  const [generalError, setGeneralError] = useState<string>("");
 
   const [driverOptions, setDriverOptions] = useState<SelectOption[]>([]);
   const [vehicleOptions, setVehicleOptions] = useState<SelectOption[]>([]);
@@ -320,7 +325,23 @@ const NewRentPage = () => {
     } catch (err) {
       console.error("Failed to save rental:", err);
       setIsSubmitting(false);
-      alert("Failed to save rental. Please try again.");
+      if (err instanceof HttpClientError) {
+        const fieldErrors: Record<string, string[]> = err.errors || {};
+        setServerErrors(fieldErrors);
+
+        const newErrors: FormErrors = {};
+        if (fieldErrors["driver_id"]?.[0]) {
+          newErrors.serverDriverId = fieldErrors["driver_id"][0];
+        }
+        if (fieldErrors["vehicle_id"]?.[0]) {
+          newErrors.serverVehicleId = fieldErrors["vehicle_id"][0];
+        }
+        setErrors((prev) => ({ ...prev, ...newErrors }));
+
+        setGeneralError(err.message || "Failed to save rental. Please try again.");
+      } else {
+        setGeneralError("Failed to save rental. Please try again.");
+      }
     }
   };
 
@@ -334,6 +355,15 @@ const NewRentPage = () => {
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
         {/* Form Sections */}
         <div className="flex-1 space-y-8 pb-20">
+          {generalError && (
+            <div className="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2.5">
+              <div className="size-6 rounded-full bg-red-100 dark:bg-red-800/40 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-red-500 text-sm">error</span>
+              </div>
+              <p className="text-sm text-red-600 dark:text-red-400 font-medium">{generalError}</p>
+            </div>
+          )}
+
           {/* Section 1: Selection */}
           <SelectionForm
             key={"sel-" + (rentalData.rentalId || "add")}
@@ -345,6 +375,7 @@ const NewRentPage = () => {
             error={hasSubmitted ? errors : undefined}
             driverOptions={driverOptions}
             vehicleOptions={vehicleOptions}
+            serverErrors={serverErrors}
           />
 
           {/* Section 2: Period */}

@@ -21,7 +21,7 @@ export const StatCard = ({ title, value, icon, iconColor, trend }: StatCardProps
         <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
           {title}
         </p>
-        <span className={`${iconColor} ${iconColor.replace("text-", "")}/10 p-1.5 rounded-md text-[20px]`}>
+        <span className={`${iconColor} ${iconColor.replace("text-", "")}/10 p-1.5 rounded-md text-xl`}>
           <Icon name={icon} />
         </span>
       </div>

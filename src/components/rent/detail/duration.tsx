@@ -31,13 +31,13 @@ const Duration = ({
           <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">
             Duration & Rates
           </h3>
-          <span className="text-[9px] font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded">
+          <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded">
             {duration} DAYS TOTAL
           </span>
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex-1 text-center sm:text-left w-full">
-            <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">
+            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
               Pick-up Date
             </p>
             <p className="text-lg font-bold text-gray-900 dark:text-white">{formatDate(startDate)}</p>
@@ -49,7 +49,7 @@ const Duration = ({
             </div>
           </div>
           <div className="flex-1 text-center sm:text-right w-full">
-            <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">
+            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
               Expected Return
             </p>
             <p className="text-lg font-bold text-gray-900 dark:text-white">{formatDate(endDate)}</p>
@@ -58,19 +58,19 @@ const Duration = ({
         </div>
         <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 gap-6 border-t border-gray-200 pt-8">
           <div>
-            <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">
+            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
               Daily Rate
             </p>
             <p className="text-xl font-black text-gray-900 dark:text-white">{formatCurrency(dailyRate)}</p>
           </div>
           <div>
-            <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">
+            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
               Insurance
             </p>
             <p className="text-xl font-black text-gray-900 dark:text-white">Rp 100.000</p>
           </div>
           <div className="col-span-2 sm:col-span-1 sm:text-right pt-4 sm:pt-0 border-t sm:border-t-0 border-gray-200">
-            <p className="text-[9px] font-bold text-gray-500 uppercase mb-1">
+            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
               Est. Total
             </p>
             <p className="text-xl font-black text-blue-600">{formatCurrency(totalEst)}</p>

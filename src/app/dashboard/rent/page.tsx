@@ -11,6 +11,7 @@ import { ExportOptions } from "@/components/ui/export";
 import { AlertDialog } from "@/components/ui/alert";
 import { useSearchParams } from "next/navigation";
 import { rentalApi } from "@/lib/api/rentals";
+import { HttpClientError } from "@/lib/api-http";
 import type { RentalTransaction, RentalSummary } from "@/lib/types/rentals";
 import { useAuth } from "@/lib/auth-context";
 import { PermissionGuard } from "@/components/auth-guard-permission";
@@ -55,7 +56,7 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
     end: formatDateShort(item.end_date),
     duration: item.total_duration || 0,
   },
-  deposit: item.deposit_amount > 0 ? "held" : "pending",
+  deposit: item.deposit_amount > 0 ? `Rp ${Number(item.deposit_amount).toLocaleString("id-ID")}` : "Rp 0",
   paymentStatus: item.payment_status || "unpaid",
 });
 
@@ -157,10 +158,10 @@ const searchParams = useSearchParams();
   }, [fetchSummary]);
 
   const activeRentals = summary?.total_rentals ?? rentals.filter(
-    (r) => r.paymentStatus === "paid" && r.deposit === "held",
+    (r) => r.paymentStatus === "paid",
   ).length;
   const pendingPayments = summary ? 0 : rentals.filter(
-    (r) => r.paymentStatus === "partial" || r.deposit === "pending",
+    (r) => r.paymentStatus === "partial" || r.paymentStatus === "unpaid",
   ).length;
   const latePayments = summary ? 0 : rentals.filter(
     (r) => r.paymentStatus === "late",
@@ -183,9 +184,9 @@ const handlePageChange = (page: number) => {
       setAlertType("success");
       setIsAlertOpen(true);
       fetchRentals();
-    } catch {
+    } catch (err) {
       setAlertTitle("Update Failed");
-      setAlertMessage("Failed to update payment status. Please try again.");
+      setAlertMessage(err instanceof HttpClientError ? err.message : "Failed to update payment status. Please try again.");
       setAlertType("error");
       setIsAlertOpen(true);
     }
@@ -209,10 +210,10 @@ const handlePageChange = (page: number) => {
       setSelectedRental(null);
       fetchRentals();
       fetchSummary();
-    } catch {
+    } catch (err) {
       setIsConfirmDeleteOpen(false);
       setAlertTitle("Delete Failed");
-      setAlertMessage("Failed to delete rental. Please try again.");
+      setAlertMessage(err instanceof HttpClientError ? err.message : "Failed to delete rental. Please try again.");
       setAlertType("error");
       setIsAlertOpen(true);
     }

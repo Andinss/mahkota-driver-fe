@@ -71,7 +71,7 @@ const RoleHierarchy = ({ allPermissions, selectedIds }: RoleHierarchyProps) => {
               className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
             >
               <span
-                className={`material-symbols-outlined text-[16px] ${
+                className={`material-symbols-outlined text-base ${
                   preview.allowed ? "text-green-600" : "text-red-600"
                 }`}
               >

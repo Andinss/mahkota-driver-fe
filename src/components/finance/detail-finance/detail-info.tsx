@@ -74,7 +74,7 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
         <div className="flex flex-col gap-3">
           <div className="flex justify-between">
             <span className="text-sm text-gray-500 dark:text-gray-400">Reference:</span>
-            <span className="text-sm font-bold text-gray-900 dark:text-white">{finance.reference_number}</span>
+            <span className="font-mono text-sm font-bold text-gray-900 dark:text-white">{finance.reference_number}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-gray-500 dark:text-gray-400">Date:</span>

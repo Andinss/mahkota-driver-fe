@@ -43,7 +43,7 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
             Reference Number
           </h3>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl lg:text-4xl font-black tracking-tighter text-gray-900 dark:text-white">
+            <span className="font-mono text-2xl lg:text-4xl font-black tracking-tighter text-gray-900 dark:text-white">
               {finance.reference_number}
             </span>
           </div>

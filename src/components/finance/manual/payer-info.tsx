@@ -25,6 +25,7 @@ interface PayerInfoProps {
   onPayerSelect?: (name: string, id: string, employeeId: string) => void;
   selectedPayerId?: string; 
   hasSubmitted?: boolean;
+  serverError?: string;
 }
 
 const PayerInfo = ({ 
@@ -32,7 +33,8 @@ const PayerInfo = ({
   onSearchChange,
   onPayerSelect,
   selectedPayerId,
-  hasSubmitted = false
+  hasSubmitted = false,
+  serverError,
 }: PayerInfoProps) => {
   const [filteredDrivers, setFilteredDrivers] = useState<DriverOption[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -132,7 +134,7 @@ const PayerInfo = ({
             <div className="size-6 rounded-full bg-red-100 dark:bg-red-800/40 flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-red-500 text-sm">error</span>
             </div>
-            <p className="text-xs text-red-600 dark:text-red-400 font-medium">Please select a valid driver as payer</p>
+            <p className="text-xs text-red-600 dark:text-red-400 font-medium">{serverError || "Please select a valid driver as payer"}</p>
           </div>
         )}
 
@@ -155,8 +157,8 @@ const PayerInfo = ({
                 <div className="flex items-center gap-3 mt-1">
                   {selectedDriver.employeeId && (
                     <span className="inline-flex items-center gap-1.5 text-xs text-[#617589] dark:text-gray-400">
-                      <span className="material-symbols-outlined text-[11px]">badge</span>
-                      <span className="font-mono text-[11px] font-medium">{selectedDriver.employeeId}</span>
+                      <span className="material-symbols-outlined text-xs">badge</span>
+                      <span className="font-mono text-xs font-medium">{selectedDriver.employeeId}</span>
                     </span>
                   )}
                   <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">

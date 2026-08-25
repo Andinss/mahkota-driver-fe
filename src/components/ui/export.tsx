@@ -396,7 +396,7 @@ export function ModalExport({
             <div className="space-y-6">
               {/* Date Range Picker */}
               <div className="space-y-3">
-                <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
                   Date Range
                 </label>
 
@@ -424,7 +424,7 @@ export function ModalExport({
 
               {/* Select Columns */}
               <div className="space-y-3">
-                <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
                   Select Columns
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -472,7 +472,7 @@ export function ModalExport({
 
           {/* Select Format */}
           <div className="space-y-3">
-            <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            <label className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
               Output Format
             </label>
             <div className="grid grid-cols-3 gap-3">

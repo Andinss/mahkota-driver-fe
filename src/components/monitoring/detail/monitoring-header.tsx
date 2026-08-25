@@ -22,7 +22,7 @@ export const MonitoringHeader = ({
           {title}
         </h1>
         <div className="flex items-center gap-2 text-[#4c739a] dark:text-slate-400">
-          <span className="material-symbols-outlined text-[18px]">location_on</span>
+          <span className="material-symbols-outlined text-lg">location_on</span>
           <p className="text-base font-normal">{location}</p>
         </div>
       </div>

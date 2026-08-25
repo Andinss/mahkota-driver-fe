@@ -22,7 +22,7 @@ const DocumentSign = ({ documentUrl }: DocumentSignProps) => {
               <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                 Rental Agreement.pdf
               </p>
-              <p className="text-[9px] text-gray-500 uppercase">
+              <p className="text-[10px] text-gray-500 uppercase">
                 {hasDocument ? "Document Available" : "Signed Aug 11, 2024"}
               </p>
             </div>
@@ -53,7 +53,7 @@ const DocumentSign = ({ documentUrl }: DocumentSignProps) => {
               <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                 Vehicle Checklist.pdf
               </p>
-              <p className="text-[9px] text-gray-500 uppercase">
+              <p className="text-[10px] text-gray-500 uppercase">
                 Completed at Pick-up
               </p>
             </div>
@@ -71,7 +71,7 @@ const DocumentSign = ({ documentUrl }: DocumentSignProps) => {
               <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                 Insurance Policy.pdf
               </p>
-              <p className="text-[9px] text-gray-500 uppercase">
+              <p className="text-[10px] text-gray-500 uppercase">
                 Active Coverage
               </p>
             </div>

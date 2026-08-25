@@ -97,7 +97,7 @@ export function CardDetail({
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
             Review Required
           </span>
-          <p className="text-[11px] text-slate-400 mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             Submitted {submittedTime}
           </p>
         </div>
@@ -115,36 +115,36 @@ export function CardDetail({
           </h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+              <p className="text-xs text-slate-500 uppercase font-bold tracking-tight mb-1">
                 Vehicle
               </p>
               <p className="text-sm font-bold text-slate-900 dark:text-white">
                 {vehicle}
               </p>
-              <p className="text-[11px] text-slate-400">{plate}</p>
+              <p className="text-xs text-slate-400">{plate}</p>
             </div>
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+              <p className="text-xs text-slate-500 uppercase font-bold tracking-tight mb-1">
                 Due Date
               </p>
               <p className="text-sm font-bold text-slate-900 dark:text-white">
                 {dueDate}
               </p>
-              <p className="text-[11px] text-slate-400">14:00 PM</p>
+              <p className="text-xs text-slate-400">14:00 PM</p>
             </div>
             <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20">
-              <p className="text-[11px] text-rose-600 dark:text-rose-400 uppercase font-bold tracking-tight mb-1">
+              <p className="text-xs text-rose-600 dark:text-rose-400 uppercase font-bold tracking-tight mb-1">
                 Payment Date
               </p>
               <p className="text-sm font-bold text-rose-700 dark:text-rose-300">
                 {paymentDate}
               </p>
-              <p className="text-[11px] text-rose-500 font-medium">
+              <p className="text-xs text-rose-500 font-medium">
                 +2 Days Late
               </p>
             </div>
             <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
-              <p className="text-[11px] text-primary uppercase font-bold tracking-tight mb-1">
+              <p className="text-xs text-primary uppercase font-bold tracking-tight mb-1">
                 Total Amount
               </p>
               <p className="text-lg font-black text-primary">{amount}</p>
@@ -201,7 +201,7 @@ export function CardDetail({
               Recent History
             </h4>
             <button
-              className="text-[11px] text-primary font-bold uppercase tracking-wider hover:underline"
+              className="text-xs text-primary font-bold uppercase tracking-wider hover:underline"
               onClick={onViewProfile}
             >
               View Full Profile

@@ -78,7 +78,7 @@ export const UserTableRow = ({
         <Dropdown
           trigger={
             <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
-              <span className="material-symbols-outlined text-[20px]">
+              <span className="material-symbols-outlined text-xl">
                 more_vert
               </span>
             </button>

@@ -26,6 +26,7 @@ interface TransactionDetailProps {
   onAmountChange?: (value: string) => void;
   onNotesChange?: (value: string) => void;
   hasSubmitted?: boolean;
+  serverErrors?: Record<string, string[]>;
 }
 
 const TransactionDetail = ({
@@ -41,6 +42,7 @@ const TransactionDetail = ({
   onAmountChange,
   onNotesChange,
   hasSubmitted = false,
+  serverErrors = {},
 }: TransactionDetailProps) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showEwalletModal, setShowEwalletModal] = useState(false);
@@ -75,9 +77,22 @@ const TransactionDetail = ({
         newErrors.amount = "Amount must be greater than 0";
       }
 
+      if (serverErrors["payment_date"]?.[0]) {
+        newErrors.paymentDate = serverErrors["payment_date"][0];
+      }
+      if (serverErrors["reference_number"]?.[0]) {
+        newErrors.referenceNumber = serverErrors["reference_number"][0];
+      }
+      if (serverErrors["payment_method"]?.[0]) {
+        newErrors.paymentMethod = serverErrors["payment_method"][0];
+      }
+      if (serverErrors["amount_received"]?.[0]) {
+        newErrors.amount = serverErrors["amount_received"][0];
+      }
+
       setErrors(newErrors);
     }
-  }, [hasSubmitted, paymentDate, referenceNumber, paymentMethod, amount]);
+  }, [hasSubmitted, paymentDate, referenceNumber, paymentMethod, amount, serverErrors]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};

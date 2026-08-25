@@ -22,11 +22,11 @@ export function StatsCard({
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
         <span className="material-symbols-outlined text-4xl text-primary">{icon}</span>
       </div>
-      <p className="text-[#617589] dark:text-gray-400 text-sm font-medium leading-normal">
+      <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-normal">
         {title}
       </p>
       <div className="flex items-end gap-2">
-        <p className="text-[#111418] dark:text-white text-2xl font-bold leading-tight">
+        <p className="text-base font-bold text-slate-900 dark:text-white leading-tight">
           {value}
         </p>
         <span className={`${trend.trendColor} ${trend.bgColor} px-1.5 py-0.5 rounded text-xs font-semibold`}>

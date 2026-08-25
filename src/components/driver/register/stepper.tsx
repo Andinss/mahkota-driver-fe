@@ -60,7 +60,7 @@ export function Stepper({ currentStep }: StepperProps) {
           ></div>
         </div>
       </div>
-      <div className="flex justify-between mt-2 text-[11px] font-semibold text-slate-400">
+      <div className="flex justify-between mt-2 text-xs font-semibold text-slate-400">
         {steps.map((step) => (
           <div
             key={step.number}

@@ -286,7 +286,7 @@ export function VehicleMediaUpload({
                   />
                   {idx === 0 && (
                     <div className="absolute inset-0 bg-primary/20 flex items-end justify-center">
-                      <span className="text-[8px] text-white font-bold bg-primary/80 w-full text-center py-0.5">
+                      <span className="text-[10px] text-white font-bold bg-primary/80 w-full text-center py-0.5">
                         MAIN
                       </span>
                     </div>

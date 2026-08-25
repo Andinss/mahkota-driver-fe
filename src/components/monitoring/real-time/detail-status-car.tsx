@@ -1,14 +1,18 @@
 "use client";
 import { useState } from "react";
+import { monitoringApi } from "@/lib/api/monitoring";
 import type { FleetVehicle } from "./monitoring-map";
 
 interface DetailStatusCardProps {
   onClose?: () => void;
   vehicle?: FleetVehicle | null;
+  onStatusChanged?: () => void;
 }
 
-const DetailStatusCard = ({ onClose, vehicle }: DetailStatusCardProps) => {
+const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCardProps) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [isShuttingDown, setIsShuttingDown] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   if (!vehicle) return null;
 
@@ -22,8 +26,21 @@ const DetailStatusCard = ({ onClose, vehicle }: DetailStatusCardProps) => {
   const statusColor = vehicle.status === "emergency" ? "red" : vehicle.status === "moving" ? "blue" : "gray";
   const statusLabel = vehicle.status === "emergency" ? "Emergency" : vehicle.status === "moving" ? "Moving" : "Idle";
 
+  const handleShutdown = async () => {
+    setIsShuttingDown(true);
+    try {
+      await monitoringApi.updateVehicleStatus(vehicle.id, "Maintenance");
+      setShowConfirm(false);
+      onStatusChanged?.();
+    } catch (err) {
+      console.error("Failed to shutdown vehicle:", err);
+    } finally {
+      setIsShuttingDown(false);
+    }
+  };
+
   return (
-    <div className="absolute top-4 right-4 bottom-auto w-80 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 z-30 flex flex-col overflow-hidden">
+    <div className="absolute top-4 right-4 bottom-auto w-80 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[1001] flex flex-col overflow-hidden">
       <div className="relative h-36 bg-slate-200 dark:bg-slate-700">
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
         <div className="absolute top-3 right-3">
@@ -114,21 +131,50 @@ const DetailStatusCard = ({ onClose, vehicle }: DetailStatusCardProps) => {
                 <p className="text-xs font-bold text-red-700 dark:text-red-400">
                   Geofence Violation Alert
                 </p>
-                <p className="text-[11px] text-red-600 dark:text-red-300/80 leading-relaxed mt-1">
+                <p className="text-xs text-red-600 dark:text-red-300/80 leading-relaxed mt-1">
                   Vehicle has exited the designated zone without authorization.
                 </p>
               </div>
             </div>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 transition-colors">
-            History
-          </button>
-          <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-semibold text-white transition-colors shadow-lg shadow-blue-500/30">
-            Dispatch
-          </button>
-        </div>
+
+        {showConfirm ? (
+          <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+            <p className="text-sm font-medium text-orange-800 dark:text-orange-300 mb-3">
+              Shutdown vehicle <strong>{vehicle.plate}</strong> to Maintenance?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleShutdown}
+                disabled={isShuttingDown}
+                className="flex-1 px-3 py-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
+              >
+                {isShuttingDown ? "Shutting down..." : "Yes, Shutdown"}
+              </button>
+              <button
+                onClick={() => setShowConfirm(false)}
+                disabled={isShuttingDown}
+                className="flex-1 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+              History
+            </button>
+            <button
+              onClick={() => setShowConfirm(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold text-white transition-colors shadow-lg shadow-red-500/30"
+            >
+              <span className="material-symbols-outlined text-base">power_settings_new</span>
+              Shutdown
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
