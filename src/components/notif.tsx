@@ -22,7 +22,7 @@ export const DropdownNotif = () => {
             <p className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-tight">
               Vehicle B 1234 ABC is due for maintenance.
             </p>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
               Status: Important
             </span>
           </div>
@@ -38,7 +38,7 @@ export const DropdownNotif = () => {
             <p className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-tight">
               Driver Bambang Wijaya completed registration.
             </p>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
               Status: Success
             </span>
           </div>
@@ -54,7 +54,7 @@ export const DropdownNotif = () => {
             <p className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-tight">
               New rental booking for Toyota Camry.
             </p>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
               Status: Info
             </span>
           </div>

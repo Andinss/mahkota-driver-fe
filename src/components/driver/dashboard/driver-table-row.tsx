@@ -60,7 +60,7 @@ export function DriverTableRow({
         <Dropdown
           trigger={
             <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-              <span className="material-symbols-outlined text-[20px]">
+              <span className="material-symbols-outlined text-xl">
                 more_vert
               </span>
             </button>

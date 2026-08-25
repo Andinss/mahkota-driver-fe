@@ -58,4 +58,7 @@ export const monitoringApi = {
 
   getTaskById: (id: string) =>
     api.get<SuccessResponse<MonitoringTaskDetail>>(`/monitoring/tasks/${id}`),
+
+  updateVehicleStatus: (vehicleId: string, status: string) =>
+    api.put<SuccessResponse<any>>(`/monitoring/vehicles/${vehicleId}/status`, { status }),
 };

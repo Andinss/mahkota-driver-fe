@@ -31,7 +31,7 @@ function AuditCard({
         <h3 className="text-2xl font-bold dark:text-white">{value.toLocaleString()}</h3>
         {trend && (
           <span className={`${trend.color} text-xs font-medium flex items-center`}>
-            <span className="material-symbols-outlined text-[14px]">{trend.icon}</span> {trend.value}
+            <span className="material-symbols-outlined text-sm">{trend.icon}</span> {trend.value}
           </span>
         )}
         {subtitle && (

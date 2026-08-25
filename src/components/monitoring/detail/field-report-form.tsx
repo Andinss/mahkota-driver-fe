@@ -317,7 +317,7 @@ export const FieldReportForm = ({ onSaveDraft, onSubmitReport }: FieldReportForm
                   className="border-2 border-dashed border-red-300 dark:border-red-700 rounded-xl p-8 flex flex-col items-center justify-center gap-3 bg-red-50/20 dark:bg-red-900/10 hover:bg-red-50/40 dark:hover:bg-red-900/20 transition-colors cursor-pointer group"
                 >
                   <div className="p-3 bg-white dark:bg-gray-900 rounded-full shadow-sm group-hover:scale-110 transition-transform">
-                    <span className="material-symbols-outlined text-primary text-[24px]">cloud_upload</span>
+                    <span className="material-symbols-outlined text-primary text-2xl">cloud_upload</span>
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-bold text-[#0d141b] dark:text-white">Click to upload or drag and drop</p>
@@ -367,7 +367,7 @@ export const FieldReportForm = ({ onSaveDraft, onSubmitReport }: FieldReportForm
                         className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 dark:border-gray-700 bg-slate-50 dark:bg-gray-800/50 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors min-h-[160px]"
                       >
                         <div className="p-2 bg-white dark:bg-gray-900 rounded-full shadow-sm">
-                          <span className="material-symbols-outlined text-primary text-[28px]">add_photo_alternate</span>
+                          <span className="material-symbols-outlined text-primary text-3xl">add_photo_alternate</span>
                         </div>
                         <p className="text-sm font-medium text-[#0d141b] dark:text-white">Add More</p>
                         <p className="text-xs text-[#4c739a] dark:text-slate-400">{MAX_PHOTOS - uploadedImages.length} slot(s) left</p>

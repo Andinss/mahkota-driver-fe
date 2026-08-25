@@ -51,11 +51,11 @@ export const Button = ({
       {...props}
     >
       {icon && iconPosition === "left" && (
-        <span className="material-symbols-outlined text-[20px]">{icon}</span>
+        <span className="material-symbols-outlined text-xl">{icon}</span>
       )}
       {children && <span className="truncate">{children}</span>}
       {icon && iconPosition === "right" && (
-        <span className="material-symbols-outlined text-[20px]">{icon}</span>
+        <span className="material-symbols-outlined text-xl">{icon}</span>
       )}
     </button>
   );

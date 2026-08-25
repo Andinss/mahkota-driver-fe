@@ -36,6 +36,8 @@ const RealtimeMonitoring = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<FleetVehicle | null>(null);
   const [vehicles, setVehicles] = useState<FleetVehicle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const mountedRef = useRef(true);
 
   const fetchLocations = useCallback(async () => {
@@ -65,6 +67,16 @@ const RealtimeMonitoring = () => {
     };
   }, [fetchLocations]);
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isExpanded]);
+
   const handleVehicleClick = (vehicle: FleetVehicle) => {
     setSelectedVehicle(vehicle);
   };
@@ -73,71 +85,75 @@ const RealtimeMonitoring = () => {
     setSelectedVehicle(null);
   };
 
-  const emergencyCount = vehicles.filter((v) => v.status === "emergency").length;
-
   return (
     <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
-    <div className="relative flex flex-1 mx-2 my-2 md:mx-4 md:my-4 lg:m-8 overflow-hidden">
-      <SideStatus
-        vehicles={vehicles}
-        onVehicleClick={handleVehicleClick}
-        selectedVehicleId={selectedVehicle?.id}
-      />
-
-      <div className="flex-1 relative">
-        {loading ? (
-          <div className="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-            <div className="text-slate-400 text-sm">Loading fleet locations...</div>
-          </div>
-        ) : (
-          <MonitoringMap
+      <div className={`flex flex-1 bg-white dark:bg-slate-950 ${isExpanded ? "fixed inset-0 z-50" : "mx-2 my-2 md:mx-4 md:my-4 lg:m-8"}`}>
+        {/* Sidebar */}
+        {!isExpanded && (
+          <SideStatus
             vehicles={vehicles}
-            center={[-6.2088, 106.8456]}
-            zoom={12}
             onVehicleClick={handleVehicleClick}
+            selectedVehicleId={selectedVehicle?.id}
+            isOpen={isSidebarOpen}
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
           />
         )}
 
-        <div className="absolute top-4 left-4 z-10 flex flex-col sm:flex-row gap-3 pointer-events-none">
-          <div className="bg-white dark:bg-surface-dark p-3 pr-6 rounded-lg shadow-lg border border-red-100 dark:border-red-900/30 flex items-center gap-3 pointer-events-auto">
-            <div className="bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 p-2 rounded-lg">
-              <span className="material-symbols-outlined text-xl">warning</span>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col min-w-0 relative">
+          {/* Toolbar */}
+          <div className="h-12 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-3 shrink-0">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Real-time Fleet Monitoring
+              </h2>
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full uppercase tracking-wider">
+                Live
+              </span>
             </div>
-            <div>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
-                Active Emergencies
-              </p>
-              <p className="text-xl font-bold text-slate-900 dark:text-white leading-none">
-                {emergencyCount}
-              </p>
+            <div className="flex items-center gap-1.5">
+              <button
+                className="h-8 px-3 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 transition-colors"
+                title="Center on my location"
+              >
+                <span className="material-symbols-outlined text-lg">my_location</span>
+                <span className="hidden sm:inline">Locate</span>
+              </button>
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="h-8 px-3 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 transition-colors"
+                title={isExpanded ? "Exit fullscreen" : "Fullscreen"}
+              >
+                <span className="material-symbols-outlined text-lg">
+                  {isExpanded ? "fullscreen_exit" : "fullscreen"}
+                </span>
+                <span className="hidden sm:inline">{isExpanded ? "Exit" : "Expand"}</span>
+              </button>
             </div>
           </div>
-          <div className="bg-white dark:bg-surface-dark p-3 pr-6 rounded-lg shadow-lg border border-slate-100 dark:border-slate-800 flex items-center gap-3 pointer-events-auto">
-            <div className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 p-2 rounded-lg">
-              <span className="material-symbols-outlined text-xl">near_me</span>
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
-                Geofence Alerts
-              </p>
-              <p className="text-xl font-bold text-slate-900 dark:text-white leading-none">
-                {emergencyCount}
-              </p>
-            </div>
+
+          {/* Map Area */}
+          <div className="flex-1 relative">
+            {loading ? (
+              <div className="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+                <div className="text-slate-400 text-sm">Loading fleet locations...</div>
+              </div>
+            ) : (
+              <MonitoringMap
+                vehicles={vehicles}
+                center={[-6.2088, 106.8456]}
+                zoom={12}
+                onVehicleClick={handleVehicleClick}
+              />
+            )}
           </div>
         </div>
 
+        {/* Detail Card - slides in from right */}
         {selectedVehicle && (
-          <DetailStatusCard onClose={handleCloseDetail} vehicle={selectedVehicle} />
+          <DetailStatusCard onClose={handleCloseDetail} vehicle={selectedVehicle} onStatusChanged={fetchLocations} />
         )}
-
-        <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-10 pointer-events-none">
-          <button className="size-10 bg-white dark:bg-slate-800 rounded-lg shadow-md flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 pointer-events-auto">
-            <span className="material-symbols-outlined">my_location</span>
-          </button>
-        </div>
       </div>
-    </div>
     </PermissionGuard>
   );
 };

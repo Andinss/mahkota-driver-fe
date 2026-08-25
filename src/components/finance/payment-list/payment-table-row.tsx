@@ -75,8 +75,10 @@ export const PaymentTableRow = ({
   return (
     <tr
       className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
-      <td className="px-6 py-4 font-medium text-[#111418] dark:text-white">
-        {payment.reference_number}
+      <td className="px-6 py-4">
+        <span className="font-mono text-sm font-bold text-[#111418] dark:text-white">
+          {payment.reference_number}
+        </span>
       </td>
 
       <td className="px-6 py-4">
@@ -124,7 +126,7 @@ export const PaymentTableRow = ({
         <Dropdown
           trigger={
             <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
-              <span className="material-symbols-outlined text-[20px]">
+              <span className="material-symbols-outlined text-xl">
                 more_vert
               </span>
             </button>

@@ -35,6 +35,7 @@ export default function TaskList() {
 
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [tasksLoading, setTasksLoading] = useState(true);
+  const [emergencyTask, setEmergencyTask] = useState<any>(null);
 
   const hasAccess = canAccess(user?.permissions, "monitoring.read");
 
@@ -49,7 +50,22 @@ export default function TaskList() {
     try {
       const res = await monitoringApi.getTasks();
       if (res.success && Array.isArray(res.data)) {
-        setAllTasks(res.data.map(mapApiTaskToTask));
+        const mapped = res.data.map(mapApiTaskToTask);
+        setAllTasks(mapped);
+
+        const emergency = res.data.find((t: any) => t.priority === "High");
+        if (emergency) {
+          setEmergencyTask({
+            id: `#${emergency.id?.slice(0, 8).toUpperCase() || "N/A"}`,
+            location: emergency.location || "Unknown",
+            vehicle: emergency.vehicle_name || "Unknown",
+            plate: emergency.plate || "N/A",
+            driver: "Driver on duty",
+            priority: "High Priority",
+          });
+        } else {
+          setEmergencyTask(null);
+        }
       } else {
         console.warn("monitoring.getTasks response:", res);
       }
@@ -176,7 +192,7 @@ export default function TaskList() {
           />
         </div>
 
-        <EmergencyResponse />
+        {emergencyTask && <EmergencyResponse emergencyData={emergencyTask} />}
         <TaskFilters />
 
         {/* Table Container */}

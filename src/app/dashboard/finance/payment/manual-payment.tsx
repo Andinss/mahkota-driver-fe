@@ -7,6 +7,7 @@ import PayerInfo from "@/components/finance/manual/payer-info";
 import Summary from "@/components/finance/manual/summary";
 import TransactionDetail from "@/components/finance/manual/transaction-detail";
 import { financeApi } from "@/lib/api/finances";
+import { HttpClientError } from "@/lib/api-http";
 import type { FinanceItem } from "@/lib/types/finances";
 
 interface ManualPaymentPageProps {
@@ -30,6 +31,9 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   const [notes, setNotes] = useState("");
   const [paymentDetail, setPaymentDetail] = useState("");
   const [selectedPayer, setSelectedPayer] = useState<{name: string; id: string; employeeId?: string} | null>(null);
+
+  const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
+  const [generalError, setGeneralError] = useState<string>("");
 
   useEffect(() => {
     if (paymentIdParam) {
@@ -87,6 +91,8 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
 
   const handleSubmit = async () => {
     setHasSubmitted(true);
+    setServerErrors({});
+    setGeneralError("");
 
     if (!selectedPayer?.id) {
       setIsSubmitting(false);
@@ -117,9 +123,16 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
       const ref = referenceNumber || "New Payment";
 
       router.push(`/dashboard/finance?success=${action}&ref=${encodeURIComponent(ref)}`);
-    } catch {
+    } catch (err) {
       setIsSubmitting(false);
-      alert("Failed to save payment. Please check your input and try again.");
+      if (err instanceof HttpClientError) {
+        if (err.errors && Object.keys(err.errors).length > 0) {
+          setServerErrors(err.errors);
+        }
+        setGeneralError(err.message || "Failed to save payment. Please check your input and try again.");
+      } else {
+        setGeneralError("Failed to save payment. Please check your input and try again.");
+      }
     }
   };
 
@@ -137,6 +150,8 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     setAmount("");
     setNotes("");
     setHasSubmitted(false);
+    setServerErrors({});
+    setGeneralError("");
   };
 
   const handlePayerSelect = (name: string, id: string, employeeId?: string) => {
@@ -164,6 +179,14 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   return (
     <PermissionGuard permission="finance.create">
     <div className="m-8">
+      {generalError && (
+        <div className="mb-6 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2.5">
+          <div className="size-6 rounded-full bg-red-100 dark:bg-red-800/40 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-red-500 text-sm">error</span>
+          </div>
+          <p className="text-sm text-red-600 dark:text-red-400 font-medium">{generalError}</p>
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col gap-6">
           <PayerInfo
@@ -172,6 +195,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
             onPayerSelect={handlePayerSelect}
             selectedPayerId={selectedPayer?.id}
             hasSubmitted={hasSubmitted}
+            serverError={serverErrors["driver_id"]?.[0]}
           />
           <TransactionDetail
             paymentDate={paymentDate}
@@ -186,6 +210,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
             onAmountChange={setAmount}
             onNotesChange={setNotes}
             hasSubmitted={hasSubmitted}
+            serverErrors={serverErrors}
           />
         </div>
         <Summary

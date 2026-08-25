@@ -55,7 +55,7 @@ export function VehicleHistoryTableRow({ vehicle }: VehicleHistoryTableRowProps)
             <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
               {vehicle.name}
             </p>
-            <p className="text-[11px] font-medium text-slate-400">
+            <p className="text-xs font-medium text-slate-400">
               {vehicle.plateNumber}
             </p>
           </div>
@@ -86,7 +86,7 @@ export function VehicleHistoryTableRow({ vehicle }: VehicleHistoryTableRowProps)
       </td>
       <td className="px-6 py-4 text-center">
         <div className={`flex items-center justify-center gap-1.5 ${vehicle.maintenanceColor}`}>
-          <span className="material-symbols-outlined text-[18px]">
+          <span className="material-symbols-outlined text-xl">
             {vehicle.maintenanceIcon}
           </span>
           <span className="text-sm font-bold">{vehicle.maintenanceCount}</span>

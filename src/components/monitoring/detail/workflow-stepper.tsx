@@ -62,7 +62,7 @@ export const WorkflowStepper = ({ onStartRetrieval }: WorkflowStepperProps) => {
                 : "bg-slate-200 dark:bg-gray-700 text-slate-400 dark:text-gray-500"}
               ${step.status === "current" ? "ring-4 ring-blue-100 dark:ring-blue-900/50" : ""}
             `}>
-              <span className="material-symbols-outlined text-[18px]">{step.icon}</span>
+              <span className="material-symbols-outlined text-lg">{step.icon}</span>
             </div>
             <p className={`
               text-xs font-bold

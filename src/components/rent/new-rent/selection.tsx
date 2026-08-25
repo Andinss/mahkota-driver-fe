@@ -10,6 +10,8 @@ import { useState } from "react";
   endDate?: string;
   dailyRate?: string;
   depositAmount?: string;
+  serverDriverId?: string;
+  serverVehicleId?: string;
 }
 
 interface SelectOption {
@@ -31,10 +33,11 @@ interface SelectionFormProps {
   error?: FormErrors;
   driverOptions?: SelectOption[];
   vehicleOptions?: SelectOption[];
+  serverErrors?: Record<string, string[]>;
 }
 
 
-const SelectionForm = ({ onDataChange, initialData, error, driverOptions, vehicleOptions }: SelectionFormProps) => {
+const SelectionForm = ({ onDataChange, initialData, error, driverOptions, vehicleOptions, serverErrors = {} }: SelectionFormProps) => {
   const effectiveDriverOptions = driverOptions || [];
   const effectiveVehicleOptions = vehicleOptions || [];
 
@@ -80,7 +83,7 @@ const SelectionForm = ({ onDataChange, initialData, error, driverOptions, vehicl
               placeholder="Search driver..."
               value={selectedDriver}
               onChange={handleDriverChange}
-              error={error?.driverId}
+              error={error?.serverDriverId || error?.driverId}
             />
           </div>
 
@@ -95,7 +98,7 @@ const SelectionForm = ({ onDataChange, initialData, error, driverOptions, vehicl
               placeholder="Search vehicle..."
               value={selectedVehicle}
               onChange={handleVehicleChange}
-              error={error?.vehicleId}
+              error={error?.serverVehicleId || error?.vehicleId}
             />
           </div>
         </div>

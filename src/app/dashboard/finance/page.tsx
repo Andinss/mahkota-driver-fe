@@ -12,6 +12,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
 import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
 import { financeApi } from "@/lib/api/finances";
+import { HttpClientError } from "@/lib/api-http";
 import type { FinanceItem, FinanceListParams, FinanceSummary } from "@/lib/types/finances";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { useAuth } from "@/lib/auth-context";
@@ -136,9 +137,9 @@ export default function PaymentList() {
       setIsAlertOpen(true);
       fetchFinances();
       fetchSummary();
-    } catch {
+    } catch (err) {
       setAlertTitle("Error");
-      setAlertMessage("Failed to delete finance record");
+      setAlertMessage(err instanceof HttpClientError ? err.message : "Failed to delete finance record");
       setAlertType("error");
       setIsAlertOpen(true);
     } finally {

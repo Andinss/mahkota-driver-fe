@@ -29,7 +29,7 @@ export function DriverStatsCard({
         {value}
       </div>
       {trend && (
-        <div className={`flex items-center gap-1 text-[11px] font-semibold ${trend.textColor}`}>
+        <div className={`flex items-center gap-1 text-xs font-semibold ${trend.textColor}`}>
           <span className="material-icons-round text-xs">{trend.icon}</span>
           <span className="text-xs">{trend.text}</span>
         </div>

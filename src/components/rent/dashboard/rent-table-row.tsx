@@ -65,8 +65,10 @@ export const RentalTableRow = ({
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
       {/* Transaction ID */}
-      <td className="px-6 py-4 font-mono font-medium">
-        {rental.transactionId}
+      <td className="px-6 py-4">
+        <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
+          {rental.transactionId}
+        </span>
       </td>
 
       {/* Driver Details */}
@@ -117,20 +119,9 @@ export const RentalTableRow = ({
       </td>
 
       <td className="px-6 py-4">
-        <Badge
-          variant={
-            rental.deposit === "held"
-              ? "success"
-              : rental.deposit === "pending"
-                ? "warning"
-                : rental.deposit === "waiting"
-                  ? "info"
-                  : "neutral"
-          }
-          dot
-        >
+        <span className="text-sm font-medium text-slate-900 dark:text-white">
           {rental.deposit}
-        </Badge>
+        </span>
       </td>
 
       <td className="px-6 py-4">
@@ -156,7 +147,7 @@ export const RentalTableRow = ({
         <Dropdown
           trigger={
             <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
-              <span className="material-symbols-outlined text-[20px]">
+              <span className="material-symbols-outlined text-xl">
                 more_vert
               </span>
             </button>

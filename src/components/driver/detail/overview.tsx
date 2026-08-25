@@ -88,7 +88,7 @@ export function DriverOverview({ driver, buildUrl, rental }: DriverOverviewProps
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-slate-500 text-[20px]">
+                  <span className="material-symbols-outlined text-slate-500 text-xl">
                     call
                   </span>
                 </div>
@@ -103,7 +103,7 @@ export function DriverOverview({ driver, buildUrl, rental }: DriverOverviewProps
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-slate-500 text-[20px]">
+                  <span className="material-symbols-outlined text-slate-500 text-xl">
                     mail
                   </span>
                 </div>
@@ -118,7 +118,7 @@ export function DriverOverview({ driver, buildUrl, rental }: DriverOverviewProps
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-slate-500 text-[20px]">
+                  <span className="material-symbols-outlined text-slate-500 text-xl">
                     contact_emergency
                   </span>
                 </div>
@@ -133,7 +133,7 @@ export function DriverOverview({ driver, buildUrl, rental }: DriverOverviewProps
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-slate-500 text-[20px]">
+                  <span className="material-symbols-outlined text-slate-500 text-xl">
                     contact_emergency
                   </span>
                 </div>
@@ -148,7 +148,7 @@ export function DriverOverview({ driver, buildUrl, rental }: DriverOverviewProps
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-slate-500 text-[20px]">
+                  <span className="material-symbols-outlined text-slate-500 text-xl">
                     location_on
                   </span>
                 </div>

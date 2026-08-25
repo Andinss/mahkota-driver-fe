@@ -201,7 +201,7 @@ export default function LatePaymentPage() {
                   {currentItem.driver_name.charAt(0)}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                     {currentItem.driver_name}
                   </h2>
                   <p className="text-sm text-slate-500">
@@ -224,41 +224,41 @@ export default function LatePaymentPage() {
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                    <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+                    <p className="text-xs text-slate-500 uppercase font-bold tracking-tight mb-1">
                       Vehicle
                     </p>
                     <p className="text-sm font-bold text-slate-900 dark:text-white">
                       {currentItem.vehicle_name}
                     </p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-xs text-slate-400">
                       {currentItem.plate}
                     </p>
                   </div>
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                    <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+                    <p className="text-xs text-slate-500 uppercase font-bold tracking-tight mb-1">
                       Rental #
                     </p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
                       {currentItem.rental_number}
                     </p>
                   </div>
                   <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20">
-                    <p className="text-[11px] text-rose-600 dark:text-rose-400 uppercase font-bold tracking-tight mb-1">
+                    <p className="text-xs text-rose-600 dark:text-rose-400 uppercase font-bold tracking-tight mb-1">
                       Due Date
                     </p>
                     <p className="text-sm font-bold text-rose-700 dark:text-rose-300">
                       {formatDate(currentItem.end_date)}
                     </p>
-                    <p className="text-[11px] text-rose-500 font-medium">
+                    <p className="text-xs text-rose-500 font-medium">
                       {currentItem.days_late} day
                       {currentItem.days_late > 1 ? "s" : ""} late
                     </p>
                   </div>
                   <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
-                    <p className="text-[11px] text-primary uppercase font-bold tracking-tight mb-1">
+                    <p className="text-xs text-primary uppercase font-bold tracking-tight mb-1">
                       Total Amount
                     </p>
-                    <p className="text-lg font-black text-primary">
+                    <p className="text-base font-black text-primary">
                       {formatCurrency(currentItem.total_revenue)}
                     </p>
                   </div>

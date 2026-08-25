@@ -30,10 +30,10 @@ const CardCarInfo = ({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
-            <span className="bg-white/95 dark:bg-[#1a2632]/95 backdrop-blur px-2.5 py-1 rounded text-[9px] font-black tracking-widest uppercase text-gray-900 dark:text-white">
+            <span className="bg-white/95 dark:bg-[#1a2632]/95 backdrop-blur px-2.5 py-1 rounded text-[10px] font-black tracking-widest uppercase text-gray-900 dark:text-white">
               {licensePlate}
             </span>
-            <span className="bg-black/60 backdrop-blur text-white px-2.5 py-1 rounded text-[9px] font-bold tracking-widest uppercase">
+            <span className="bg-black/60 backdrop-blur text-white px-2.5 py-1 rounded text-[10px] font-bold tracking-widest uppercase">
               {color}
             </span>
           </div>
@@ -52,7 +52,7 @@ const CardCarInfo = ({
                   <span className="material-symbols-outlined text-lg">
                     local_gas_station
                   </span>
-                  <span className="text-[9px] font-bold uppercase tracking-widest">
+                  <span className="text-[10px] font-bold uppercase tracking-widest">
                     Fuel Level
                   </span>
                 </div>
@@ -71,7 +71,7 @@ const CardCarInfo = ({
                   <span className="material-symbols-outlined text-lg">
                     speed
                   </span>
-                  <span className="text-[9px] font-bold uppercase tracking-widest">
+                  <span className="text-[10px] font-bold uppercase tracking-widest">
                     Odometer
                   </span>
                 </div>
@@ -92,7 +92,7 @@ const CardCarInfo = ({
                 </span>
               </div>
               <div>
-                <p className="text-[9px] font-bold text-gray-500 uppercase">
+                <p className="text-[10px] font-bold text-gray-500 uppercase">
                   Security Deposit
                 </p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">

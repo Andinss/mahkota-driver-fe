@@ -203,7 +203,7 @@ export function PersonalDetailsForm({
             }}
             error={errors.employeeId}
           />
-          <p className="text-[11px] text-slate-400">
+          <p className="text-xs text-slate-400">
             Leave blank to auto-generate.
           </p>
         </div>
