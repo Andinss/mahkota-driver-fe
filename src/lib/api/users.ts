@@ -1,5 +1,5 @@
 import { api } from "../api-http";
-import type { SuccessResponse } from "../types/api";
+import type { SuccessResponse, SuccessResponsePaginated } from "../types/api";
 import type {
   UserItem,
   UserSummary,
@@ -21,7 +21,7 @@ function triggerDownload(blob: Blob, filename: string) {
 
 export const usersApi = {
   getList: (params?: UserListParams) =>
-    api.get<SuccessResponse<UserItem[]>>(
+    api.get<SuccessResponsePaginated<UserItem[]>>(
       "/users",
       params as Record<string, string | number | undefined>,
     ),

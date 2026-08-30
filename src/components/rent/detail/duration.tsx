@@ -4,6 +4,9 @@ interface DurationProps {
   dailyRate?: number;
   depositAmount?: number;
   duration?: number;
+  methodPayment?: string;
+  saldoDeducted?: number;
+  serviceFee?: number;
 }
 
 const formatDate = (d?: string) => {
@@ -21,8 +24,11 @@ const Duration = ({
   dailyRate = 245000,
   depositAmount = 500000,
   duration = 7,
+  methodPayment,
+  saldoDeducted,
+  serviceFee = 25000,
 }: DurationProps) => {
-  const totalEst = dailyRate * duration + depositAmount;
+  const totalEst = dailyRate * duration + depositAmount + serviceFee;
 
   return (
     <div className="col-span-12 lg:col-span-7">
@@ -65,9 +71,9 @@ const Duration = ({
           </div>
           <div>
             <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
-              Insurance
+              Service Fee
             </p>
-            <p className="text-xl font-black text-gray-900 dark:text-white">Rp 100.000</p>
+            <p className="text-xl font-black text-gray-900 dark:text-white">{formatCurrency(serviceFee)}</p>
           </div>
           <div className="col-span-2 sm:col-span-1 sm:text-right pt-4 sm:pt-0 border-t sm:border-t-0 border-gray-200">
             <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
@@ -76,6 +82,25 @@ const Duration = ({
             <p className="text-xl font-black text-blue-600">{formatCurrency(totalEst)}</p>
           </div>
         </div>
+        {methodPayment && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-gray-500 text-lg">
+                  {methodPayment === "Saldo" ? "account_balance_wallet" : "payments"}
+                </span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Payment Method: <strong>{methodPayment}</strong>
+                </span>
+              </div>
+              {methodPayment === "Saldo" && Number(saldoDeducted) > 0 && (
+                <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                  -{formatCurrency(Number(saldoDeducted))} from Saldo
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

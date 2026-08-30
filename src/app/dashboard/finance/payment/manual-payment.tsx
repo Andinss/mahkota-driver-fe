@@ -7,6 +7,7 @@ import PayerInfo from "@/components/finance/manual/payer-info";
 import Summary from "@/components/finance/manual/summary";
 import TransactionDetail from "@/components/finance/manual/transaction-detail";
 import { financeApi } from "@/lib/api/finances";
+import { saldoApi } from "@/lib/api/saldo";
 import { HttpClientError } from "@/lib/api-http";
 import type { FinanceItem } from "@/lib/types/finances";
 
@@ -34,6 +35,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
 
   const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
   const [generalError, setGeneralError] = useState<string>("");
+  const [driverSaldoBalance, setDriverSaldoBalance] = useState<number>(0);
 
   useEffect(() => {
     if (paymentIdParam) {
@@ -158,6 +160,20 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     setSelectedPayer({ name, id, employeeId });
   };
 
+  useEffect(() => {
+    if (selectedPayer?.id) {
+      saldoApi.getBalance(selectedPayer.id)
+        .then((res: any) => {
+          setDriverSaldoBalance(res?.data?.balance ?? 0);
+        })
+        .catch(() => {
+          setDriverSaldoBalance(0);
+        });
+    } else {
+      setDriverSaldoBalance(0);
+    }
+  }, [selectedPayer?.id]);
+
   const validateAll = (): boolean => {
     if (!selectedPayer) return false;
     if (!paymentDate) return false;
@@ -219,7 +235,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
           paymentDate={paymentDate}
           paymentMethod={paymentMethod}
           amount={amount}
-          currentBalance={-3500000}
+          currentBalance={driverSaldoBalance}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           onClear={handleClear}

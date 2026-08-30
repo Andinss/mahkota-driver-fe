@@ -12,6 +12,7 @@ interface FleetVehicle {
   latitude: number;
   longitude: number;
   status: "emergency" | "moving" | "idle";
+  engineStatus?: "on" | "off";
   speed?: number;
   fuelLevel?: number;
   lastUpdated?: string;
@@ -96,6 +97,11 @@ export default function MonitoringMap({
             };color:${
               vehicle.status === "emergency" ? "#dc2626" : vehicle.status === "moving" ? "#2563eb" : "#6b7280"
             }">${vehicle.status}</span>
+            <span style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;text-transform:uppercase;background:${
+              vehicle.engineStatus === "on" ? "#dcfce7" : "#f3f4f6"
+            };color:${
+              vehicle.engineStatus === "on" ? "#16a34a" : "#6b7280"
+            }">Engine ${vehicle.engineStatus === "on" ? "ON" : "OFF"}</span>
           </div>
           <div style="font-size:13px;color:#374151;">
             <div><strong>Driver:</strong> ${vehicle.driverName}</div>

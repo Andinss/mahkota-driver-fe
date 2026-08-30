@@ -13,6 +13,7 @@ export interface VehicleBrief {
   merk: string;
   model: string;
   license_plate: string;
+  engine_status?: 'on' | 'off';
 }
 
 export interface RentalTransaction {
@@ -27,7 +28,8 @@ export interface RentalTransaction {
   total_duration: number;
   daily_rate: number;
   deposit_amount: number;
-  method_payment: 'Bank' | 'Cash' | 'E Wallet';
+  method_payment: 'Bank' | 'Cash' | 'E Wallet' | 'Saldo';
+  saldo_deducted?: number;
   document_contract?: string;
   total_daily_rate: number;
   security_deposit: number;

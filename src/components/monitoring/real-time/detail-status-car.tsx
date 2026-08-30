@@ -110,6 +110,23 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
               {vehicle.fuelLevel !== undefined ? `${vehicle.fuelLevel}%` : "N/A"}
             </p>
           </div>
+          <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
+            <p className="text-[10px] uppercase text-slate-500 dark:text-slate-400 font-bold mb-1">
+              Engine
+            </p>
+            <p className={`text-sm font-bold flex items-center gap-1.5 ${
+              vehicle.engineStatus === "on"
+                ? "text-green-700 dark:text-green-400"
+                : "text-slate-500 dark:text-slate-400"
+            }`}>
+              <span className={`material-symbols-outlined text-base ${
+                vehicle.engineStatus === "on" ? "text-green-500" : "text-slate-400"
+              }`}>
+                power_settings_new
+              </span>
+              {vehicle.engineStatus === "on" ? "Running" : "Off"}
+            </p>
+          </div>
           <div className="col-span-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
               Status

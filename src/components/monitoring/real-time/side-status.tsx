@@ -146,6 +146,15 @@ const SideStatus = ({ vehicles = [], onVehicleClick, selectedVehicleId, isOpen, 
                         : vehicle.status === "moving"
                           ? `${vehicle.speed} km/h`
                           : vehicle.lastUpdated || "Idle"}
+                      {vehicle.engineStatus !== undefined && (
+                        <span className={`ml-1 px-1 py-0.5 rounded text-[9px] font-bold ${
+                          vehicle.engineStatus === "on"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
+                        }`}>
+                          E/{vehicle.engineStatus === "on" ? "ON" : "OFF"}
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>

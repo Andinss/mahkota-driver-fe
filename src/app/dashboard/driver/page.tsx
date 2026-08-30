@@ -47,6 +47,7 @@ export default function DriverPage() {
     setIsLoading(true);
     try {
       let items: Record<string, any>[] = [];
+      let meta: { total: number; totalPages: number } | null = null;
 
       if (!hasReadAll && hasReadOwn) {
         const res = await supervisorApi.getList();
@@ -59,6 +60,9 @@ export default function DriverPage() {
         if (filters.search) params.search = filters.search;
         const res = await driverApi.getList(params);
         items = Array.isArray(res.data) ? res.data : [];
+        if (res.meta) {
+          meta = { total: res.meta.total, totalPages: res.meta.totalPages };
+        }
       }
 
       const imageBase = (
@@ -78,11 +82,17 @@ export default function DriverPage() {
           employeeId: item.employee_id || "",
           phoneNumber: item.phone || "",
           email: item.email || "",
+          saldo: item.saldo ? Number(item.saldo.balance) : 0,
         };
       });
       setDrivers(mapped);
-      setTotalPages(1);
-      setTotalResults(mapped.length);
+      if (meta) {
+        setTotalResults(meta.total);
+        setTotalPages(meta.totalPages);
+      } else {
+        setTotalResults(mapped.length);
+        setTotalPages(1);
+      }
     } catch (err) {
       console.error("Failed to fetch drivers:", err);
       setDrivers([]);

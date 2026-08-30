@@ -11,6 +11,7 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   variant?: "danger" | "warning" | "info";
+  disabled?: boolean;
 }
 
 const variantStyles: Record<
@@ -31,6 +32,7 @@ export const ConfirmDialog = ({
   confirmText = "Confirm",
   cancelText = "Cancel",
   variant = "danger",
+  disabled = false,
 }: ConfirmDialogProps) => {
   const styles = variantStyles[variant];
 
@@ -49,7 +51,7 @@ export const ConfirmDialog = ({
         <h3 className="text-lg font-bold text-[#111418] dark:text-white mb-2">
           {title}
         </h3>
-        <p className="text-sm text-[#617589] dark:text-[#94a3b8] mb-6">
+        <p className="text-sm text-[#617589] dark:text-[#94a3b8] mb-6 whitespace-pre-line">
           {message}
         </p>
         <div className="flex gap-3 justify-center">
@@ -59,9 +61,11 @@ export const ConfirmDialog = ({
           <Button
             variant={variant === "danger" ? "danger" : "primary"}
             onClick={() => {
+              if (disabled) return;
               onConfirm();
               onClose();
             }}
+            disabled={disabled}
           >
             {confirmText}
           </Button>

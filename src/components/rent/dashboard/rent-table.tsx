@@ -14,6 +14,8 @@ interface Rental {
     name: string;
     id: string;
   };
+  vehicleId?: string;
+  vehicleEngineStatus?: "on" | "off";
   rentalPeriod: {
     start: string;
     end: string;
@@ -21,6 +23,8 @@ interface Rental {
   };
   deposit: string;        
   paymentStatus: string; 
+  methodPayment?: string;
+  saldoDeducted?: number;
 }
 
 interface RentalTableProps {
@@ -46,6 +50,9 @@ const rentalColumns: ExportColumn[] = [
   { id: "rentalPeriod", label: "Rental Period", defaultChecked: true },
   { id: "duration", label: "Duration (Days)", defaultChecked: true },
   { id: "deposit", label: "Deposit", defaultChecked: true },
+  { id: "methodPayment", label: "Payment Method", defaultChecked: true },
+  { id: "saldoDeducted", label: "Saldo Deducted", defaultChecked: true },
+  { id: "engine", label: "Engine", defaultChecked: true },
   { id: "paymentStatus", label: "Payment Status", defaultChecked: true },
 ];
 
@@ -90,6 +97,9 @@ export const RentalTable = ({
               <th className="px-6 py-4">Vehicle Info</th>
               <th className="px-6 py-4">Rental Period</th>
               <th className="px-6 py-4">Deposit</th>
+              <th className="px-6 py-4">Payment Method</th>
+              <th className="px-6 py-4">Saldo Deducted</th>
+              <th className="px-6 py-4">Engine</th>
               <th className="px-6 py-4">Payment Status</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>

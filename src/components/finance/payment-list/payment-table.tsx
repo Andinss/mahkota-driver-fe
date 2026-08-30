@@ -24,6 +24,8 @@ const paymentColumns: ExportColumn[] = [
   { id: "payment_date", label: "Payment Date", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
   { id: "payment_method", label: "Payment Method", defaultChecked: true },
+  { id: "notes", label: "Notes", defaultChecked: true },
+  { id: "status", label: "Status", defaultChecked: true },
   { id: "finance_type", label: "Finance Type", defaultChecked: false },
 ];
 
@@ -65,6 +67,13 @@ export function PaymentTable({
             <span className="material-symbols-outlined text-base">warning</span>
             Late Payment
           </Link>
+          <Link
+            href="/dashboard/finance/saldo"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm font-medium rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+          >
+            <span className="material-symbols-outlined text-base">account_balance_wallet</span>
+            Saldo
+          </Link>
           <button
             onClick={() => setIsExportModalOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
@@ -87,6 +96,8 @@ export function PaymentTable({
               <th className="px-6 py-4">Payment Date</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-2 py-4">Method</th>
+              <th className="px-6 py-4">Notes</th>
+              <th className="px-2 py-4">Active</th>
               <th className="pe-6 py-4 text-center">Actions</th>
             </tr>
           </thead>

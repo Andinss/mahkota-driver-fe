@@ -65,9 +65,6 @@ const Summary = ({
 
    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const parsedAmount = typeof amount === "string" ? (parseFloat(amount.replace(/[^\d.]/g, "")) || 0) : (amount || 0);
-  const newBalance = currentBalance + parsedAmount;
-
   const buttonText = isSubmitting
     ? "Processing..."
     : mode === "add"
@@ -135,17 +132,17 @@ const Summary = ({
               info
             </span>
             <p className="text-xs text-blue-800 dark:text-blue-200 leading-normal">
-              This payment will reduce the driver&apos;s outstanding balance to{" "}
+              Saldo driver saat ini:{" "}
               <span
                 className={`font-bold ${
-                  newBalance < 0
+                  currentBalance < 0
                     ? "text-red-600 dark:text-red-400"
                     : "text-green-600 dark:text-green-400"
                 }`}
               >
-                {formatCurrency(newBalance.toString())}
+                {formatCurrency(currentBalance.toString())}
               </span>
-              .
+              . Pembayaran ini tidak mempengaruhi saldo driver.
             </p>
           </div>
 

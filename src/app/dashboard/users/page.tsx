@@ -86,8 +86,13 @@ export default function UserList() {
         role: u.role?.name || "",
       }));
       setUsers(mapped);
-      setTotalPages(1);
-      setTotalResults(mapped.length);
+      if (res.meta) {
+        setTotalResults(res.meta.total);
+        setTotalPages(res.meta.totalPages);
+      } else {
+        setTotalResults(mapped.length);
+        setTotalPages(1);
+      }
     } catch {
       setUsers([]);
     } finally {

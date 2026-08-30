@@ -22,9 +22,13 @@ interface RentalDisplay {
   transactionId: string;
   driver: { name: string; id: string; avatar?: string };
   vehicle: { name: string; id: string };
+  vehicleId?: string;
+  vehicleEngineStatus?: "on" | "off";
   rentalPeriod: { start: string; end: string; duration: number };
   deposit: string;
   paymentStatus: string;
+  methodPayment?: string;
+  saldoDeducted?: number;
 }
 
 const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
@@ -51,6 +55,8 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
     name: item.vehicle ? `${item.vehicle.merk} ${item.vehicle.model}` : "-",
     id: item.vehicle?.license_plate || item.vehicle_id?.slice(0, 8) || "-",
   },
+  vehicleId: item.vehicle_id,
+  vehicleEngineStatus: item.vehicle?.engine_status === "on" ? "on" : "off",
   rentalPeriod: {
     start: formatDateShort(item.start_date),
     end: formatDateShort(item.end_date),
@@ -58,6 +64,8 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
   },
   deposit: item.deposit_amount > 0 ? `Rp ${Number(item.deposit_amount).toLocaleString("id-ID")}` : "Rp 0",
   paymentStatus: item.payment_status || "unpaid",
+  methodPayment: item.method_payment,
+  saldoDeducted: Number(item.saldo_deducted) || 0,
 });
 
 export default function RentalManagementPage() {

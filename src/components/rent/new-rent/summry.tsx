@@ -10,6 +10,8 @@ interface SummaryProps {
     serviceFee: number;
     vehicleId?: string;
     driverType?: string;
+    methodPayment?: string;
+    saldoSufficient?: boolean;
   };
   onConfirm: () => void;
   onCancel: () => void;
@@ -93,6 +95,20 @@ const Summary = ({
               {formatCurrency(totalRevenue)}
             </div>
           </div>
+          {rentalData.methodPayment && (
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <span className="material-symbols-outlined text-base">
+                {rentalData.methodPayment === "Saldo" ? "account_balance_wallet" : "payments"}
+              </span>
+              <span>Bayar via: <strong>{rentalData.methodPayment}</strong></span>
+            </div>
+          )}
+          {rentalData.methodPayment === "Saldo" && rentalData.saldoSufficient === false && (
+            <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded-lg">
+              <span className="material-symbols-outlined text-base">warning</span>
+              <span>Saldo tidak mencukupi</span>
+            </div>
+          )}
         </div>
         <div className="mt-8 space-y-3">
           <button

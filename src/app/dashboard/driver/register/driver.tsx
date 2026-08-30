@@ -185,6 +185,7 @@ export default function DriverRegisterPage() {
             onNext={handlePersonalNext}
             initialData={formData.personal}
             initialProfilePhotoUrl={formData.photo}
+            mode={mode}
           />
         );
       case 2:

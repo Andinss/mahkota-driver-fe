@@ -21,6 +21,7 @@ export interface DriverItem {
   user_id?: string;
   created_by_id?: string;
   created_by?: { id: string; username: string; email: string };
+  saldo?: { id: string; balance: number };
   created_at?: string;
   updated_at?: string;
 }

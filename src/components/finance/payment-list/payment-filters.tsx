@@ -35,6 +35,7 @@ export const PaymentFilters = ({
             <option value="cash">Cash</option>
             <option value="transfer">Transfer</option>
             <option value="e-wallet">E-Wallet</option>
+            <option value="saldo">Saldo</option>
           </Select>
         </div>
       </div>

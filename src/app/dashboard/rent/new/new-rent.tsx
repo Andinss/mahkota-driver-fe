@@ -42,6 +42,7 @@ interface RentalData {
   serviceFee: number;
   documents?: File[];
   methodPayment?: string;
+  saldoSufficient?: boolean;
 }
 
 interface SelectOption {
@@ -155,6 +156,11 @@ const NewRentPage = () => {
       isValid = false;
     }
 
+    if (rentalData.methodPayment === "Saldo" && rentalData.saldoSufficient === false) {
+      newErrors.depositAmount = "Saldo driver tidak mencukupi untuk pembayaran ini";
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   };
@@ -250,6 +256,7 @@ const NewRentPage = () => {
     dailyRate: number;
     depositAmount: number;
     methodPayment?: string;
+    saldoSufficient?: boolean;
   }) => {
     setRentalData((prev) => ({
       ...prev,
@@ -397,6 +404,10 @@ const NewRentPage = () => {
               dailyRate: rentalData.dailyRate,
               depositAmount: rentalData.depositAmount,
               methodPayment: rentalData.methodPayment,
+              driverId: rentalData.driverId,
+              totalRevenue: rentalData.duration > 0
+                ? rentalData.dailyRate * rentalData.duration + rentalData.depositAmount + rentalData.serviceFee
+                : 0,
             }}
             error={hasSubmitted ? errors : undefined}
           />

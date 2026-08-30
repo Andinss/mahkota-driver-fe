@@ -19,6 +19,7 @@ interface PersonalDetailsFormProps {
   onSaveDraft?: () => void;
   initialData?: Partial<PersonalDetailsData>;
   initialProfilePhotoUrl?: string;
+  mode?: "add" | "edit";
 }
 
 export function PersonalDetailsForm({
@@ -27,6 +28,7 @@ export function PersonalDetailsForm({
   onSaveDraft,
   initialData,
   initialProfilePhotoUrl,
+  mode = "add",
 }: PersonalDetailsFormProps) {
   const [profilePhoto, setProfilePhoto] = useState<File | undefined>(
     initialData?.profilePhoto,
@@ -87,7 +89,7 @@ export function PersonalDetailsForm({
 
         <div className="w-full md:w-2/3 p-8 flex flex-col justify-between">
           <PersonalFormComponent
-            mode="add"
+            mode={mode}
             initialValues={initialData}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}

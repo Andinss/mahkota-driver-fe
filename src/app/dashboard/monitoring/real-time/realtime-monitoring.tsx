@@ -24,6 +24,7 @@ function mapFleetLocationToVehicle(loc: any): FleetVehicle {
     latitude: Number(loc.latitude),
     longitude: Number(loc.longitude),
     status: loc.status,
+    engineStatus: loc.engine_status || "off",
     speed: Number(loc.speed) || 0,
     fuelLevel: loc.fuel_level !== null ? Number(loc.fuel_level) : undefined,
     lastUpdated: loc.last_updated

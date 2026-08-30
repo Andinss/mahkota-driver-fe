@@ -2,6 +2,7 @@ import Link from "next/link";
 import { StatusBadge } from "@/components/status-badge";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 import { Badge } from "@/components/ui/badge";
+import { EngineSwitch } from "@/components/ui/engine-switch";
 
 interface Rental {
   id: string;
@@ -15,6 +16,8 @@ interface Rental {
     name: string;
     id: string;
   };
+  vehicleId?: string;
+  vehicleEngineStatus?: "on" | "off";
   rentalPeriod: {
     start: string;
     end: string;
@@ -22,6 +25,8 @@ interface Rental {
   };
   deposit: string;
   paymentStatus: string;
+  methodPayment?: string;
+  saldoDeducted?: number;
 }
 
 const paymentStatusLabels: Record<string, string> = {
@@ -122,6 +127,45 @@ export const RentalTableRow = ({
         <span className="text-sm font-medium text-slate-900 dark:text-white">
           {rental.deposit}
         </span>
+      </td>
+
+      <td className="px-6 py-4">
+        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+          {rental.methodPayment === "Saldo" && (
+            <span className="material-symbols-outlined text-sm text-green-600 dark:text-green-400">account_balance_wallet</span>
+          )}
+          {rental.methodPayment || "Bank"}
+        </span>
+      </td>
+
+      <td className="px-6 py-4">
+        {rental.methodPayment === "Saldo" && Number(rental.saldoDeducted) > 0 ? (
+          <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+            -Rp {Number(rental.saldoDeducted).toLocaleString("id-ID")}
+          </span>
+        ) : (
+          <span className="text-sm text-slate-400 dark:text-slate-500">-</span>
+        )}
+      </td>
+
+      <td className="px-6 py-4">
+        {rental.vehicleId ? (
+          <div className="flex items-center gap-2">
+            <EngineSwitch
+              vehicleId={rental.vehicleId}
+              engineStatus={rental.vehicleEngineStatus}
+            />
+            <span className={`text-xs font-bold ${
+              rental.vehicleEngineStatus === "on"
+                ? "text-green-600 dark:text-green-400"
+                : "text-slate-400 dark:text-slate-500"
+            }`}>
+              {rental.vehicleEngineStatus === "on" ? "ON" : "OFF"}
+            </span>
+          </div>
+        ) : (
+          <span className="text-sm text-slate-400 dark:text-slate-500">-</span>
+        )}
       </td>
 
       <td className="px-6 py-4">
