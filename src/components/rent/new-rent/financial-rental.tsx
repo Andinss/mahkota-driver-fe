@@ -2,7 +2,8 @@
 
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Select } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { saldoApi } from "@/lib/api/saldo";
 
 interface FormErrors {
   vehicleId?: string;
@@ -18,16 +19,19 @@ interface FinancialRentalProps {
     dailyRate: number;
     depositAmount: number;
     methodPayment?: string;
+    saldoSufficient?: boolean;
    }) => void;
   initialData?: {
     dailyRate?: number;
     depositAmount?: number;
     methodPayment?: string;
+    driverId?: string;
+    totalRevenue?: number;
   }
   error?: FormErrors;
 } 
  
- 
+
 const parseCurrency = (val: string) => val ? parseInt(val.replace(/\./g, ""), 10) : 0;
 
 const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalProps) => {
@@ -36,6 +40,40 @@ const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalPr
   const [dailyRate, setDailyRate] = useState<string>(initRate);
   const [depositAmount, setDepositAmount] = useState<string>(initDeposit);
   const [methodPayment, setMethodPayment] = useState<string>(initialData?.methodPayment || "Bank");
+  const [saldoBalance, setSaldoBalance] = useState<number | null>(null);
+  const [loadingSaldo, setLoadingSaldo] = useState(false);
+
+  useEffect(() => {
+    if (methodPayment === "Saldo" && initialData?.driverId) {
+      setLoadingSaldo(true);
+      saldoApi.getBalance(initialData.driverId)
+        .then((res) => {
+          const data = (res as any)?.data;
+          const balance = data?.balance ?? 0;
+          setSaldoBalance(balance);
+          const totalRevenue = initialData?.totalRevenue || 0;
+          const sufficient = totalRevenue > 0 ? balance >= totalRevenue : true;
+          onDataChange?.({
+            dailyRate: parseCurrency(dailyRate),
+            depositAmount: parseCurrency(depositAmount),
+            methodPayment,
+            saldoSufficient: sufficient,
+          });
+        })
+        .catch(() => {
+          setSaldoBalance(0);
+          onDataChange?.({
+            dailyRate: parseCurrency(dailyRate),
+            depositAmount: parseCurrency(depositAmount),
+            methodPayment,
+            saldoSufficient: false,
+          });
+        })
+        .finally(() => {
+          setLoadingSaldo(false);
+        });
+    }
+  }, [methodPayment, initialData?.driverId, initialData?.totalRevenue]);
 
   const handleDailyRateChange = (val: string) => {
     setDailyRate(val);
@@ -58,11 +96,23 @@ const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalPr
   const handleMethodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setMethodPayment(val);
-    onDataChange?.({
-      dailyRate: parseCurrency(dailyRate),
-      depositAmount: parseCurrency(depositAmount),
-      methodPayment: val,
-    });
+    if (val === "Saldo" && saldoBalance !== null) {
+      const totalRevenue = initialData?.totalRevenue || 0;
+      const sufficient = totalRevenue > 0 ? saldoBalance >= totalRevenue : true;
+      onDataChange?.({
+        dailyRate: parseCurrency(dailyRate),
+        depositAmount: parseCurrency(depositAmount),
+        methodPayment: val,
+        saldoSufficient: sufficient,
+      });
+    } else {
+      onDataChange?.({
+        dailyRate: parseCurrency(dailyRate),
+        depositAmount: parseCurrency(depositAmount),
+        methodPayment: val,
+        saldoSufficient: true,
+      });
+    }
   };
 
   return (
@@ -113,8 +163,38 @@ const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalPr
               <option value="Bank">Bank</option>
               <option value="Cash">Cash</option>
               <option value="E Wallet">E Wallet</option>
+              <option value="Saldo">Saldo (Bayar dari Saldo Driver)</option>
             </Select>
           </div>
+          {methodPayment === "Saldo" && (
+            <div className={`p-3 rounded-lg border ${
+              saldoBalance !== null && saldoBalance > 0
+                ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+                : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+            }`}>
+              {loadingSaldo ? (
+                <p className="text-xs text-slate-500 dark:text-slate-400">Memuat saldo...</p>
+              ) : (
+                <>
+                  <p className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">
+                    Saldo Driver
+                  </p>
+                  <p className={`text-sm font-bold ${
+                    saldoBalance !== null && saldoBalance > 0
+                      ? "text-green-700 dark:text-green-400"
+                      : "text-red-700 dark:text-red-400"
+                  }`}>
+                    Rp {Number(saldoBalance ?? 0).toLocaleString("id-ID")}
+                  </p>
+                  {saldoBalance !== null && saldoBalance <= 0 && (
+                    <p className="text-[10px] text-red-600 dark:text-red-400 mt-1">
+                      Saldo tidak mencukupi untuk pembayaran
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </section>

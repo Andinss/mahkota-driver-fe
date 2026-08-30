@@ -57,6 +57,7 @@ const methodLabel: Record<string, string> = {
   cash: "Cash",
   transfer: "Transfer",
   "e-wallet": "E-Wallet",
+  saldo: "Saldo",
 };
 
 export const PaymentTableRow = ({
@@ -120,6 +121,20 @@ export const PaymentTableRow = ({
 
       <td className="px-2 py-4 text-[#617589] dark:text-gray-400">
         {methodLabel[payment.payment_method] || payment.payment_method}
+      </td>
+
+      <td className="px-6 py-4 max-w-[220px] truncate" title={payment.notes}>
+        <span className="text-sm text-[#617589] dark:text-gray-400">
+          {payment.notes || "-"}
+        </span>
+      </td>
+
+      <td className="px-2 py-4">
+        {payment.is_active ? (
+          <Badge variant="success" dot>Active</Badge>
+        ) : (
+          <Badge variant="neutral" dot>Inactive</Badge>
+        )}
       </td>
 
       <td className="py-4 px-6 text-right">

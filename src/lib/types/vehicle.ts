@@ -9,6 +9,7 @@ export interface VehicleItem {
   color: string;
   vin_number: string;
   engine_number: string;
+  engine_status: 'on' | 'off';
   daily_rate: number;
   status: VehicleStatus;
   vehicle_photo?: string | string[];

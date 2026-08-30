@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { DateInput } from "@/components/ui/date-input";
 import { Select } from "@/components/ui/select";
@@ -52,6 +52,14 @@ export function PersonalDetailsForm({
   const [firstName, setFirstName] = useState(sanitizeNameInput(initialValues?.firstName || ""));
   const [lastName, setLastName] = useState(sanitizeNameInput(initialValues?.lastName || ""));
   const [employeeId, setEmployeeId] = useState(initialValues?.employeeId || "");
+
+  useEffect(() => {
+    if (initialValues) {
+      setFirstName(sanitizeNameInput(initialValues.firstName || ""));
+      setLastName(sanitizeNameInput(initialValues.lastName || ""));
+      setEmployeeId(initialValues.employeeId || "");
+    }
+  }, [initialValues?.firstName, initialValues?.lastName, initialValues?.employeeId]);
 
   const validateForm = (): boolean => {
     const formData = new FormData(formRef.current || undefined);

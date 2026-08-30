@@ -12,6 +12,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
 import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
 import { financeApi } from "@/lib/api/finances";
+import { saldoApi } from "@/lib/api/saldo";
 import { HttpClientError } from "@/lib/api-http";
 import type { FinanceItem, FinanceListParams, FinanceSummary } from "@/lib/types/finances";
 import { PermissionGuard } from "@/components/auth-guard-permission";
@@ -40,6 +41,8 @@ export default function PaymentList() {
   const [selectedFinance, setSelectedFinance] = useState<FinanceItem | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [driverSaldo, setDriverSaldo] = useState<number | null>(null);
+  const [isLoadingSaldo, setIsLoadingSaldo] = useState(false);
 
   const fetchSummary = useCallback(async () => {
     try {
@@ -121,8 +124,22 @@ export default function PaymentList() {
     await financeApi.exportData(params);
   };
 
-  const handleDelete = (finance: FinanceItem) => {
+  const handleDelete = async (finance: FinanceItem) => {
     setSelectedFinance(finance);
+    setDriverSaldo(null);
+
+    if (finance.payment_method !== "saldo" && finance.driver_id) {
+      setIsLoadingSaldo(true);
+      try {
+        const res = await saldoApi.getBalance(finance.driver_id);
+        setDriverSaldo(res.data?.balance ?? 0);
+      } catch {
+        setDriverSaldo(0);
+      } finally {
+        setIsLoadingSaldo(false);
+      }
+    }
+
     setIsConfirmOpen(true);
   };
 
@@ -171,6 +188,26 @@ export default function PaymentList() {
     if (page >= 1 && page <= meta.totalPages) {
       setCurrentPage(page);
     }
+  };
+
+  const canDelete = () => {
+    if (!selectedFinance) return false;
+    if (selectedFinance.payment_method === "saldo") return true;
+    if (isLoadingSaldo) return false;
+    return driverSaldo !== null && driverSaldo >= Number(selectedFinance.amount_received);
+  };
+
+  const getDeleteMessage = () => {
+    if (!selectedFinance) return "";
+    const base = `Are you sure you want to delete ${selectedFinance.reference_number}?`;
+    if (selectedFinance.payment_method === "saldo") return base;
+    if (isLoadingSaldo) return `${base}\n\nLoading saldo information...`;
+    const saldoText = `Saldo driver saat ini: Rp ${Number(driverSaldo ?? 0).toLocaleString("id-ID")}`;
+    const amountText = `Perlu dikurangi: Rp ${Number(selectedFinance.amount_received).toLocaleString("id-ID")}`;
+    if (driverSaldo !== null && driverSaldo >= Number(selectedFinance.amount_received)) {
+      return `${base}\n\n${saldoText}\n${amountText}`;
+    }
+    return `${base}\n\n⚠️ ${saldoText}. ${amountText}. Saldo tidak mencukupi untuk membatalkan finance ini.`;
   };
 
   return (
@@ -274,10 +311,11 @@ export default function PaymentList() {
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Payment"
-        message={`Are you sure you want to delete ${selectedFinance?.reference_number}?`}
-        confirmText={isDeleting ? "Deleting..." : "Yes, Delete"}
+        message={getDeleteMessage()}
+        confirmText={isDeleting ? "Deleting..." : canDelete() ? "Yes, Delete" : "Saldo Tidak Cukup"}
         cancelText="Cancel"
-        variant="danger"
+        variant={canDelete() ? "danger" : "warning"}
+        disabled={!canDelete() || isDeleting}
       />
 
       <AlertDialog

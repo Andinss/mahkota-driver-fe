@@ -8,6 +8,7 @@ export interface FleetLocation {
   speed: number;
   fuel_level: number | null;
   status: "emergency" | "moving" | "idle";
+  engine_status: "on" | "off";
   last_updated: string;
 }
 
@@ -18,6 +19,7 @@ export interface LocationHistory {
   speed: number;
   fuel_level: number | null;
   status: string;
+  engine_status: "on" | "off";
   recorded_at: string;
 }
 
@@ -28,4 +30,5 @@ export interface GpsUpdatePayload {
   speed?: number;
   fuel_level?: number;
   status?: "emergency" | "moving" | "idle";
+  engine_status?: "on" | "off";
 }

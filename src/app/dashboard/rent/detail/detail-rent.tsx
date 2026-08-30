@@ -111,6 +111,9 @@ const DetailRentPage = () => {
           dailyRate={Number(rental.daily_rate) || 0}
           depositAmount={Number(rental.deposit_amount) || 0}
           duration={rental.total_duration || 0}
+          methodPayment={rental.method_payment}
+          saldoDeducted={Number(rental.saldo_deducted) || 0}
+          serviceFee={Number(rental.service_fee) || 25000}
         />
 
         {/* Documents Section (Span 5) */}

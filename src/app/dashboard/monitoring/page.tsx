@@ -13,6 +13,7 @@ import { AlertDialog } from "@/components/ui/alert";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { monitoringApi } from "@/lib/api/monitoring";
+import FleetLocationsTable from "@/components/monitoring/task-list/fleet-locations-table";
 
 function mapApiTaskToTask(apiTask: any, index: number): Task {
   return {
@@ -233,6 +234,8 @@ export default function TaskList() {
           confirmText="OK"
           autoCloseDelay={3000}
         />
+
+        <FleetLocationsTable />
       </div>
       )}
     </>

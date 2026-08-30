@@ -61,4 +61,10 @@ export const monitoringApi = {
 
   updateVehicleStatus: (vehicleId: string, status: string) =>
     api.put<SuccessResponse<any>>(`/monitoring/vehicles/${vehicleId}/status`, { status }),
+
+  updateVehicleEngine: (vehicleId: string, engine_status: "on" | "off") =>
+    api.put<SuccessResponse<{ vehicle_id: string; engine_status: "on" | "off" }>>(
+      `/monitoring/vehicles/${vehicleId}/engine`,
+      { engine_status },
+    ),
 };

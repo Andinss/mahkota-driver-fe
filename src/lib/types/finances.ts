@@ -17,7 +17,7 @@ export interface FinanceItem {
   id: string;
   payment_date: string;
   reference_number: string;
-  payment_method: "cash" | "transfer" | "e-wallet";
+  payment_method: "cash" | "transfer" | "e-wallet" | "saldo";
   amount_received: number;
   notes: string;
   payer: string;
