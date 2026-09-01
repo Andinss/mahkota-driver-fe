@@ -21,12 +21,18 @@ interface FinancialRentalProps {
     methodPayment?: string;
     saldoSufficient?: boolean;
    }) => void;
+  onRentalTypeChange?: (data: {
+    rentalDuration?: string;
+    rentalService?: string;
+  }) => void;
   initialData?: {
     dailyRate?: number;
     depositAmount?: number;
     methodPayment?: string;
     driverId?: string;
     totalRevenue?: number;
+    rentalDuration?: string;
+    rentalService?: string;
   }
   error?: FormErrors;
 } 
@@ -34,12 +40,14 @@ interface FinancialRentalProps {
 
 const parseCurrency = (val: string) => val ? parseInt(val.replace(/\./g, ""), 10) : 0;
 
-const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalProps) => {
+const FinancialRental = ({ onDataChange, onRentalTypeChange, initialData, error }: FinancialRentalProps) => {
   const initRate = initialData?.dailyRate ? initialData.dailyRate.toString() : "";
   const initDeposit = initialData?.depositAmount ? initialData.depositAmount.toString() : "";
   const [dailyRate, setDailyRate] = useState<string>(initRate);
   const [depositAmount, setDepositAmount] = useState<string>(initDeposit);
   const [methodPayment, setMethodPayment] = useState<string>(initialData?.methodPayment || "Bank");
+  const [rentalDuration, setRentalDuration] = useState<string>(initialData?.rentalDuration || "");
+  const [rentalService, setRentalService] = useState<string>(initialData?.rentalService || "");
   const [saldoBalance, setSaldoBalance] = useState<number | null>(null);
   const [loadingSaldo, setLoadingSaldo] = useState(false);
 
@@ -115,6 +123,24 @@ const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalPr
     }
   };
 
+  const handleDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setRentalDuration(val);
+    onRentalTypeChange?.({
+      rentalDuration: val,
+      rentalService,
+    });
+  };
+
+  const handleServiceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setRentalService(val);
+    onRentalTypeChange?.({
+      rentalDuration,
+      rentalService: val,
+    });
+  };
+
   return (
     <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
       <div className="flex items-center gap-3 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -126,6 +152,38 @@ const FinancialRental = ({ onDataChange, initialData, error }: FinancialRentalPr
         </h3>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-2">
+          <div>
+            <Select
+              id="rentalDuration"
+              name="rentalDuration"
+              label="Tipe Durasi"
+              value={rentalDuration}
+              onChange={handleDurationChange}
+            >
+              <option value="">Pilih Durasi</option>
+              <option value="harian">Harian</option>
+              <option value="mingguan">Mingguan</option>
+              <option value="bulanan">Bulanan</option>
+              <option value="tahunan">Tahunan</option>
+            </Select>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div>
+            <Select
+              id="rentalService"
+              name="rentalService"
+              label="Jenis Layanan"
+              value={rentalService}
+              onChange={handleServiceChange}
+            >
+              <option value="">Pilih Layanan</option>
+              <option value="lepas kunci">Lepas Kunci</option>
+              <option value="pakai supir">Pakai Supir</option>
+            </Select>
+          </div>
+        </div>
         <div className="space-y-2">
           <CurrencyInput
             id="dailyRate"

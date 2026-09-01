@@ -27,6 +27,8 @@ interface Rental {
   paymentStatus: string;
   methodPayment?: string;
   saldoDeducted?: number;
+  rentalDuration?: string;
+  rentalService?: string;
 }
 
 const paymentStatusLabels: Record<string, string> = {
@@ -146,6 +148,18 @@ export const RentalTableRow = ({
         ) : (
           <span className="text-sm text-slate-400 dark:text-slate-500">-</span>
         )}
+      </td>
+
+      <td className="px-6 py-4">
+        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 capitalize">
+          {rental.rentalDuration || "-"}
+        </span>
+      </td>
+
+      <td className="px-6 py-4">
+        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 capitalize">
+          {rental.rentalService || "-"}
+        </span>
       </td>
 
       <td className="px-6 py-4">

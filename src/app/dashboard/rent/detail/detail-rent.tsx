@@ -114,6 +114,8 @@ const DetailRentPage = () => {
           methodPayment={rental.method_payment}
           saldoDeducted={Number(rental.saldo_deducted) || 0}
           serviceFee={Number(rental.service_fee) || 25000}
+          rentalDuration={rental.rental_duration}
+          rentalService={rental.rental_service}
         />
 
         {/* Documents Section (Span 5) */}

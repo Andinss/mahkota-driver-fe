@@ -43,6 +43,8 @@ interface RentalData {
   documents?: File[];
   methodPayment?: string;
   saldoSufficient?: boolean;
+  rentalDuration?: string;
+  rentalService?: string;
 }
 
 interface SelectOption {
@@ -66,6 +68,8 @@ const NewRentPage = () => {
     dailyRate: 0,
     depositAmount: 0,
     serviceFee: 25000,
+    rentalDuration: "",
+    rentalService: "",
   });
   const [formValues, setFormValues] = useState({
     vehicleId: "",
@@ -156,6 +160,14 @@ const NewRentPage = () => {
       isValid = false;
     }
 
+    if (!rentalData.rentalDuration) {
+      isValid = false;
+    }
+
+    if (!rentalData.rentalService) {
+      isValid = false;
+    }
+
     if (rentalData.methodPayment === "Saldo" && rentalData.saldoSufficient === false) {
       newErrors.depositAmount = "Saldo driver tidak mencukupi untuk pembayaran ini";
       isValid = false;
@@ -171,7 +183,9 @@ const NewRentPage = () => {
     !rentalData.startDate ||
     !rentalData.endDate ||
     !rentalData.dailyRate ||
-    !rentalData.depositAmount
+    !rentalData.depositAmount ||
+    !rentalData.rentalDuration ||
+    !rentalData.rentalService
   );
 
   // Load data when in edit mode
@@ -192,6 +206,8 @@ const NewRentPage = () => {
           depositAmount: Number(rental.deposit_amount) || 0,
           serviceFee: Number(rental.service_fee) || 25000,
           methodPayment: rental.method_payment,
+          rentalDuration: rental.rental_duration || "",
+          rentalService: rental.rental_service || "",
         });
         setFormValues({
           vehicleId: rental.vehicle_id || "",
@@ -213,6 +229,8 @@ const NewRentPage = () => {
         dailyRate: 0,
         depositAmount: 0,
         serviceFee: 25000,
+        rentalDuration: "",
+        rentalService: "",
       });
     }
   }, [idParam]);
@@ -277,6 +295,17 @@ const NewRentPage = () => {
     }));
   }, []);
 
+  // Handler untuk Rental Type
+  const handleRentalTypeChange = useCallback((data: {
+    rentalDuration?: string;
+    rentalService?: string;
+  }) => {
+    setRentalData((prev) => ({
+      ...prev,
+      ...data,
+    }));
+  }, []);
+
   const handleConfirmRental = () => {
     setHasSubmitted(true);
 
@@ -312,6 +341,8 @@ const NewRentPage = () => {
       formData.append("security_deposit", String(depositAmount));
       formData.append("service_fee", String(serviceFee));
       formData.append("total_revenue", String(totalRevenue));
+      formData.append("rental_duration", rentalData.rentalDuration || "harian");
+      formData.append("rental_service", rentalData.rentalService || "lepas kunci");
 
       if (rentalData.documents && rentalData.documents.length > 0) {
         rentalData.documents.forEach((file) => {
@@ -408,7 +439,10 @@ const NewRentPage = () => {
               totalRevenue: rentalData.duration > 0
                 ? rentalData.dailyRate * rentalData.duration + rentalData.depositAmount + rentalData.serviceFee
                 : 0,
+              rentalDuration: rentalData.rentalDuration,
+              rentalService: rentalData.rentalService,
             }}
+            onRentalTypeChange={handleRentalTypeChange}
             error={hasSubmitted ? errors : undefined}
           />
 

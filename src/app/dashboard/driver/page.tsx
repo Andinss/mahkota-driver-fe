@@ -19,6 +19,8 @@ import { supervisorApi } from "@/lib/api/supervisor";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { PermissionGuard } from "@/components/auth-guard-permission";
+import { HttpClientError } from "@/lib/api-http";
+import { AlertDialog } from "@/components/ui/alert";
 
 export default function DriverPage() {
   const { user } = useAuth();
@@ -35,6 +37,10 @@ export default function DriverPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const itemsPerPage = 10;
+
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
 
   const hasReadAll = canAccess(user?.permissions, 'driver.read.all');
   const hasReadOwn = canAccess(user?.permissions, 'driver.read.own');
@@ -93,8 +99,12 @@ export default function DriverPage() {
         setTotalResults(mapped.length);
         setTotalPages(1);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to fetch drivers:", err);
+      const msg = err instanceof HttpClientError ? err.message : "Failed to load driver data.";
+      setAlertTitle("Load Failed");
+      setAlertMessage(msg);
+      setAlertOpen(true);
       setDrivers([]);
     } finally {
       setIsLoading(false);
@@ -106,15 +116,17 @@ export default function DriverPage() {
     try {
       const res = await supervisorApi.getCount();
       setDriverCount((res as any).data);
-    } catch {}
+    } catch (err: any) {
+      console.error("Failed to fetch driver count:", err);
+    }
   }, [hasReadAll, hasReadOwn]);
 
   const fetchSummary = useCallback(async () => {
     try {
       const res = await driverApi.getSummary();
       setSummary(res.data);
-    } catch {
-      // non-critical
+    } catch (err: any) {
+      console.error("Failed to fetch driver summary:", err);
     }
   }, []);
 
@@ -137,38 +149,42 @@ export default function DriverPage() {
 
   const handleExport = async (options?: ExportOptions) => {
     if (!options) return;
-    const params: Record<string, string | number | undefined> = {
-      format: options.format,
-      columns: options.columns.join(","),
-      type: options.type,
-    };
-    if (options.type === "filtered") {
-      if (filters.search) params.search = filters.search;
-      if (options.dateRange?.start) params.start_date = options.dateRange.start;
-      if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    try {
+      const params: Record<string, string | number | undefined> = {
+        format: options.format,
+        columns: options.columns.join(","),
+        type: options.type,
+      };
+      if (options.type === "filtered") {
+        if (filters.search) params.search = filters.search;
+        if (options.dateRange?.start) params.start_date = options.dateRange.start;
+        if (options.dateRange?.end) params.end_date = options.dateRange.end;
+      }
+      await driverApi.exportData(params);
+    } catch (err: any) {
+      const msg = err instanceof HttpClientError ? err.message : "Failed to export driver data.";
+      setAlertTitle("Export Failed");
+      setAlertMessage(msg);
+      setAlertOpen(true);
     }
-    await driverApi.exportData(params);
   };
 
   const handleDetails = (driver: Driver) => {
-    router.push(`/dashboard/driver/detail`);
+    router.push(`/dashboard/driver/detail?id=${driver.id}`);
   };
 
   const handleDeleteDriver = async (driverId: string) => {
-    try {
-      if (!hasReadAll && hasReadOwn) {
-        await supervisorApi.delete(driverId);
-      } else {
-        await driverApi.delete(driverId);
-      }
-      fetchDrivers();
-      fetchCount();
-    } catch {
-      alert("Failed to delete driver");
+    if (!hasReadAll && hasReadOwn) {
+      await supervisorApi.delete(driverId);
+    } else {
+      await driverApi.delete(driverId);
     }
+    await fetchDrivers();
+    await fetchCount();
   };
 
   return (
+    <>
     <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
     <div className="m-8">
       <PageHeader
@@ -205,7 +221,7 @@ export default function DriverPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-5 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5 mb-8">
         <DriverStatsCard
           title={!hasReadAll && hasReadOwn ? "My Drivers" : "Total Drivers"}
           value={(summary?.total_drivers ?? totalResults).toString()}
@@ -218,36 +234,14 @@ export default function DriverPage() {
           }}
         />
         <DriverStatsCard
-          title="Active"
-          icon="check_circle"
-          iconColor="text-emerald-500"
-          value="0"
+          title="Saldo Overview"
+          icon="account_balance_wallet"
+          iconColor="text-blue-500"
+          value={drivers.reduce((sum, d) => sum + (d.saldo ?? 0), 0).toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 })}
           trend={{
-            icon: "fiber_manual_record",
-            text: "On current trips",
-            textColor: "text-emerald-500",
-          }}
-        />
-        <DriverStatsCard
-          title="On Leave"
-          icon="event_busy"
-          iconColor="text-amber-500"
-          value="0"
-          trend={{
-            icon: "info",
-            text: "Temporarily unavailable",
+            icon: "wallet",
+            text: `Across ${drivers.length} displayed drivers`,
             textColor: "text-slate-400",
-          }}
-        />
-        <DriverStatsCard
-          title="Inactive"
-          icon="person_off"
-          iconColor="text-rose-500"
-          value="0"
-          trend={{
-            icon: "warning",
-            text: "Needs review",
-            textColor: "text-rose-500",
           }}
         />
       </div>
@@ -291,5 +285,15 @@ export default function DriverPage() {
       </div>
     </div>
     </PermissionGuard>
+
+    <AlertDialog
+      isOpen={alertOpen}
+      onClose={() => setAlertOpen(false)}
+      title={alertTitle}
+      message={alertMessage}
+      type="error"
+      confirmText="OK"
+    />
+    </>
   );
 }

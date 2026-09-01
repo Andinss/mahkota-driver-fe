@@ -29,6 +29,8 @@ interface RentalDisplay {
   paymentStatus: string;
   methodPayment?: string;
   saldoDeducted?: number;
+  rentalDuration?: string;
+  rentalService?: string;
 }
 
 const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
@@ -66,6 +68,8 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
   paymentStatus: item.payment_status || "unpaid",
   methodPayment: item.method_payment,
   saldoDeducted: Number(item.saldo_deducted) || 0,
+  rentalDuration: item.rental_duration,
+  rentalService: item.rental_service,
 });
 
 export default function RentalManagementPage() {
