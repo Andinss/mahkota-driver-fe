@@ -22,8 +22,10 @@ import { DriverOverview } from "@/components/driver/detail/overview";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { driverApi } from "@/lib/api/driver";
 import { rentalApi } from "@/lib/api/rentals";
+import { HttpClientError } from "@/lib/api-http";
 import type { DriverItem } from "@/lib/types/driver";
 import type { RentalTransaction } from "@/lib/types/rentals";
+import { AlertDialog } from "@/components/ui/alert";
 
 const detailDriverPage = () => {
   const searchParams = useSearchParams();
@@ -33,6 +35,10 @@ const detailDriverPage = () => {
   const [currentRental, setCurrentRental] = useState<RentalTransaction | null>(null);
   const [driverRentals, setDriverRentals] = useState<RentalTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
 
   const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
   const buildUrl = (path: string) => path ? (path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`) : "";
@@ -52,8 +58,13 @@ const detailDriverPage = () => {
           setDriver(item);
           return;
         }
-      } catch {
-        // fallback
+      } catch (err: any) {
+        const msg = err instanceof HttpClientError ? err.message : "Failed to load driver data.";
+        setAlertTitle("Driver Not Found");
+        setAlertMessage(msg);
+        setAlertOpen(true);
+        setDriver(null);
+        return;
       }
 
       try {
@@ -63,8 +74,15 @@ const detailDriverPage = () => {
           setDriver(item);
         } else {
           setDriver(null);
+          setAlertTitle("Driver Not Found");
+          setAlertMessage("Driver data is empty or invalid.");
+          setAlertOpen(true);
         }
-      } catch {
+      } catch (err: any) {
+        const msg = err instanceof HttpClientError ? err.message : "Failed to load driver details.";
+        setAlertTitle("Driver Not Found");
+        setAlertMessage(msg);
+        setAlertOpen(true);
         setDriver(null);
       }
     };
@@ -82,8 +100,8 @@ const detailDriverPage = () => {
         if (driverRentalsList.length > 0) {
           setCurrentRental(driverRentalsList[0]);
         }
-      } catch {
-        // rental not found
+      } catch (err: any) {
+        console.error("Failed to load rental data:", err);
       }
     };
 
@@ -166,13 +184,24 @@ const detailDriverPage = () => {
 
   if (!driver) {
     return (
+      <>
       <div className="p-7 flex items-center justify-center min-h-[400px]">
         <p className="text-slate-500">Driver not found</p>
       </div>
+      <AlertDialog
+        isOpen={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        title={alertTitle}
+        message={alertMessage}
+        type="error"
+        confirmText="OK"
+      />
+      </>
     );
   }
 
   return (
+    <>
     <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
     <div className="p-7">
       <DriverHeader driver={driverHeader} />
@@ -237,6 +266,16 @@ const detailDriverPage = () => {
       )}
     </div>
     </PermissionGuard>
+
+    <AlertDialog
+      isOpen={alertOpen}
+      onClose={() => setAlertOpen(false)}
+      title={alertTitle}
+      message={alertMessage}
+      type="error"
+      confirmText="OK"
+    />
+    </>
   );
 };
 

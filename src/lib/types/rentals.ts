@@ -35,6 +35,8 @@ export interface RentalTransaction {
   security_deposit: number;
   service_fee: number;
   total_revenue: number;
+  rental_duration: 'harian' | 'mingguan' | 'bulanan' | 'tahunan';
+  rental_service: 'lepas kunci' | 'pakai supir';
   payment_status?: string;
   finances?: any[];
   late_payments?: any[];

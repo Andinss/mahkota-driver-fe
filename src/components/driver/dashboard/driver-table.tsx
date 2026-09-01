@@ -14,7 +14,7 @@ const driverColumns: ExportColumn[] = [
 ];
 interface DriverTableProps {
   drivers: Driver[];
-  onDeleteDriver?: (driverId: string) => void;
+  onDeleteDriver?: (driverId: string) => Promise<void>;
   onExport?: (options?: any) => void;
   onDetailsDriver?: (driver: Driver) => void;
 }
@@ -52,17 +52,23 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
 
   const [driverToDelete, setDriverToDelete] = useState<Driver | null>(null);
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (driverToDelete && onDeleteDriver) {
-      onDeleteDriver(driverToDelete.employeeId);
-      console.log(`Deleting driver: ${driverToDelete.name} (${driverToDelete.employeeId})`,
-      );
+      try {
+        await onDeleteDriver(driverToDelete.employeeId);
+        setAlertTitle("Delete Successful");
+        setAlertMessage(`Driver ${driverToDelete.name} (${driverToDelete.employeeId}) has been deleted successfully`);
+        setAlertType("success");
+        setIsAlertOpen(true);
+      } catch (err: any) {
+        const msg = err?.message || `Failed to delete driver ${driverToDelete.name}. They may have active transactions.`;
+        setAlertTitle("Delete Failed");
+        setAlertMessage(msg);
+        setAlertType("error");
+        setIsAlertOpen(true);
+      }
     }
     setIsConfirmDeleteOpen(false);
-    setAlertTitle("Delete Successful");
-    setAlertMessage(`Driver ${driverToDelete?.employeeId} has been deleted successfully`);
-    setAlertType("success");
-    setIsAlertOpen(true);
     setDriverToDelete(null);
   };
 

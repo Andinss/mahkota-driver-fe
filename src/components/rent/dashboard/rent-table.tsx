@@ -25,6 +25,8 @@ interface Rental {
   paymentStatus: string; 
   methodPayment?: string;
   saldoDeducted?: number;
+  rentalDuration?: string;
+  rentalService?: string;
 }
 
 interface RentalTableProps {
@@ -52,6 +54,8 @@ const rentalColumns: ExportColumn[] = [
   { id: "deposit", label: "Deposit", defaultChecked: true },
   { id: "methodPayment", label: "Payment Method", defaultChecked: true },
   { id: "saldoDeducted", label: "Saldo Deducted", defaultChecked: true },
+  { id: "rentalDuration", label: "Tipe Durasi", defaultChecked: true },
+  { id: "rentalService", label: "Jenis Layanan", defaultChecked: true },
   { id: "engine", label: "Engine", defaultChecked: true },
   { id: "paymentStatus", label: "Payment Status", defaultChecked: true },
 ];
@@ -99,6 +103,8 @@ export const RentalTable = ({
               <th className="px-6 py-4">Deposit</th>
               <th className="px-6 py-4">Payment Method</th>
               <th className="px-6 py-4">Saldo Deducted</th>
+              <th className="px-6 py-4">Tipe Durasi</th>
+              <th className="px-6 py-4">Jenis Layanan</th>
               <th className="px-6 py-4">Engine</th>
               <th className="px-6 py-4">Payment Status</th>
               <th className="px-6 py-4 text-right">Actions</th>

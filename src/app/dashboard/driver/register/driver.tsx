@@ -21,6 +21,7 @@ import { driverApi } from "@/lib/api/driver";
 import { supervisorApi } from "@/lib/api/supervisor";
 import { useAuth } from "@/lib/auth-context";
 import { PermissionGuard } from "@/components/auth-guard-permission";
+import { HttpClientError } from "@/lib/api-http";
 import { renameFile } from "@/lib/utils/file";
 import { AlertDialog } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -50,11 +51,13 @@ export default function DriverRegisterPage() {
   useEffect(() => {
     if (driverIdParam) {
       setMode("edit");
-      driverApi.getList({limit: 9999} as any).then((res: any) => {
-        const items = Array.isArray(res.data) ? res.data : [];
-        const driver: any = items.find((d: any) => String(d.id) === driverIdParam || d.employee_id === driverIdParam);
-        if (driver) {
-          console.log("Driver data for edit:", driver);
+      const fetchDriver = isSupervisor
+        ? supervisorApi.getById(driverIdParam)
+        : driverApi.getById(driverIdParam);
+
+      fetchDriver.then((res: any) => {
+        const driver = (res as any)?.data ?? res;
+        if (driver?.employee_id) {
           const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
           const buildUrl = (path: string) => path ? (path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`) : "";
           const photo = driver.profile_photo || "";
@@ -85,15 +88,19 @@ export default function DriverRegisterPage() {
               house: buildUrl(driver.garage_photo || ""),
             },
           });
+        } else {
+          setErrorMessage("Driver data not found.");
+          setShowError(true);
         }
-      }).catch(() => {
-        setErrorMessage("Failed to load driver data.");
+      }).catch((err: any) => {
+        const msg = err instanceof HttpClientError ? err.message : "Failed to load driver data.";
+        setErrorMessage(msg);
         setShowError(true);
       });
     } else {
       setMode("add");
     }
-  }, [driverIdParam]);
+  }, [driverIdParam, isSupervisor]);
 
   const handlePersonalNext = (data: PersonalDetailsData) => {
     setFormData({ ...formData, personal: data });

@@ -7,6 +7,8 @@ interface DurationProps {
   methodPayment?: string;
   saldoDeducted?: number;
   serviceFee?: number;
+  rentalDuration?: string;
+  rentalService?: string;
 }
 
 const formatDate = (d?: string) => {
@@ -27,6 +29,8 @@ const Duration = ({
   methodPayment,
   saldoDeducted,
   serviceFee = 25000,
+  rentalDuration,
+  rentalService,
 }: DurationProps) => {
   const totalEst = dailyRate * duration + depositAmount + serviceFee;
 
@@ -97,6 +101,30 @@ const Duration = ({
                 <span className="text-sm font-bold text-green-600 dark:text-green-400">
                   -{formatCurrency(Number(saldoDeducted))} from Saldo
                 </span>
+              )}
+            </div>
+          </div>
+        )}
+        {(rentalDuration || rentalService) && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex flex-wrap gap-4">
+              {rentalDuration && (
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-gray-500 text-lg">schedule</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Tipe: <strong className="capitalize">{rentalDuration}</strong>
+                  </span>
+                </div>
+              )}
+              {rentalService && (
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-gray-500 text-lg">
+                    {rentalService === "lepas kunci" ? "no_crash" : "person"}
+                  </span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Layanan: <strong className="capitalize">{rentalService}</strong>
+                  </span>
+                </div>
               )}
             </div>
           </div>
