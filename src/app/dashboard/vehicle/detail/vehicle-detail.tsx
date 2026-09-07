@@ -21,6 +21,7 @@ import { vehicleApi } from "@/lib/api/vehicle";
 import { rentalApi } from "@/lib/api/rentals";
 import type { VehicleItem } from "@/lib/types/vehicle";
 import type { RentalTransaction } from "@/lib/types/rentals";
+import { toastInfo } from "@/components/ui/toast-provider";
 
 const statusMap: Record<string, string> = {
   Available: "ACTIVE",
@@ -167,7 +168,7 @@ const VehicleDetail = () => {
   };
 
   const handleExportConfirm = (options: ExportOptions) => {
-    alert(`Exporting rental history as ${options.format}`);
+    toastInfo(`Exporting rental history as ${options.format}`);
     setIsExportModalOpen(false);
   };
 

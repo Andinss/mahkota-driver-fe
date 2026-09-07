@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { AddUserForm, UserFormData } from "@/components/user/new/add-user-form";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import CardUser from "@/components/user/new/card-user";
 import { usersApi } from "@/lib/api/users";
 import { rolesApi } from "@/lib/api/roles";
@@ -22,9 +22,6 @@ export default function AddNewUserPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialData, setInitialData] = useState<UserFormData | undefined>();
   const [isLoadingUser, setIsLoadingUser] = useState(!!userIdParam);
-
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [pendingData, setPendingData] = useState<UserFormData | null>(null);
   const [roles, setRoles] = useState<RoleItem[]>([]);
 
   const isAdmin = user?.permissions?.includes("role.create") ?? false;
@@ -68,44 +65,46 @@ export default function AddNewUserPage() {
     }
   }, [userIdParam]);
 
-  const handleSubmit = (data: UserFormData) => {
-    setPendingData(data);
-    setIsConfirmOpen(true);
-  };
+  const handleSubmit = async (data: UserFormData) => {
+    const actionLabel = mode === "add" ? "create this user" : "update this user";
+    const actionTitle = mode === "add" ? "Confirm Registration" : "Confirm Update";
+    const confirmLabel = mode === "add" ? "Yes, Create User" : "Yes, Update User";
+    const confirmed = await confirmToast({
+      title: actionTitle,
+      message: `Are you sure you want to ${actionLabel}? Please review all information carefully. This action cannot be undone.`,
+      confirmText: confirmLabel,
+      variant: "info",
+    });
+    if (confirmed) {
+      setIsSubmitting(true);
+      try {
+        if (mode === "edit" && userIdParam) {
+          const payload: Partial<CreateUserPayload> = {
+            username: data.username,
+            email: data.email,
+            role_id: data.role,
+            is_active: data.isActive,
+          };
+          await usersApi.update(userIdParam, payload);
+        } else {
+          const payload: CreateUserPayload = {
+            username: data.username,
+            fullname: data.fullname,
+            email: data.email,
+            role_id: data.role,
+            is_active: data.isActive,
+          };
+          await usersApi.create(payload);
+        }
 
-  const handleConfirmSubmit = async () => {
-    if (!pendingData) return;
-
-    setIsSubmitting(true);
-    setIsConfirmOpen(false);
-
-    try {
-      if (mode === "edit" && userIdParam) {
-        const payload: Partial<CreateUserPayload> = {
-          username: pendingData.username,
-          email: pendingData.email,
-          role_id: pendingData.role,
-          is_active: pendingData.isActive,
-        };
-        await usersApi.update(userIdParam, payload);
-      } else {
-        const payload: CreateUserPayload = {
-          username: pendingData.username,
-          fullname: pendingData.fullname,
-          email: pendingData.email,
-          role_id: pendingData.role,
-          is_active: pendingData.isActive,
-        };
-        await usersApi.create(payload);
+        const action = mode === "edit" ? "updated" : "registered";
+        const userName = data?.username || "New User";
+        router.push(`/dashboard/users?success=${action}&user=${encodeURIComponent(userName)}`);
+      } catch {
+        toastError("Failed to save user. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       }
-
-      const action = mode === "edit" ? "updated" : "registered";
-      const userName = pendingData?.username || "New User";
-      router.push(`/dashboard/users?success=${action}&user=${encodeURIComponent(userName)}`);
-    } catch {
-      alert("Failed to save user. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -142,20 +141,8 @@ export default function AddNewUserPage() {
       />
       <CardUser />
 
-      <ConfirmDialog
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={handleConfirmSubmit}
-        title={mode === "add" ? "Confirm Registration" : "Confirm Update"}
-        message={
-          mode === "add"
-            ? `Are you sure you want to create this user? Please review all information carefully. This action cannot be undone.`
-            : `Are you sure you want to update this user? Please review all information carefully.`
-        }
-        confirmText={mode === "add" ? "Yes, Create User" : "Yes, Update User"}
-        cancelText="Review Again"
-        variant="info"
-      />
+      
+
     </div>
     </PermissionGuard>
   );

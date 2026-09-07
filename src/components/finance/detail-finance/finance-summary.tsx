@@ -37,118 +37,103 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
     : finance.payer;
 
   return (
-    <div className="bg-white dark:bg-[#1a2632] rounded-2xl p-6 lg:p-8 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden relative">
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-10">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 overflow-hidden relative">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-blue-500 text-xl">receipt_long</span>
+        </div>
         <div>
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">
-            Reference Number
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Ringkasan Pembayaran
+          </h3>
+          <p className="text-xs text-slate-400">Detail transaksi pembayaran</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
+        <div>
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+            Nomor Referensi
           </h3>
           <div className="flex items-baseline gap-1">
-            <span className="font-mono text-2xl lg:text-4xl font-black tracking-tighter text-gray-900 dark:text-white">
+            <span className="font-mono text-2xl lg:text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
               {finance.reference_number}
             </span>
           </div>
         </div>
-        <div className="flex flex-col items-start sm:items-end mt-10">
-          <p className="text-[10px] text-gray-500 mt-3 font-medium">
+        <div className="flex flex-col items-start sm:items-end">
+          <p className="text-xs text-slate-400 mt-1 font-medium">
             {formatDate(finance.payment_date)}
           </p>
+          <span className={`mt-2 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${finance.is_active ? "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${finance.is_active ? "bg-green-500" : "bg-slate-400"}`}></span>
+            {finance.is_active ? "Aktif" : "Tidak Aktif"}
+          </span>
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-t border-gray-200 mb-10">
-        <div className="mt-5">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6">
-            Amount Received
+
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-t border-slate-100 dark:border-slate-800 mb-8 pt-6">
+        <div>
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+            Jumlah Diterima
           </h3>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-semibold text-gray-500">Rp</span>
-            <span className="text-5xl lg:text-7xl font-black tracking-tighter text-gray-900 dark:text-white">
+            <span className="text-xl font-semibold text-slate-400">Rp</span>
+            <span className="text-4xl lg:text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
               {formatCurrency(finance.amount_received).replace("Rp", "").trim()}
             </span>
           </div>
         </div>
-        <div className="flex flex-col items-start sm:items-end mt-5">
-          <span className={`px-4 py-2 border rounded-full text-sm font-bold flex items-center gap-2 ${finance.is_active ? "bg-green-100 text-green-700 border-green-200" : "bg-gray-100 text-gray-500 border-gray-200"}`}>
-            <span className={`w-2 h-2 rounded-full animate-pulse ${finance.is_active ? "bg-green-500" : "bg-gray-400"}`}></span>
-            {finance.is_active ? "Active" : "Inactive"}
-          </span>
-          <p className="text-[10px] text-gray-500 mt-3 font-medium">
+        <div className="flex flex-col items-start sm:items-end">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
             {driverName}
           </p>
+          {finance.driver?.employee_id && (
+            <p className="text-xs text-slate-400 mt-0.5">ID: {finance.driver.employee_id}</p>
+          )}
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-gray-200">
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Payment Method
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            Metode Pembayaran
           </p>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center border border-gray-200">
-              <span
-                className="material-symbols-outlined text-blue-600 text-xl"
-                data-icon="account_balance_wallet"
-              >
-                account_balance_wallet
-              </span>
-            </div>
-            <span className="font-bold text-gray-900 dark:text-white">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-blue-500 text-lg">account_balance_wallet</span>
+            <span className="font-bold text-sm text-slate-900 dark:text-white">
               {methodLabel[finance.payment_method] || finance.payment_method}
             </span>
           </div>
         </div>
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Payer
+        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            Tipe Pembayaran
           </p>
-          <p className="font-mono text-sm font-medium text-gray-900 dark:text-white">
-            {driverName}
-          </p>
-          {finance.driver?.employee_id && (
-            <p className="text-xs text-gray-400">ID: {finance.driver.employee_id}</p>
-          )}
-        </div>
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Notes
-          </p>
-          <p className="text-sm font-medium text-gray-900 dark:text-white">
-            {finance.notes || "-"}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Status
-          </p>
-          <p className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+          <p className="text-sm font-bold text-slate-900 dark:text-white capitalize">
             {finance.finance_type}
           </p>
         </div>
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Deposit Amount
+        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            Jumlah Deposit
           </p>
-          <p className="text-sm font-medium text-gray-900 dark:text-white">
+          <p className="text-sm font-bold text-slate-900 dark:text-white">
             {formatCurrency(finance.deposit_amount)}
           </p>
         </div>
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Created At
-          </p>
-          <p className="text-sm font-medium text-gray-900 dark:text-white">
-            {formatDate(finance.created_at || "")}
-          </p>
-        </div>
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Updated At
-          </p>
-          <p className="text-sm font-medium text-gray-900 dark:text-white">
-            {formatDate(finance.updated_at || "")}
-          </p>
-        </div>
       </div>
+
+      {finance.notes && (
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            Catatan
+          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            {finance.notes}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

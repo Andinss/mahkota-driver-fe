@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { AlertDialog } from "@/components/ui/alert";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
+import { toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { useAuth } from "@/lib/auth-context";
 import { HttpClientError } from "@/lib/api-http";
 import { sanitizeEmailInput, sanitizeInput, containsInvalidEmailChars, containsSymbols } from "@/lib/utils/validation";
@@ -24,12 +24,6 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
-  const [alert, setAlert] = useState<{
-    isOpen: boolean;
-    type: "success" | "error";
-    title: string;
-    message: string;
-  }>({ isOpen: false, type: "success", title: "", message: "" });
   const [formValues, setFormValues] = useState({
     email: "",
     password: "",
@@ -39,7 +33,6 @@ const LoginPage = () => {
   const handleInputChange = (field: string, value: string) => {
     const sanitized = field === "email" ? sanitizeEmailInput(value) : sanitizeInput(value);
     setFormValues((prev) => ({ ...prev, [field]: sanitized }));
-    setAlert((prev) => ({ ...prev, isOpen: false }));
     if (hasSubmitted && errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -87,44 +80,23 @@ const LoginPage = () => {
     }
 
     if (!turnstileToken) {
-      setAlert({
-        isOpen: true,
-        type: "error",
-        title: "Verification Required",
-        message: "Please complete the security verification.",
-      });
+      toastError("Please complete the security verification.");
       return;
     }
 
     setIsSubmitting(true);
-    setAlert((prev) => ({ ...prev, isOpen: false }));
 
     try {
       await login(formValues.email.trim(), formValues.password, turnstileToken);
-      setAlert({
-        isOpen: true,
-        type: "success",
-        title: "Login Successful",
-        message: "Welcome back! You are being redirected to the dashboard.",
-      });
+      toastSuccess("Welcome back! You are being redirected to the dashboard.");
       setTimeout(() => router.push("/dashboard"), 500);
     } catch (error) {
       turnstileRef.current?.reset();
       setTurnstileToken("");
       if (error instanceof HttpClientError) {
-        setAlert({
-          isOpen: true,
-          type: "error",
-          title: "Login Failed",
-          message: error.message,
-        });
+        toastError(error.message);
       } else {
-        setAlert({
-          isOpen: true,
-          type: "error",
-          title: "Login Failed",
-          message: "Please check your credentials and try again.",
-        });
+        toastError("Please check your credentials and try again.");
       }
     } finally {
       setIsSubmitting(false);
@@ -195,13 +167,6 @@ const LoginPage = () => {
             />
           </div>
 
-          <AlertDialog
-            isOpen={alert.isOpen}
-            onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
-            type={alert.type}
-            title={alert.title}
-            message={alert.message}
-          />
           <Button
             type="submit"
             icon="login"

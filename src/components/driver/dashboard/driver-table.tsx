@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DriverTableRow, Driver } from "./driver-table-row";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { useSearchParams } from "next/navigation";
-import { AlertDialog } from "@/components/ui/alert";
 import { ExportColumn, ModalExport } from "@/components/ui/export";
 
 const driverColumns: ExportColumn[] = [
@@ -23,26 +22,20 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
   const searchParams = useSearchParams();
 
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const toastShownRef = useRef(false);
 
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState<any>(null);
-  
-  const  [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const  [alertMessage, setAlertMessage] = useState("");
-  const  [alertType, setAlertType] = useState<"success" | "error">("success"); 
+
+
 
    // Tampilkan alert jika ada succes param di url
     useEffect(() => {
       const success = searchParams.get("success");
       const driver = searchParams.get("driver");
   
-      if (success && driver) {
+      if (success && driver && !toastShownRef.current) {
+        toastShownRef.current = true;
         const action = success === "updated" ? "Update" : "Registration";
-        setAlertTitle(`${action} Successful`);
-        setAlertMessage(`Driver ${decodeURIComponent(driver)} has been ${success} successfully.`);
-        setAlertType("success");
-        setIsAlertOpen(true);
+        toastSuccess(`Driver ${decodeURIComponent(driver)} has been ${success} successfully.`);
   
         // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
         window.history.replaceState({}, "", "/dashboard/driver");
@@ -50,31 +43,18 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
   
     }, [searchParams]);
 
-  const [driverToDelete, setDriverToDelete] = useState<Driver | null>(null);
-
-  const handleDeleteConfirm = async () => {
-    if (driverToDelete && onDeleteDriver) {
+  const handleDeleteConfirm = async (driver: Driver) => {
+    if (onDeleteDriver) {
       try {
-        await onDeleteDriver(driverToDelete.employeeId);
-        setAlertTitle("Delete Successful");
-        setAlertMessage(`Driver ${driverToDelete.name} (${driverToDelete.employeeId}) has been deleted successfully`);
-        setAlertType("success");
-        setIsAlertOpen(true);
+        await onDeleteDriver(driver.employeeId);
+        toastSuccess(`Driver ${driver.name} (${driver.employeeId}) has been deleted successfully`);
       } catch (err: any) {
-        const msg = err?.message || `Failed to delete driver ${driverToDelete.name}. They may have active transactions.`;
-        setAlertTitle("Delete Failed");
-        setAlertMessage(msg);
-        setAlertType("error");
-        setIsAlertOpen(true);
+        const msg = err?.message || `Failed to delete driver ${driver.name}. They may have active transactions.`;
+        toastError(msg);
       }
     }
-    setIsConfirmDeleteOpen(false);
-    setDriverToDelete(null);
   };
 
-   const handleAlertClose = () => {
-    setIsAlertOpen(false);
-  }
 
   return (
     <>
@@ -106,39 +86,24 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
               <DriverTableRow
                 key={driver.employeeId}
                 driver={driver}
-                onDeleteClick={setDriverToDelete}
+                onDeleteClick={async (driver: Driver) => {
+                  const confirmed = await confirmToast({
+                    title: "Delete Driver",
+                    message: `Are you sure you want to delete ${driver.name}? This action cannot be undone.`,
+                    confirmText: "Yes, Delete",
+                    cancelText: "Cancel",
+                    variant: "danger",
+                  });
+                  if (confirmed) {
+                    await handleDeleteConfirm(driver);
+                  }
+                }}
                 onDetailsClick={onDetailsDriver}
               />
             ))}
           </tbody>
         </table>
       </div>
-
-      {/* Confirm Dialog di luar tabel - tidak akan menyebabkan nesting error */}
-      <ConfirmDialog
-        isOpen={!!driverToDelete}
-        onClose={() => setDriverToDelete(null)}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Driver"
-        message={
-          driverToDelete
-            ? `Are you sure you want to delete ${driverToDelete.name}? This action cannot be undone.`
-            : ""
-        }
-        confirmText="Yes, Delete"
-        cancelText="Cancel"
-        variant="danger"
-      />
-
-        {/* Alert Dialog */}
-        <AlertDialog 
-          isOpen={isAlertOpen}
-          onClose={handleAlertClose}
-          title={alertTitle}
-          message={alertMessage}
-          type={alertType}
-          confirmText="OK"
-        />
 
         <ModalExport
                 isOpen={isExportModalOpen}

@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { PageHeader } from "@/components/page-header";
 import { RentalCard } from "@/components/rent/dashboard/card";
 import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
 import { RentPagination } from "@/components/rent/dashboard/rent-pagination";
 import { RentalTable } from "@/components/rent/dashboard/rent-table";
 import { ExportOptions } from "@/components/ui/export";
-import { AlertDialog } from "@/components/ui/alert";
 import { useSearchParams } from "next/navigation";
 import { rentalApi } from "@/lib/api/rentals";
 import { HttpClientError } from "@/lib/api-http";
@@ -81,14 +80,6 @@ const searchParams = useSearchParams();
       }
       await rentalApi.exportData(params);
     };
-  // State Confirm dialog Delete
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-  const [selectedRental, setSelectedRental] = useState<RentalDisplay | null>(null);
-
-  const  [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const  [alertMessage, setAlertMessage] = useState("");
-  const  [alertType, setAlertType] = useState<"success" | "error">("success");
 
   // Data state
   const [rentals, setRentals] = useState<RentalDisplay[]>([]);
@@ -98,6 +89,8 @@ const searchParams = useSearchParams();
   const [totalPages, setTotalPages] = useState(1);
   const [summary, setSummary] = useState<RentalSummary | null>(null);
   const itemsPerPage = 10;
+
+  const toastShownRef = useRef(false);
 
   const fetchSummary = useCallback(async () => {
     try {
@@ -113,12 +106,10 @@ const searchParams = useSearchParams();
     const success = searchParams.get("success");
     const rent = searchParams.get("rent");
 
-    if (success && rent) {
+    if (success && rent && !toastShownRef.current) {
+      toastShownRef.current = true;
       const action = success === "updated" ? "Update" : "Registration";
-      setAlertTitle(`${action} Successful`);
-      setAlertMessage(`Rent ${decodeURIComponent(rent)} has been ${success} successfully.`);
-      setAlertType("success");
-      setIsAlertOpen(true);
+      toastSuccess(`${action} Successful: Rent ${decodeURIComponent(rent)} has been ${success} successfully.`);
 
       // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
       window.history.replaceState({}, "", "/dashboard/rent");
@@ -168,35 +159,25 @@ const handlePageChange = (page: number) => {
 };
 
 // Handler Delete
-   const handleDeleteClick = (rental: RentalDisplay) => {
-    setSelectedRental(rental);
-    setIsConfirmDeleteOpen(true);
-  };
-
-   const handleConfirmDelete = async () => {
-    if (!selectedRental) return;
-    try {
-      await rentalApi.delete(selectedRental.id);
-      setIsConfirmDeleteOpen(false);
-      setAlertTitle("Delete Successful");
-      setAlertMessage(`Rent ${selectedRental?.transactionId} has been deleted successfully`);
-      setAlertType("success");
-      setIsAlertOpen(true);
-      setSelectedRental(null);
-      fetchRentals();
-      fetchSummary();
-    } catch (err) {
-      setIsConfirmDeleteOpen(false);
-      setAlertTitle("Delete Failed");
-      setAlertMessage(err instanceof HttpClientError ? err.message : "Failed to delete rental. Please try again.");
-      setAlertType("error");
-      setIsAlertOpen(true);
+   const handleDeleteClick = async (rental: RentalDisplay) => {
+    const confirmed = await confirmToast({
+      title: "Delete Rental",
+      message: `Are you sure you want to delete ${rental.transactionId}? This action cannot be undone.`,
+      confirmText: "Yes, Delete",
+      variant: "danger",
+    });
+    if (confirmed) {
+      try {
+        await rentalApi.delete(rental.id);
+        toastSuccess(`Rent ${rental.transactionId} has been deleted successfully`);
+        fetchRentals();
+        fetchSummary();
+      } catch (err) {
+        toastError(err instanceof HttpClientError ? err.message : "Failed to delete rental. Please try again.");
+      }
     }
   };
 
-  const handleAlertClose = () => {
-    setIsAlertOpen(false);
-  }
 
 
   return (
@@ -284,27 +265,7 @@ const handlePageChange = (page: number) => {
         )}
       </div>
 
-          {/* Confirm dialog delete */}
-          <ConfirmDialog
-        isOpen={isConfirmDeleteOpen}
-        onClose={() => setIsConfirmDeleteOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Rental"
-        message={`Are you sure you want to delete ${selectedRental?.transactionId}? This action cannot be undone.`}
-        confirmText="Yes, Delete"
-        cancelText="Cancel"
-        variant="danger"
-      />
 
-      {/* Alert Dialog */}
-      <AlertDialog
-        isOpen={isAlertOpen}
-        onClose={handleAlertClose}
-        title={alertTitle}
-        message={alertMessage}
-        type={alertType}
-        confirmText="OK"
-      />
 
     </div>
     </PermissionGuard>

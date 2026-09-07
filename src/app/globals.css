@@ -172,3 +172,17 @@
 .vehicle-photo-swiper .swiper-pagination {
   bottom: 8px !important;
 }
+
+/* Toastify progress bar color overrides */
+.Toastify__progress-bar--success {
+  background: #3b82f6 !important;
+}
+.Toastify__progress-bar--error {
+  background: #dc2626 !important;
+}
+.Toastify__progress-bar--warning {
+  background: #f59e0b !important;
+}
+.Toastify__progress-bar--info {
+  background: #3b82f6 !important;
+}

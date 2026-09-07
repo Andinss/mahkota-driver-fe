@@ -3,12 +3,11 @@
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { AlertDialog } from "@/components/ui/alert";
+import { toastSuccess, toastWarning } from "@/components/ui/toast-provider";
 
 export default function AuthGuard({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const [showAlert, setShowAlert] = useState(false);
   const [isIntentionalLogout, setIsIntentionalLogout] = useState(false);
 
   useEffect(() => {
@@ -16,40 +15,21 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
       const intentional = sessionStorage.getItem("intentional_logout") === "true";
       if (intentional) {
         sessionStorage.removeItem("intentional_logout");
+        toastSuccess("You have been successfully logged out.");
+      } else {
+        toastWarning("You do not have permission to access this page. Please login first.");
       }
       setIsIntentionalLogout(intentional);
-      setShowAlert(true);
+      router.replace("/auth/login");
     }
-  }, [isLoading, isAuthenticated]);
-
-  const handleRedirect = () => {
-    setShowAlert(false);
-    router.replace("/auth/login");
-  };
+  }, [isLoading, isAuthenticated, router]);
 
   if (isLoading) {
     return null;
   }
 
   if (!isAuthenticated) {
-    return (
-      <>
-        {showAlert && (
-          <AlertDialog
-            isOpen={showAlert}
-            onClose={handleRedirect}
-            type={isIntentionalLogout ? "success" : "warning"}
-            title={isIntentionalLogout ? "Logout Successful" : "Access Denied"}
-            message={
-              isIntentionalLogout
-                ? "You have been successfully logged out."
-                : "You do not have permission to access this page. Please login first."
-            }
-            autoCloseDelay={2000}
-          />
-        )}
-      </>
-    );
+    return null;
   }
 
   return <>{children}</>;

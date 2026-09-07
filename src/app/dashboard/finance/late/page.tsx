@@ -2,7 +2,6 @@
 
 import { CardDriver } from "@/components/finance/late-payment/card-driver";
 import { StatsCard } from "@/components/finance/late-payment/card-stats";
-import { AlertDialog } from "@/components/ui/alert";
 import { rentalApi } from "@/lib/api/rentals";
 import React, { useState, useEffect, useCallback } from "react";
 
@@ -50,10 +49,6 @@ export default function LatePaymentPage() {
   const [selectedId, setSelectedId] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState<"success" | "error">("success");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -254,15 +249,7 @@ export default function LatePaymentPage() {
         )}
       </div>
 
-      <AlertDialog
-        isOpen={isAlertOpen}
-        onClose={() => setIsAlertOpen(false)}
-        title={alertTitle}
-        message={alertMessage}
-        type={alertType}
-        confirmText="OK"
-        autoCloseDelay={3000}
-      />
+
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { TaskTable } from "@/components/monitoring/task-list/task-table";
 import { useRouter } from "next/navigation";
 import { Task } from "@/components/monitoring/task-list/task-table-row";
 import { TaskPagination } from "@/components/monitoring/task-list/task-pagination";
-import { AlertDialog } from "@/components/ui/alert";
+import { toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { monitoringApi } from "@/lib/api/monitoring";
@@ -32,7 +32,6 @@ function mapApiTaskToTask(apiTask: any, index: number): Task {
 export default function TaskList() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const [denied, setDenied] = useState(false);
 
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [tasksLoading, setTasksLoading] = useState(true);
@@ -43,7 +42,8 @@ export default function TaskList() {
   useEffect(() => {
     if (isLoading) return;
     if (!hasAccess) {
-      setDenied(true);
+      toastError("Anda tidak memiliki izin untuk mengakses halaman ini.");
+      router.replace("/dashboard");
     }
   }, [isLoading, hasAccess]);
 
@@ -83,16 +83,6 @@ export default function TaskList() {
     }
   }, [hasAccess, isLoading, fetchTasks]);
 
-  const handleDeniedClose = () => {
-    setDenied(false);
-    router.replace("/dashboard");
-  };
-
-  // Alert state
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState<"success" | "error">("success");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -120,10 +110,7 @@ export default function TaskList() {
   };
 
   const handleComplete = (task: Task) => {
-    setAlertTitle("Task Completed");
-    setAlertMessage(`Successfully completed retrieval for ${task.vehicleInfo.name} (${task.vehicleInfo.plate})`);
-    setAlertType("success");
-    setIsAlertOpen(true);
+    toastSuccess(`Successfully completed retrieval for ${task.vehicleInfo.name} (${task.vehicleInfo.plate})`);
   };
 
   const handleEdit = (task: Task) => {
@@ -140,15 +127,6 @@ export default function TaskList() {
 
   return (
     <>
-      <AlertDialog
-        isOpen={denied}
-        onClose={handleDeniedClose}
-        title="Akses Ditolak"
-        message="Anda tidak memiliki izin untuk mengakses halaman ini."
-        confirmText="OK"
-        type="error"
-        autoCloseDelay={0}
-      />
       {isLoading || !hasAccess ? null : (
       <div className="p-8 space-y-8">
         <PageHeader
@@ -225,15 +203,6 @@ export default function TaskList() {
             </>
           )}
         </div>
-        <AlertDialog
-          isOpen={isAlertOpen}
-          onClose={() => setIsAlertOpen(false)}
-          title={alertTitle}
-          message={alertMessage}
-          type={alertType}
-          confirmText="OK"
-          autoCloseDelay={3000}
-        />
 
         <FleetLocationsTable />
       </div>

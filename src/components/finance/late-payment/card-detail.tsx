@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmToast } from "@/components/ui/toast-provider";
 
 interface CardDetailProps {
   driverId: string;
@@ -44,32 +44,32 @@ export function CardDetail({
   onApprove,
   onViewProfile,
 }: CardDetailProps) {
-  const [showRejectConfirm, setShowRejectConfirm] = useState(false);
-  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [adminNote, setAdminNote] = useState("");
+
+  const handleReject = async () => {
+    const confirmed = await confirmToast({
+      title: "Reject Request?",
+      message: "This action cannot be undone. The driver will be notified of the rejection.",
+      confirmText: "Yes, Reject",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) onReject?.(adminNote);
+  };
+
+  const handleApprove = async () => {
+    const confirmed = await confirmToast({
+      title: "Approve Request?",
+      message: "This will mark the late payment as resolved. A confirmation will be sent to the driver.",
+      confirmText: "Yes, Approve",
+      cancelText: "Cancel",
+      variant: "info",
+    });
+    if (confirmed) onApprove?.(adminNote);
+  };
 
   return (
     <>
-      <ConfirmDialog
-        isOpen={showRejectConfirm}
-        onClose={() => setShowRejectConfirm(false)}
-        onConfirm={() => onReject?.(adminNote)}
-        title="Reject Request?"
-        message="This action cannot be undone. The driver will be notified of the rejection."
-        confirmText="Yes, Reject"
-        cancelText="Cancel"
-        variant="danger"
-      />
-      <ConfirmDialog
-        isOpen={showApproveConfirm}
-        onClose={() => setShowApproveConfirm(false)}
-        onConfirm={() => onApprove?.(adminNote)}
-        title="Approve Request?"
-        message="This will mark the late payment as resolved. A confirmation will be sent to the driver."
-        confirmText="Yes, Approve"
-        cancelText="Cancel"
-        variant="info"
-      />
       <div className="flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
       {/* Detail Header */}
       <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
@@ -262,10 +262,10 @@ export function CardDetail({
           />
         </div>
         <div className="flex items-center justify-end gap-3">
-          <Button icon="close" onClick={() => setShowRejectConfirm(true)}>
+          <Button icon="close" onClick={handleReject}>
             Reject
           </Button>
-          <Button icon="check" onClick={() => setShowApproveConfirm(true)}>
+          <Button icon="check" onClick={handleApprove}>
             Approve Request
           </Button>
         </div>

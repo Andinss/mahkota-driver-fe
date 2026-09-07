@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { AlertDialog } from "@/components/ui/alert";
+import { confirmToast, toastWarning, toastError } from "@/components/ui/toast-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,11 +28,6 @@ export const FieldReportForm = ({ onSaveDraft, onSubmitReport }: FieldReportForm
   });
   
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
-  const [isConfirmSubmitOpen, setIsConfirmSubmitOpen] = useState(false);
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState<"success" | "error" | "warning" | "info">("warning");
   const [isMounted, setIsMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -60,10 +54,7 @@ export const FieldReportForm = ({ onSaveDraft, onSubmitReport }: FieldReportForm
     const remainingSlots = MAX_PHOTOS - currentCount;
     
     if (files.length > remainingSlots) {
-      setAlertTitle("Maximum Photos Exceeded");
-      setAlertMessage(`Maximum ${MAX_PHOTOS} photos. You can upload ${remainingSlots} more photo(s).`);
-      setAlertType("warning");
-      setIsAlertOpen(true);
+      toastWarning(`Maximum ${MAX_PHOTOS} photos. You can upload ${remainingSlots} more photo(s).`);
       return;
     }
 
@@ -75,18 +66,12 @@ export const FieldReportForm = ({ onSaveDraft, onSubmitReport }: FieldReportForm
       const file = files[i];
       
       if (!allowedTypes.includes(file.type)) {
-        setAlertTitle("Invalid File Type");
-        setAlertMessage(`File ${file.name} is not supported. Please use JPG, PNG, or GIF.`);
-        setAlertType("error");
-        setIsAlertOpen(true);
+        toastError(`File ${file.name} is not supported. Please use JPG, PNG, or GIF.`);
         continue;
       }
       
       if (file.size > maxSize) {
-        setAlertTitle("File Too Large");
-        setAlertMessage(`File ${file.name} is too large. Maximum size is 5MB.`);
-        setAlertType("error");
-        setIsAlertOpen(true);
+        toastError(`File ${file.name} is too large. Maximum size is 5MB.`);
         continue;
       }
       
@@ -128,18 +113,12 @@ export const FieldReportForm = ({ onSaveDraft, onSubmitReport }: FieldReportForm
       const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"];
       
       if (!allowedTypes.includes(file.type)) {
-        setAlertTitle("Invalid File Type");
-        setAlertMessage(`File ${file.name} is not supported. Please use JPG, PNG, or GIF.`);
-        setAlertType("error");
-        setIsAlertOpen(true);
+        toastError(`File ${file.name} is not supported. Please use JPG, PNG, or GIF.`);
         return;
       }
       
       if (file.size > maxSize) {
-        setAlertTitle("File Too Large");
-        setAlertMessage(`File ${file.name} is too large. Maximum size is 5MB.`);
-        setAlertType("error");
-        setIsAlertOpen(true);
+        toastError(`File ${file.name} is too large. Maximum size is 5MB.`);
         return;
       }
       
@@ -158,32 +137,30 @@ export const FieldReportForm = ({ onSaveDraft, onSubmitReport }: FieldReportForm
 
   const handleAddMore = () => {
     if (uploadedImages.length >= MAX_PHOTOS) {
-      setAlertTitle("Maximum Photos Exceeded");
-      setAlertMessage(`Maximum ${MAX_PHOTOS} photos. Cannot add more.`);
-      setAlertType("warning");
-      setIsAlertOpen(true);
+      toastWarning(`Maximum ${MAX_PHOTOS} photos. Cannot add more.`);
       return;
     }
     fileInputRef.current?.click();
   };
 
-  const handleSubmitClick = (e: React.FormEvent) => {
+  const handleSubmitClick = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (uploadedImages.length === 0) {
-      setAlertTitle("Photo Required");
-      setAlertMessage("Please upload at least 1 photo as evidence.");
-      setAlertType("warning");
-      setIsAlertOpen(true);
+      toastWarning("Please upload at least 1 photo as evidence.");
       return;
     }
     
-    setIsConfirmSubmitOpen(true);
-  };
+    const confirmed = await confirmToast({
+      title: "Submit Field Report",
+      message: "Are you sure you want to submit this field report? This action cannot be undone.",
+      confirmText: "Yes, Submit",
+      cancelText: "Cancel",
+      variant: "info",
+    });
 
-  const handleConfirmSubmit = () => {
-    setIsConfirmSubmitOpen(false);
-    
+    if (!confirmed) return;
+
     const submitData = {
       ...formData,
       photos: uploadedImages.map(img => ({
@@ -412,29 +389,6 @@ export const FieldReportForm = ({ onSaveDraft, onSubmitReport }: FieldReportForm
           </div>
         </form>
       </div>
-
-      {/* Alert Dialog untuk notifikasi */}
-      <AlertDialog
-        isOpen={isAlertOpen}
-        onClose={() => setIsAlertOpen(false)}
-        title={alertTitle}
-        message={alertMessage}
-        type={alertType}
-        confirmText="OK"
-        autoCloseDelay={3000}
-      />
-
-      {/* Confirm Dialog untuk Submit Report */}
-      <ConfirmDialog
-        isOpen={isConfirmSubmitOpen}
-        onClose={() => setIsConfirmSubmitOpen(false)}
-        onConfirm={handleConfirmSubmit}
-        title="Submit Field Report"
-        message="Are you sure you want to submit this field report? This action cannot be undone."
-        confirmText="Yes, Submit"
-        cancelText="Cancel"
-        variant="info"
-      />
     </>
   );
 };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertDialog } from "@/components/ui/alert";
+import { toastSuccess } from "@/components/ui/toast-provider";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { MonitoringHeader } from "@/components/monitoring/detail/monitoring-header";
 import { VehicleDetailsCard } from "@/components/monitoring/detail/vehicle-details-card";
@@ -42,10 +42,6 @@ export default function MonitoringDetailPage() {
   const searchParams = useSearchParams();
   const taskId = searchParams.get("id");
 
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState<"success" | "error" | "warning" | "info">("success");
 
   const [taskDetail, setTaskDetail] = useState<TaskDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,24 +69,15 @@ export default function MonitoringDetailPage() {
   };
 
   const handleStartRetrieval = () => {
-    setAlertTitle("Retrieval Started");
-    setAlertMessage("Retrieval process has been initiated.");
-    setAlertType("success");
-    setIsAlertOpen(true);
+    toastSuccess("Retrieval process has been initiated.");
   };
 
   const handleSaveDraft = (data: any) => {
-    setAlertTitle("Draft Saved");
-    setAlertMessage("Field report draft has been saved successfully.");
-    setAlertType("success");
-    setIsAlertOpen(true);
+    toastSuccess("Field report draft has been saved successfully.");
   };
 
   const handleSubmitReport = (data: any) => {
-    setAlertTitle("Report Submitted");
-    setAlertMessage("Field report has been submitted successfully.");
-    setAlertType("success");
-    setIsAlertOpen(true);
+    toastSuccess("Field report has been submitted successfully.");
   };
 
   if (loading) {
@@ -138,15 +125,7 @@ export default function MonitoringDetailPage() {
         </div>
       </div>
 
-      <AlertDialog
-        isOpen={isAlertOpen}
-        onClose={() => setIsAlertOpen(false)}
-        title={alertTitle}
-        message={alertMessage}
-        type={alertType}
-        confirmText="OK"
-        autoCloseDelay={3000}
-      />
+
     </div>
     </PermissionGuard>
   );

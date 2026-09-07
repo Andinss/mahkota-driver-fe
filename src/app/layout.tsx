@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
+import { ToastProvider } from "@/components/ui/toast-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -64,6 +65,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <div className="flex h-screen w-full overflow-hidden">{children}</div>
+          <ToastProvider />
         </AuthProvider>
       </body>
     </html>

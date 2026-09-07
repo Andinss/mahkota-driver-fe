@@ -4,28 +4,33 @@ interface FlowFinanceProps {
 
 const FlowFinance = ({ status = "completed" }: FlowFinanceProps) => {
   const steps = [
-    { label: "Invoice Generated", done: true },
-    { label: "Payment Recorded", done: status !== "pending" },
-    { label: "Amount Verified", done: status === "completed" || status === "verified" },
-    { label: "Ledger Reconciled", done: status === "verified" },
+    { label: "Invoice Dibuat", done: true },
+    { label: "Pembayaran Tercatat", done: status !== "pending" },
+    { label: "Jumlah Diverifikasi", done: status === "completed" || status === "verified" },
+    { label: "Buku Besar Direkonsilasi", done: status === "verified" },
   ];
 
   return (
-    <div className="bg-white dark:bg-[#1a2632] rounded-2xl p-6 lg:p-8 border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
-      <div className="absolute -top-4 -right-4 text-blue-600/5 pointer-events-none">
-        <span className="material-symbols-outlined text-9xl">verified</span>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 relative overflow-hidden">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-violet-500 text-xl">flow_route</span>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Alur Verifikasi
+          </h3>
+          <p className="text-xs text-slate-400">Status proses verifikasi pembayaran</p>
+        </div>
       </div>
-      <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-10">
-        Verification Flow
-      </h3>
-      <div className="space-y-8 relative">
-        <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-gray-200"></div>
+      <div className="space-y-6 relative">
+        <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-700"></div>
         {steps.map((step, index) => (
           <div key={index} className="relative flex items-start gap-4">
             <div className={`z-10 w-6 h-6 rounded-full flex items-center justify-center ${
               step.done
                 ? "bg-blue-600"
-                : "bg-gray-100 border-2 border-gray-300"
+                : "bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600"
             }`}>
               {step.done ? (
                 <span
@@ -35,15 +40,15 @@ const FlowFinance = ({ status = "completed" }: FlowFinanceProps) => {
                   check
                 </span>
               ) : (
-                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                <div className="w-2 h-2 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
               )}
             </div>
             <div>
-              <p className={`text-sm font-bold ${step.done ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
+              <p className={`text-sm font-bold ${step.done ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500"}`}>
                 {step.label}
               </p>
-              <p className="text-[10px] text-gray-500 font-medium uppercase mt-0.5">
-                {step.done ? "Completed" : "Pending"}
+              <p className="text-[10px] text-slate-400 font-medium uppercase mt-0.5">
+                {step.done ? "Selesai" : "Menunggu"}
               </p>
             </div>
           </div>

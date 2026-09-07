@@ -25,7 +25,7 @@ import { rentalApi } from "@/lib/api/rentals";
 import { HttpClientError } from "@/lib/api-http";
 import type { DriverItem } from "@/lib/types/driver";
 import type { RentalTransaction } from "@/lib/types/rentals";
-import { AlertDialog } from "@/components/ui/alert";
+import { toastError, toastInfo } from "@/components/ui/toast-provider";
 
 const detailDriverPage = () => {
   const searchParams = useSearchParams();
@@ -35,10 +35,6 @@ const detailDriverPage = () => {
   const [currentRental, setCurrentRental] = useState<RentalTransaction | null>(null);
   const [driverRentals, setDriverRentals] = useState<RentalTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const [alertOpen, setAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
 
   const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
   const buildUrl = (path: string) => path ? (path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`) : "";
@@ -60,9 +56,7 @@ const detailDriverPage = () => {
         }
       } catch (err: any) {
         const msg = err instanceof HttpClientError ? err.message : "Failed to load driver data.";
-        setAlertTitle("Driver Not Found");
-        setAlertMessage(msg);
-        setAlertOpen(true);
+        toastError(msg);
         setDriver(null);
         return;
       }
@@ -74,15 +68,11 @@ const detailDriverPage = () => {
           setDriver(item);
         } else {
           setDriver(null);
-          setAlertTitle("Driver Not Found");
-          setAlertMessage("Driver data is empty or invalid.");
-          setAlertOpen(true);
+          toastError("Driver data is empty or invalid.");
         }
       } catch (err: any) {
         const msg = err instanceof HttpClientError ? err.message : "Failed to load driver details.";
-        setAlertTitle("Driver Not Found");
-        setAlertMessage(msg);
-        setAlertOpen(true);
+        toastError(msg);
         setDriver(null);
       }
     };
@@ -171,7 +161,7 @@ const detailDriverPage = () => {
 
   const handleExport = (options?: any) => {
     if (!options) return;
-    alert(`Exporting vehicle history as ${options.format} with ${options.type} data`);
+    toastInfo(`Exporting vehicle history as ${options.format} with ${options.type} data`);
   };
 
   if (isLoading) {
@@ -184,19 +174,9 @@ const detailDriverPage = () => {
 
   if (!driver) {
     return (
-      <>
       <div className="p-7 flex items-center justify-center min-h-[400px]">
         <p className="text-slate-500">Driver not found</p>
       </div>
-      <AlertDialog
-        isOpen={alertOpen}
-        onClose={() => setAlertOpen(false)}
-        title={alertTitle}
-        message={alertMessage}
-        type="error"
-        confirmText="OK"
-      />
-      </>
     );
   }
 
@@ -266,15 +246,6 @@ const detailDriverPage = () => {
       )}
     </div>
     </PermissionGuard>
-
-    <AlertDialog
-      isOpen={alertOpen}
-      onClose={() => setAlertOpen(false)}
-      title={alertTitle}
-      message={alertMessage}
-      type="error"
-      confirmText="OK"
-    />
     </>
   );
 };

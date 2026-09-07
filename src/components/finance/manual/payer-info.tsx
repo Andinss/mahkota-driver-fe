@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { driverApi } from "@/lib/api/driver";
 import type { DriverItem } from "@/lib/types/driver";
@@ -113,21 +112,18 @@ const PayerInfo = ({
   };
 
   return (
-    <Card className="rounded-xl bg-white dark:bg-[#1e2732] border border-[#e5e7eb] dark:border-gray-800 shadow-sm">
-      <div className="p-6">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="size-9 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-primary text-lg">credit_card</span>
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[#111418] dark:text-white">
-              Payer Information
-            </h3>
-            <p className="text-xs text-[#617589] dark:text-gray-400">
-              Search and select a driver as the payer
-            </p>
-          </div>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-blue-500 text-xl">person_search</span>
         </div>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Informasi Payer
+          </h3>
+          <p className="text-xs text-slate-400">Cari dan pilih driver sebagai payer</p>
+        </div>
+      </div>
 
         {hasSubmitted && !selectedDriver && (
           <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2.5">
@@ -146,17 +142,17 @@ const PayerInfo = ({
                   src={selectedDriver.avatar}
                   alt={selectedDriver.name}
                   size="lg"
-                  className="size-12 rounded-full bg-gray-200 dark:bg-gray-700 bg-center bg-cover shrink-0 ring-2 ring-white dark:ring-gray-800 shadow-sm"
+                  className="size-12 rounded-full bg-slate-200 dark:bg-slate-700 bg-center bg-cover shrink-0 ring-2 ring-white dark:ring-slate-800 shadow-sm"
                 />
-                <div className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-900" />
+                <div className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-green-500 border-2 border-white dark:border-slate-900" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-base font-bold text-[#111418] dark:text-white truncate">
+                <h4 className="text-base font-bold text-slate-900 dark:text-white truncate">
                   {selectedDriver.name}
                 </h4>
                 <div className="flex items-center gap-3 mt-1">
                   {selectedDriver.employeeId && (
-                    <span className="inline-flex items-center gap-1.5 text-xs text-[#617589] dark:text-gray-400">
+                    <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                       <span className="material-symbols-outlined text-xs">badge</span>
                       <span className="font-mono text-xs font-medium">{selectedDriver.employeeId}</span>
                     </span>
@@ -169,7 +165,7 @@ const PayerInfo = ({
               </div>
               <button
                 onClick={handleClearSelection}
-                className="p-2 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-[#617589] hover:text-red-500 transition-colors"
+                className="p-2 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-red-500 transition-colors"
                 title="Change payer"
               >
                 <span className="material-symbols-outlined text-base">edit</span>
@@ -177,13 +173,13 @@ const PayerInfo = ({
             </div>
           ) : (
             <div>
-              <div className="flex items-center w-full rounded-lg border border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] ring-1 ring-inset ring-transparent focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary focus-within:border-primary transition-all h-12">
-                <div className="flex items-center justify-center pl-4 text-[#617589] dark:text-gray-400">
+              <div className="flex items-center w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 ring-1 ring-inset ring-transparent focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary focus-within:border-primary transition-all h-12">
+                <div className="flex items-center justify-center pl-4 text-slate-400 dark:text-slate-500">
                   <span className="material-symbols-outlined text-xl">search</span>
                 </div>
                 <input
-                  placeholder="Search by driver name or employee ID..."
-                  className="flex w-full flex-1 bg-transparent border-none text-[#111418] dark:text-white placeholder:text-[#9aa6b5] dark:placeholder:text-gray-500 px-3 focus:ring-0 focus:outline-none h-full text-sm"
+                  placeholder="Cari ber nama atau ID karyawan..."
+                  className="flex w-full flex-1 bg-transparent border-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 px-3 focus:ring-0 focus:outline-none h-full text-sm"
                   value={searchValue}
                   onChange={(e) => onSearchChange?.(e.target.value.replace(/[^a-zA-Z0-9\s'-]/g, ""))}
                   autoComplete="off"
@@ -194,7 +190,7 @@ const PayerInfo = ({
                       onSearchChange?.("");
                       setShowDropdown(false);
                     }}
-                    className="flex items-center justify-center mr-2 size-8 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-[#617589] transition-colors"
+                    className="flex items-center justify-center mr-2 size-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 transition-colors"
                   >
                     <span className="material-symbols-outlined text-lg">close</span>
                   </button>
@@ -211,22 +207,22 @@ const PayerInfo = ({
               )}
 
               {!isSearching && showDropdown && filteredDrivers.length > 0 && (
-                <div className="absolute z-10 w-full mt-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl max-h-72 overflow-auto">
+                <div className="absolute z-10 w-full mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-72 overflow-auto">
                   {filteredDrivers.map((driver) => (
                     <div
                       key={driver.id}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border-b border-gray-100 dark:border-slate-700 last:border-0 transition-colors"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0 transition-colors"
                       onClick={() => handleSelectDriver(driver)}
                     >
                       <Avatar
                         src={driver.avatar}
                         alt={driver.name}
                         size="md"
-                        className="size-10 rounded-full bg-gray-200 dark:bg-gray-700 bg-center bg-cover shrink-0"
+                        className="size-10 rounded-full bg-slate-200 dark:bg-slate-700 bg-center bg-cover shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#111418] dark:text-white truncate">{driver.name}</p>
-                        <p className="text-xs text-[#617589] dark:text-gray-400">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{driver.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           {driver.employeeId && (
                             <span className="inline-flex items-center gap-1">
                               <span className="material-symbols-outlined text-[10px]">badge</span>
@@ -235,26 +231,25 @@ const PayerInfo = ({
                           )}
                         </p>
                       </div>
-                      <span className="material-symbols-outlined text-[#617589] dark:text-gray-400 text-base">chevron_right</span>
+                      <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 text-base">chevron_right</span>
                     </div>
                   ))}
                 </div>
               )}
 
               {!isSearching && showDropdown && searchValue.length >= 1 && filteredDrivers.length === 0 && (
-                <div className="absolute z-10 w-full mt-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl p-6 text-center">
-                  <div className="size-12 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mx-auto mb-3">
-                    <span className="material-symbols-outlined text-2xl text-[#617589]">search_off</span>
+                <div className="absolute z-10 w-full mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-6 text-center">
+                  <div className="size-12 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mx-auto mb-3">
+                    <span className="material-symbols-outlined text-2xl text-slate-400">search_off</span>
                   </div>
-                  <p className="text-sm font-medium text-[#111418] dark:text-white">No drivers found</p>
-                  <p className="text-xs text-[#617589] dark:text-gray-400 mt-1">Try a different name or employee ID</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">Driver tidak ditemukan</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Coba dengan nama atau ID lain</p>
                 </div>
               )}
             </div>
           )}
         </div>
-      </div>
-    </Card>
+    </div>
   );
 };
 
