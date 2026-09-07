@@ -3,13 +3,12 @@
 import { SelectSearch } from "@/components/ui/select-input-search";
 import { useState } from "react";
 
-  interface FormErrors {
+interface FormErrors {
   vehicleId?: string;
   driverId?: string;
   startDate?: string;
   endDate?: string;
   dailyRate?: string;
-  depositAmount?: string;
   serverDriverId?: string;
   serverVehicleId?: string;
 }
@@ -36,12 +35,18 @@ interface SelectionFormProps {
   serverErrors?: Record<string, string[]>;
 }
 
-
-const SelectionForm = ({ onDataChange, initialData, error, driverOptions, vehicleOptions, serverErrors = {} }: SelectionFormProps) => {
+const SelectionForm = ({
+  onDataChange,
+  initialData,
+  error,
+  driverOptions,
+  vehicleOptions,
+  serverErrors = {},
+}: SelectionFormProps) => {
   const effectiveDriverOptions = driverOptions || [];
   const effectiveVehicleOptions = vehicleOptions || [];
 
-   const [selectedDriver, setSelectedDriver] = useState<string | undefined>(
+  const [selectedDriver, setSelectedDriver] = useState<string | undefined>(
     initialData?.driverId
   );
   const [selectedVehicle, setSelectedVehicle] = useState<string | undefined>(
@@ -57,52 +62,50 @@ const SelectionForm = ({ onDataChange, initialData, error, driverOptions, vehicl
     setSelectedVehicle(value);
     onDataChange?.({ vehicleId: value, driverId: selectedDriver });
   };
+
   return (
-    <div>
-      <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border-2 border-primary/20 dark:border-primary/10 shadow-sm">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
-          <span className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
-            1
-          </span>
-          <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
-            Driver & Vehicle Selection
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-blue-500 text-xl">person_search</span>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Pilih Driver & Kendaraan
           </h3>
+          <p className="text-xs text-slate-400">Tentukan driver dan kendaraan untuk sewa ini</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-slate-400 text-base">person</span>
+            Driver Aktif
+          </label>
+          <SelectSearch
+            options={effectiveDriverOptions}
+            placeholder="Cari driver..."
+            value={selectedDriver}
+            onChange={handleDriverChange}
+            error={error?.serverDriverId || error?.driverId}
+          />
         </div>
 
-        {/* Form */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Driver */}
-          <div className="space-y-2 group">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-focus-within:text-primary">
-              Select Active Driver
-            </label>
-
-            <SelectSearch
-              options={effectiveDriverOptions}
-              placeholder="Search driver..."
-              value={selectedDriver}
-              onChange={handleDriverChange}
-              error={error?.serverDriverId || error?.driverId}
-            />
-          </div>
-
-          {/* Vehicle */}
-          <div className="space-y-2 group">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-focus-within:text-primary">
-              Select Available Vehicle
-            </label>
-
-            <SelectSearch
-              options={effectiveVehicleOptions}
-              placeholder="Search vehicle..."
-              value={selectedVehicle}
-              onChange={handleVehicleChange}
-              error={error?.serverVehicleId || error?.vehicleId}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-slate-400 text-base">directions_car</span>
+            Kendaraan Tersedia
+          </label>
+          <SelectSearch
+            options={effectiveVehicleOptions}
+            placeholder="Cari kendaraan..."
+            value={selectedVehicle}
+            onChange={handleVehicleChange}
+            error={error?.serverVehicleId || error?.vehicleId}
+          />
         </div>
-      </section>
+      </div>
     </div>
   );
 };

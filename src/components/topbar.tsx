@@ -6,8 +6,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { DropdownNotif } from "@/components/notif";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { notificationApi } from "@/lib/api/notification";
 
-// Mapping untuk path segment ke label yang readable
 const pathLabels: Record<string, string> = {
   dashboard: "Dashboard",
   vehicle: "Vehicles",
@@ -37,6 +37,7 @@ const Topbar = () => {
   const breadcrumbs = generateBreadcrumbs(pathname);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleToggleSidebar = () => {
     window.dispatchEvent(new CustomEvent("sidebar:toggle"));
@@ -46,7 +47,21 @@ const Topbar = () => {
     setIsNotifOpen((prev) => !prev);
   };
 
-  // Close dropdown when clicking outside
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await notificationApi.getUnreadCount();
+        setUnreadCount(res.data?.count || 0);
+      } catch {
+        // silent fail
+      }
+    };
+
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -67,7 +82,7 @@ const Topbar = () => {
   }, [isNotifOpen]);
 
   return (
-    <header className="h-16 flex items-center justify-between border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shrink-0 z-10">
+    <header className="h-16 flex items-center justify-between border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shrink-0 z-[9999]">
       <button
         onClick={handleToggleSidebar}
         className="mr-4 p-2 -ml-2 text-slate-500 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -75,7 +90,6 @@ const Topbar = () => {
         <span className="material-symbols-outlined">menu</span>
       </button>
 
-      {/* Dynamic Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
         {breadcrumbs.length > 0 && (
           <>
@@ -104,13 +118,17 @@ const Topbar = () => {
         <div className="relative" ref={notifRef}>
           <div
             onClick={toggleNotif}
-            className="cursor-pointer transition-colors"
+            className="cursor-pointer transition-colors relative"
           >
-            <IconButton name="notifications" badge />
-            <span className="absolute top-2 right-2.5 flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
+            <IconButton name="notifications" badge={unreadCount > 0} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-white text-[10px] font-bold items-center justify-center">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              </span>
+            )}
           </div>
           {isNotifOpen && <DropdownNotif />}
         </div>

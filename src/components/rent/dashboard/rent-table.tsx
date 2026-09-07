@@ -21,10 +21,6 @@ interface Rental {
     end: string;
     duration: number;
   };
-  deposit: string;        
-  paymentStatus: string; 
-  methodPayment?: string;
-  saldoDeducted?: number;
   rentalDuration?: string;
   rentalService?: string;
 }
@@ -39,7 +35,6 @@ interface RentalTableProps {
   onDelete?: (rental: Rental) => void;
   onDetails?: (rental: Rental) => void;
   onEndRental?: (rental: Rental) => void;
-  onStatusChange?: (rental: Rental, status: string) => void;
   onExport?: (options?: any) => void;
 }
 
@@ -51,13 +46,9 @@ const rentalColumns: ExportColumn[] = [
   { id: "vehiclePlate", label: "Vehicle Plate", defaultChecked: true },
   { id: "rentalPeriod", label: "Rental Period", defaultChecked: true },
   { id: "duration", label: "Duration (Days)", defaultChecked: true },
-  { id: "deposit", label: "Deposit", defaultChecked: true },
-  { id: "methodPayment", label: "Payment Method", defaultChecked: true },
-  { id: "saldoDeducted", label: "Saldo Deducted", defaultChecked: true },
   { id: "rentalDuration", label: "Tipe Durasi", defaultChecked: true },
   { id: "rentalService", label: "Jenis Layanan", defaultChecked: true },
   { id: "engine", label: "Engine", defaultChecked: true },
-  { id: "paymentStatus", label: "Payment Status", defaultChecked: true },
 ];
 
 
@@ -71,7 +62,6 @@ export const RentalTable = ({
   onDelete,
   onDetails,
   onEndRental,
-  onStatusChange,
   onExport,
 }: RentalTableProps) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -100,13 +90,9 @@ export const RentalTable = ({
               <th className="px-6 py-4">Driver Details</th>
               <th className="px-6 py-4">Vehicle Info</th>
               <th className="px-6 py-4">Rental Period</th>
-              <th className="px-6 py-4">Deposit</th>
-              <th className="px-6 py-4">Payment Method</th>
-              <th className="px-6 py-4">Saldo Deducted</th>
               <th className="px-6 py-4">Tipe Durasi</th>
               <th className="px-6 py-4">Jenis Layanan</th>
               <th className="px-6 py-4">Engine</th>
-              <th className="px-6 py-4">Payment Status</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
@@ -119,7 +105,6 @@ export const RentalTable = ({
                 onDelete={onDelete}
                 onDetails={onDetails}
                 onEndRental={onEndRental}
-                onStatusChange={onStatusChange}
               />
             ))}
           </tbody>

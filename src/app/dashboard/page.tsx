@@ -25,7 +25,6 @@ const formatCurrency = (v: number) => `Rp ${v.toLocaleString("id-ID")}`;
 export default function DashboardPage() {
   const router = useRouter();
   const [financeAmount, setFinanceAmount] = useState(0);
-  const [rentalRevenue, setRentalRevenue] = useState(0);
   const [totalVehicles, setTotalVehicles] = useState(0);
   const [totalDrivers, setTotalDrivers] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -44,7 +43,6 @@ export default function DashboardPage() {
       rentalApi
         .getSummary()
         .then((r) => {
-          setRentalRevenue(r.data.total_revenue);
           setTotalRentals(r.data.total_rentals);
         })
         .catch(() => {}),
@@ -76,7 +74,6 @@ export default function DashboardPage() {
 
   const lineData = [
     { name: "Finance", revenue: financeAmount },
-    { name: "Rental", revenue: rentalRevenue },
   ];
 
   if (loading) {
@@ -128,14 +125,14 @@ export default function DashboardPage() {
                 Revenue Overview
               </h3>
               <p className="text-slate-500 dark:text-slate-400 text-sm">
-                Total revenue from finance and rental
+                Total revenue from finance
               </p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                {formatCurrency(financeAmount + rentalRevenue)}
+                {formatCurrency(financeAmount)}
               </p>
-              <p className="text-xs text-slate-400">Combined total</p>
+              <p className="text-xs text-slate-400">Total finance</p>
             </div>
           </div>
 
@@ -202,12 +199,6 @@ export default function DashboardPage() {
               <span className="w-3 h-3 rounded-full bg-blue-500" />
               <span className="text-slate-500">
                 Finance: {formatCurrency(financeAmount)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-emerald-500" />
-              <span className="text-slate-500">
-                Rental: {formatCurrency(rentalRevenue)}
               </span>
             </div>
           </div>

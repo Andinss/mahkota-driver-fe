@@ -22,7 +22,6 @@ interface ChartData {
 interface ChartCardProps {
   financeByMethod?: ChartData[];
   rentalByMethod?: ChartData[];
-  totalRevenue?: number;
 }
 
 const COLORS = ["#137fec", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];

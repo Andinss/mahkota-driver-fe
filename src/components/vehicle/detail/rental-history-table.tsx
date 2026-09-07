@@ -1,14 +1,13 @@
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 import Link from "next/link";
 
-type RentalStatus = "PAID" | "LATE" | "PENDING";
+type RentalStatus = "AKTIF" | "SELESAI";
 
 interface RentalRecord {
   dateRange: string;
   tripDuration: string;
   driverName: string;
   dailyRate: string;
-  totalFee: string;
   status: RentalStatus;
 }
 
@@ -22,20 +21,15 @@ function getStatusStyles(status: RentalStatus) {
   const dotStyles = "size-1.5 rounded-full mr-2";
 
   switch (status) {
-    case "PAID":
+    case "AKTIF":
       return {
         container: `${baseStyles} bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300`,
         dot: `${dotStyles} bg-emerald-500`,
       };
-    case "LATE":
-      return {
-        container: `${baseStyles} bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300`,
-        dot: `${dotStyles} bg-rose-500`,
-      };
     default:
       return {
-        container: `${baseStyles} bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300`,
-        dot: `${dotStyles} bg-yellow-500`,
+        container: `${baseStyles} bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300`,
+        dot: `${dotStyles} bg-slate-400`,
       };
   }
 }
@@ -54,9 +48,6 @@ export function RentalHistoryTable({ rentals }: RentalHistoryTableProps) {
             </th>
             <th className="px-6 py-4 text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
               Daily Rate
-            </th>
-            <th className="px-6 py-4 text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-              Total Fee
             </th>
             <th className="px-6 py-4 text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
               Status
@@ -98,9 +89,6 @@ export function RentalHistoryTable({ rentals }: RentalHistoryTableProps) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-500 dark:text-slate-400">
                   {rental.dailyRate}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-white">
-                  {rental.totalFee}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={statusStyles.container}>

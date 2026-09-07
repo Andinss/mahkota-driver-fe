@@ -6,24 +6,39 @@ const DocumentSign = ({ documentUrl }: DocumentSignProps) => {
   const hasDocument = !!documentUrl;
 
   return (
-    <div className="bg-white dark:bg-[#1a2632] rounded-xl p-6 sm:p-8 shadow-md border border-gray-200 dark:border-gray-700 h-full">
-      <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-6">
-        Signed Documents
-      </h3>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-5">
+        <span className="material-symbols-outlined text-slate-400 text-lg">description</span>
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+          Dokumen
+        </p>
+      </div>
+
+      {/* Document List */}
       <div className="space-y-3">
-        <div className="group flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-all cursor-pointer">
+        {/* Contract Document */}
+        <div className="group flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 dark:hover:border-primary/30 transition-all">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-red-100 text-red-600 flex items-center justify-center rounded-lg">
-              <span className="material-symbols-outlined text-xl">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              hasDocument
+                ? "bg-red-100 dark:bg-red-900/20"
+                : "bg-slate-200 dark:bg-slate-700"
+            }`}>
+              <span className={`material-symbols-outlined text-xl ${
+                hasDocument
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-slate-400 dark:text-slate-500"
+              }`}>
                 picture_as_pdf
               </span>
             </div>
             <div>
-              <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
-                Rental Agreement.pdf
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                Kontrak Sewa
               </p>
-              <p className="text-[10px] text-gray-500 uppercase">
-                {hasDocument ? "Document Available" : "Signed Aug 11, 2024"}
+              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mt-0.5">
+                {hasDocument ? "Tersedia" : "Belum diunggah"}
               </p>
             </div>
           </div>
@@ -32,56 +47,47 @@ const DocumentSign = ({ documentUrl }: DocumentSignProps) => {
               href={documentUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="material-symbols-outlined text-lg text-gray-400 group-hover:text-blue-600 transition-colors"
+              className="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-primary hover:border-primary/30 transition-all"
             >
-              download
+              <span className="material-symbols-outlined text-lg">
+                download
+              </span>
             </a>
           ) : (
-            <span className="material-symbols-outlined text-lg text-gray-400 group-hover:text-blue-600 transition-colors">
-              download
-            </span>
+            <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-600">
+              <span className="material-symbols-outlined text-lg">
+                download
+              </span>
+            </div>
           )}
         </div>
-        <div className="group flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-all cursor-pointer">
+
+        {/* Placeholder documents */}
+        <div className="group flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 opacity-60">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-purple-100 text-purple-600 flex items-center justify-center rounded-lg">
-              <span className="material-symbols-outlined text-xl">
-                description
+            <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+              <span className="material-symbols-outlined text-xl text-slate-400">
+                checklist
               </span>
             </div>
             <div>
-              <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
-                Vehicle Checklist.pdf
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                Checklist Kendaraan
               </p>
-              <p className="text-[10px] text-gray-500 uppercase">
-                Completed at Pick-up
-              </p>
-            </div>
-          </div>
-          <span className="material-symbols-outlined text-lg text-gray-400 group-hover:text-blue-600 transition-colors">
-            visibility
-          </span>
-        </div>
-        <div className="group flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-all cursor-pointer">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gray-200 text-gray-600 flex items-center justify-center rounded-lg">
-              <span className="material-symbols-outlined text-xl">policy</span>
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
-                Insurance Policy.pdf
-              </p>
-              <p className="text-[10px] text-gray-500 uppercase">
-                Active Coverage
+              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mt-0.5">
+                Saat Pengambilan
               </p>
             </div>
           </div>
-          <span className="material-symbols-outlined text-lg text-gray-400 group-hover:text-blue-600 transition-colors">
-            download
-          </span>
+          <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-600">
+            <span className="material-symbols-outlined text-lg">
+              download
+            </span>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
 export default DocumentSign;

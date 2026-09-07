@@ -11,6 +11,7 @@ interface FormErrors {
   referenceNumber?: string;
   paymentMethod?: string;
   amount?: string;
+  depositAmount?: string;
 }
 
 interface TransactionDetailProps {
@@ -18,12 +19,14 @@ interface TransactionDetailProps {
   referenceNumber?: string;
   paymentMethod?: string;
   amount?: string;
+  depositAmount?: string;
   notes?: string;
   onPaymentDateChange?: (value: string) => void;
   onReferenceNumberChange?: (value: string) => void;
   onPaymentMethodChange?: (value: string) => void;
   onPaymentDetailChange?: (detail: string) => void;
   onAmountChange?: (value: string) => void;
+  onDepositAmountChange?: (value: string) => void;
   onNotesChange?: (value: string) => void;
   hasSubmitted?: boolean;
   serverErrors?: Record<string, string[]>;
@@ -34,12 +37,14 @@ const TransactionDetail = ({
   referenceNumber = "",
   paymentMethod = "",
   amount = "",
+  depositAmount = "",
   notes = "",
   onPaymentDateChange,
   onReferenceNumberChange,
   onPaymentMethodChange,
   onPaymentDetailChange,
   onAmountChange,
+  onDepositAmountChange,
   onNotesChange,
   hasSubmitted = false,
   serverErrors = {},
@@ -89,10 +94,13 @@ const TransactionDetail = ({
       if (serverErrors["amount_received"]?.[0]) {
         newErrors.amount = serverErrors["amount_received"][0];
       }
+      if (serverErrors["deposit_amount"]?.[0]) {
+        newErrors.depositAmount = serverErrors["deposit_amount"][0];
+      }
 
       setErrors(newErrors);
     }
-  }, [hasSubmitted, paymentDate, referenceNumber, paymentMethod, amount, serverErrors]);
+  }, [hasSubmitted, paymentDate, referenceNumber, paymentMethod, amount, depositAmount, serverErrors]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -129,6 +137,13 @@ const TransactionDetail = ({
     onAmountChange?.(value);
     if (errors.amount && value) {
       setErrors((prev) => ({ ...prev, amount: undefined }));
+    }
+  };
+
+  const handleDepositAmountChange = (value: string) => {
+    onDepositAmountChange?.(value);
+    if (errors.depositAmount && value) {
+      setErrors((prev) => ({ ...prev, depositAmount: undefined }));
     }
   };
 
@@ -250,7 +265,7 @@ const TransactionDetail = ({
           {errors.paymentMethod && (
             <p className="text-xs text-red-500">{errors.paymentMethod}</p>
           )}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <RadioCard
                 icon="payments"
                 label="Cash"
@@ -328,6 +343,42 @@ const TransactionDetail = ({
                 </div>
               )}
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                onPaymentMethodChange?.("saldo");
+                onPaymentDetailChange?.("");
+              }}
+              className="cursor-pointer relative group"
+            >
+              <div
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border h-24 transition-all hover:border-gray-400 dark:hover:border-gray-500 ${
+                  paymentMethod === "saldo"
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800"
+                }`}
+              >
+                <Icon
+                  name="account_balance_wallet"
+                  size="lg"
+                  className={`mb-2 ${paymentMethod === "saldo" ? "text-primary" : "text-[#617589] dark:text-gray-400"}`}
+                />
+                <span
+                  className={`text-sm font-medium ${
+                    paymentMethod === "saldo"
+                      ? "text-primary"
+                      : "text-[#111418] dark:text-gray-200"
+                  }`}
+                >
+                  Saldo Driver
+                </span>
+              </div>
+              {paymentMethod === "saldo" && (
+                <div className="absolute top-2 right-2 text-primary">
+                  <Icon name="check_circle" size="md" />
+                </div>
+              )}
+            </button>
           </div>
         </div>
 
@@ -343,6 +394,21 @@ const TransactionDetail = ({
           />
           <p className="text-xs text-[#617589] dark:text-gray-400">
             Enter amount in IDR. Ensure currency is correct before submitting.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-[#111418] dark:text-gray-200">
+            Deposit Amount <span className="text-xs font-normal text-[#617589] dark:text-gray-400">(Optional)</span>
+          </label>
+          <CurrencyInput
+            placeholder="0"
+            value={depositAmount}
+            onChange={(value) => handleDepositAmountChange(value)}
+            error={errors.depositAmount}
+          />
+          <p className="text-xs text-[#617589] dark:text-gray-400">
+            Enter the deposit amount paid (e.g. DP for rental) in IDR.
           </p>
         </div>
 

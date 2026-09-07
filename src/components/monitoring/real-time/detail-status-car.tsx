@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { monitoringApi } from "@/lib/api/monitoring";
+import { notificationApi } from "@/lib/api/notification";
 import type { FleetVehicle } from "./monitoring-map";
 
 interface DetailStatusCardProps {
@@ -13,6 +14,9 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
   const [isOpen, setIsOpen] = useState(true);
   const [isShuttingDown, setIsShuttingDown] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showActionAlert, setShowActionAlert] = useState(false);
+  const [actionAlertMessage, setActionAlertMessage] = useState("");
+  const [isSendingAction, setIsSendingAction] = useState(false);
 
   if (!vehicle) return null;
 
@@ -36,6 +40,87 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
       console.error("Failed to shutdown vehicle:", err);
     } finally {
       setIsShuttingDown(false);
+    }
+  };
+
+  const handleContactDriver = async () => {
+    setIsSendingAction(true);
+    try {
+      await notificationApi.create({
+        type: "driver_contact",
+        title: `Contact Driver: ${vehicle.plate}`,
+        message: `Field team is attempting to contact driver of vehicle ${vehicle.plate} (${vehicle.driverName}). Location: ${vehicle.latitude.toFixed(6)}, ${vehicle.longitude.toFixed(6)}.`,
+        vehicle_id: vehicle.id,
+        metadata: {
+          action: "contact_driver",
+          latitude: vehicle.latitude,
+          longitude: vehicle.longitude,
+        },
+      });
+      setActionAlertMessage(`Contact request sent to driver of ${vehicle.plate}`);
+      setShowActionAlert(true);
+      setTimeout(() => setShowActionAlert(false), 3000);
+    } catch {
+      setActionAlertMessage("Failed to send contact request");
+      setShowActionAlert(true);
+      setTimeout(() => setShowActionAlert(false), 3000);
+    } finally {
+      setIsSendingAction(false);
+    }
+  };
+
+  const handleVehicleRetrieval = async () => {
+    setIsSendingAction(true);
+    try {
+      await notificationApi.create({
+        type: "vehicle_retrieval",
+        title: `Vehicle Retrieval: ${vehicle.plate}`,
+        message: `Vehicle retrieval initiated for ${vehicle.plate} (${vehicle.driverName}). Vehicle status changed to Reserved. Last known location: ${vehicle.latitude.toFixed(6)}, ${vehicle.longitude.toFixed(6)}.`,
+        vehicle_id: vehicle.id,
+        metadata: {
+          action: "retrieval",
+          latitude: vehicle.latitude,
+          longitude: vehicle.longitude,
+        },
+      });
+      await monitoringApi.updateVehicleStatus(vehicle.id, "Reserved");
+      setActionAlertMessage(`Retrieval initiated for ${vehicle.plate}`);
+      setShowActionAlert(true);
+      onStatusChanged?.();
+      setTimeout(() => setShowActionAlert(false), 3000);
+    } catch {
+      setActionAlertMessage("Failed to initiate retrieval");
+      setShowActionAlert(true);
+      setTimeout(() => setShowActionAlert(false), 3000);
+    } finally {
+      setIsSendingAction(false);
+    }
+  };
+
+  const handleEmergencyAssist = async () => {
+    setIsSendingAction(true);
+    try {
+      await notificationApi.create({
+        type: "emergency_assist",
+        title: `Emergency Assistance: ${vehicle.plate}`,
+        message: `URGENT: Emergency assistance requested for vehicle ${vehicle.plate} (${vehicle.driverName}). Vehicle may be outside operational area. Location: ${vehicle.latitude.toFixed(6)}, ${vehicle.longitude.toFixed(6)}. Immediate response required.`,
+        vehicle_id: vehicle.id,
+        metadata: {
+          action: "emergency_assist",
+          latitude: vehicle.latitude,
+          longitude: vehicle.longitude,
+          priority: "critical",
+        },
+      });
+      setActionAlertMessage(`Emergency assistance requested for ${vehicle.plate}`);
+      setShowActionAlert(true);
+      setTimeout(() => setShowActionAlert(false), 5000);
+    } catch {
+      setActionAlertMessage("Failed to request emergency assistance");
+      setShowActionAlert(true);
+      setTimeout(() => setShowActionAlert(false), 3000);
+    } finally {
+      setIsSendingAction(false);
     }
   };
 
@@ -81,7 +166,11 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
             )}
           </div>
           {vehicle.driverPhone && (
-            <button className="ml-auto size-9 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors ring-1 ring-green-100 dark:ring-green-900/30">
+            <button
+              onClick={handleContactDriver}
+              disabled={isSendingAction}
+              className="ml-auto size-9 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors ring-1 ring-green-100 dark:ring-green-900/30 disabled:opacity-50"
+            >
               <span className="material-symbols-outlined text-xl">call</span>
             </button>
           )}
@@ -132,12 +221,13 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
               Status
             </p>
             <p className="text-sm font-medium leading-snug text-slate-800 dark:text-slate-200 capitalize">
-              {vehicle.status === "emergency" ? "Geofence Violation - Emergency" : 
+              {vehicle.status === "emergency" ? "Geofence Violation - Outside Operational Area" : 
                vehicle.status === "moving" ? `Moving at ${vehicle.speed} km/h` : 
                "Parked / Idle"}
             </p>
           </div>
         </div>
+
         {vehicle.status === "emergency" && (
           <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/30 animate-pulse-slow">
             <div className="flex items-start gap-2">
@@ -149,10 +239,26 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
                   Geofence Violation Alert
                 </p>
                 <p className="text-xs text-red-600 dark:text-red-300/80 leading-relaxed mt-1">
-                  Vehicle has exited the designated zone without authorization.
+                  Vehicle has exited the operational area. Immediate action required.
                 </p>
               </div>
             </div>
+          </div>
+        )}
+
+        {showActionAlert && (
+          <div className={`p-3 rounded-lg border ${
+            actionAlertMessage.includes("Failed")
+              ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+              : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+          }`}>
+            <p className={`text-xs font-medium ${
+              actionAlertMessage.includes("Failed")
+                ? "text-red-700 dark:text-red-400"
+                : "text-green-700 dark:text-green-400"
+            }`}>
+              {actionAlertMessage}
+            </p>
           </div>
         )}
 
@@ -179,17 +285,47 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 transition-colors">
-              History
-            </button>
-            <button
-              onClick={() => setShowConfirm(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold text-white transition-colors shadow-lg shadow-red-500/30"
-            >
-              <span className="material-symbols-outlined text-base">power_settings_new</span>
-              Shutdown
-            </button>
+          <div className="space-y-3 pt-2">
+            {/* Action Buttons for Field Team */}
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={handleContactDriver}
+                disabled={isSendingAction}
+                className="flex flex-col items-center justify-center gap-1.5 px-2 py-3 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 rounded-lg text-green-700 dark:text-green-400 transition-colors border border-green-200 dark:border-green-800 disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-lg">call</span>
+                <span className="text-[10px] font-bold">Hubungi Driver</span>
+              </button>
+              <button
+                onClick={handleVehicleRetrieval}
+                disabled={isSendingAction}
+                className="flex flex-col items-center justify-center gap-1.5 px-2 py-3 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-lg text-orange-700 dark:text-orange-400 transition-colors border border-orange-200 dark:border-orange-800 disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-lg">local_shipping</span>
+                <span className="text-[10px] font-bold">Penarikan</span>
+              </button>
+              <button
+                onClick={handleEmergencyAssist}
+                disabled={isSendingAction}
+                className="flex flex-col items-center justify-center gap-1.5 px-2 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg text-red-700 dark:text-red-400 transition-colors border border-red-200 dark:border-red-800 disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-lg">emergency</span>
+                <span className="text-[10px] font-bold">Bantuan Darurat</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+                History
+              </button>
+              <button
+                onClick={() => setShowConfirm(true)}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold text-white transition-colors shadow-lg shadow-red-500/30"
+              >
+                <span className="material-symbols-outlined text-base">power_settings_new</span>
+                Shutdown
+              </button>
+            </div>
           </div>
         )}
       </div>

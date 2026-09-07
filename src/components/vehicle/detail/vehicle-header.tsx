@@ -2,7 +2,6 @@ export interface VehicleHeaderData {
   plate: string;
   name: string;
   status: string;
-  totalRevenue: string;
   totalRentals: string;
   avgUtilization: string;
   maintenance: string;
@@ -28,14 +27,6 @@ export function VehicleHeader({ data }: VehicleHeaderProps) {
             </h1>
             <p className="text-slate-500 dark:text-slate-400 font-medium">
               {data.name}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">
-              Total Revenue
-            </p>
-            <p className="text-2xl font-bold text-primary leading-tight">
-              {data.totalRevenue}
             </p>
           </div>
         </div>

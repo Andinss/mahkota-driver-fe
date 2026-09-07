@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { monitoringApi } from "@/lib/api/monitoring";
 
 interface FleetVehicle {
   id: string;
@@ -16,6 +17,15 @@ interface FleetVehicle {
   speed?: number;
   fuelLevel?: number;
   lastUpdated?: string;
+}
+
+interface GeofenceArea {
+  id: string;
+  name: string;
+  center_lat: number;
+  center_lng: number;
+  radius: number;
+  is_active: boolean;
 }
 
 interface MonitoringMapProps {
@@ -55,6 +65,31 @@ export default function MonitoringMap({
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.Marker[]>([]);
+  const geofenceCirclesRef = useRef<L.Circle[]>([]);
+  const [geofences, setGeofences] = useState<GeofenceArea[]>([]);
+
+  useEffect(() => {
+    const fetchGeofences = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/geofences/active`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.success && data.data) {
+          setGeofences(data.data);
+        }
+      } catch {
+        // silent fail
+      }
+    };
+
+    fetchGeofences();
+  }, []);
 
   useEffect(() => {
     if (mapContainerRef.current && !mapRef.current) {
@@ -75,10 +110,40 @@ export default function MonitoringMap({
     return () => {
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
+      geofenceCirclesRef.current.forEach((c) => c.remove());
+      geofenceCirclesRef.current = [];
       mapRef.current?.remove();
       mapRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Clear existing geofence circles
+    geofenceCirclesRef.current.forEach((c) => c.remove());
+    geofenceCirclesRef.current = [];
+
+    // Add geofence circles
+    geofences.forEach((gf) => {
+      const circle = L.circle([gf.center_lat, gf.center_lng], {
+        radius: gf.radius,
+        color: "#3b82f6",
+        fillColor: "#3b82f6",
+        fillOpacity: 0.08,
+        weight: 2,
+        dashArray: "8 4",
+      }).addTo(mapRef.current!);
+
+      circle.bindTooltip(gf.name, {
+        permanent: false,
+        direction: "center",
+        className: "geofence-tooltip",
+      });
+
+      geofenceCirclesRef.current.push(circle);
+    });
+  }, [geofences]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -108,6 +173,7 @@ export default function MonitoringMap({
             ${vehicle.driverPhone ? `<div><strong>Phone:</strong> ${vehicle.driverPhone}</div>` : ""}
             ${vehicle.speed !== undefined ? `<div><strong>Speed:</strong> ${vehicle.speed} km/h</div>` : ""}
             ${vehicle.fuelLevel !== undefined ? `<div><strong>Fuel:</strong> ${vehicle.fuelLevel}%</div>` : ""}
+            ${vehicle.status === "emergency" ? `<div style="color:#dc2626;margin-top:4px;"><strong>⚠ Outside operational area</strong></div>` : ""}
           </div>
         </div>
       `;
@@ -129,7 +195,7 @@ export default function MonitoringMap({
       );
       mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
     }
-  }, [vehicles]);
+  }, [vehicles, onVehicleClick]);
 
   return <div ref={mapContainerRef} className="w-full h-full" />;
 }
