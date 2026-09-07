@@ -4,6 +4,7 @@ export interface UserItem {
   email: string;
   fullname: string;
   is_active: boolean;
+  phoneNumber?: string | null;
   role_id?: string;
   role?: {
     id: string;
@@ -25,6 +26,7 @@ export interface CreateUserPayload {
   email: string;
   role_id?: string;
   is_active?: boolean;
+  phoneNumber?: string;
 }
 
 export interface UpdateUserPayload extends Partial<CreateUserPayload> {}

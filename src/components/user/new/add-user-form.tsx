@@ -19,6 +19,7 @@ export interface UserFormData {
   email: string;
   role: string;
   isActive: boolean;
+  phoneNumber?: string;
 }
 
 interface Option {
@@ -41,6 +42,7 @@ interface FormErrors {
   fullname?: string;
   email?: string;
   role?: string;
+  phoneNumber?: string;
 }
 
 export function AddUserForm({
@@ -58,6 +60,7 @@ export function AddUserForm({
     fullname: initialData?.fullname || "",
     email: initialData?.email || "",
     role: initialData?.role || "",
+    phoneNumber: initialData?.phoneNumber || "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isDraftAlertOpen, setIsDraftAlertOpen] = useState(false);
@@ -70,9 +73,12 @@ export function AddUserForm({
         fullname: initialData.fullname || "",
         email: initialData.email || "",
         role: initialData.role || "",
+        phoneNumber: initialData.phoneNumber || "",
       });
     }
   }, [initialData]);
+
+  const isDriver = roles.find(role => role.id === formValues.role)?.name?.toLowerCase() === "driver";
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -105,6 +111,16 @@ export function AddUserForm({
       newErrors.role = "Please select a role";
     }
 
+    if (isDriver) {
+      if (!formValues.phoneNumber?.trim()) {
+        newErrors.phoneNumber = "Phone number is required for driver";
+      } else if (!/^[0-9+\-\s()]+$/.test(formValues.phoneNumber.trim())) {
+        newErrors.phoneNumber = "Please enter a valid phone number";
+      } else if (formValues.phoneNumber.trim().length < 10) {
+        newErrors.phoneNumber = "Phone number must be at least 10 characters";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -122,6 +138,7 @@ export function AddUserForm({
       email: formValues.email,
       role: formValues.role,
       isActive: isActive,
+      phoneNumber: isDriver ? formValues.phoneNumber : undefined,
     };
 
     onSubmit?.(data);
@@ -134,6 +151,7 @@ export function AddUserForm({
       email: formValues.email,
       role: formValues.role,
       isActive: isActive,
+      phoneNumber: formValues.phoneNumber,
     };
 
     // Simpan ke localStorage
@@ -154,6 +172,8 @@ export function AddUserForm({
       sanitized = sanitizeNameInput(value);
     } else if (field === "email") {
       sanitized = sanitizeEmailInput(value);
+    } else if (field === "phoneNumber") {
+      sanitized = value.replace(/[^0-9+\-\s()]/g, "");
     }
     setFormValues((prev) => ({ ...prev, [field]: sanitized }));
   };
@@ -269,6 +289,25 @@ export function AddUserForm({
                   </option>
                 ))}
               </Select>
+
+              {isDriver && (
+                <div className="md:col-span-2">
+                  <Input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    label="Phone Number"
+                    placeholder="Enter phone number"
+                    type="tel"
+                    required
+                    value={formValues.phoneNumber}
+                    onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+                    error={errors.phoneNumber}
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    Phone number is required for driver role
+                  </p>
+                </div>
+              )}
             </div>
 
             <hr className="border-slate-100 dark:border-slate-800 my-6" />
