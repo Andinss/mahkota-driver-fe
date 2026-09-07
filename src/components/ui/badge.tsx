@@ -9,29 +9,29 @@ interface BadgeProps {
 
 const variantStyles: Record<BadgeVariant, { bg: string; text: string; dot: string }> = {
   success: {
-    bg: "bg-emerald-100 dark:bg-emerald-900/40",
-    text: "text-emerald-800 dark:text-emerald-400",
-    dot: "bg-emerald-600 dark:bg-emerald-400",
+    bg: "bg-green-50 dark:bg-green-900/20",
+    text: "text-green-600 dark:text-green-400",
+    dot: "bg-green-500",
   },
   warning: {
-    bg: "bg-amber-100 dark:bg-amber-900/40",
-    text: "text-amber-800 dark:text-amber-400",
-    dot: "bg-amber-600 dark:bg-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-900/20",
+    text: "text-amber-600 dark:text-amber-400",
+    dot: "bg-amber-500",
   },
   danger: {
-    bg: "bg-red-100 dark:bg-red-900/40",
-    text: "text-red-800 dark:text-red-400",
-    dot: "bg-red-600 dark:bg-red-400",
+    bg: "bg-red-50 dark:bg-red-900/20",
+    text: "text-red-600 dark:text-red-400",
+    dot: "bg-red-500",
   },
   info: {
-    bg: "bg-blue-100 dark:bg-blue-900/40",
-    text: "text-blue-800 dark:text-blue-400",
-    dot: "bg-blue-600 dark:bg-blue-400",
+    bg: "bg-blue-50 dark:bg-blue-900/20",
+    text: "text-blue-600 dark:text-blue-400",
+    dot: "bg-blue-500",
   },
   neutral: {
-    bg: "bg-slate-100 dark:bg-slate-700",
-    text: "text-slate-800 dark:text-slate-300",
-    dot: "bg-slate-600 dark:bg-slate-400",
+    bg: "bg-slate-100 dark:bg-slate-800",
+    text: "text-slate-600 dark:text-slate-400",
+    dot: "bg-slate-500",
   },
 };
 
@@ -40,7 +40,7 @@ export const Badge = ({ variant = "neutral", size = "md", dot = false, children 
   const sizeClasses = size === "sm" ? "px-2 py-0.5 text-xs" : "px-2.5 py-1 text-xs";
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full font-medium ${styles.bg} ${styles.text} ${sizeClasses}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-lg font-bold ${styles.bg} ${styles.text} ${sizeClasses}`}>
       {dot && <span className={`w-1.5 h-1.5 rounded-full ${styles.dot}`}></span>}
       {children}
     </span>

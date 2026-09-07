@@ -5,7 +5,7 @@ import { toastError } from "@/components/ui/toast-provider";
 import { AuditLogFilters } from "@/components/audit/dashboard/filters-search";
 import { AuditLogTable } from "@/components/audit/dashboard/audit-table";
 import { AuditStatsCards } from "@/components/audit/dashboard/stats-cards";
-import { AuditPagination } from "@/components/audit/dashboard/audit-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { PageHeader } from "@/components/page-header";
 import { auditApi } from "@/lib/api/audit";
 import type { AuditLogItem, AuditStats } from "@/lib/types/audit";
@@ -20,12 +20,12 @@ export default function AuditLogPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [searchValue, setSearchValue] = useState("");
-  const limit = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchLogs = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await auditApi.getList({ page: currentPage, limit, search: searchValue || undefined });
+      const response = await auditApi.getList({ page: currentPage, limit: itemsPerPage, search: searchValue || undefined });
       setLogs(response.data);
       if (response.meta) {
         setTotalResults(response.meta.total);
@@ -36,7 +36,7 @@ export default function AuditLogPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, searchValue]);
+  }, [currentPage, itemsPerPage, searchValue]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -99,12 +99,13 @@ export default function AuditLogPage() {
           <>
             <AuditLogTable logs={logs} onExport={handleExport} />
             <div className="border-t border-slate-200 dark:border-slate-800">
-              <AuditPagination
+              <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 totalResults={totalResults}
-                resultsPerPage={limit}
+                resultsPerPage={itemsPerPage}
                 onPageChange={handlePageChange}
+                onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }}
               />
             </div>
           </>

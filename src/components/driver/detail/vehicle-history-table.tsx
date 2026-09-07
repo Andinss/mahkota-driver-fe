@@ -9,11 +9,11 @@ export function VehicleHistoryTable({ vehicles }: VehicleHistoryTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full text-left">
         <thead>
-          <tr className="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">
-            <th className="px-6 py-4">Vehicle</th>
-            <th className="px-6 py-4">Period</th>
-            <th className="px-6 py-4 text-center">Total Distance</th>
-            <th className="px-6 py-4 text-center">Fuel Efficiency</th>
+          <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
+            <th className="px-6 py-4">Kendaraan</th>
+            <th className="px-6 py-4">Periode</th>
+            <th className="px-6 py-4 text-center">Total Jarak</th>
+            <th className="px-6 py-4 text-center">Efisiensi BBM</th>
             <th className="px-6 py-4 text-center">Maintenance</th>
             <th className="px-6 py-4">Status</th>
             <th className="px-6 py-4"></th>

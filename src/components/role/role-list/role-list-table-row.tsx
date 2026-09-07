@@ -60,7 +60,7 @@ function PermissionCell({ actions }: { actions: string[] }) {
 
   if (hasRead) {
     return (
-      <span className="inline-block px-2 py-1 rounded bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-tight">
+      <span className="inline-block px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-tight">
         READ ONLY
       </span>
     );
@@ -68,7 +68,7 @@ function PermissionCell({ actions }: { actions: string[] }) {
 
   if (actions.length === 0) {
     return (
-      <span className="inline-block px-2 py-1 rounded bg-gray-50 dark:bg-slate-800/50 text-gray-300 dark:text-gray-600 text-[10px] font-bold uppercase tracking-tight">
+      <span className="inline-block px-2 py-1 rounded bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600 text-[10px] font-bold uppercase tracking-tight">
         NO ACCESS
       </span>
     );
@@ -79,7 +79,7 @@ function PermissionCell({ actions }: { actions: string[] }) {
       {actions.sort().map((action) => (
         <span
           key={action}
-          className="inline-block px-1.5 py-0.5 rounded bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 text-[10px] font-bold whitespace-nowrap"
+          className="inline-block px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold whitespace-nowrap"
         >
           {formatAction(action)}
         </span>
@@ -90,24 +90,22 @@ function PermissionCell({ actions }: { actions: string[] }) {
 
 export const RoleTableRow = ({ role, onEdit, onDelete }: RoleTableRowProps) => {
   return (
-    <tr className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors">
+    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-5">
         <div className="flex items-center gap-3">
           <div className={`w-2 h-2 rounded-full shrink-0 ${role.color}`} />
-          <span className="font-bold text-gray-900 dark:text-white">{role.name}</span>
+          <span className="font-bold text-slate-900 dark:text-white">{role.name}</span>
         </div>
       </td>
-
       {MODULES.map((module) => (
         <td key={module} className="px-2 py-5 text-center">
           <PermissionCell actions={role.permissionsByModule[module] || []} />
         </td>
       ))}
-
-      <td className="py-4 px-6 text-right">
+      <td className="px-6 py-5 text-right">
         <Dropdown
           trigger={
-            <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
+            <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               <span className="material-symbols-outlined text-xl">
                 more_vert
               </span>

@@ -1,43 +1,30 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { PageHeader } from "@/components/page-header";
-import { TaskListCard } from "@/components/monitoring/task-list/task-list-card";
-import EmergencyResponse from "@/components/monitoring/task-list/emergency-response";
-import { TaskFilters } from "@/components/monitoring/task-list/task-filters";
-import { TaskTable } from "@/components/monitoring/task-list/task-table";
 import { useRouter } from "next/navigation";
-import { Task } from "@/components/monitoring/task-list/task-table-row";
-import { TaskPagination } from "@/components/monitoring/task-list/task-pagination";
-import { toastSuccess, toastError } from "@/components/ui/toast-provider";
+import { toastError } from "@/components/ui/toast-provider";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { monitoringApi } from "@/lib/api/monitoring";
-import FleetLocationsTable from "@/components/monitoring/task-list/fleet-locations-table";
+import type { FleetLocation } from "@/lib/types/monitoring";
+import type { MonitoringTask } from "@/lib/api/monitoring";
+import { MonitoringTable, mergeData, type MergedVehicle } from "@/components/monitoring/task-list/monitoring-table";
+import { TaskPagination } from "@/components/monitoring/task-list/task-pagination";
 
-function mapApiTaskToTask(apiTask: any, index: number): Task {
-  return {
-    id: apiTask.id || String(index + 1),
-    priority: apiTask.priority || "Normal",
-    vehicleInfo: {
-      name: apiTask.vehicle_name || "Unknown",
-      plate: apiTask.plate || "N/A",
-    },
-    location: apiTask.location || "N/A",
-    timeWindow: apiTask.time_window || "N/A",
-    status: apiTask.status || "Pending",
-  };
-}
+const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
-export default function TaskList() {
+export default function MonitoringPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-
-  const [allTasks, setAllTasks] = useState<Task[]>([]);
-  const [tasksLoading, setTasksLoading] = useState(true);
-  const [emergencyTask, setEmergencyTask] = useState<any>(null);
-
   const hasAccess = canAccess(user?.permissions, "monitoring.read");
+
+  const [tasks, setTasks] = useState<MonitoringTask[]>([]);
+  const [locations, setLocations] = useState<FleetLocation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     if (isLoading) return;
@@ -47,165 +34,180 @@ export default function TaskList() {
     }
   }, [isLoading, hasAccess]);
 
-  const fetchTasks = useCallback(async () => {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await monitoringApi.getTasks();
-      if (res.success && Array.isArray(res.data)) {
-        const mapped = res.data.map(mapApiTaskToTask);
-        setAllTasks(mapped);
-
-        const emergency = res.data.find((t: any) => t.priority === "High");
-        if (emergency) {
-          setEmergencyTask({
-            id: `#${emergency.id?.slice(0, 8).toUpperCase() || "N/A"}`,
-            location: emergency.location || "Unknown",
-            vehicle: emergency.vehicle_name || "Unknown",
-            plate: emergency.plate || "N/A",
-            driver: "Driver on duty",
-            priority: "High Priority",
-          });
-        } else {
-          setEmergencyTask(null);
-        }
-      } else {
-        console.warn("monitoring.getTasks response:", res);
+      const [taskRes, locRes] = await Promise.all([
+        monitoringApi.getTasks().catch(() => ({ success: false, data: [] })),
+        monitoringApi.getFleetLocations().catch(() => ({ success: false, data: [] })),
+      ]);
+      if (taskRes.success && Array.isArray(taskRes.data)) {
+        setTasks(taskRes.data);
       }
-    } catch (e) {
-      console.error("monitoring.getTasks error:", e);
+      if (locRes.success && Array.isArray(locRes.data)) {
+        setLocations(locRes.data);
+      }
+    } catch {
+      setTasks([]);
+      setLocations([]);
     } finally {
-      setTasksLoading(false);
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     if (hasAccess && !isLoading) {
-      fetchTasks();
+      fetchData();
     }
-  }, [hasAccess, isLoading, fetchTasks]);
+  }, [hasAccess, isLoading, fetchData]);
 
+  const merged = useMemo(() => mergeData(tasks, locations), [tasks, locations]);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
-  const totalResults = allTasks.length;
-  const totalPages = Math.ceil(totalResults / itemsPerPage);
+  const filtered = useMemo(() => {
+    if (!search.trim()) return merged;
+    const q = search.toLowerCase();
+    return merged.filter(
+      (v) =>
+        v.vehicleName.toLowerCase().includes(q) ||
+        v.plate.toLowerCase().includes(q) ||
+        v.location.toLowerCase().includes(q)
+    );
+  }, [merged, search]);
 
-  // Get current page tasks
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentTasks = allTasks.slice(startIndex, endIndex);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const handleDetails = (task: Task) => {
-    router.push(`/dashboard/monitoring/detail?id=${task.id}`);
-  };
-
-  const handleViewMap = (task: Task) => {
-    router.push(`/dashboard/monitoring/real-time`);
-  };
-
-  const handleComplete = (task: Task) => {
-    toastSuccess(`Successfully completed retrieval for ${task.vehicleInfo.name} (${task.vehicleInfo.plate})`);
-  };
-
-  const handleEdit = (task: Task) => {
-    console.log("Edit:", task);
-  };
-
-  const handleDelete = (task: Task) => {
-    console.log("Delete:", task);
-  };
-
-  const handleExport = (options?: any) => {
-    console.log("Export with options:", options);
-  };
+  const emergencyCount = merged.filter((v) => v.fleetStatus === "emergency").length;
+  const movingCount = merged.filter((v) => v.fleetStatus === "moving").length;
+  const idleCount = merged.filter((v) => v.fleetStatus === "idle").length;
 
   return (
     <>
       {isLoading || !hasAccess ? null : (
-      <div className="p-8 space-y-8">
-        <PageHeader
-          title="Monitoring Dashboard"
-          description={allTasks.length > 0 ? `You have ${allTasks.length} task(s) today.` : "No active tasks at the moment."}
-        />
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <TaskListCard
-            title="Pending Emergencies"
-            value={String(allTasks.filter(t => t.priority === "High").length)}
-            icon="warning"
-            iconColor="text-orange-500"
-            trend={{
-              value: "Requires immediate action",
-              color: "text-orange-600",
-              icon: "warning"
-            }}
-          />
-          <TaskListCard
-            title="Retrievals Today"
-            value={String(allTasks.length)}
-            icon="directions_car"
-            iconColor="text-primary"
-            trend={{
-              value: "0 completed",
-              color: "text-[#617589]",
-              icon: "check"
-            }}
-          />
-          <TaskListCard
-            title="Completed Tasks"
-            value="0"
-            icon="check_circle"
-            iconColor="text-green-600"
-            trend={{
-              value: "Ready for review",
-              color: "text-green-600",
-              icon: "trending_up"
-            }}
-          />
-        </div>
-
-        {emergencyTask && <EmergencyResponse emergencyData={emergencyTask} />}
-        <TaskFilters />
-
-        {/* Table Container */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-          {tasksLoading ? (
-            <div className="p-8 text-center text-slate-400 text-sm">Loading tasks...</div>
-          ) : allTasks.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 text-sm">
-              No tasks yet. Tasks will appear here when retrieval operations are created.
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mb-8">
+              <PageHeader
+                title="Monitoring Dashboard"
+                description="Pantau status seluruh armada secara real-time."
+              />
             </div>
-          ) : (
-            <>
-              <TaskTable
-                tasks={currentTasks}
-                onDetails={handleDetails}
-                onViewMap={handleViewMap}
-                onComplete={handleComplete}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onExport={handleExport}
-              />
-              <TaskPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalResults={totalResults}
-                resultsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-              />
-            </>
-          )}
-        </div>
 
-        <FleetLocationsTable />
-      </div>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-red-500 text-2xl">warning</span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{emergencyCount}</p>
+                    <p className="text-xs text-slate-400 font-medium">Darurat</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-blue-500 text-2xl">directions_car</span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{movingCount}</p>
+                    <p className="text-xs text-slate-400 font-medium">Bergerak</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-slate-500 text-2xl">pause_circle</span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{idleCount}</p>
+                    <p className="text-xs text-slate-400 font-medium">Idle</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Search Filter */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="relative flex-1 max-w-md">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+                  <input
+                    type="text"
+                    placeholder="Cari kendaraan, plat, atau lokasi..."
+                    value={search}
+                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                  />
+                  {search && (
+                    <button
+                      onClick={() => { setSearch(""); setPage(1); }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    >
+                      <span className="material-symbols-outlined text-lg">close</span>
+                    </button>
+                  )}
+                </div>
+                <span className="text-xs text-slate-400">{filtered.length} dari {merged.length} kendaraan</span>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-blue-500 text-xl">monitoring</span>
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-slate-800 dark:text-white text-base">
+                      Status Armada
+                    </h2>
+                    <p className="text-xs text-slate-400">{merged.length} kendaraan terpantau</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => router.push("/dashboard/monitoring/real-time")}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all text-sm"
+                >
+                  <span className="material-symbols-outlined text-lg">map</span>
+                  Lihat Peta
+                </button>
+              </div>
+              <MonitoringTable vehicles={paged} loading={loading} onRefresh={fetchData} />
+              {!loading && filtered.length > 0 && (
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <span>Tampilkan</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                      className="px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      {PAGE_SIZE_OPTIONS.map((size) => (
+                        <option key={size} value={size}>{size}</option>
+                      ))}
+                    </select>
+                    <span>data per halaman</span>
+                  </div>
+                  {filtered.length > pageSize && (
+                    <TaskPagination
+                      currentPage={safePage}
+                      totalPages={totalPages}
+                      totalResults={filtered.length}
+                      resultsPerPage={pageSize}
+                      onPageChange={setPage}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

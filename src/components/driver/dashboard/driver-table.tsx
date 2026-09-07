@@ -11,6 +11,7 @@ const driverColumns: ExportColumn[] = [
   { id: "email", label: "Email", defaultChecked: true },
   { id: "saldo", label: "Saldo", defaultChecked: true },
 ];
+
 interface DriverTableProps {
   drivers: Driver[];
   onDeleteDriver?: (driverId: string) => Promise<void>;
@@ -20,28 +21,20 @@ interface DriverTableProps {
 
 export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver }: DriverTableProps) {
   const searchParams = useSearchParams();
-
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const toastShownRef = useRef(false);
 
+  useEffect(() => {
+    const success = searchParams.get("success");
+    const driver = searchParams.get("driver");
 
-
-
-   // Tampilkan alert jika ada succes param di url
-    useEffect(() => {
-      const success = searchParams.get("success");
-      const driver = searchParams.get("driver");
-  
-      if (success && driver && !toastShownRef.current) {
-        toastShownRef.current = true;
-        const action = success === "updated" ? "Update" : "Registration";
-        toastSuccess(`Driver ${decodeURIComponent(driver)} has been ${success} successfully.`);
-  
-        // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
-        window.history.replaceState({}, "", "/dashboard/driver");
-      }
-  
-    }, [searchParams]);
+    if (success && driver && !toastShownRef.current) {
+      toastShownRef.current = true;
+      const action = success === "updated" ? "Update" : "Registration";
+      toastSuccess(`Driver ${decodeURIComponent(driver)} has been ${success} successfully.`);
+      window.history.replaceState({}, "", "/dashboard/driver");
+    }
+  }, [searchParams]);
 
   const handleDeleteConfirm = async (driver: Driver) => {
     if (onDeleteDriver) {
@@ -55,43 +48,51 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
     }
   };
 
-
   return (
     <>
-    <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-        <h2 className="font-bold text-lg text-slate-900 dark:text-white">
-          Driver Management
-        </h2>
+      <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-blue-500 text-xl">person</span>
+          </div>
+          <div>
+            <h2 className="font-bold text-slate-800 dark:text-white text-base">
+              Driver Management
+            </h2>
+            <p className="text-xs text-slate-400">{drivers.length} driver terdaftar</p>
+          </div>
+        </div>
         <button
           onClick={() => setIsExportModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300">
+          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
+        >
           <span className="material-symbols-outlined text-base">download</span>
           Export
         </button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left">
-          <thead>
-            <tr className="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">
-              <th className="px-6 py-4">Profile</th>
-              <th className="px-6 py-4">Employee ID</th>
-              <th className="px-6 py-4">Phone Number</th>
+          <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
+            <tr>
+              <th className="px-6 py-4">Profil</th>
+              <th className="px-6 py-4">ID Karyawan</th>
+              <th className="px-6 py-4">Telepon</th>
               <th className="px-6 py-4">Email</th>
               <th className="px-6 py-4">Saldo</th>
-              <th className="px-6 py-4 text-right">Actions</th>
+              <th className="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
             {drivers.map((driver) => (
               <DriverTableRow
                 key={driver.employeeId}
                 driver={driver}
                 onDeleteClick={async (driver: Driver) => {
                   const confirmed = await confirmToast({
-                    title: "Delete Driver",
-                    message: `Are you sure you want to delete ${driver.name}? This action cannot be undone.`,
-                    confirmText: "Yes, Delete",
-                    cancelText: "Cancel",
+                    title: "Hapus Driver",
+                    message: `Apakah Anda yakin ingin menghapus ${driver.name}? Tindakan ini tidak dapat dibatalkan.`,
+                    confirmText: "Ya, Hapus",
+                    cancelText: "Batal",
                     variant: "danger",
                   });
                   if (confirmed) {
@@ -104,20 +105,18 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
           </tbody>
         </table>
       </div>
-
-        <ModalExport
-                isOpen={isExportModalOpen}
-                onClose={() => setIsExportModalOpen(false)}
-                onExport={(options) => {
-                  setIsExportModalOpen(false);
-                  onExport?.(options);
-                }}
-                totalRows={drivers.length}
-                title="Export Driver Data"
-                description="Generate driver reports and performance data."
-                columns={driverColumns}
-              />
-
+      <ModalExport
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={(options) => {
+          setIsExportModalOpen(false);
+          onExport?.(options);
+        }}
+        totalRows={drivers.length}
+        title="Export Driver Data"
+        description="Generate driver reports and performance data."
+        columns={driverColumns}
+      />
     </>
   );
 }

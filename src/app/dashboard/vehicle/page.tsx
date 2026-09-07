@@ -7,7 +7,7 @@ import { VehicleStatsCard } from "@/components/vehicle/dashboard/vehicle-stats-c
 import { VehicleTable } from "@/components/vehicle/dashboard/vehicle-table";
 import { SearchFilters } from "@/components/search-filters";
 import { PageHeader } from "@/components/page-header";
-import { VehiclePagination } from "@/components/vehicle/dashboard/vehicle-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { ExportOptions } from "@/components/ui/export";
 import { vehicleApi } from "@/lib/api/vehicle";
 import type { VehicleItem, VehicleSummary } from "@/lib/types/vehicle";
@@ -39,7 +39,7 @@ export default function DashboardVehiclePage() {
   const [totalResults, setTotalResults] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [summary, setSummary] = useState<VehicleSummary | null>(null);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const toastShownRef = useRef(false);
 
@@ -112,7 +112,7 @@ export default function DashboardVehiclePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, user]);
+  }, [currentPage, itemsPerPage, user]);
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -252,12 +252,13 @@ export default function DashboardVehiclePage() {
             onDelete={handleDeleteClick} 
             onExport={handleExport}
             />
-            <VehiclePagination
+            <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
               totalResults={totalResults}
               resultsPerPage={itemsPerPage}
               onPageChange={handlePageChange}
+              onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }}
             />
           </div>
         </section>

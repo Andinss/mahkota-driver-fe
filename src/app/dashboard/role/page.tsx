@@ -4,7 +4,8 @@ import { confirmToast, toastSuccess, toastError, toastInfo } from "@/components/
 import { RoleCard } from "@/components/role/role-list/card";
 import { RoleBanner } from "@/components/role/role-list/role-banner";
 import { RoleTable } from "@/components/role/role-list/role-list-table";
-import { useEffect, useState, useRef } from "react";
+import { Pagination } from "@/components/ui/pagination";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { ExportOptions } from "@/components/ui/export";
 import { rolesApi } from "@/lib/api/roles";
@@ -24,9 +25,11 @@ const RolePage = () => {
 
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [search, setSearch] = useState("");
 
   const toastShownRef = useRef(false);
-
 
   const fetchRoles = async () => {
     if (!canAccess(user?.permissions, 'role.read')) {
@@ -48,7 +51,6 @@ const RolePage = () => {
     fetchRoles();
   }, []);
 
-  // Tampilkan alert jika ada success di param URL
   useEffect(() => {
     const success = searchParams.get("success");
     const role = searchParams.get("role");
@@ -57,10 +59,19 @@ const RolePage = () => {
       toastShownRef.current = true;
       const action = success === "updated" ? "Update" : "Registration";
       toastSuccess(`${action} Successful - Role ${decodeURIComponent(role)} has been ${success} successfully.`);
-
       window.history.replaceState({}, "", "/dashboard/role");
     }
   }, [searchParams]);
+
+  const filteredRoles = useMemo(() => {
+    if (!search.trim()) return roles;
+    const q = search.toLowerCase();
+    return roles.filter((r) => r.name.toLowerCase().includes(q));
+  }, [roles, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRoles.length / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedRoles = filteredRoles.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
 
   const handleDeleteClick = async (role: any) => {
     const confirmed = await confirmToast({
@@ -90,35 +101,66 @@ const RolePage = () => {
         buttonHref={canAccess(user?.permissions, "role.create") ? "/dashboard/role/new" : undefined}
       />
 
-      {/* table */}
+      {/* Search */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 mt-5">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 max-w-md">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+            <input
+              type="text"
+              placeholder="Cari nama role..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+            />
+            {search && (
+              <button
+                onClick={() => { setSearch(""); setCurrentPage(1); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              >
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
+            )}
+          </div>
+          <span className="text-xs text-slate-400">{filteredRoles.length} dari {roles.length} role</span>
+        </div>
+      </div>
+
+      {/* Table */}
       {isLoading ? (
-        <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-gray-200 dark:border-gray-700 mt-5 p-12 text-center text-slate-500 dark:text-gray-400">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 mt-5 p-12 text-center text-slate-500 dark:text-slate-400">
           Loading roles...
         </div>
       ) : (
-        <RoleTable roles={roles} onDelete={handleDeleteClick} onExport={handleExport} />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 mt-5 overflow-hidden">
+          <RoleTable roles={pagedRoles} onDelete={handleDeleteClick} onExport={handleExport} />
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            totalResults={filteredRoles.length}
+            resultsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }}
+          />
+        </div>
       )}
 
       <div className="mt-12 grid grid-cols-12 gap-6">
-        {/*banner biru */}
         <div className="col-span-12 lg:col-span-7">
           <RoleBanner />
         </div>
-
         <div className="col-span-12 lg:col-span-5 space-y-6">
-          {/* card */}
           <RoleCard
             title="Total Roles"
             value={String(roles.length)}
             icon="group"
-            iconColor="text-slate-600 dark:text-gray-400"
+            iconColor="text-slate-600 dark:text-slate-400"
             trend={{
               value: `${roles.filter((r) => r.is_active).length} active`,
               color: "text-emerald-500",
               icon: "trending_up",
             }}
           />
-
           <RoleCard
             title="Active Roles"
             value={String(roles.filter((r) => r.is_active).length)}
@@ -131,8 +173,6 @@ const RolePage = () => {
           />
         </div>
       </div>
-      
-
     </div>
     </PermissionGuard>
   );

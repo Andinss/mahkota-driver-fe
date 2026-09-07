@@ -28,8 +28,8 @@ const statusStyles: Record<
   { bg: string; text: string }
 > = {
   Current: {
-    bg: "bg-emerald-100 dark:bg-emerald-500/10",
-    text: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-green-50 dark:bg-green-900/20",
+    text: "text-green-600 dark:text-green-400",
   },
   Previous: {
     bg: "bg-slate-100 dark:bg-slate-800",
@@ -41,7 +41,7 @@ export function VehicleHistoryTableRow({ vehicle }: VehicleHistoryTableRowProps)
   const statusStyle = statusStyles[vehicle.status];
 
   return (
-    <tr className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors">
+    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-4">
         <div className="flex items-center gap-4">
           <div className="w-16 h-10 rounded-lg overflow-hidden shrink-0 bg-slate-100 dark:bg-slate-800">
@@ -102,19 +102,16 @@ export function VehicleHistoryTableRow({ vehicle }: VehicleHistoryTableRowProps)
       <td className="px-6 py-4 text-right">
         <Dropdown
           trigger={
-            <button className="text-slate-400 hover:text-primary transition-colors">
-              <span className="material-symbols-outlined">more_vert</span>
+            <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+              <span className="material-symbols-outlined text-xl">more_vert</span>
             </button>
           }
         >
-          {/* <Link>
-          <DropdownMenuItem icon="visibility">View Details</DropdownMenuItem>
-          </Link> */}
           <Link href={`/dashboard/vehicle/detail/`}>
-                      <DropdownMenuItem icon="visibility">
-                        View Details
-                      </DropdownMenuItem>
-                    </Link>
+            <DropdownMenuItem icon="visibility">
+              View Details
+            </DropdownMenuItem>
+          </Link>
           <DropdownMenuItem icon="download">Download Report</DropdownMenuItem>
         </Dropdown>
       </td>

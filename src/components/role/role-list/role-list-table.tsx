@@ -79,43 +79,48 @@ export const RoleTable = ({ roles, onDelete, onExport }: RoleTableProps) => {
   }));
 
   return (
-    <div className="bg-white dark:bg-[#1a2632] rounded-2xl border border-gray-200 dark:border-gray-700 mt-5 overflow-hidden shadow-sm">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
       <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-        <h2 className="font-bold text-lg text-slate-900 dark:text-white">
-          Role Management
-        </h2>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-blue-500 text-xl">admin_panel_settings</span>
+          </div>
+          <div>
+            <h2 className="font-bold text-slate-800 dark:text-white text-base">
+              Role Management
+            </h2>
+            <p className="text-xs text-slate-400">{roles.length} role terdaftar</p>
+          </div>
+        </div>
         <button
           onClick={() => setIsExportModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
+          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
         >
-          <span className="material-symbols-outlined text-base">
-            download
-          </span>
+          <span className="material-symbols-outlined text-base">download</span>
           Export
         </button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-50/50 dark:bg-slate-800/50">
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-slate-700 text-left">
+          <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
+            <tr>
+              <th className="px-6 py-4 text-left">
                 Role Name
               </th>
               {MODULE_COLUMNS.map((col) => (
                 <th
                   key={col.key}
-                  className="px-2 py-4 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-slate-700 text-center"
+                  className="px-2 py-4 text-center"
                 >
                   {col.label}
                 </th>
               ))}
-              <th className="px-6 py-4 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-slate-700 text-right">
-                Actions
+              <th className="px-6 py-4 text-right">
+                Aksi
               </th>
             </tr>
           </thead>
-
-          <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {mappedRoles.map((role) => (
               <RoleTableRow
                 key={role.id}
@@ -130,16 +135,15 @@ export const RoleTable = ({ roles, onDelete, onExport }: RoleTableProps) => {
               <tr>
                 <td
                   colSpan={MODULE_COLUMNS.length + 2}
-                  className="px-6 py-12 text-center text-slate-500 dark:text-gray-400"
+                  className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
                 >
-                  No roles found
+                  Tidak ada role ditemukan
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-
       <ModalExport
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}

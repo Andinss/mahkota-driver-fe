@@ -42,14 +42,11 @@ export const RentalTableRow = ({
 }: RentalTableRowProps) => {
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-      {/* Transaction ID */}
       <td className="px-6 py-4">
         <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
           {rental.transactionId}
         </span>
       </td>
-
-      {/* Driver Details */}
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
@@ -75,8 +72,6 @@ export const RentalTableRow = ({
           </div>
         </div>
       </td>
-
-      {/* Vehicle Info */}
       <td className="px-6 py-4">
         <p className="text-xs text-slate-500 dark:text-slate-400">
           {rental.vehicle.id}
@@ -85,29 +80,24 @@ export const RentalTableRow = ({
           {rental.vehicle.name}
         </p>
       </td>
-
-      {/* Rental Period */}
       <td className="px-6 py-4">
         <p className="text-slate-900 dark:text-white">
           {rental.rentalPeriod.start} - {rental.rentalPeriod.end}
         </p>
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          {rental.rentalPeriod.duration} Days
+          {rental.rentalPeriod.duration} Hari
         </p>
       </td>
-
       <td className="px-6 py-4">
-        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 capitalize">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 capitalize">
           {rental.rentalDuration || "-"}
         </span>
       </td>
-
       <td className="px-6 py-4">
-        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 capitalize">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 capitalize">
           {rental.rentalService || "-"}
         </span>
       </td>
-
       <td className="px-6 py-4">
         {rental.vehicleId ? (
           <div className="flex items-center gap-2">
@@ -127,11 +117,10 @@ export const RentalTableRow = ({
           <span className="text-sm text-slate-400 dark:text-slate-500">-</span>
         )}
       </td>
-
-      <td className="py-4 px-6 text-right">
+      <td className="px-6 py-4 text-right">
         <Dropdown
           trigger={
-            <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
+            <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               <span className="material-symbols-outlined text-xl">
                 more_vert
               </span>
@@ -141,7 +130,6 @@ export const RentalTableRow = ({
           <Link href={`/dashboard/rent/new?id=${rental.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
-
           <DropdownMenuItem
             icon="delete"
             danger
@@ -149,7 +137,6 @@ export const RentalTableRow = ({
           >
             Delete
           </DropdownMenuItem>
-
           <Link href={`/dashboard/rent/detail/?id=${rental.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>

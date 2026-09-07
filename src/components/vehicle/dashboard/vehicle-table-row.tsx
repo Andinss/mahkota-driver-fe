@@ -29,42 +29,42 @@ export const VehicleTableRow = ({
   onDetails,
 }: VehicleTableRowProps) => {
   return (
-    <tr className="group hover:bg-[#f9fafb] dark:hover:bg-[#23303d] transition-colors">
-      <td className="py-4 px-6">
+    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+      <td className="px-6 py-4">
         <div className="flex items-center gap-4">
           <div
-            className="h-12 w-20 rounded-lg bg-cover bg-center shrink-0 border border-[#e5e7eb] dark:border-[#2a3845]"
+            className="h-12 w-20 rounded-lg bg-cover bg-center shrink-0 border border-slate-200 dark:border-slate-700"
             data-alt={vehicle.imageAlt}
             style={{ backgroundImage: `url("${vehicle.image}")` }}
           ></div>
           <div>
-            <p className="text-sm font-bold text-[#111418] dark:text-white">
+            <p className="text-sm font-bold text-slate-900 dark:text-white">
               {vehicle.name}
             </p>
-            <p className="text-xs text-[#617589] dark:text-[#94a3b8]">
+            <p className="text-xs text-slate-400">
               {vehicle.year} • {vehicle.transmission}
             </p>
           </div>
         </div>
       </td>
-      <td className="py-4 px-6">
-        <span className="font-mono text-sm font-medium text-[#111418] dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+      <td className="px-6 py-4">
+        <span className="font-mono text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
           {vehicle.plate}
         </span>
       </td>
-      <td className="py-4 px-6 text-sm text-[#111418] dark:text-gray-300">
+      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
         {vehicle.type}
       </td>
-      <td className="py-4 px-6 text-sm font-semibold text-[#111418] dark:text-white">
+      <td className="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">
         {vehicle.rate}
       </td>
-      <td className="py-4 px-6">
+      <td className="px-6 py-4">
         <StatusBadge status={vehicle.status} />
       </td>
-      <td className="py-4 px-6 text-right">
+      <td className="px-6 py-4 text-right">
         <Dropdown
           trigger={
-            <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
+            <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               <span className="material-symbols-outlined text-xl">
                 more_vert
               </span>
@@ -74,11 +74,9 @@ export const VehicleTableRow = ({
           <Link href={`/dashboard/vehicle/register?plate=${vehicle.plate}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
-
-            <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(vehicle)}>
+          <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(vehicle)}>
             Delete
           </DropdownMenuItem>
-
           <Link href={`/dashboard/vehicle/detail?id=${vehicle.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>

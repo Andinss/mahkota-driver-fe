@@ -53,19 +53,19 @@ export function TaskPagination({
   return (
     <div className="p-6 bg-slate-50 dark:bg-slate-800/50 flex flex-col md:flex-row gap-4 items-center justify-between">
       <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-        Showing{" "}
+        Menampilkan{" "}
         <span className="font-bold text-slate-900 dark:text-white">
           {startResult}
         </span>{" "}
-        to{" "}
+        -{" "}
         <span className="font-bold text-slate-900 dark:text-white">
           {endResult}
         </span>{" "}
-        of{" "}
+        dari{" "}
         <span className="font-bold text-slate-900 dark:text-white">
           {totalResults}
         </span>{" "}
-        results
+        data
       </p>
       <div className="flex items-center gap-2">
         <button
@@ -77,7 +77,7 @@ export function TaskPagination({
           disabled={isPreviousDisabled}
           onClick={() => onPageChange(currentPage - 1)}
         >
-          Previous
+          Sebelumnya
         </button>
 
         {getPageNumbers().map((page, index) =>
@@ -110,7 +110,7 @@ export function TaskPagination({
           disabled={isNextDisabled}
           onClick={() => onPageChange(currentPage + 1)}
         >
-          Next
+          Berikutnya
         </button>
       </div>
     </div>

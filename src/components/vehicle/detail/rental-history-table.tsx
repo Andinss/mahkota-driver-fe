@@ -17,19 +17,18 @@ interface RentalHistoryTableProps {
 
 function getStatusStyles(status: RentalStatus) {
   const baseStyles =
-    "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold";
-  const dotStyles = "size-1.5 rounded-full mr-2";
+    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold";
 
   switch (status) {
     case "AKTIF":
       return {
-        container: `${baseStyles} bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300`,
-        dot: `${dotStyles} bg-emerald-500`,
+        container: `${baseStyles} bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400`,
+        dot: "w-1.5 h-1.5 rounded-full bg-green-500",
       };
     default:
       return {
-        container: `${baseStyles} bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300`,
-        dot: `${dotStyles} bg-slate-400`,
+        container: `${baseStyles} bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400`,
+        dot: "w-1.5 h-1.5 rounded-full bg-slate-400",
       };
   }
 }
@@ -39,21 +38,21 @@ export function RentalHistoryTable({ rentals }: RentalHistoryTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-            <th className="px-6 py-4 text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+          <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
+            <th className="px-6 py-4">
               Date Range
             </th>
-            <th className="px-6 py-4 text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+            <th className="px-6 py-4">
               Driver Name
             </th>
-            <th className="px-6 py-4 text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+            <th className="px-6 py-4">
               Daily Rate
             </th>
-            <th className="px-6 py-4 text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+            <th className="px-6 py-4">
               Status
             </th>
-            <th className="px-6 py-4 text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">
-              Actions
+            <th className="px-6 py-4 text-right">
+              Aksi
             </th>
           </tr>
         </thead>
@@ -63,7 +62,7 @@ export function RentalHistoryTable({ rentals }: RentalHistoryTableProps) {
             return (
               <tr
                 key={index}
-                className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group"
+                className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col">
@@ -99,7 +98,7 @@ export function RentalHistoryTable({ rentals }: RentalHistoryTableProps) {
                 <td className="px-6 py-4 whitespace-nowrap text-right">
                   <Dropdown
                     trigger={
-                      <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
+                      <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                         <span className="material-symbols-outlined text-xl">
                           more_vert
                         </span>

@@ -51,7 +51,6 @@ const rentalColumns: ExportColumn[] = [
   { id: "engine", label: "Engine", defaultChecked: true },
 ];
 
-
 export const RentalTable = ({
   rentals,
   currentPage = 1,
@@ -65,23 +64,29 @@ export const RentalTable = ({
   onExport,
 }: RentalTableProps) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const startEntry = (currentPage - 1) * resultsPerPage + 1;
-  const endEntry = Math.min(currentPage * resultsPerPage, totalResults);
 
   return (
-    <div>
+    <>
       <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-        <h2 className="font-bold text-lg text-slate-900 dark:text-white">
-          Rental Transactions
-        </h2>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-blue-500 text-xl">assignment</span>
+          </div>
+          <div>
+            <h2 className="font-bold text-slate-800 dark:text-white text-base">
+              Rental Transactions
+            </h2>
+            <p className="text-xs text-slate-400">{rentals.length} transaksi aktif</p>
+          </div>
+        </div>
         <button
           onClick={() => setIsExportModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300">
+          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
+        >
           <span className="material-symbols-outlined text-base">download</span>
           Export
         </button>
       </div>
-
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
@@ -93,10 +98,10 @@ export const RentalTable = ({
               <th className="px-6 py-4">Tipe Durasi</th>
               <th className="px-6 py-4">Jenis Layanan</th>
               <th className="px-6 py-4">Engine</th>
-              <th className="px-6 py-4 text-right">Actions</th>
+              <th className="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
             {rentals.map((rental, index) => (
               <RentalTableRow
                 key={rental.transactionId || index}
@@ -110,7 +115,6 @@ export const RentalTable = ({
           </tbody>
         </table>
       </div>
-
       <ModalExport
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
@@ -123,6 +127,6 @@ export const RentalTable = ({
         description="Generate rental transaction reports."
         columns={rentalColumns}
       />
-    </div>
+    </>
   );
 };

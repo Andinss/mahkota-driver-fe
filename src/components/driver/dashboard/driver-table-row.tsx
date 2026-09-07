@@ -23,8 +23,8 @@ export function DriverTableRow({
   onDetailsClick,
 }: DriverTableRowProps) {
   return (
-    <tr className="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors">
-      <td className="px-6 py-5">
+    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+      <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 shrink-0 overflow-hidden">
             {driver.profilePhoto ? (
@@ -46,18 +46,18 @@ export function DriverTableRow({
           </div>
         </div>
       </td>
-      <td className="px-6 py-5">
+      <td className="px-6 py-4">
         <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
           {driver.employeeId}
         </span>
       </td>
-      <td className="px-6 py-5 text-sm text-slate-600 dark:text-slate-400">
+      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
         {driver.phoneNumber}
       </td>
-      <td className="px-6 py-5 text-sm text-slate-600 dark:text-slate-400">
+      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
         {driver.email}
       </td>
-      <td className="px-6 py-5 text-sm">
+      <td className="px-6 py-4 text-sm">
         <span
           className={`inline-flex items-center gap-1 font-semibold ${
             (driver.saldo ?? 0) > 0
@@ -69,7 +69,7 @@ export function DriverTableRow({
           Rp {Number(driver.saldo ?? 0).toLocaleString("id-ID")}
         </span>
       </td>
-      <td className="px-6 py-5 text-right">
+      <td className="px-6 py-4 text-right">
         <Dropdown
           trigger={
             <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
