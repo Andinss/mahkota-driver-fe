@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { AlertDialog } from "@/components/ui/alert";
+import { toastError } from "@/components/ui/toast-provider";
 import { AuditLogFilters } from "@/components/audit/dashboard/filters-search";
 import { AuditLogTable } from "@/components/audit/dashboard/audit-table";
 import { AuditStatsCards } from "@/components/audit/dashboard/stats-cards";
@@ -13,10 +13,6 @@ import type { ExportOptions } from "@/components/ui/export";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 
 export default function AuditLogPage() {
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState<"success" | "error">("success");
   const [currentPage, setCurrentPage] = useState(1);
   const [logs, setLogs] = useState<AuditLogItem[]>([]);
   const [stats, setStats] = useState<AuditStats>({ totalEvents: 0, securityAlerts: 0, userActions: 0, failedRequests: 0 });
@@ -36,10 +32,7 @@ export default function AuditLogPage() {
         setTotalPages(response.meta.totalPages);
       }
     } catch {
-      setAlertTitle("Error");
-      setAlertMessage("Failed to load audit logs");
-      setAlertType("error");
-      setIsAlertOpen(true);
+      toastError("Failed to load audit logs");
     } finally {
       setIsLoading(false);
     }
@@ -118,14 +111,6 @@ export default function AuditLogPage() {
         )}
       </div>
 
-      <AlertDialog
-        isOpen={isAlertOpen}
-        onClose={() => setIsAlertOpen(false)}
-        title={alertTitle}
-        message={alertMessage}
-        type={alertType}
-        confirmText="OK"
-      />
     </div>
     </PermissionGuard>
   );

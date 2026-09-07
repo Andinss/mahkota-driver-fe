@@ -1,12 +1,11 @@
 "use client";
 import { PageHeader } from "@/components/page-header";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmToast, toastSuccess, toastError, toastInfo } from "@/components/ui/toast-provider";
 import { RoleCard } from "@/components/role/role-list/card";
 import { RoleBanner } from "@/components/role/role-list/role-banner";
 import { RoleTable } from "@/components/role/role-list/role-list-table";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { AlertDialog } from "@/components/ui/alert";
 import { ExportOptions } from "@/components/ui/export";
 import { rolesApi } from "@/lib/api/roles";
 import type { RoleItem } from "@/lib/types/role";
@@ -18,7 +17,7 @@ const RolePage = () => {
   const { user } = useAuth();
   const handleExport = (options: ExportOptions) => {
     console.log("Export options from role page:", options);
-    alert(`Exporting role data as ${options.format} with ${options.type} data`);
+    toastInfo(`Exporting role data as ${options.format} with ${options.type} data`);
   };
 
   const searchParams = useSearchParams();
@@ -26,16 +25,8 @@ const RolePage = () => {
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // confirm dialog delete
-  const [selectedRole, setSelectedRole] = useState<RoleItem | null>(null);
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const toastShownRef = useRef(false);
 
-  // Alert
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState<"success" | "error">("success");
 
   const fetchRoles = async () => {
     if (!canAccess(user?.permissions, 'role.read')) {
@@ -62,49 +53,31 @@ const RolePage = () => {
     const success = searchParams.get("success");
     const role = searchParams.get("role");
 
-    if (success && role) {
+    if (success && role && !toastShownRef.current) {
+      toastShownRef.current = true;
       const action = success === "updated" ? "Update" : "Registration";
-      setAlertTitle(`${action} Successful`);
-      setAlertMessage(
-        `Role ${decodeURIComponent(role)} has been ${success} successfully.`,
-      );
-      setAlertType("success");
-      setIsAlertOpen(true);
+      toastSuccess(`${action} Successful - Role ${decodeURIComponent(role)} has been ${success} successfully.`);
 
       window.history.replaceState({}, "", "/dashboard/role");
     }
   }, [searchParams]);
 
-  const handleDeleteClick = (role: any) => {
-    setSelectedRole(role);
-    setIsConfirmDeleteOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!selectedRole) return;
-    setIsDeleting(true);
-    try {
-      await rolesApi.delete(selectedRole.id);
-      setIsConfirmDeleteOpen(false);
-      setAlertTitle("Delete Successful");
-      setAlertMessage(`Role ${selectedRole.name} has been deleted successfully`);
-      setAlertType("success");
-      setIsAlertOpen(true);
-      setSelectedRole(null);
-      fetchRoles();
-    } catch {
-      setIsConfirmDeleteOpen(false);
-      setAlertTitle("Delete Failed");
-      setAlertMessage("Failed to delete role. Please try again.");
-      setAlertType("error");
-      setIsAlertOpen(true);
-    } finally {
-      setIsDeleting(false);
+  const handleDeleteClick = async (role: any) => {
+    const confirmed = await confirmToast({
+      title: "Delete Role",
+      message: `Are you sure you want to delete ${role.name}? This action cannot be undone.`,
+      confirmText: "Yes, Delete",
+      variant: "danger",
+    });
+    if (confirmed) {
+      try {
+        await rolesApi.delete(role.id);
+        toastSuccess(`Role ${role.name} has been deleted successfully`);
+        fetchRoles();
+      } catch {
+        toastError("Failed to delete role. Please try again.");
+      }
     }
-  };
-
-  const handleAlertClose = () => {
-    setIsAlertOpen(false);
   };
 
   return (
@@ -158,27 +131,8 @@ const RolePage = () => {
           />
         </div>
       </div>
-      {/* Confirm dialog delete */}
-      <ConfirmDialog
-        isOpen={isConfirmDeleteOpen}
-        onClose={() => setIsConfirmDeleteOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Role"
-        message={`Are you sure you want to delete ${selectedRole?.name}? This action cannot be undone.`}
-        confirmText={isDeleting ? "Deleting..." : "Yes, Delete"}
-        cancelText="Cancel"
-        variant="danger"
-      />
+      
 
-      {/* Alert Dialog */}
-      <AlertDialog
-        isOpen={isAlertOpen}
-        onClose={handleAlertClose}
-        title={alertTitle}
-        message={alertMessage}
-        type={alertType}
-        confirmText="OK"
-      />
     </div>
     </PermissionGuard>
   );

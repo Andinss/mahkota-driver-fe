@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { AlertDialog } from "@/components/ui/alert";
+import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { VehicleStatsCard } from "@/components/vehicle/dashboard/vehicle-stats-card";
 import { VehicleTable } from "@/components/vehicle/dashboard/vehicle-table";
 import { SearchFilters } from "@/components/search-filters";
@@ -42,15 +41,9 @@ export default function DashboardVehiclePage() {
   const [summary, setSummary] = useState<VehicleSummary | null>(null);
   const itemsPerPage = 10;
 
-  // State Confirm Dialog
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
+  const toastShownRef = useRef(false);
 
-  // State Alert Dialog
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState<"success" | "error">("success");
+
 
   const imageBase = (
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
@@ -125,12 +118,10 @@ export default function DashboardVehiclePage() {
     const success = searchParams.get("success");
     const vehicle = searchParams.get("vehicle");
 
-    if (success && vehicle) {
+    if (success && vehicle && !toastShownRef.current) {
+      toastShownRef.current = true;
       const action = success === "updated" ? "Update" : "Registration";
-      setAlertTitle(`${action} Successful`);
-      setAlertMessage(`Vehicle ${decodeURIComponent(vehicle)} has been ${success} successfully.`);
-      setAlertType("success");
-      setIsAlertOpen(true);
+      toastSuccess(`${action} Successful: Vehicle ${decodeURIComponent(vehicle)} has been ${success} successfully.`);
       window.history.replaceState({}, "", "/dashboard/vehicle");
     }
 
@@ -141,33 +132,27 @@ export default function DashboardVehiclePage() {
     fetchSummary();
   }, [fetchSummary]);
 
-  const handleDeleteClick = (vehicle: any) => {
+  const handleDeleteClick = async (vehicle: any) => {
     const full = vehicles.find((v) => v.plate === vehicle.plate);
-    setSelectedVehicle(full || vehicle);
-    setIsConfirmOpen(true);
-  }
-
-  const handleConfirmDelete = async () => {
-    if (!selectedVehicle) return;
-    try {
-      const id = selectedVehicle.id || vehicles.find((v) => v.plate === selectedVehicle.plate)?.id;
-      if (!id) throw new Error("Vehicle ID not found");
-      await vehicleApi.delete(id);
-      setIsConfirmOpen(false);
-      setAlertTitle("Delete Successful");
-      setAlertMessage(`Vehicle ${selectedVehicle.name} (${selectedVehicle.plate}) has been deleted successfully.`);
-      setAlertType("success");
-      setIsAlertOpen(true);
-      setSelectedVehicle(null);
-      fetchVehicles();
-      fetchSummary();
-    } catch (err) {
-      console.error("Failed to delete vehicle:", err);
-      setIsConfirmOpen(false);
-      setAlertTitle("Delete Failed");
-      setAlertMessage("Failed to delete vehicle. Please try again.");
-      setAlertType("error");
-      setIsAlertOpen(true);
+    const target = full || vehicle;
+    const confirmed = await confirmToast({
+      title: "Delete Vehicle",
+      message: `Are you sure you want to delete ${target.name} (${target.plate})? This action cannot be undone.`,
+      confirmText: "Yes, Delete",
+      variant: "danger",
+    });
+    if (confirmed) {
+      try {
+        const id = target.id || vehicles.find((v) => v.plate === target.plate)?.id;
+        if (!id) throw new Error("Vehicle ID not found");
+        await vehicleApi.delete(id);
+        toastSuccess(`Vehicle ${target.name} (${target.plate}) has been deleted successfully.`);
+        fetchVehicles();
+        fetchSummary();
+      } catch (err) {
+        console.error("Failed to delete vehicle:", err);
+        toastError("Failed to delete vehicle. Please try again.");
+      }
     }
   };
 
@@ -185,9 +170,6 @@ export default function DashboardVehiclePage() {
     await vehicleApi.exportData(params);
   };
 
-  const handleAlertClose = () => {
-    setIsAlertOpen(false);
-  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -280,27 +262,7 @@ export default function DashboardVehiclePage() {
           </div>
         </section>
       </div>
-      {/* Confirm Dialog untuk Delete */}
-      <ConfirmDialog
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Vehicle"
-        message={`Are you sure you want to delete ${selectedVehicle?.name} (${selectedVehicle?.plate})? This action cannot be undone.`}
-        confirmText="Yes, Delete"
-        cancelText="Cancel"
-        variant="danger"
-      />
 
-      {/* Alert Dialog */}
-      <AlertDialog
-        isOpen={isAlertOpen}
-        onClose={handleAlertClose}
-        title={alertTitle}
-        message={alertMessage}
-        type={alertType}
-        confirmText="OK"
-      />
     </div>
     </PermissionGuard>
   );

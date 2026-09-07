@@ -7,12 +7,11 @@ import Advice from "@/components/role/new/advice";
 import GeneralInformation from "@/components/role/new/general";
 import RoleHierarchy from "@/components/role/new/hierarchy";
 import { PermissionList } from "@/components/role/new/permission-list";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import { rolesApi } from "@/lib/api/roles";
 import { permissionsApi } from "@/lib/api/permissions";
 import type { PermissionItem } from "@/lib/types/permission";
 import type { CreateRolePayload } from "@/lib/types/role";
-import { AlertDialog } from "@/components/ui/alert";
 
 
 interface FormErrors {
@@ -36,10 +35,6 @@ const RoleFormPage = () => {
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
   const [initialPermissionIds, setInitialPermissionIds] = useState<string[]>([]);
   const [lastSaved, setLastSaved] = useState<string>("Never (Draft)");
-
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isErrorOpen, setIsErrorOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     permissionsApi.getList().then((res) => {
@@ -121,19 +116,27 @@ const RoleFormPage = () => {
     }
   }, [roleIdParam]);
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     setHasSubmitted(true);
 
     if (!validateForm()) {
       return;
     }
 
-    setIsConfirmOpen(true);
-  };
+    const confirmed = await confirmToast({
+      title: mode === "add" ? "Confirm Registration" : "Confirm Update",
+      message:
+        mode === "add"
+          ? `Are you sure you want to create this role? Please review all information carefully. This action cannot be undone.`
+          : `Are you sure you want to update this role? Please review all information carefully.`,
+      confirmText: mode === "add" ? "Yes, Create Role" : "Yes, Update Role",
+      cancelText: "Review Again",
+      variant: "info",
+    });
 
-  const handleConfirmSave = async () => {
+    if (!confirmed) return;
+
     setIsSubmitting(true);
-    setIsConfirmOpen(false);
 
     try {
       const code = formValues.roleName.toLowerCase().replace(/\s+/g, "_");
@@ -168,13 +171,12 @@ const RoleFormPage = () => {
       router.push(`/dashboard/role?success=${action}&role=${encodeURIComponent(roleNameForRedirect)}`);
     } catch (err: any) {
       setIsSubmitting(false);
-      setErrorMessage(err?.message || "Failed to save role. Please try again.");
-      setIsErrorOpen(true);
+      toastError(err?.message || "Failed to save role. Please try again.");
     }
   };
 
   const handleCancel = () => {
-      router.push("/dashboard/role");
+    router.push("/dashboard/role");
   };
 
   return (
@@ -227,28 +229,6 @@ const RoleFormPage = () => {
           </button>
         </div>
       </div>
-      <ConfirmDialog
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={handleConfirmSave}
-        title={mode === "add" ? "Confirm Registration" : "Confirm Update"}
-        message={
-          mode === "add"
-            ? `Are you sure you want to create this role? Please review all information carefully. This action cannot be undone.`
-            : `Are you sure you want to update this role? Please review all information carefully.`
-        }
-        confirmText={mode === "add" ? "Yes, Create Role" : "Yes, Update Role"}
-        cancelText="Review Again"
-        variant="info"
-      />
-
-      <AlertDialog
-        isOpen={isErrorOpen}
-        onClose={() => setIsErrorOpen(false)}
-        title="Error"
-        message={errorMessage}
-        type="error"
-      />
     </div>
     </PermissionGuard>
   );

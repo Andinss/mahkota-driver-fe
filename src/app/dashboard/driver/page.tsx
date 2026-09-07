@@ -20,7 +20,7 @@ import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { HttpClientError } from "@/lib/api-http";
-import { AlertDialog } from "@/components/ui/alert";
+import { toastError } from "@/components/ui/toast-provider";
 
 export default function DriverPage() {
   const { user } = useAuth();
@@ -37,10 +37,6 @@ export default function DriverPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const itemsPerPage = 10;
-
-  const [alertOpen, setAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
 
   const hasReadAll = canAccess(user?.permissions, 'driver.read.all');
   const hasReadOwn = canAccess(user?.permissions, 'driver.read.own');
@@ -102,9 +98,7 @@ export default function DriverPage() {
     } catch (err: any) {
       console.error("Failed to fetch drivers:", err);
       const msg = err instanceof HttpClientError ? err.message : "Failed to load driver data.";
-      setAlertTitle("Load Failed");
-      setAlertMessage(msg);
-      setAlertOpen(true);
+      toastError(msg);
       setDrivers([]);
     } finally {
       setIsLoading(false);
@@ -163,9 +157,7 @@ export default function DriverPage() {
       await driverApi.exportData(params);
     } catch (err: any) {
       const msg = err instanceof HttpClientError ? err.message : "Failed to export driver data.";
-      setAlertTitle("Export Failed");
-      setAlertMessage(msg);
-      setAlertOpen(true);
+      toastError(msg);
     }
   };
 
@@ -286,14 +278,6 @@ export default function DriverPage() {
     </div>
     </PermissionGuard>
 
-    <AlertDialog
-      isOpen={alertOpen}
-      onClose={() => setAlertOpen(false)}
-      title={alertTitle}
-      message={alertMessage}
-      type="error"
-      confirmText="OK"
-    />
     </>
   );
 }

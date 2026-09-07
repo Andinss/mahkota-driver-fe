@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PermissionGuard } from "@/components/auth-guard-permission";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import { VehicleMediaUpload } from "@/components/vehicle/register/vehicle-media-upload";
 import { StatusSelect } from "@/components/vehicle/register/status-select";
 import type { VehicleStatus } from "@/lib/types/vehicle";
@@ -27,8 +27,6 @@ export default function VehicleRegisterPage() {
   const [initialImageUrls, setInitialImageUrls] = useState<string[] | null | undefined>();
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [pendingData, setPendingData] = useState<VehicleFormData | null>(null);
 
   useEffect(() => {
     if (plateParam) {
@@ -84,46 +82,48 @@ export default function VehicleRegisterPage() {
   }, [plateParam]);
 
   const handleSubmit = async (data: VehicleFormData) => {
-    setPendingData(data);
-    setIsConfirmOpen(true);
-  };
+    const actionLabel = mode === "add" ? "register this new vehicle" : "update this vehicle";
+    const actionTitle = mode === "add" ? "Confirm Registration" : "Confirm Update";
+    const confirmLabel = mode === "add" ? "Yes, Complete Registration" : "Yes, Update Vehicle";
+    const confirmed = await confirmToast({
+      title: actionTitle,
+      message: `Are you sure you want to ${actionLabel}? Please review all information carefully. This action cannot be undone.`,
+      confirmText: confirmLabel,
+      variant: "info",
+    });
+    if (confirmed) {
+      setIsSubmitting(true);
+      try {
+        const formData = new FormData();
+        formData.append("merk", data.make);
+        formData.append("model", data.model);
+        formData.append("launching_year", `${data.year}-01-01T00:00:00.000Z`);
+        formData.append("license_plate", data.licensePlate);
+        formData.append("color", data.color);
+        formData.append("vin_number", data.vin);
+        formData.append("engine_number", data.engineNumber);
+        formData.append("daily_rate", data.dailyRate.replace(/\./g, ""));
+        formData.append("status", status);
 
-  const handleConfirmSubmit = async () => {
-    if (!pendingData) return;
+        imageFiles.forEach((file) => {
+          formData.append("vehicle_photo", file);
+        });
 
-    setIsSubmitting(true);
-    setIsConfirmOpen(false);
+        if (mode === "edit" && editingId) {
+          await vehicleApi.update(editingId, formData);
+        } else {
+          await vehicleApi.create(formData);
+        }
 
-    try {
-      const formData = new FormData();
-      formData.append("merk", pendingData.make);
-      formData.append("model", pendingData.model);
-      formData.append("launching_year", `${pendingData.year}-01-01T00:00:00.000Z`);
-      formData.append("license_plate", pendingData.licensePlate);
-      formData.append("color", pendingData.color);
-      formData.append("vin_number", pendingData.vin);
-      formData.append("engine_number", pendingData.engineNumber);
-      formData.append("daily_rate", pendingData.dailyRate.replace(/\./g, ""));
-      formData.append("status", status);
-
-      imageFiles.forEach((file) => {
-        formData.append("vehicle_photo", file);
-      });
-
-      if (mode === "edit" && editingId) {
-        await vehicleApi.update(editingId, formData);
-      } else {
-        await vehicleApi.create(formData);
+        setIsSubmitting(false);
+        const action = mode === "edit" ? "updated" : "registered";
+        const vehicleName = `${data.make} ${data.model}`;
+        router.push(`/dashboard/vehicle?success=${action}&vehicle=${encodeURIComponent(vehicleName)}`);
+      } catch (err) {
+        console.error("Failed to save vehicle:", err);
+        setIsSubmitting(false);
+        toastError("Failed to save vehicle. Please try again.");
       }
-
-      setIsSubmitting(false);
-      const action = mode === "edit" ? "updated" : "registered";
-      const vehicleName = `${pendingData.make} ${pendingData.model}`;
-      router.push(`/dashboard/vehicle?success=${action}&vehicle=${encodeURIComponent(vehicleName)}`);
-    } catch (err) {
-      console.error("Failed to save vehicle:", err);
-      setIsSubmitting(false);
-      alert("Failed to save vehicle. Please try again.");
     }
   };
 
@@ -153,21 +153,6 @@ export default function VehicleRegisterPage() {
         />
       </div>
 
-     {/* CONFIRM DIALOG */}
-      <ConfirmDialog
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={handleConfirmSubmit}
-        title={mode === "add" ? "Confirm Registration" : "Confirm Update"}
-        message={
-          mode === "add"
-            ? `Are you sure you want to register this new vehicle? Please review all information carefully. This action cannot be undone.`
-            : `Are you sure you want to update this vehicle? Please review all information carefully.`
-        }
-        confirmText={mode === "add" ? "Yes, Complete Registration" : "Yes, Update Vehicle"}
-        cancelText="Review Again"
-        variant="info"
-      />
 
     </div>
     </PermissionGuard>

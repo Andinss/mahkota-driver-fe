@@ -23,7 +23,7 @@ import { useAuth } from "@/lib/auth-context";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { HttpClientError } from "@/lib/api-http";
 import { renameFile } from "@/lib/utils/file";
-import { AlertDialog } from "@/components/ui/alert";
+import { toastError } from "@/components/ui/toast-provider";
 import { Button } from "@/components/ui/button";
 type Step = 1 | 2 | 3 | 4;
 
@@ -35,9 +35,6 @@ export default function DriverRegisterPage() {
   const [mode, setMode] = useState<"add" | "edit">("add");
 
   const isSupervisor = user?.role?.code === "SUPERVISOR";
-
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [formData, setFormData] = useState<{
@@ -89,13 +86,11 @@ export default function DriverRegisterPage() {
             },
           });
         } else {
-          setErrorMessage("Driver data not found.");
-          setShowError(true);
+          toastError("Driver data not found.");
         }
       }).catch((err: any) => {
         const msg = err instanceof HttpClientError ? err.message : "Failed to load driver data.";
-        setErrorMessage(msg);
-        setShowError(true);
+        toastError(msg);
       });
     } else {
       setMode("add");
@@ -171,8 +166,7 @@ export default function DriverRegisterPage() {
       const successType = mode === "edit" ? "updated" : "registered";
       router.push(`/dashboard/driver?success=${successType}&driver=${encodeURIComponent(driverName)}`);
     } catch (error: any) {
-      setErrorMessage(error?.message || `Failed to ${mode === "edit" ? "update" : "create"} driver. Please try again.`);
-      setShowError(true);
+      toastError(error?.message || `Failed to ${mode === "edit" ? "update" : "create"} driver. Please try again.`);
     }
   };
 
@@ -245,13 +239,6 @@ export default function DriverRegisterPage() {
       <Stepper currentStep={currentStep} />
       {renderStep()}
 
-      <AlertDialog
-        isOpen={showError}
-        onClose={() => setShowError(false)}
-        title="Registration Failed"
-        message={errorMessage}
-        type="error"
-      />
     </div>
     </PermissionGuard>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { toastError } from "@/components/ui/toast-provider";
 
 interface DriverProfileUploadProps {
   onImageSelect?: (file: File | null) => void;
@@ -57,7 +58,7 @@ export function DriverProfileUpload({
   const isValidFile = (file: File) => {
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      alert(`File size exceeds ${maxSizeMB}MB limit`);
+      toastError(`File size exceeds ${maxSizeMB}MB limit`);
       return false;
     }
     const accepted = acceptedFormats.flatMap((f) => {
@@ -68,7 +69,7 @@ export function DriverProfileUpload({
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
     const mime = file.type.split("/")[1]?.toLowerCase() || "";
     if (!accepted.includes(ext) && !accepted.includes(mime)) {
-      alert(`Invalid file format. Accepted: ${acceptedFormats.join(", ")}`);
+      toastError(`Invalid file format. Accepted: ${acceptedFormats.join(", ")}`);
       return false;
     }
     return true;

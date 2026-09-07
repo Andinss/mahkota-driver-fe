@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { AlertDialog } from "@/components/ui/alert";
+import { toastSuccess } from "@/components/ui/toast-provider";
 import {
   containsSymbols,
   containsInvalidEmailChars,
@@ -63,7 +63,7 @@ export function AddUserForm({
     phoneNumber: initialData?.phoneNumber || "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isDraftAlertOpen, setIsDraftAlertOpen] = useState(false);
+
 
   useEffect(() => {
     if (initialData) {
@@ -156,12 +156,8 @@ export function AddUserForm({
 
     // Simpan ke localStorage
     localStorage.setItem("user_draft", JSON.stringify(draftData));
-    setIsDraftAlertOpen(true);
+    toastSuccess("Your user data has been saved as draft. You can continue later.");
     onSaveDraft?.();
-  };
-
-  const handleDraftAlertClose = () => {
-    setIsDraftAlertOpen(false);
   };
 
   const handleInputChange = (field: keyof typeof formValues, value: string) => {
@@ -381,15 +377,7 @@ export function AddUserForm({
           </form>
         </div>
       </div>
-      <AlertDialog
-        isOpen={isDraftAlertOpen}
-        onClose={handleDraftAlertClose}
-        title="Draft Saved Successfully"
-        message="Your user data has been saved as draft. You can continue later."
-        type="success"
-        confirmText="OK"
-        autoCloseDelay={3000}
-      />
+
     </div>
   );
 }

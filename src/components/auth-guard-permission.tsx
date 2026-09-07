@@ -4,7 +4,7 @@ import { useState, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
-import { AlertDialog } from "@/components/ui/alert";
+import { toastError } from "@/components/ui/toast-provider";
 
 interface PermissionGuardProps {
   permission: string;
@@ -19,7 +19,6 @@ export function PermissionGuard({
 }: PermissionGuardProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [showAlert, setShowAlert] = useState(false);
 
   const hasAccess =
     canAccess(user?.permissions, permission) ||
@@ -28,28 +27,14 @@ export function PermissionGuard({
   useEffect(() => {
     if (isLoading) return;
     if (!hasAccess) {
-      setShowAlert(true);
+      toastError("Anda tidak memiliki izin untuk mengakses halaman ini.");
+      router.replace("/dashboard");
     }
-  }, [isLoading, hasAccess]);
-
-  const handleClose = () => {
-    setShowAlert(false);
-    router.replace("/dashboard");
-  };
+  }, [isLoading, hasAccess, router]);
 
   if (isLoading) return null;
   if (!hasAccess) {
-    return (
-      <AlertDialog
-        isOpen={showAlert}
-        onClose={handleClose}
-        title="Akses Ditolak"
-        message="Anda tidak memiliki izin untuk mengakses halaman ini."
-        confirmText="OK"
-        type="error"
-        autoCloseDelay={0}
-      />
-    );
+    return null;
   }
 
   return <>{children}</>;

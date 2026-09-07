@@ -1,8 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertDialog } from "@/components/ui/alert";
 import { useState } from "react";
+import { toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { authApi } from "@/lib/api/auth";
 import { HttpClientError } from "@/lib/api-http";
 import { sanitizeEmailInput, containsInvalidEmailChars } from "@/lib/utils/validation";
@@ -16,17 +16,10 @@ const ForgotPasswordPage = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [formValues, setFormValues] = useState({ email: "" });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [alert, setAlert] = useState<{
-    isOpen: boolean;
-    type: "success" | "error";
-    title: string;
-    message: string;
-  }>({ isOpen: false, type: "success", title: "", message: "" });
 
   const handleInputChange = (value: string) => {
     const sanitized = sanitizeEmailInput(value);
     setFormValues({ email: sanitized });
-    setAlert((prev) => ({ ...prev, isOpen: false }));
     if (errors.email) {
       setErrors({ email: undefined });
     }
@@ -51,7 +44,6 @@ const ForgotPasswordPage = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setHasSubmitted(true);
-    setAlert((prev) => ({ ...prev, isOpen: false }));
 
     if (!validateEmail()) {
       return;
@@ -61,27 +53,12 @@ const ForgotPasswordPage = () => {
 
     try {
       await authApi.forgotPassword({ email: formValues.email.trim() });
-      setAlert({
-        isOpen: true,
-        type: "success",
-        title: "Email Sent",
-        message: "Password reset instructions have been sent to your email.",
-      });
+      toastSuccess("Password reset instructions have been sent to your email.");
     } catch (error) {
       if (error instanceof HttpClientError) {
-        setAlert({
-          isOpen: true,
-          type: "error",
-          title: "Failed",
-          message: error.message,
-        });
+        toastError(error.message);
       } else {
-        setAlert({
-          isOpen: true,
-          type: "error",
-          title: "Failed",
-          message: "An unexpected error occurred. Please try again.",
-        });
+        toastError("An unexpected error occurred. Please try again.");
       }
     } finally {
       setIsSubmitting(false);
@@ -121,14 +98,6 @@ const ForgotPasswordPage = () => {
               error={hasSubmitted ? errors.email : undefined}
             />
           </div>
-
-          <AlertDialog
-            isOpen={alert.isOpen}
-            onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
-            type={alert.type}
-            title={alert.title}
-            message={alert.message}
-          />
 
           <Button
             type="submit"

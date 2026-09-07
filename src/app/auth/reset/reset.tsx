@@ -1,8 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
-import { AlertDialog } from "@/components/ui/alert";
 import { useState, useEffect } from "react";
+import { toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { authApi } from "@/lib/api/auth";
 import { HttpClientError } from "@/lib/api-http";
 import { sanitizeInput, containsSymbols } from "@/lib/utils/validation";
@@ -28,12 +28,6 @@ const ResetPasswordPage = ({ token }: ResetPasswordPageProps) => {
     password_confirmation: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [alert, setAlert] = useState<{
-    isOpen: boolean;
-    type: "success" | "error";
-    title: string;
-    message: string;
-  }>({ isOpen: false, type: "success", title: "", message: "" });
 
   useEffect(() => {
     if (!token) {
@@ -87,7 +81,6 @@ const ResetPasswordPage = ({ token }: ResetPasswordPageProps) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setHasSubmitted(true);
-    setAlert((prev) => ({ ...prev, isOpen: false }));
 
     if (!validateForm()) {
       return;
@@ -101,28 +94,13 @@ const ResetPasswordPage = ({ token }: ResetPasswordPageProps) => {
         password: formValues.password,
         password_confirmation: formValues.password_confirmation,
       });
-      setAlert({
-        isOpen: true,
-        type: "success",
-        title: "Password Reset Successful",
-        message: "Your password has been reset. Redirecting to login...",
-      });
+      toastSuccess("Your password has been reset. Redirecting to login...");
       setTimeout(() => router.push("/auth/login"), 2000);
     } catch (error) {
       if (error instanceof HttpClientError) {
-        setAlert({
-          isOpen: true,
-          type: "error",
-          title: "Reset Failed",
-          message: error.message,
-        });
+        toastError(error.message);
       } else {
-        setAlert({
-          isOpen: true,
-          type: "error",
-          title: "Reset Failed",
-          message: "An unexpected error occurred. Please try again.",
-        });
+        toastError("An unexpected error occurred. Please try again.");
       }
     } finally {
       setIsSubmitting(false);
@@ -132,7 +110,6 @@ const ResetPasswordPage = ({ token }: ResetPasswordPageProps) => {
   const handleInputChange = (field: keyof typeof formValues, value: string) => {
     const sanitized = sanitizeInput(value);
     setFormValues((prev) => ({ ...prev, [field]: sanitized }));
-    setAlert((prev) => ({ ...prev, isOpen: false }));
     if (hasSubmitted && errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -186,14 +163,6 @@ const ResetPasswordPage = ({ token }: ResetPasswordPageProps) => {
               error={hasSubmitted ? errors.password_confirmation : undefined}
             />
           </div>
-
-          <AlertDialog
-            isOpen={alert.isOpen}
-            onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
-            type={alert.type}
-            title={alert.title}
-            message={alert.message}
-          />
 
           <Button
             type="submit"

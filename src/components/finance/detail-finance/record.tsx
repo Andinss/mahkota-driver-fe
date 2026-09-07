@@ -9,21 +9,18 @@ const RecordCard = () => {
         <span className="material-symbols-outlined text-[10rem]">lock</span>
       </div>
       <div className="relative z-10">
-        <span
-          className="material-symbols-outlined text-3xl mb-4 block"
-        >
-          security
-        </span>
-        <h4 className="text-xl font-bold mb-3">Immutable Record</h4>
-        <p className="text-white/80 text-sm leading-relaxed mb-8">
-          This transaction is digitally signed and locked within the vehicle
-          management ledger for compliance.
+        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-4">
+          <span className="material-symbols-outlined text-xl">security</span>
+        </div>
+        <h4 className="text-lg font-bold mb-2">Rekaman Tidak Berubah</h4>
+        <p className="text-white/80 text-sm leading-relaxed mb-6">
+          Transaksi ini ditandatangani secara digital dan terkunci dalam sistem manajemen kendaraan untuk kepatuhan.
         </p>
         <button
           onClick={() => router.push("/dashboard/audit-logs")}
-          className="w-full sm:w-auto px-6 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg text-xs font-bold uppercase tracking-widest transition-all"
+          className="w-full sm:w-auto px-5 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
         >
-          View Audit Log
+          Lihat Log Audit
         </button>
       </div>
     </div>

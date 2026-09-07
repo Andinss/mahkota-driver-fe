@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { PaymentCard } from "@/components/finance/payment-list/card";
 import { FinancePagination } from "@/components/finance/payment-list/payment-pagination";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
 import { PageHeader } from "@/components/page-header";
-import { AlertDialog } from "@/components/ui/alert";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
 import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
@@ -33,16 +32,10 @@ export default function PaymentList() {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState<"success" | "error">("success");
 
-  const [selectedFinance, setSelectedFinance] = useState<FinanceItem | null>(null);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [driverSaldo, setDriverSaldo] = useState<number | null>(null);
-  const [isLoadingSaldo, setIsLoadingSaldo] = useState(false);
+
+  const toastShownRef = useRef(false);
 
   const fetchSummary = useCallback(async () => {
     try {
@@ -72,10 +65,7 @@ export default function PaymentList() {
         setMeta(response.meta);
       }
     } catch {
-      setAlertTitle("Error");
-      setAlertMessage("Failed to load finance data");
-      setAlertType("error");
-      setIsAlertOpen(true);
+      toastError("Failed to load finance data");
     } finally {
       setIsLoading(false);
     }
@@ -93,12 +83,10 @@ export default function PaymentList() {
     const success = searchParams.get("success");
     const ref = searchParams.get("ref");
 
-    if (success && ref) {
+    if (success && ref && !toastShownRef.current) {
+      toastShownRef.current = true;
       const action = success === "updated" ? "Update" : "Registration";
-      setAlertTitle(`${action} Successful`);
-      setAlertMessage(`Finance ${decodeURIComponent(ref)} has been ${success} successfully.`);
-      setAlertType("success");
-      setIsAlertOpen(true);
+      toastSuccess(`${action} Successful: Finance ${decodeURIComponent(ref)} has been ${success} successfully.`);
       window.history.replaceState({}, "", "/dashboard/finance");
     }
   }, [searchParams]);
@@ -125,50 +113,63 @@ export default function PaymentList() {
   };
 
   const handleDelete = async (finance: FinanceItem) => {
-    setSelectedFinance(finance);
-    setDriverSaldo(null);
+    let saldoLoading = false;
+    let driverSaldoVal: number | null = null;
 
     if (finance.payment_method !== "saldo" && finance.driver_id) {
-      setIsLoadingSaldo(true);
+      saldoLoading = true;
       try {
         const res = await saldoApi.getBalance(finance.driver_id);
-        setDriverSaldo(res.data?.balance ?? 0);
+        driverSaldoVal = res.data?.balance ?? 0;
       } catch {
-        setDriverSaldo(0);
+        driverSaldoVal = 0;
       } finally {
-        setIsLoadingSaldo(false);
+        saldoLoading = false;
       }
     }
 
-    setIsConfirmOpen(true);
-  };
+    const canDelete = () => {
+      if (finance.payment_method === "saldo") return true;
+      if (saldoLoading) return false;
+      return driverSaldoVal !== null && driverSaldoVal >= Number(finance.amount_received);
+    };
 
-  const handleConfirmDelete = async () => {
-    if (!selectedFinance) return;
+    const getDeleteMessage = () => {
+      const base = `Are you sure you want to delete ${finance.reference_number}?`;
+      if (finance.payment_method === "saldo") return base;
+      if (saldoLoading) return `${base}\n\nLoading saldo information...`;
+      const saldoText = `Saldo driver saat ini: Rp ${Number(driverSaldoVal ?? 0).toLocaleString("id-ID")}`;
+      const amountText = `Perlu dikurangi: Rp ${Number(finance.amount_received).toLocaleString("id-ID")}`;
+      if (driverSaldoVal !== null && driverSaldoVal >= Number(finance.amount_received)) {
+        return `${base}\n\n${saldoText}\n${amountText}`;
+      }
+      return `${base}\n\n⚠️ ${saldoText}. ${amountText}. Saldo tidak mencukupi untuk membatalkan finance ini.`;
+    };
+
+    const confirmed = await confirmToast({
+      title: "Delete Payment",
+      message: getDeleteMessage(),
+      confirmText: canDelete() ? "Yes, Delete" : "Saldo Tidak Cukup",
+      cancelText: "Cancel",
+      variant: canDelete() ? "danger" : "warning",
+      disabled: !canDelete(),
+    });
+
+    if (!confirmed) return;
+
     setIsDeleting(true);
     try {
-      await financeApi.delete(selectedFinance.id);
-      setAlertTitle("Delete Successful");
-      setAlertMessage(`Finance ${selectedFinance.reference_number} has been deleted successfully`);
-      setAlertType("success");
-      setIsAlertOpen(true);
+      await financeApi.delete(finance.id);
+      toastSuccess(`Finance ${finance.reference_number} has been deleted successfully`);
       fetchFinances();
       fetchSummary();
     } catch (err) {
-      setAlertTitle("Error");
-      setAlertMessage(err instanceof HttpClientError ? err.message : "Failed to delete finance record");
-      setAlertType("error");
-      setIsAlertOpen(true);
+      toastError(err instanceof HttpClientError ? err.message : "Failed to delete finance record");
     } finally {
       setIsDeleting(false);
-      setIsConfirmOpen(false);
-      setSelectedFinance(null);
     }
   };
 
-  const handleAlertClose = () => {
-    setIsAlertOpen(false);
-  };
 
   const handleDetails = (finance: FinanceItem) => {
     router.push(`/dashboard/finance/detail?id=${finance.id}`);
@@ -188,26 +189,6 @@ export default function PaymentList() {
     if (page >= 1 && page <= meta.totalPages) {
       setCurrentPage(page);
     }
-  };
-
-  const canDelete = () => {
-    if (!selectedFinance) return false;
-    if (selectedFinance.payment_method === "saldo") return true;
-    if (isLoadingSaldo) return false;
-    return driverSaldo !== null && driverSaldo >= Number(selectedFinance.amount_received);
-  };
-
-  const getDeleteMessage = () => {
-    if (!selectedFinance) return "";
-    const base = `Are you sure you want to delete ${selectedFinance.reference_number}?`;
-    if (selectedFinance.payment_method === "saldo") return base;
-    if (isLoadingSaldo) return `${base}\n\nLoading saldo information...`;
-    const saldoText = `Saldo driver saat ini: Rp ${Number(driverSaldo ?? 0).toLocaleString("id-ID")}`;
-    const amountText = `Perlu dikurangi: Rp ${Number(selectedFinance.amount_received).toLocaleString("id-ID")}`;
-    if (driverSaldo !== null && driverSaldo >= Number(selectedFinance.amount_received)) {
-      return `${base}\n\n${saldoText}\n${amountText}`;
-    }
-    return `${base}\n\n⚠️ ${saldoText}. ${amountText}. Saldo tidak mencukupi untuk membatalkan finance ini.`;
   };
 
   return (
@@ -306,26 +287,6 @@ export default function PaymentList() {
         </div>
       </div>
 
-      <ConfirmDialog
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Payment"
-        message={getDeleteMessage()}
-        confirmText={isDeleting ? "Deleting..." : canDelete() ? "Yes, Delete" : "Saldo Tidak Cukup"}
-        cancelText="Cancel"
-        variant={canDelete() ? "danger" : "warning"}
-        disabled={!canDelete() || isDeleting}
-      />
-
-      <AlertDialog
-        isOpen={isAlertOpen}
-        onClose={handleAlertClose}
-        title={alertTitle}
-        message={alertMessage}
-        type={alertType}
-        confirmText="OK"
-      />
     </div>
     </PermissionGuard>
   );

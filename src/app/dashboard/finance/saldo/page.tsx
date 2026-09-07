@@ -11,7 +11,7 @@ import type {
 } from "@/lib/types/saldo";
 import type { DriverItem } from "@/lib/types/driver";
 import { CurrencyInput } from "@/components/ui/currency-input";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmToast } from "@/components/ui/toast-provider";
 
 type TabType = "overview" | "transactions" | "topup";
 
@@ -30,10 +30,6 @@ const SaldoPage = () => {
   const [topUpAmount, setTopUpAmount] = useState<string>("");
   const [topUpNotes, setTopUpNotes] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<"topup" | "refund">(
-    "topup",
-  );
   const [refundAmount, setRefundAmount] = useState<string>("");
   const [refundNotes, setRefundNotes] = useState<string>("");
 
@@ -125,7 +121,6 @@ const SaldoPage = () => {
       setTopUpNotes("");
       fetchDriverBalance(selectedDriverId);
       fetchSummary();
-      setShowConfirm(false);
     } catch (err) {
       console.error("Failed to top up:", err);
     } finally {
@@ -147,7 +142,6 @@ const SaldoPage = () => {
       setRefundNotes("");
       fetchDriverBalance(selectedDriverId);
       fetchSummary();
-      setShowConfirm(false);
     } catch (err) {
       console.error("Failed to refund:", err);
     } finally {
@@ -344,9 +338,15 @@ const SaldoPage = () => {
                   />
                 </div>
                 <button
-                  onClick={() => {
-                    setConfirmAction("topup");
-                    setShowConfirm(true);
+                  onClick={async () => {
+                    const confirmed = await confirmToast({
+                      title: "Konfirmasi Top Up",
+                      message: `Top up saldo Rp ${parseCurrency(topUpAmount).toLocaleString("id-ID")} untuk ${selectedDriver?.first_name} ${selectedDriver?.last_name}?`,
+                      confirmText: "Ya, Top Up",
+                      cancelText: "Batal",
+                      variant: "info",
+                    });
+                    if (confirmed) await handleTopUp();
                   }}
                   disabled={!topUpAmount || parseCurrency(topUpAmount) <= 0}
                   className="w-full px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors"
@@ -386,9 +386,15 @@ const SaldoPage = () => {
                   />
                 </div>
                 <button
-                  onClick={() => {
-                    setConfirmAction("refund");
-                    setShowConfirm(true);
+                  onClick={async () => {
+                    const confirmed = await confirmToast({
+                      title: "Konfirmasi Refund",
+                      message: `Refund saldo Rp ${parseCurrency(refundAmount).toLocaleString("id-ID")} untuk ${selectedDriver?.first_name} ${selectedDriver?.last_name}?`,
+                      confirmText: "Ya, Refund",
+                      cancelText: "Batal",
+                      variant: "warning",
+                    });
+                    if (confirmed) await handleRefund();
                   }}
                   disabled={!refundAmount || parseCurrency(refundAmount) <= 0}
                   className="w-full px-4 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors"
@@ -505,26 +511,6 @@ const SaldoPage = () => {
             )}
           </div>
         )}
-
-        {/* Confirm Dialog */}
-        <ConfirmDialog
-          isOpen={showConfirm}
-          onClose={() => setShowConfirm(false)}
-          onConfirm={confirmAction === "topup" ? handleTopUp : handleRefund}
-          title={
-            confirmAction === "topup"
-              ? "Konfirmasi Top Up"
-              : "Konfirmasi Refund"
-          }
-          message={
-            confirmAction === "topup"
-              ? `Top up saldo Rp ${parseCurrency(topUpAmount).toLocaleString("id-ID")} untuk ${selectedDriver?.first_name} ${selectedDriver?.last_name}?`
-              : `Refund saldo Rp ${parseCurrency(refundAmount).toLocaleString("id-ID")} untuk ${selectedDriver?.first_name} ${selectedDriver?.last_name}?`
-          }
-          confirmText={confirmAction === "topup" ? "Ya, Top Up" : "Ya, Refund"}
-          cancelText="Batal"
-          variant={confirmAction === "topup" ? "info" : "warning"}
-        />
       </div>
     </PermissionGuard>
   );

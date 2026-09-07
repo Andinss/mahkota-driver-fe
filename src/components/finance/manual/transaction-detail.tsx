@@ -225,29 +225,37 @@ const TransactionDetail = ({
   ];
 
   return (
-    <div className="bg-white dark:bg-[#1e2732] rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-800 p-6">
-      <h3 className="text-base font-semibold text-[#111418] dark:text-white mb-6">
-        Transaction Details
-      </h3>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-emerald-500 text-xl">receipt_long</span>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Detail Transaksi
+          </h3>
+          <p className="text-xs text-slate-400">Isi informasi pembayaran</p>
+        </div>
+      </div>
       <form ref={formRef} className="flex flex-col gap-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-[#111418] dark:text-gray-200">
-              Payment Date <span className="text-red-500">*</span>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              <span className="material-symbols-outlined text-slate-400 text-base">calendar_today</span>
+              Tanggal Pembayaran <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <Input
-                type="date"
-                value={paymentDate}
-                onChange={(e) => handlePaymentDateChange(e.target.value)}
-                error={errors.paymentDate}
-              />
-            </div>
+            <Input
+              type="date"
+              value={paymentDate}
+              onChange={(e) => handlePaymentDateChange(e.target.value)}
+              error={errors.paymentDate}
+            />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-[#111418] dark:text-gray-200">
-              Reference Number <span className="text-red-500">*</span>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              <span className="material-symbols-outlined text-slate-400 text-base">tag</span>
+              Nomor Referensi <span className="text-red-500">*</span>
             </label>
             <Input
               type="text"
@@ -259,8 +267,9 @@ const TransactionDetail = ({
         </div>
 
         <div className="flex flex-col gap-3">
-          <label className="text-sm font-medium text-[#111418] dark:text-gray-200">
-            Payment Method <span className="text-red-500">*</span>
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-slate-400 text-base">payment</span>
+            Metode Pembayaran <span className="text-red-500">*</span>
           </label>
           {errors.paymentMethod && (
             <p className="text-xs text-red-500">{errors.paymentMethod}</p>
@@ -283,22 +292,22 @@ const TransactionDetail = ({
               className="cursor-pointer relative group"
             >
               <div
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border h-24 transition-all hover:border-gray-400 dark:hover:border-gray-500 ${
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border h-24 transition-all hover:border-slate-400 dark:hover:border-slate-500 ${
                   paymentMethod === "transfer"
                     ? "border-primary bg-primary/5 text-primary"
-                    : "border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800"
+                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                 }`}
               >
                 <Icon
                   name="account_balance"
                   size="lg"
-                  className={`mb-2 ${paymentMethod === "transfer" ? "text-primary" : "text-[#617589] dark:text-gray-400"}`}
+                  className={`mb-2 ${paymentMethod === "transfer" ? "text-primary" : "text-slate-400 dark:text-slate-500"}`}
                 />
                 <span
                   className={`text-sm font-medium ${
                     paymentMethod === "transfer"
                       ? "text-primary"
-                      : "text-[#111418] dark:text-gray-200"
+                      : "text-slate-900 dark:text-slate-200"
                   }`}
                 >
                   Transfer
@@ -316,22 +325,22 @@ const TransactionDetail = ({
               className="cursor-pointer relative group"
             >
               <div
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border h-24 transition-all hover:border-gray-400 dark:hover:border-gray-500 ${
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border h-24 transition-all hover:border-slate-400 dark:hover:border-slate-500 ${
                   paymentMethod === "e-wallet"
                     ? "border-primary bg-primary/5 text-primary"
-                    : "border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800"
+                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                 }`}
               >
                 <Icon
                   name="account_balance_wallet"
                   size="lg"
-                  className={`mb-2 ${paymentMethod === "e-wallet" ? "text-primary" : "text-[#617589] dark:text-gray-400"}`}
+                  className={`mb-2 ${paymentMethod === "e-wallet" ? "text-primary" : "text-slate-400 dark:text-slate-500"}`}
                 />
                 <span
                   className={`text-sm font-medium ${
                     paymentMethod === "e-wallet"
                       ? "text-primary"
-                      : "text-[#111418] dark:text-gray-200"
+                      : "text-slate-900 dark:text-slate-200"
                   }`}
                 >
                   E-Wallet
@@ -352,22 +361,22 @@ const TransactionDetail = ({
               className="cursor-pointer relative group"
             >
               <div
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border h-24 transition-all hover:border-gray-400 dark:hover:border-gray-500 ${
+                className={`flex flex-col items-center justify-center p-3 rounded-xl border h-24 transition-all hover:border-slate-400 dark:hover:border-slate-500 ${
                   paymentMethod === "saldo"
                     ? "border-primary bg-primary/5 text-primary"
-                    : "border-[#d1d5db] dark:border-gray-600 bg-white dark:bg-gray-800"
+                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                 }`}
               >
                 <Icon
                   name="account_balance_wallet"
                   size="lg"
-                  className={`mb-2 ${paymentMethod === "saldo" ? "text-primary" : "text-[#617589] dark:text-gray-400"}`}
+                  className={`mb-2 ${paymentMethod === "saldo" ? "text-primary" : "text-slate-400 dark:text-slate-500"}`}
                 />
                 <span
                   className={`text-sm font-medium ${
                     paymentMethod === "saldo"
                       ? "text-primary"
-                      : "text-[#111418] dark:text-gray-200"
+                      : "text-slate-900 dark:text-slate-200"
                   }`}
                 >
                   Saldo Driver
@@ -382,9 +391,10 @@ const TransactionDetail = ({
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-[#111418] dark:text-gray-200">
-            Amount Received <span className="text-red-500">*</span>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-slate-400 text-base">attach_money</span>
+            Jumlah Diterima <span className="text-red-500">*</span>
           </label>
           <CurrencyInput
             placeholder="0"
@@ -392,14 +402,15 @@ const TransactionDetail = ({
             onChange={(value) => handleAmountChange(value)}
             error={errors.amount}
           />
-          <p className="text-xs text-[#617589] dark:text-gray-400">
-            Enter amount in IDR. Ensure currency is correct before submitting.
+          <p className="text-xs text-slate-400 italic">
+            Masukkan jumlah dalam IDR. Pastikan mata uang benar sebelum mengirim.
           </p>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-[#111418] dark:text-gray-200">
-            Deposit Amount <span className="text-xs font-normal text-[#617589] dark:text-gray-400">(Optional)</span>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-slate-400 text-base">savings</span>
+            Jumlah Deposit <span className="text-xs font-normal text-slate-400">(Opsional)</span>
           </label>
           <CurrencyInput
             placeholder="0"
@@ -407,14 +418,14 @@ const TransactionDetail = ({
             onChange={(value) => handleDepositAmountChange(value)}
             error={errors.depositAmount}
           />
-          <p className="text-xs text-[#617589] dark:text-gray-400">
-            Enter the deposit amount paid (e.g. DP for rental) in IDR.
+          <p className="text-xs text-slate-400 italic">
+            Masukkan jumlah deposit (contoh: DP untuk sewa) dalam IDR.
           </p>
         </div>
 
         <Textarea
-          label="Notes (Optional)"
-          placeholder="Add any remarks about this payment..."
+          label="Catatan (Opsional)"
+          placeholder="Tambahkan catatan tentang pembayaran ini..."
           value={notes}
           onChange={(e) => onNotesChange?.(e.target.value)}
           rows={2}
@@ -424,7 +435,7 @@ const TransactionDetail = ({
       <Modal
         isOpen={showTransferModal}
         onClose={() => setShowTransferModal(false)}
-        title="Select Bank"
+        title="Pilih Bank"
       >
         <div className="p-6">
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
@@ -437,9 +448,9 @@ const TransactionDetail = ({
                   onPaymentDetailChange?.(bank.name);
                   setShowTransferModal(false);
                 }}
-                className="group flex items-center justify-center p-4 rounded-xl border-2 border-[#e5e7eb] dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+                className="group flex items-center justify-center p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-primary hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
               >
-                <div className="w-20 h-20 flex items-center justify-center p-2 rounded-xl bg-gray-50 dark:bg-gray-700 group-hover:bg-primary/5 transition-colors">
+                <div className="w-20 h-20 flex items-center justify-center p-2 rounded-xl bg-slate-50 dark:bg-slate-700 group-hover:bg-primary/5 transition-colors">
                   <img
                     src={bank.logo}
                     alt={bank.name}
@@ -458,7 +469,7 @@ const TransactionDetail = ({
       <Modal
         isOpen={showEwalletModal}
         onClose={() => setShowEwalletModal(false)}
-        title="Select E-Wallet"
+        title="Pilih E-Wallet"
       >
         <div className="p-6">
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
@@ -471,9 +482,9 @@ const TransactionDetail = ({
                   onPaymentDetailChange?.(wallet.name);
                   setShowEwalletModal(false);
                 }}
-                className="group flex items-center justify-center p-4 rounded-xl border-2 border-[#e5e7eb] dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+                className="group flex items-center justify-center p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-primary hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
               >
-                <div className="w-20 h-20 flex items-center justify-center p-2 rounded-xl bg-gray-50 dark:bg-gray-700 group-hover:bg-primary/5 transition-colors">
+                <div className="w-20 h-20 flex items-center justify-center p-2 rounded-xl bg-slate-50 dark:bg-slate-700 group-hover:bg-primary/5 transition-colors">
                   <img
                     src={wallet.logo}
                     alt={wallet.name}

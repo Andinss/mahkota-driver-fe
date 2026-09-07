@@ -1,14 +1,13 @@
 "use client";
 import { PageHeader } from "@/components/page-header";
-import { AlertDialog } from "@/components/ui/alert";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { ExportOptions } from "@/components/ui/export";
 import SearchBar from "@/components/user/dashboard/search-bar-user";
 import type { UserFilters } from "@/components/user/dashboard/search-bar-user";
 import { UserTable } from "@/components/user/dashboard/table-user";
 import { UserPagination } from "@/components/user/dashboard/user-pagination";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { usersApi } from "@/lib/api/users";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
@@ -39,26 +38,18 @@ export default function UserList() {
     status: "",
   });
 
-  const [selectedUser, setSelectedUser] = useState<UserDisplay | null>(null);
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
-
-  const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState<"success" | "error">("success");
+  const toastShownRef = useRef(false);
 
   useEffect(() => {
     const success = searchParams.get("success");
     const user = searchParams.get("user");
 
-    if (success && user) {
+    if (success && user && !toastShownRef.current) {
+      toastShownRef.current = true;
       const action = success === "updated" ? "Updated" : "Registration";
-      setAlertTitle(`${action} Successful`);
-      setAlertMessage(
-        `User ${decodeURIComponent(user)} has been ${success} successfully.`,
+      toastSuccess(
+        `${action} Successful: User ${decodeURIComponent(user)} has been ${success} successfully.`,
       );
-      setAlertType("success");
-      setIsAlertOpen(true);
 
       window.history.replaceState({}, "", "/dashboard/users");
     }
@@ -113,33 +104,24 @@ export default function UserList() {
     setCurrentPage(page);
   };
 
-  const handleDeleteClick = (user: UserDisplay) => {
-    setSelectedUser(user);
-    setIsConfirmDeleteOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!selectedUser) return;
-    try {
-      await usersApi.delete(selectedUser.id);
-      setAlertTitle("Delete Successful");
-      setAlertMessage(`User ${selectedUser.username} has been deleted successfully`);
-      setAlertType("success");
-      setIsAlertOpen(true);
-      fetchUsers();
-    } catch {
-      setAlertTitle("Delete Failed");
-      setAlertMessage("Failed to delete user. Please try again.");
-      setAlertType("error");
-      setIsAlertOpen(true);
+  const handleDeleteClick = async (user: UserDisplay) => {
+    const confirmed = await confirmToast({
+      title: "Delete User",
+      message: `Are you sure you want to delete ${user.username}? This action cannot be undone.`,
+      confirmText: "Yes, Delete",
+      variant: "danger",
+    });
+    if (confirmed) {
+      try {
+        await usersApi.delete(user.id);
+        toastSuccess(`User ${user.username} has been deleted successfully`);
+        fetchUsers();
+      } catch {
+        toastError("Failed to delete user. Please try again.");
+      }
     }
-    setIsConfirmDeleteOpen(false);
-    setSelectedUser(null);
   };
 
-  const handleAlertClose = () => {
-    setIsAlertOpen(false);
-  };
 
   const handleExport = async (options: ExportOptions) => {
     const params: Record<string, string | number | undefined> = {
@@ -183,25 +165,7 @@ export default function UserList() {
           </>
         )}
       </div>
-      <ConfirmDialog
-        isOpen={isConfirmDeleteOpen}
-        onClose={() => setIsConfirmDeleteOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete User"
-        message={`Are you sure you want to delete ${selectedUser?.username}? This action cannot be undone.`}
-        confirmText="Yes, Delete"
-        cancelText="Cancel"
-        variant="danger"
-      />
 
-      <AlertDialog
-        isOpen={isAlertOpen}
-        onClose={handleAlertClose}
-        title={alertTitle}
-        message={alertMessage}
-        type={alertType}
-        confirmText="OK"
-      />
     </div>
     </PermissionGuard>
   );

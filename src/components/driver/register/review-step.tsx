@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog"; // Import ConfirmDialog
+import { confirmToast } from "@/components/ui/toast-provider";
 import { PersonalDetailsData } from "./personal-details-form";
 import { ContactInfoData } from "./contact-info-form";
 import { DocumentsData, DocumentsUrlData } from "./documents-form";
@@ -33,12 +32,7 @@ export function ReviewStep({
   onSubmit,
   mode = "add",
 }: ReviewStepProps) {
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-  const handleConfirmSubmit = async () => {
-    setIsConfirmDialogOpen(false);
-    await onSubmit();
-  };
 
   return (
     <>
@@ -291,7 +285,19 @@ export function ReviewStep({
               </Button>
               <Button
                 variant="primary"
-                onClick={() => setIsConfirmDialogOpen(true)} // Buka dialog konfirmasi
+                onClick={async () => {
+                  const confirmed = await confirmToast({
+                    title: "Confirm Registration",
+                    message:
+                      "Please review all information carefully. Are you sure all the data is correct? This action cannot be undone.",
+                    confirmText: "Yes, Complete Registration",
+                    cancelText: "Review Again",
+                    variant: "info",
+                  });
+                  if (confirmed) {
+                    await onSubmit();
+                  }
+                }}
                 icon="how_to_reg"
                 iconPosition="right"
               >
@@ -301,18 +307,6 @@ export function ReviewStep({
           </div>
         </div>
       </div>
-
-      {/* Confirm Dialog */}
-      <ConfirmDialog
-        isOpen={isConfirmDialogOpen}
-        onClose={() => setIsConfirmDialogOpen(false)}
-        onConfirm={handleConfirmSubmit}
-        title="Confirm Registration"
-        message="Please review all information carefully. Are you sure all the data is correct? This action cannot be undone."
-        confirmText="Yes, Complete Registration"
-        cancelText="Review Again"
-        variant="info"
-      />
     </>
   );
 }

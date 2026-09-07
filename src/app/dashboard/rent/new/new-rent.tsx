@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { useAuth } from "@/lib/auth-context";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { confirmToast } from "@/components/ui/toast-provider";
 import FinancialRental from "@/components/rent/new-rent/financial-rental";
 import Period from "@/components/rent/new-rent/rental-period";
 import SelectionForm from "@/components/rent/new-rent/selection";
@@ -71,7 +71,7 @@ const NewRentPage = () => {
     dailyRate: 0,
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
   const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
   const [generalError, setGeneralError] = useState<string>("");
 
@@ -271,19 +271,31 @@ const NewRentPage = () => {
     }));
   }, []);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setHasSubmitted(true);
 
     if (!validateForm()) {
       return;
     }
 
-    setIsConfirmOpen(true);
+    const confirmed = await confirmToast({
+      title: mode === "add" ? "Konfirmasi Sewa" : "Konfirmasi Update",
+      message:
+        mode === "add"
+          ? `Apakah Anda yakin ingin membuat sewa ini? Pastikan semua informasi sudah benar.`
+          : `Apakah Anda yakin ingin mengupdate sewa ini?`,
+      confirmText: mode === "add" ? "Ya, Buat Sewa" : "Ya, Update Sewa",
+      cancelText: "Kembali",
+      variant: "info",
+    });
+
+    if (confirmed) {
+      await handleConfirmSubmit();
+    }
   };
 
   const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
-    setIsConfirmOpen(false);
 
     try {
       const totalDuration = rentalData.duration;
@@ -435,21 +447,6 @@ const NewRentPage = () => {
           </div>
         </div>
       </div>
-
-      <ConfirmDialog
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={handleConfirmSubmit}
-        title={mode === "add" ? "Konfirmasi Sewa" : "Konfirmasi Update"}
-        message={
-          mode === "add"
-            ? `Apakah Anda yakin ingin membuat sewa ini? Pastikan semua informasi sudah benar.`
-            : `Apakah Anda yakin ingin mengupdate sewa ini?`
-        }
-        confirmText={mode === "add" ? "Ya, Buat Sewa" : "Ya, Update Sewa"}
-        cancelText="Kembali"
-        variant="info"
-      />
     </div>
     </PermissionGuard>
   );
