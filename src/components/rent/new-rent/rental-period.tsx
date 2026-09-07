@@ -9,7 +9,6 @@ interface FormErrors {
   startDate?: string;
   endDate?: string;
   dailyRate?: string;
-  depositAmount?: string;
 }
 
 interface PeriodProps {
@@ -63,51 +62,51 @@ const Period = ({ onDataChange, initialData, error }: PeriodProps) => {
   };
 
   return (
-    <div>
-      <section className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="flex items-center gap-3 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
-          <span className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
-            2
-          </span>
-          <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">
-            Rental Period
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-emerald-500 text-xl">calendar_month</span>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Periode Sewa
           </h3>
+          <p className="text-xs text-slate-400">Tentukan durasi waktu sewa</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-          <div className="space-y-2">
-            <DateInput
-              id="StartDate"
-              name="startDate"
-              label="Start Date"
-              required
-              value={startDate}
-              onChange={handleStartChange}
-              error={error?.startDate}
-            />
-          </div>
-          <div className="space-y-2">
-            <DateInput
-              id="EndDate"
-              name="endDate"
-              label="End Date"
-              required
-              value={endDate}
-              onChange={handleEndChange}
-              error={error?.endDate}
-            />
-          </div>
-          <div className="bg-primary/5 dark:bg-primary/10 rounded-lg p-4 flex flex-col items-center justify-center border border-primary/20 h-[50px]">
-            <div className="text-xs text-primary font-bold uppercase tracking-widest">
-              Total Duration
-            </div>
-            <div className="text-xs font-black text-primary leading-none">
-              {duration !== null
-                ? `${duration} ${duration === 1 ? "Day" : "Days"}`
-                : "-"}
-            </div>
-          </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
+        <div className="space-y-2">
+          <DateInput
+            id="StartDate"
+            name="startDate"
+            label="Tanggal Mulai"
+            required
+            value={startDate}
+            onChange={handleStartChange}
+            error={error?.startDate}
+          />
         </div>
-      </section>
+        <div className="space-y-2">
+          <DateInput
+            id="EndDate"
+            name="endDate"
+            label="Tanggal Selesai"
+            required
+            value={endDate}
+            onChange={handleEndChange}
+            error={error?.endDate}
+          />
+        </div>
+        <div className="h-[68px] bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex flex-col items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+          <span className="material-symbols-outlined text-lg mb-0.5">schedule</span>
+          <p className="text-lg font-black leading-none">
+            {duration !== null
+              ? `${duration} Hari`
+              : "-"}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

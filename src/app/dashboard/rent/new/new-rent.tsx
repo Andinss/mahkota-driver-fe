@@ -8,7 +8,6 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import FinancialRental from "@/components/rent/new-rent/financial-rental";
 import Period from "@/components/rent/new-rent/rental-period";
 import SelectionForm from "@/components/rent/new-rent/selection";
-import Summary from "@/components/rent/new-rent/summry";
 import { DocumentsForm } from "@/components/rent/new-rent/upload-document";
 import { rentalApi } from "@/lib/api/rentals";
 import { HttpClientError } from "@/lib/api-http";
@@ -24,7 +23,6 @@ interface FormErrors {
   startDate?: string;
   endDate?: string;
   dailyRate?: string;
-  depositAmount?: string;
   serverDriverId?: string;
   serverVehicleId?: string;
 }
@@ -38,11 +36,7 @@ interface RentalData {
   endDate: string;
   duration: number;
   dailyRate: number;
-  depositAmount: number;
-  serviceFee: number;
   documents?: File[];
-  methodPayment?: string;
-  saldoSufficient?: boolean;
   rentalDuration?: string;
   rentalService?: string;
 }
@@ -66,8 +60,6 @@ const NewRentPage = () => {
     endDate: "",
     duration: 0,
     dailyRate: 0,
-    depositAmount: 0,
-    serviceFee: 25000,
     rentalDuration: "",
     rentalService: "",
   });
@@ -77,7 +69,6 @@ const NewRentPage = () => {
     startDate: "",
     endDate: "",
     dailyRate: 0,
-    depositAmount: 0,
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -128,35 +119,30 @@ const NewRentPage = () => {
     let isValid = true;
 
     if (!rentalData.vehicleId) {
-      newErrors.vehicleId = "Vehicle is required";
+      newErrors.vehicleId = "Kendaraan wajib dipilih";
       isValid = false;
     }
 
     if (!rentalData.driverId) {
-      newErrors.driverId = "Driver is required";
+      newErrors.driverId = "Driver wajib dipilih";
       isValid = false;
     }
 
     if (!rentalData.startDate) {
-      newErrors.startDate = "Start date is required";
+      newErrors.startDate = "Tanggal mulai wajib diisi";
       isValid = false;
     }
 
     if (!rentalData.endDate) {
-      newErrors.endDate = "End date is required";
+      newErrors.endDate = "Tanggal selesai wajib diisi";
       isValid = false;
     } else if (rentalData.startDate && new Date(rentalData.endDate) <= new Date(rentalData.startDate)) {
-      newErrors.endDate = "End date must be after start date";
+      newErrors.endDate = "Tanggal selesai harus setelah tanggal mulai";
       isValid = false;
     }
 
     if (!rentalData.dailyRate || rentalData.dailyRate <= 0) {
-      newErrors.dailyRate = "Daily rate must be greater than 0";
-      isValid = false;
-    }
-
-    if (!rentalData.depositAmount || rentalData.depositAmount <= 0) {
-      newErrors.depositAmount = "Deposit amount must be greater than 0";
+      newErrors.dailyRate = "Tarif harian harus lebih dari 0";
       isValid = false;
     }
 
@@ -165,11 +151,6 @@ const NewRentPage = () => {
     }
 
     if (!rentalData.rentalService) {
-      isValid = false;
-    }
-
-    if (rentalData.methodPayment === "Saldo" && rentalData.saldoSufficient === false) {
-      newErrors.depositAmount = "Saldo driver tidak mencukupi untuk pembayaran ini";
       isValid = false;
     }
 
@@ -183,7 +164,6 @@ const NewRentPage = () => {
     !rentalData.startDate ||
     !rentalData.endDate ||
     !rentalData.dailyRate ||
-    !rentalData.depositAmount ||
     !rentalData.rentalDuration ||
     !rentalData.rentalService
   );
@@ -203,9 +183,6 @@ const NewRentPage = () => {
           endDate: rental.end_date || "",
           duration: rental.total_duration || 0,
           dailyRate: Number(rental.daily_rate) || 0,
-          depositAmount: Number(rental.deposit_amount) || 0,
-          serviceFee: Number(rental.service_fee) || 25000,
-          methodPayment: rental.method_payment,
           rentalDuration: rental.rental_duration || "",
           rentalService: rental.rental_service || "",
         });
@@ -215,7 +192,6 @@ const NewRentPage = () => {
           startDate: rental.start_date || "",
           endDate: rental.end_date || "",
           dailyRate: Number(rental.daily_rate) || 0,
-          depositAmount: Number(rental.deposit_amount) || 0,
         });
       }).catch(() => {
         setMode("add");
@@ -227,15 +203,12 @@ const NewRentPage = () => {
         endDate: "",
         duration: 0,
         dailyRate: 0,
-        depositAmount: 0,
-        serviceFee: 25000,
         rentalDuration: "",
         rentalService: "",
       });
     }
   }, [idParam]);
 
-  // Handler untuk Selection form
   const handleSelectionChange = useCallback((data: {
     vehicleId?: string;
     driverId?: string;
@@ -252,7 +225,6 @@ const NewRentPage = () => {
     }));
   }, []);
 
-  // Handler untuk Period component
   const handlePeriodChange = useCallback((data: {
     startDate: string;
     endDate: string;
@@ -269,12 +241,8 @@ const NewRentPage = () => {
     }));
   }, []);
 
-  // Handler untuk FinancialRental component
   const handleFinancialChange = useCallback((data: {
     dailyRate: number;
-    depositAmount: number;
-    methodPayment?: string;
-    saldoSufficient?: boolean;
   }) => {
     setRentalData((prev) => ({
       ...prev,
@@ -283,11 +251,9 @@ const NewRentPage = () => {
     setFormValues((prev) => ({
       ...prev,
       dailyRate: data.dailyRate,
-      depositAmount: data.depositAmount,
     }));
   }, []);
 
-  // Handler untuk Documents form
   const handleDocumentsChange = useCallback((data: { documents?: File[] }) => {
     setRentalData((prev) => ({
       ...prev,
@@ -295,7 +261,6 @@ const NewRentPage = () => {
     }));
   }, []);
 
-  // Handler untuk Rental Type
   const handleRentalTypeChange = useCallback((data: {
     rentalDuration?: string;
     rentalService?: string;
@@ -306,7 +271,7 @@ const NewRentPage = () => {
     }));
   }, []);
 
-  const handleConfirmRental = () => {
+  const handleSubmit = () => {
     setHasSubmitted(true);
 
     if (!validateForm()) {
@@ -323,10 +288,6 @@ const NewRentPage = () => {
     try {
       const totalDuration = rentalData.duration;
       const dailyRate = rentalData.dailyRate;
-      const depositAmount = rentalData.depositAmount;
-      const serviceFee = rentalData.serviceFee;
-      const totalDailyRate = dailyRate * totalDuration;
-      const totalRevenue = totalDailyRate + depositAmount + serviceFee;
 
       const formData = new FormData();
       formData.append("driver_id", rentalData.driverId || "");
@@ -335,12 +296,6 @@ const NewRentPage = () => {
       formData.append("end_date", rentalData.endDate);
       formData.append("total_duration", String(totalDuration));
       formData.append("daily_rate", String(dailyRate));
-      formData.append("deposit_amount", String(depositAmount));
-      formData.append("method_payment", rentalData.methodPayment || "Bank");
-      formData.append("total_daily_rate", String(totalDailyRate));
-      formData.append("security_deposit", String(depositAmount));
-      formData.append("service_fee", String(serviceFee));
-      formData.append("total_revenue", String(totalRevenue));
       formData.append("rental_duration", rentalData.rentalDuration || "harian");
       formData.append("rental_service", rentalData.rentalService || "lepas kunci");
 
@@ -376,9 +331,9 @@ const NewRentPage = () => {
         }
         setErrors((prev) => ({ ...prev, ...newErrors }));
 
-        setGeneralError(err.message || "Failed to save rental. Please try again.");
+        setGeneralError(err.message || "Gagal menyimpan rental. Silakan coba lagi.");
       } else {
-        setGeneralError("Failed to save rental. Please try again.");
+        setGeneralError("Gagal menyimpan rental. Silakan coba lagi.");
       }
     }
   };
@@ -389,20 +344,38 @@ const NewRentPage = () => {
 
   return (
     <PermissionGuard permission="rental.create">
-    <div className="p-8">
-      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
-        {/* Form Sections */}
-        <div className="flex-1 space-y-8 pb-20">
-          {generalError && (
-            <div className="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-2.5">
-              <div className="size-6 rounded-full bg-red-100 dark:bg-red-800/40 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-red-500 text-sm">error</span>
-              </div>
-              <p className="text-sm text-red-600 dark:text-red-400 font-medium">{generalError}</p>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCancel}
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            >
+              <span className="material-symbols-outlined text-slate-500">arrow_back</span>
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {mode === "add" ? "Tambah Sewa Baru" : "Edit Sewa"}
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {mode === "add" ? "Lengkapi form di bawah untuk membuat sewa" : "Perbarui informasi sewa"}
+              </p>
             </div>
-          )}
+          </div>
+        </div>
 
-          {/* Section 1: Selection */}
+        {/* Error Alert */}
+        {generalError && (
+          <div className="mb-6 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-3">
+            <span className="material-symbols-outlined text-red-500">error</span>
+            <p className="text-sm text-red-600 dark:text-red-400 font-medium">{generalError}</p>
+          </div>
+        )}
+
+        {/* Form */}
+        <div className="space-y-6">
           <SelectionForm
             key={"sel-" + (rentalData.rentalId || "add")}
             onDataChange={handleSelectionChange}
@@ -416,7 +389,6 @@ const NewRentPage = () => {
             serverErrors={serverErrors}
           />
 
-          {/* Section 2: Period */}
           <Period
             key={"per-" + (rentalData.rentalId || "add")}
             onDataChange={handlePeriodChange}
@@ -427,18 +399,11 @@ const NewRentPage = () => {
             error={hasSubmitted ? errors : undefined}
           />
 
-          {/* Section 3: Financials */}
           <FinancialRental
             key={"fin-" + (rentalData.rentalId || "add")}
             onDataChange={handleFinancialChange}
             initialData={{
               dailyRate: rentalData.dailyRate,
-              depositAmount: rentalData.depositAmount,
-              methodPayment: rentalData.methodPayment,
-              driverId: rentalData.driverId,
-              totalRevenue: rentalData.duration > 0
-                ? rentalData.dailyRate * rentalData.duration + rentalData.depositAmount + rentalData.serviceFee
-                : 0,
               rentalDuration: rentalData.rentalDuration,
               rentalService: rentalData.rentalService,
             }}
@@ -446,35 +411,43 @@ const NewRentPage = () => {
             error={hasSubmitted ? errors : undefined}
           />
 
-          {/* Section 4: Documentation */}
           <DocumentsForm onDataChange={handleDocumentsChange} />
-        </div>
 
-{/* Summary Sidebar */}
-        <Summary
-          rentalData={rentalData}
-          onConfirm={handleConfirmRental}
-          onCancel={handleCancel}
-          isSubmitting={isSubmitting}
-          mode={mode}
-          isDisabled={isFormInvalid}
-        />
+          {/* Submit Button */}
+          <div className="flex items-center justify-end gap-3 pt-4">
+            <button
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || isFormInvalid}
+              className="px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center gap-2 text-sm"
+            >
+              <span className="material-symbols-outlined text-xl">
+                {isSubmitting ? "hourglass_empty" : "check_circle"}
+              </span>
+              {isSubmitting ? "Menyimpan..." : mode === "add" ? "Simpan Sewa" : "Update Sewa"}
+            </button>
+          </div>
+        </div>
       </div>
 
       <ConfirmDialog
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleConfirmSubmit}
-        title={mode === "add" ? "Confirm Rental" : "Confirm Update"}
+        title={mode === "add" ? "Konfirmasi Sewa" : "Konfirmasi Update"}
         message={
           mode === "add"
-            ? `Are you sure you want to create this rental? Please review all information carefully. This action cannot be undone.`
-            : `Are you sure you want to update this rental? Please review all information carefully.`
+            ? `Apakah Anda yakin ingin membuat sewa ini? Pastikan semua informasi sudah benar.`
+            : `Apakah Anda yakin ingin mengupdate sewa ini?`
         }
-        confirmText={
-          mode === "add" ? "Yes, Create Rental" : "Yes, Update Rental"
-        }
-        cancelText="Review Again"
+        confirmText={mode === "add" ? "Ya, Buat Sewa" : "Ya, Update Sewa"}
+        cancelText="Kembali"
         variant="info"
       />
     </div>

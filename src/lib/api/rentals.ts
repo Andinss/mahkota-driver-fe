@@ -41,9 +41,6 @@ export const rentalApi = {
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/rentals/delete/${id}`),
 
-  updatePaymentStatus: (id: string, paymentStatus: string) =>
-    api.patch<SuccessResponse<RentalTransaction>>(`/rentals/${id}/status`, { payment_status: paymentStatus }),
-
   exportData: async (params: Record<string, string | number | undefined>) => {
     const { blob, filename } = await api.download("/rentals/export", params);
     triggerDownload(blob, filename);

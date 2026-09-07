@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import CardCarInfo from "@/components/rent/detail/car-info";
 import DriverInfo from "@/components/rent/detail/driver-info";
 import Duration from "@/components/rent/detail/duration";
 import DocumentSign from "@/components/rent/detail/signed-document";
-import { Button } from "@/components/ui/button";
 import { rentalApi } from "@/lib/api/rentals";
 import type { RentalTransaction } from "@/lib/types/rentals";
 
 const DetailRentPage = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const transactionId = searchParams.get("id");
 
@@ -31,7 +31,6 @@ const DetailRentPage = () => {
           }
         })
         .catch(() => {
-          // fallback to getById
           rentalApi.getById(transactionId).then((res) => {
             const item = (res as any)?.data ?? (res as any);
             if (item?.rental_number) {
@@ -47,16 +46,48 @@ const DetailRentPage = () => {
 
   if (isLoading) {
     return (
-      <div className="m-8 p-12 text-center text-slate-500">
-        Loading rental details...
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center py-24">
+            <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+              <span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>
+              <span className="text-sm font-medium">Memuat detail sewa...</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!rental) {
     return (
-      <div className="m-8 p-12 text-center text-slate-500">
-        Rental not found.
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push("/dashboard/rent")}
+                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
+              >
+                <span className="material-symbols-outlined text-slate-500">arrow_back</span>
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Detail Sewa</h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Sewa tidak ditemukan</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
+            <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 mb-4">search_off</span>
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Data sewa tidak ditemukan</p>
+            <button
+              onClick={() => router.push("/dashboard/rent")}
+              className="mt-4 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            >
+              Kembali ke Daftar Sewa
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -81,55 +112,60 @@ const DetailRentPage = () => {
 
   return (
     <PermissionGuard permission="rental.read">
-    <div className="m-8">
-      <div className="grid grid-cols-12 gap-6 lg:gap-8">
-        {/* Large Vehicle Card (Span 8) */}
-        <CardCarInfo
-          vehicleName={rental.vehicle ? `${rental.vehicle.merk} ${rental.vehicle.model}` : "Vehicle"}
-          licensePlate={rental.vehicle?.license_plate || "-"}
-          color="N/A"
-          fuelLevel={85}
-          odometer={0}
-          depositAmount={Number(rental.security_deposit) || 0}
-          imageUrl={vehicleImageUrl}
-        />
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Page Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push("/dashboard/rent")}
+                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
+              >
+                <span className="material-symbols-outlined text-slate-500">arrow_back</span>
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  Detail Sewa
+                </h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {rental.rental_number}
+                </p>
+              </div>
+            </div>
+          </div>
 
-        {/* Driver Information (Span 4) */}
-        <DriverInfo
-          name={rental.driver ? `${rental.driver.first_name} ${rental.driver.last_name}` : "-"}
-          accountType="-"
-          licenseStatus="Verified"
-          contact={rental.driver?.phone || "-"}
-          email={rental.driver?.email || "-"}
-          avatar={driverPhotoUrl}
-        />
+          {/* Content */}
+          <div className="space-y-6">
+            {/* Vehicle & Driver Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <CardCarInfo
+                vehicleName={rental.vehicle ? `${rental.vehicle.merk} ${rental.vehicle.model}` : "Vehicle"}
+                licensePlate={rental.vehicle?.license_plate || "-"}
+                imageUrl={vehicleImageUrl}
+              />
+              <DriverInfo
+                name={rental.driver ? `${rental.driver.first_name} ${rental.driver.last_name}` : "-"}
+                contact={rental.driver?.phone || "-"}
+                email={rental.driver?.email || "-"}
+                avatar={driverPhotoUrl}
+              />
+            </div>
 
-        {/* Duration & Rates (Span 7) */}
-        <Duration
-          startDate={rental.start_date || ""}
-          endDate={rental.end_date || ""}
-          dailyRate={Number(rental.daily_rate) || 0}
-          depositAmount={Number(rental.deposit_amount) || 0}
-          duration={rental.total_duration || 0}
-          methodPayment={rental.method_payment}
-          saldoDeducted={Number(rental.saldo_deducted) || 0}
-          serviceFee={Number(rental.service_fee) || 25000}
-          rentalDuration={rental.rental_duration}
-          rentalService={rental.rental_service}
-        />
+            {/* Duration & Rates */}
+            <Duration
+              startDate={rental.start_date || ""}
+              endDate={rental.end_date || ""}
+              dailyRate={Number(rental.daily_rate) || 0}
+              duration={rental.total_duration || 0}
+              rentalDuration={rental.rental_duration}
+              rentalService={rental.rental_service}
+            />
 
-        {/* Documents Section (Span 5) */}
-        <div className="col-span-12 lg:col-span-5">
-          <DocumentSign documentUrl={rental.document_contract} />
+            {/* Documents */}
+            <DocumentSign documentUrl={rental.document_contract} />
+          </div>
         </div>
       </div>
-
-      {/* Contextual Actions */}
-      <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pb-8">
-        <Button>Log Incident</Button>
-        <Button>Generate Return Report</Button>
-      </div>
-    </div>
     </PermissionGuard>
   );
 };

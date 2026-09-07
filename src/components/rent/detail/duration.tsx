@@ -2,135 +2,126 @@ interface DurationProps {
   startDate?: string;
   endDate?: string;
   dailyRate?: number;
-  depositAmount?: number;
   duration?: number;
-  methodPayment?: string;
-  saldoDeducted?: number;
-  serviceFee?: number;
   rentalDuration?: string;
   rentalService?: string;
 }
 
 const formatDate = (d?: string) => {
-  if (!d) return "Aug 12, 2024";
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  if (!d) return "-";
+  return new Date(d).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
 };
 
 const Duration = ({
-  startDate = "Aug 12, 2024",
-  endDate = "Aug 19, 2024",
-  dailyRate = 245000,
-  depositAmount = 500000,
-  duration = 7,
-  methodPayment,
-  saldoDeducted,
-  serviceFee = 25000,
+  startDate,
+  endDate,
+  dailyRate = 0,
+  duration = 0,
   rentalDuration,
   rentalService,
 }: DurationProps) => {
-  const totalEst = dailyRate * duration + depositAmount + serviceFee;
-
   return (
-    <div className="col-span-12 lg:col-span-7">
-      <div className="bg-white dark:bg-[#1a2632] rounded-xl p-6 sm:p-8 shadow-md border border-gray-200 dark:border-gray-700 h-full">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">
-            Duration & Rates
-          </h3>
-          <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded">
-            {duration} DAYS TOTAL
-          </span>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-slate-400 text-lg">schedule</span>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+            Periode & Tarif
+          </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex-1 text-center sm:text-left w-full">
-            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
-              Pick-up Date
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 dark:bg-primary/20 rounded-lg text-xs font-bold text-primary">
+          <span className="material-symbols-outlined text-sm">calendar_today</span>
+          {duration} Hari
+        </span>
+      </div>
+
+      {/* Date Range */}
+      <div className="flex flex-col sm:flex-row items-stretch gap-4 mb-6">
+        <div className="flex-1 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-green-500 text-sm">play_circle</span>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Tanggal Mulai
             </p>
-            <p className="text-lg font-bold text-gray-900 dark:text-white">{formatDate(startDate)}</p>
-            <p className="text-[10px] text-gray-500">09:00 AM • Jakarta HQ</p>
           </div>
-          <div className="flex items-center justify-center px-4 rotate-90 sm:rotate-0">
-            <div className="h-[1px] w-8 sm:w-12 bg-gray-300 relative">
-              <div className="absolute -top-1 right-0 w-2.5 h-2.5 border-r border-t border-gray-400 rotate-45"></div>
-            </div>
-          </div>
-          <div className="flex-1 text-center sm:text-right w-full">
-            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
-              Expected Return
-            </p>
-            <p className="text-lg font-bold text-gray-900 dark:text-white">{formatDate(endDate)}</p>
-            <p className="text-[10px] text-gray-500">06:00 PM • Jakarta HQ</p>
-          </div>
+          <p className="text-base font-bold text-slate-900 dark:text-white">
+            {formatDate(startDate)}
+          </p>
         </div>
-        <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 gap-6 border-t border-gray-200 pt-8">
-          <div>
-            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
-              Daily Rate
-            </p>
-            <p className="text-xl font-black text-gray-900 dark:text-white">{formatCurrency(dailyRate)}</p>
-          </div>
-          <div>
-            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
-              Service Fee
-            </p>
-            <p className="text-xl font-black text-gray-900 dark:text-white">{formatCurrency(serviceFee)}</p>
-          </div>
-          <div className="col-span-2 sm:col-span-1 sm:text-right pt-4 sm:pt-0 border-t sm:border-t-0 border-gray-200">
-            <p className="text-[10px] font-bold text-gray-500 uppercase mb-1">
-              Est. Total
-            </p>
-            <p className="text-xl font-black text-blue-600">{formatCurrency(totalEst)}</p>
+
+        <div className="flex items-center justify-center">
+          <div className="w-8 h-[2px] bg-slate-200 dark:bg-slate-700 relative sm:rotate-0 rotate-90">
+            <span className="material-symbols-outlined absolute -top-2 -right-1 text-slate-300 dark:text-slate-600 text-sm">
+              arrow_forward
+            </span>
           </div>
         </div>
-        {methodPayment && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-gray-500 text-lg">
-                  {methodPayment === "Saldo" ? "account_balance_wallet" : "payments"}
-                </span>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Payment Method: <strong>{methodPayment}</strong>
-                </span>
-              </div>
-              {methodPayment === "Saldo" && Number(saldoDeducted) > 0 && (
-                <span className="text-sm font-bold text-green-600 dark:text-green-400">
-                  -{formatCurrency(Number(saldoDeducted))} from Saldo
-                </span>
-              )}
-            </div>
+
+        <div className="flex-1 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-red-500 text-sm">stop_circle</span>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Tanggal Selesai
+            </p>
           </div>
-        )}
-        {(rentalDuration || rentalService) && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="flex flex-wrap gap-4">
-              {rentalDuration && (
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-gray-500 text-lg">schedule</span>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Tipe: <strong className="capitalize">{rentalDuration}</strong>
-                  </span>
-                </div>
-              )}
-              {rentalService && (
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-gray-500 text-lg">
-                    {rentalService === "lepas kunci" ? "no_crash" : "person"}
-                  </span>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Layanan: <strong className="capitalize">{rentalService}</strong>
-                  </span>
-                </div>
-              )}
-            </div>
+          <p className="text-base font-bold text-slate-900 dark:text-white">
+            {formatDate(endDate)}
+          </p>
+        </div>
+      </div>
+
+      {/* Rental Type Badges */}
+      {(rentalDuration || rentalService) && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {rentalDuration && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400">
+              <span className="material-symbols-outlined text-sm">schedule</span>
+              {rentalDuration}
+            </span>
+          )}
+          {rentalService && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-xs font-semibold text-purple-600 dark:text-purple-400">
+              <span className="material-symbols-outlined text-sm">
+                {rentalService === "lepas kunci" ? "no_crash" : "person"}
+              </span>
+              {rentalService}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Daily Rate */}
+      <div className="pt-5 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-3 p-4 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/10 dark:border-primary/20">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-primary text-lg">payments</span>
           </div>
-        )}
+          <div className="flex-1">
+            <p className="text-[10px] font-bold text-primary/60 uppercase tracking-wider mb-0.5">
+              Tarif Harian
+            </p>
+            <p className="text-lg font-bold text-primary">
+              {formatCurrency(dailyRate)}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
+
 export default Duration;

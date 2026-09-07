@@ -27,17 +27,9 @@ export interface RentalTransaction {
   end_date: string;
   total_duration: number;
   daily_rate: number;
-  deposit_amount: number;
-  method_payment: 'Bank' | 'Cash' | 'E Wallet' | 'Saldo';
-  saldo_deducted?: number;
   document_contract?: string;
-  total_daily_rate: number;
-  security_deposit: number;
-  service_fee: number;
-  total_revenue: number;
   rental_duration: 'harian' | 'mingguan' | 'bulanan' | 'tahunan';
   rental_service: 'lepas kunci' | 'pakai supir';
-  payment_status?: string;
   finances?: any[];
   late_payments?: any[];
   created_at?: string;
@@ -46,12 +38,9 @@ export interface RentalTransaction {
 
 export interface RentalSummary {
   total_rentals: number;
-  total_revenue: number;
-  total_deposit: number;
-  total_service_fee: number;
-  total_deposit_amount: number;
   avg_daily_rate: number;
-  amount_by_method: Record<string, number>;
+  lepas_kunci: number;
+  pakai_supir: number;
 }
 
 export interface RentalListParams {

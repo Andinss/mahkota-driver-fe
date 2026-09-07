@@ -29,6 +29,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   const [referenceNumber, setReferenceNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [amount, setAmount] = useState("");
+  const [depositAmount, setDepositAmount] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentDetail, setPaymentDetail] = useState("");
   const [selectedPayer, setSelectedPayer] = useState<{name: string; id: string; employeeId?: string} | null>(null);
@@ -54,6 +55,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
           setReferenceNumber(item.reference_number);
           setPaymentMethod(item.payment_method);
           setAmount(String(item.amount_received));
+          setDepositAmount(item.deposit_amount ? String(item.deposit_amount) : "");
           setNotes(item.notes || "");
         } catch (err) {
           console.error("Failed to fetch finance:", err);
@@ -73,6 +75,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
       setPaymentMethod("");
       setPaymentDetail("");
       setAmount("");
+      setDepositAmount("");
       setNotes("");
     }
   }, [paymentIdParam]);
@@ -110,6 +113,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
         reference_number: referenceNumber,
         payment_method: paymentMethod as FinanceItem["payment_method"],
         amount_received: parseFloat(amount.replace(/[^\d.]/g, "")) || 0,
+        deposit_amount: parseFloat(depositAmount.replace(/[^\d.]/g, "")) || 0,
         notes,
         payer: selectedPayer?.name || "",
         driver_id: selectedPayer.id,
@@ -150,6 +154,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     setPaymentMethod("");
     setPaymentDetail("");
     setAmount("");
+    setDepositAmount("");
     setNotes("");
     setHasSubmitted(false);
     setServerErrors({});
@@ -218,12 +223,14 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
             referenceNumber={referenceNumber}
             paymentMethod={paymentMethod}
             amount={amount}
+            depositAmount={depositAmount}
             notes={notes}
             onPaymentDateChange={setPaymentDate}
             onReferenceNumberChange={setReferenceNumber}
             onPaymentMethodChange={setPaymentMethod}
             onPaymentDetailChange={handlePaymentDetailChange}
             onAmountChange={setAmount}
+            onDepositAmountChange={setDepositAmount}
             onNotesChange={setNotes}
             hasSubmitted={hasSubmitted}
             serverErrors={serverErrors}

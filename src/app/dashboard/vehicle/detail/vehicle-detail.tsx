@@ -103,7 +103,6 @@ const VehicleDetail = () => {
     plate: vehicle.license_plate || "-",
     name: `${vehicle.merk || ""} ${vehicle.model || ""}`.trim() || "Unknown Vehicle",
     status: statusMap[vehicle.status] || vehicle.status,
-    totalRevenue: "-",
     totalRentals: "-",
     avgUtilization: "-",
     maintenance: vehicle.status === "Maintenance" ? "Required" : "None",
@@ -113,7 +112,6 @@ const VehicleDetail = () => {
     plate: "-",
     name: "Loading...",
     status: "ACTIVE",
-    totalRevenue: "-",
     totalRentals: "-",
     avgUtilization: "-",
     maintenance: "None",
@@ -145,8 +143,7 @@ const VehicleDetail = () => {
     tripDuration: `${r.total_duration} days`,
     driverName: r.driver ? `${r.driver.first_name} ${r.driver.last_name}` : "-",
     dailyRate: `Rp ${Number(r.daily_rate).toLocaleString("id-ID")}`,
-    totalFee: `Rp ${Number(r.total_revenue).toLocaleString("id-ID")}`,
-    status: "PAID" as const,
+    status: "AKTIF" as const,
   }));
 
   const rentalHistoryColumns: ExportColumn[] = [
@@ -154,7 +151,6 @@ const VehicleDetail = () => {
     { id: "tripDuration", label: "Trip Duration", defaultChecked: true },
     { id: "driverName", label: "Driver Name", defaultChecked: true },
     { id: "dailyRate", label: "Daily Rate", defaultChecked: true },
-    { id: "totalFee", label: "Total Fee", defaultChecked: true },
     { id: "status", label: "Status", defaultChecked: true },
   ];
 

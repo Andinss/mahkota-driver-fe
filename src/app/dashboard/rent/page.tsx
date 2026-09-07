@@ -25,10 +25,6 @@ interface RentalDisplay {
   vehicleId?: string;
   vehicleEngineStatus?: "on" | "off";
   rentalPeriod: { start: string; end: string; duration: number };
-  deposit: string;
-  paymentStatus: string;
-  methodPayment?: string;
-  saldoDeducted?: number;
   rentalDuration?: string;
   rentalService?: string;
 }
@@ -64,10 +60,6 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
     end: formatDateShort(item.end_date),
     duration: item.total_duration || 0,
   },
-  deposit: item.deposit_amount > 0 ? `Rp ${Number(item.deposit_amount).toLocaleString("id-ID")}` : "Rp 0",
-  paymentStatus: item.payment_status || "unpaid",
-  methodPayment: item.method_payment,
-  saldoDeducted: Number(item.saldo_deducted) || 0,
   rentalDuration: item.rental_duration,
   rentalService: item.rental_service,
 });
@@ -169,40 +161,11 @@ const searchParams = useSearchParams();
     fetchSummary();
   }, [fetchSummary]);
 
-  const activeRentals = summary?.total_rentals ?? rentals.filter(
-    (r) => r.paymentStatus === "paid",
-  ).length;
-  const pendingPayments = summary ? 0 : rentals.filter(
-    (r) => r.paymentStatus === "partial" || r.paymentStatus === "unpaid",
-  ).length;
-  const latePayments = summary ? 0 : rentals.filter(
-    (r) => r.paymentStatus === "late",
-  ).length;
-  const completedToday = summary ? 0 : rentals.filter(
-    (r) => r.rentalPeriod.end === new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-  ).length;
-
 const handlePageChange = (page: number) => {
   if (page >= 1 && page <= totalPages) {
     setCurrentPage(page);
   }
 };
-
-  const handleStatusChange = async (rental: RentalDisplay, status: string) => {
-    try {
-      await rentalApi.updatePaymentStatus(rental.id, status);
-      setAlertTitle("Payment Status Updated");
-      setAlertMessage(`Payment status for ${rental.transactionId} changed to ${status.replace(/_/g, " ")}.`);
-      setAlertType("success");
-      setIsAlertOpen(true);
-      fetchRentals();
-    } catch (err) {
-      setAlertTitle("Update Failed");
-      setAlertMessage(err instanceof HttpClientError ? err.message : "Failed to update payment status. Please try again.");
-      setAlertType("error");
-      setIsAlertOpen(true);
-    }
-  };
 
 // Handler Delete
    const handleDeleteClick = (rental: RentalDisplay) => {
@@ -253,44 +216,44 @@ const handlePageChange = (page: number) => {
           icon="key"
           iconColor="text-primary"
           trend={{
-            value: summary ? `Revenue: Rp ${(summary.total_revenue / 1000000).toFixed(1)}M` : "Viewing current page",
+            value: summary ? "Seluruh transaksi sewa" : "Viewing current page",
             color: "text-green-600",
             icon: "trending_up",
           }}
         />
 
         <RentalCard
-          title="Total Revenue"
-          value={`Rp ${(summary?.total_revenue ?? 0).toLocaleString("id-ID")}`}
+          title="Rata-Rata Tarif Harian"
+          value={summary ? `Rp ${Math.round(summary.avg_daily_rate).toLocaleString("id-ID")}/day` : "-"}
           icon="payments"
           iconColor="text-emerald-600"
           trend={{
-            value: summary ? `Avg rate: Rp ${Math.round(summary.avg_daily_rate).toLocaleString("id-ID")}/day` : "-",
+            value: "Berdasarkan semua data sewa",
             color: "text-emerald-600",
             icon: "trending_up",
           }}
         />
 
         <RentalCard
-          title="Total Deposit"
-          value={`Rp ${(summary?.total_deposit_amount ?? 0).toLocaleString("id-ID")}`}
-          icon="account_balance"
+          title="Lepas Kunci"
+          value={(summary ? summary.lepas_kunci : rentals.filter((r) => r.rentalService === "lepas kunci").length).toString()}
+          icon="no_crash"
           iconColor="text-blue-600"
           trend={{
-            value: summary ? `Service fee: Rp ${(summary.total_service_fee / 1000000).toFixed(1)}M` : "-",
+            value: "Rental tanpa supir",
             color: "text-blue-600",
             icon: "info",
           }}
         />
 
         <RentalCard
-          title="Security Deposit"
-          value={`Rp ${(summary?.total_deposit ?? 0).toLocaleString("id-ID")}`}
-          icon="verified"
-          iconColor="text-amber-600"
+          title="Pakai Supir"
+          value={(summary ? summary.pakai_supir : rentals.filter((r) => r.rentalService === "pakai supir").length).toString()}
+          icon="person"
+          iconColor="text-purple-600"
           trend={{
-            value: summary ? `${summary.amount_by_method?.Bank ? 'Bank: Rp' + (summary.amount_by_method.Bank / 1000000).toFixed(1) + 'M' : ''}` : "-",
-            color: "text-amber-600",
+            value: "Rental dengan supir",
+            color: "text-purple-600",
             icon: "info",
           }}
         />
@@ -307,7 +270,6 @@ const handlePageChange = (page: number) => {
               rentals={rentals}
               onExport={handleExport}
               onDelete={handleDeleteClick}
-              onStatusChange={handleStatusChange}
             />
             <div className="border-t border-slate-200 dark:border-slate-800">
               <RentPagination

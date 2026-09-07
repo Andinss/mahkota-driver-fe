@@ -1,58 +1,86 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import NotificationCard from "@/components/ui/notification-card";
+import { notificationApi } from "@/lib/api/notification";
+import type { NotificationItem } from "@/lib/types/notification";
 
 interface ListNotificationProps {
   activeFilter: string;
 }
 
+const typeFilterMap: Record<string, string> = {
+  emergency: "geofence_violation",
+  payment: "payment_overdue",
+  security: "security_alert",
+  system: "system",
+};
+
+const typeToCardType: Record<string, "emergency" | "payment" | "security" | "system" | "received"> = {
+  geofence_violation: "emergency",
+  emergency: "emergency",
+  payment_overdue: "payment",
+  late_payment: "payment",
+  payment: "payment",
+  security_alert: "security",
+  security: "security",
+  system: "system",
+  vehicle_returned: "received",
+  received: "received",
+};
+
+const formatTimestamp = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
+
 const ListNotification = ({ activeFilter }: ListNotificationProps) => {
-  const notifications = [
-    {
-      type: "emergency" as const,
-      title: "Emergency: Vehicle Immobilized",
-      description:
-        "Vehicle ID-8829 has triggered an emergency engine cutoff in the Sector 7 Logistics Zone. Immediate investigation required for safety protocols.",
-      timestamp: "2 mins ago",
-      filterKey: "emergency",
-    },
-    {
-      type: "payment" as const,
-      title: "Payment Overdue: Invoice #2024-91",
-      description:
-        "The corporate account for Metropolitan Logistics has exceeded its credit limit. Late payment fees applied to current cycle.",
-      timestamp: "1 hour ago",
-      filterKey: "payment",
-    },
-    {
-      type: "security" as const,
-      title: "Unusual Login Detected",
-      description:
-        "A new login session was initiated from a Chrome browser on Windows in Singapore. If this wasn't you, please reset your credentials.",
-      timestamp: "4 hours ago",
-      filterKey: "security",
-    },
-    {
-      type: "system" as const,
-      title: "Platform V2.4 Maintenance",
-      description:
-        "The core ledger system will undergo scheduled maintenance tonight at 02:00 AM UTC. Telemetry reports may be delayed by up to 15 minutes.",
-      timestamp: "Yesterday",
-      filterKey: "system",
-    },
-    {
-      type: "received" as const,
-      title: "Payment Received: ID #9928",
-      description:
-        "Institutional payment of Rp 67.500.000 confirmed for Fleet Group Alpha. Transaction ledger synchronized.",
-      timestamp: "2 days ago",
-      filterKey: "payment",
-    },
-  ];
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await notificationApi.getAll({ limit: 50 });
+        setNotifications(res.data || []);
+      } catch {
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
 
   const filteredNotifications = notifications.filter((notification) => {
     if (activeFilter === "all") return true;
-    return notification.filterKey === activeFilter;
+    const target = typeFilterMap[activeFilter];
+    return notification.type === target || notification.type === activeFilter;
   });
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-center">
+        <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 animate-pulse">
+          <span className="material-symbols-outlined text-5xl text-gray-400">
+            notifications
+          </span>
+        </div>
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Loading...</h3>
+      </div>
+    );
+  }
 
   if (filteredNotifications.length === 0) {
     return (
@@ -72,13 +100,13 @@ const ListNotification = ({ activeFilter }: ListNotificationProps) => {
 
   return (
     <div className="space-y-4">
-      {filteredNotifications.map((notification, index) => (
+      {filteredNotifications.map((notification) => (
         <NotificationCard
-          key={index}
-          type={notification.type}
+          key={notification.id}
+          type={typeToCardType[notification.type] || "system"}
           title={notification.title}
-          description={notification.description}
-          timestamp={notification.timestamp}
+          description={notification.message}
+          timestamp={formatTimestamp(notification.created_at)}
         />
       ))}
     </div>
