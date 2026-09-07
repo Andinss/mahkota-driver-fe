@@ -41,16 +41,16 @@ const formatDate = (dateStr: string) => {
   });
 };
 
-const typeLabel: Record<string, string> = {
-  manual: "Manual",
-  rental: "Rental",
-  late_payment: "Late Payment",
+const statusLabel: Record<string, string> = {
+  paid: "Paid",
+  unpaid: "Unpaid",
+  pending: "Pending",
 };
 
-const typeVariant: Record<string, "success" | "info" | "warning" | "neutral"> = {
-  manual: "neutral",
-  rental: "success",
-  late_payment: "warning",
+const statusVariant: Record<string, "success" | "info" | "warning" | "neutral"> = {
+  paid: "success",
+  unpaid: "neutral",
+  pending: "warning",
 };
 
 const methodLabel: Record<string, string> = {
@@ -112,10 +112,10 @@ export const PaymentTableRow = ({
 
       <td className="px-6 py-4">
         <Badge
-          variant={typeVariant[payment.finance_type] || "neutral"}
+          variant={statusVariant[payment.finance_type] || "neutral"}
           dot
         >
-          {typeLabel[payment.finance_type] || payment.finance_type}
+          {statusLabel[payment.finance_type] || payment.finance_type}
         </Badge>
       </td>
 
@@ -127,14 +127,6 @@ export const PaymentTableRow = ({
         <span className="text-sm text-[#617589] dark:text-gray-400">
           {payment.notes || "-"}
         </span>
-      </td>
-
-      <td className="px-2 py-4">
-        {payment.is_active ? (
-          <Badge variant="success" dot>Active</Badge>
-        ) : (
-          <Badge variant="neutral" dot>Inactive</Badge>
-        )}
       </td>
 
       <td className="py-4 px-6 text-right">

@@ -21,12 +21,11 @@ const paymentColumns: ExportColumn[] = [
   { id: "reference_number", label: "Reference Number", defaultChecked: true },
   { id: "payer", label: "Payer", defaultChecked: true },
   { id: "amount_received", label: "Amount Received", defaultChecked: true },
+  { id: "deposit_amount", label: "Deposit Amount", defaultChecked: true },
   { id: "payment_date", label: "Payment Date", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
   { id: "payment_method", label: "Payment Method", defaultChecked: true },
   { id: "notes", label: "Notes", defaultChecked: true },
-  { id: "status", label: "Status", defaultChecked: true },
-  { id: "finance_type", label: "Finance Type", defaultChecked: false },
 ];
 
 export function PaymentTable({
@@ -97,7 +96,6 @@ export function PaymentTable({
               <th className="px-6 py-4">Status</th>
               <th className="px-2 py-4">Method</th>
               <th className="px-6 py-4">Notes</th>
-              <th className="px-2 py-4">Active</th>
               <th className="pe-6 py-4 text-center">Actions</th>
             </tr>
           </thead>

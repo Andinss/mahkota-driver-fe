@@ -3,7 +3,6 @@
 import { CardDriver } from "@/components/finance/late-payment/card-driver";
 import { StatsCard } from "@/components/finance/late-payment/card-stats";
 import { AlertDialog } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { rentalApi } from "@/lib/api/rentals";
 import React, { useState, useEffect, useCallback } from "react";
 
@@ -63,7 +62,7 @@ export default function LatePaymentPage() {
       const items = Array.isArray(res.data) ? res.data : [];
       const now = new Date();
       const late = items
-        .filter((r) => r.payment_status === "late")
+        .filter((r) => new Date(r.end_date) < now)
         .map((r) => ({
           id: r.id,
           rental_number: r.rental_number || r.id.slice(0, 8).toUpperCase(),
@@ -75,7 +74,7 @@ export default function LatePaymentPage() {
             : "-",
           plate: r.vehicle?.license_plate || "-",
           end_date: r.end_date,
-          total_revenue: Number(r.total_revenue),
+          total_revenue: Number(r.daily_rate) * Number(r.total_duration),
           days_late: Math.max(
             0,
             Math.floor(
@@ -104,24 +103,6 @@ export default function LatePaymentPage() {
 
   const currentItem =
     rentals.find((r) => r.id === selectedId) || rentals[0];
-
-  const handleMarkPaid = async () => {
-    if (!currentItem) return;
-    try {
-      await rentalApi.updatePaymentStatus(currentItem.id, "paid");
-      setAlertTitle("Berhasil");
-      setAlertMessage(`${currentItem.rental_number} berhasil ditandai Lunas.`);
-      setAlertType("success");
-      setIsAlertOpen(true);
-      setSelectedId("");
-      fetchData();
-    } catch {
-      setAlertTitle("Gagal");
-      setAlertMessage("Gagal memperbarui status pembayaran.");
-      setAlertType("error");
-      setIsAlertOpen(true);
-    }
-  };
 
   const totalLate = rentals.length;
   const totalAmount = rentals.reduce((s, r) => s + Number(r.total_revenue), 0);
@@ -264,12 +245,6 @@ export default function LatePaymentPage() {
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex justify-end gap-3">
-              <Button icon="check" onClick={handleMarkPaid}>
-                Mark as Paid
-              </Button>
             </div>
           </div>
         ) : (

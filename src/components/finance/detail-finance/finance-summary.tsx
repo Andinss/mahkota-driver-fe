@@ -24,6 +24,7 @@ const methodLabel: Record<string, string> = {
   cash: "Cash",
   transfer: "Transfer",
   "e-wallet": "E-Wallet",
+  saldo: "Saldo",
 };
 
 interface FinanceSummaryProps {
@@ -117,10 +118,18 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
 
         <div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Finance Type
+            Status
           </p>
           <p className="text-sm font-medium text-gray-900 dark:text-white capitalize">
             {finance.finance_type}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+            Deposit Amount
+          </p>
+          <p className="text-sm font-medium text-gray-900 dark:text-white">
+            {formatCurrency(finance.deposit_amount)}
           </p>
         </div>
         <div>

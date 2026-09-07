@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { StatusBadge } from "@/components/status-badge";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
-import { Badge } from "@/components/ui/badge";
 import { EngineSwitch } from "@/components/ui/engine-switch";
 
 interface Rental {
@@ -23,34 +21,9 @@ interface Rental {
     end: string;
     duration: number;
   };
-  deposit: string;
-  paymentStatus: string;
-  methodPayment?: string;
-  saldoDeducted?: number;
   rentalDuration?: string;
   rentalService?: string;
 }
-
-const paymentStatusLabels: Record<string, string> = {
-  paid: "Paid",
-  late: "Late",
-  pending_confirmation: "Pending Confirmation",
-  partial: "Partial",
-  unpaid: "Unpaid",
-};
-
-const allowedTransitions: Record<string, string[]> = {
-  unpaid: ["paid", "late", "pending_confirmation", "partial"],
-  late: ["paid", "pending_confirmation"],
-  pending_confirmation: ["paid", "late", "unpaid"],
-  partial: ["paid"],
-  paid: [],
-};
-
-const getStatusOptions = (currentStatus: string) =>
-  Object.entries(paymentStatusLabels)
-    .filter(([value]) => allowedTransitions[currentStatus]?.includes(value))
-    .map(([value, label]) => ({ value, label }));
 
 interface RentalTableRowProps {
   rental: Rental;
@@ -58,7 +31,6 @@ interface RentalTableRowProps {
   onDelete?: (rental: Rental) => void;
   onDetails?: (rental: Rental) => void;
   onEndRental?: (rental: Rental) => void;
-  onStatusChange?: (rental: Rental, status: string) => void;
 }
 
 export const RentalTableRow = ({
@@ -67,7 +39,6 @@ export const RentalTableRow = ({
   onDelete,
   onDetails,
   onEndRental,
-  onStatusChange,
 }: RentalTableRowProps) => {
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
@@ -126,31 +97,6 @@ export const RentalTableRow = ({
       </td>
 
       <td className="px-6 py-4">
-        <span className="text-sm font-medium text-slate-900 dark:text-white">
-          {rental.deposit}
-        </span>
-      </td>
-
-      <td className="px-6 py-4">
-        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-          {rental.methodPayment === "Saldo" && (
-            <span className="material-symbols-outlined text-sm text-green-600 dark:text-green-400">account_balance_wallet</span>
-          )}
-          {rental.methodPayment || "Bank"}
-        </span>
-      </td>
-
-      <td className="px-6 py-4">
-        {rental.methodPayment === "Saldo" && Number(rental.saldoDeducted) > 0 ? (
-          <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-            -Rp {Number(rental.saldoDeducted).toLocaleString("id-ID")}
-          </span>
-        ) : (
-          <span className="text-sm text-slate-400 dark:text-slate-500">-</span>
-        )}
-      </td>
-
-      <td className="px-6 py-4">
         <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 capitalize">
           {rental.rentalDuration || "-"}
         </span>
@@ -182,25 +128,6 @@ export const RentalTableRow = ({
         )}
       </td>
 
-      <td className="px-6 py-4">
-        <Badge
-          variant={
-            rental.paymentStatus === "paid"
-              ? "success"
-              : rental.paymentStatus === "partial"
-                ? "warning"
-                : rental.paymentStatus === "late"
-                  ? "danger"
-                  : rental.paymentStatus === "pending_confirmation"
-                    ? "info"
-                    : "neutral"
-          }
-          dot
-        >
-          {paymentStatusLabels[rental.paymentStatus] || rental.paymentStatus}
-        </Badge>
-      </td>
-
       <td className="py-4 px-6 text-right">
         <Dropdown
           trigger={
@@ -226,18 +153,6 @@ export const RentalTableRow = ({
           <Link href={`/dashboard/rent/detail/?id=${rental.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
-
-          <div className="border-t border-slate-200 dark:border-slate-700 my-1"></div>
-
-          {getStatusOptions(rental.paymentStatus).map((opt) => (
-            <DropdownMenuItem
-              key={opt.value}
-              icon={opt.value === "paid" ? "check_circle" : opt.value === "late" ? "warning" : opt.value === "pending_confirmation" ? "hourglass_empty" : opt.value === "partial" ? "payments" : "cancel"}
-              onClick={() => onStatusChange?.(rental, opt.value)}
-            >
-              Set {opt.label}
-            </DropdownMenuItem>
-          ))}
         </Dropdown>
       </td>
     </tr>

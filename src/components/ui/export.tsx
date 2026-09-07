@@ -38,7 +38,6 @@ const defaultRentalColumns: ExportColumn[] = [
   { id: "driver", label: "Driver", defaultChecked: true },
   { id: "vehicle", label: "Vehicle Info", defaultChecked: true },
   { id: "rentalPeriod", label: "Rental Period", defaultChecked: true },
-  { id: "deposit", label: "Deposit", defaultChecked: false },
   { id: "status", label: "Status", defaultChecked: true },
 ];
 

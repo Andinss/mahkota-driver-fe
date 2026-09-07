@@ -19,11 +19,12 @@ export interface FinanceItem {
   reference_number: string;
   payment_method: "cash" | "transfer" | "e-wallet" | "saldo";
   amount_received: number;
+  deposit_amount: number;
   notes: string;
   payer: string;
   driver_id: string;
   driver?: DriverBrief;
-  finance_type: "manual" | "rental" | "late_payment";
+  finance_type: "paid" | "unpaid" | "pending";
   rentals?: RentalBrief[];
   is_active: boolean;
   created_at?: string;
@@ -82,6 +83,7 @@ export interface CreateFinancePayload {
   reference_number: string;
   payment_method: string;
   amount_received: number;
+  deposit_amount?: number;
   notes: string;
   payer: string;
   driver_id: string;
