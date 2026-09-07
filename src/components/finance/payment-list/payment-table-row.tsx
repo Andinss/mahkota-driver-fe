@@ -34,9 +34,9 @@ const formatDate = (dateStr: string) => {
   if (!dateStr) return "-";
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString("en-US", {
-    month: "short",
+  return date.toLocaleDateString("id-ID", {
     day: "numeric",
+    month: "short",
     year: "numeric",
   });
 };
@@ -74,17 +74,15 @@ export const PaymentTableRow = ({
   const avatarUrl = photoUrl(payment.driver?.profile_photo) || "";
 
   return (
-    <tr
-      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
       <td className="px-6 py-4">
-        <span className="font-mono text-sm font-bold text-[#111418] dark:text-white">
+        <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
           {payment.reference_number}
         </span>
       </td>
-
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0 flex items-center justify-center bg-slate-300 dark:bg-slate-600 text-xs font-medium">
+          <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0 flex items-center justify-center text-xs font-medium">
             {avatarUrl ? (
               <img src={avatarUrl} alt={driverName} className="w-full h-full rounded-full object-cover" />
             ) : (
@@ -101,15 +99,12 @@ export const PaymentTableRow = ({
           </div>
         </div>
       </td>
-
-      <td className="px-6 py-4 font-semibold text-[#111418] dark:text-white">
+      <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">
         {formatCurrency(payment.amount_received)}
       </td>
-
-      <td className="px-6 py-4 font-medium text-[#617589] dark:text-gray-400">
+      <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
         {formatDate(payment.payment_date)}
       </td>
-
       <td className="px-6 py-4">
         <Badge
           variant={statusVariant[payment.finance_type] || "neutral"}
@@ -118,21 +113,18 @@ export const PaymentTableRow = ({
           {statusLabel[payment.finance_type] || payment.finance_type}
         </Badge>
       </td>
-
-      <td className="px-2 py-4 text-[#617589] dark:text-gray-400">
+      <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
         {methodLabel[payment.payment_method] || payment.payment_method}
       </td>
-
       <td className="px-6 py-4 max-w-[220px] truncate" title={payment.notes}>
-        <span className="text-sm text-[#617589] dark:text-gray-400">
+        <span className="text-sm text-slate-500 dark:text-slate-400">
           {payment.notes || "-"}
         </span>
       </td>
-
-      <td className="py-4 px-6 text-right">
+      <td className="px-6 py-4 text-right">
         <Dropdown
           trigger={
-            <button className="text-[#617589] hover:text-[#111418] dark:text-[#94a3b8] dark:hover:text-white transition-colors">
+            <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               <span className="material-symbols-outlined text-xl">
                 more_vert
               </span>

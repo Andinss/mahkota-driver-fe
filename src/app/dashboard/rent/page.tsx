@@ -5,8 +5,8 @@ import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-pr
 import { PageHeader } from "@/components/page-header";
 import { RentalCard } from "@/components/rent/dashboard/card";
 import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
-import { RentPagination } from "@/components/rent/dashboard/rent-pagination";
 import { RentalTable } from "@/components/rent/dashboard/rent-table";
+import { Pagination } from "@/components/ui/pagination";
 import { ExportOptions } from "@/components/ui/export";
 import { useSearchParams } from "next/navigation";
 import { rentalApi } from "@/lib/api/rentals";
@@ -88,7 +88,7 @@ const searchParams = useSearchParams();
   const [totalResults, setTotalResults] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [summary, setSummary] = useState<RentalSummary | null>(null);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const toastShownRef = useRef(false);
 
@@ -142,7 +142,7 @@ const searchParams = useSearchParams();
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, user]);
+  }, [currentPage, itemsPerPage, user]);
 
   useEffect(() => {
     fetchRentals();
@@ -253,12 +253,13 @@ const handlePageChange = (page: number) => {
               onDelete={handleDeleteClick}
             />
             <div className="border-t border-slate-200 dark:border-slate-800">
-              <RentPagination
+              <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 totalResults={totalResults}
                 resultsPerPage={itemsPerPage}
                 onPageChange={handlePageChange}
+                onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }}
               />
             </div>
           </>

@@ -4,8 +4,8 @@ import type { AuditLogItem } from "@/lib/types/audit";
 const formatTimestamp = (dateStr: string) => {
   const d = new Date(dateStr);
   return {
-    date: d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-    time: d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    date: d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }),
+    time: d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
   };
 };
 
@@ -25,19 +25,19 @@ interface AuditTableRowProps {
 const statusConfig = {
   success: {
     bgColor: "bg-green-50 dark:bg-green-900/20",
-    textColor: "text-green-600",
+    textColor: "text-green-600 dark:text-green-400",
     dotColor: "bg-green-500",
     label: "Success"
   },
   failed: {
     bgColor: "bg-red-50 dark:bg-red-900/20",
-    textColor: "text-red-600",
+    textColor: "text-red-600 dark:text-red-400",
     dotColor: "bg-red-500",
     label: "Failed"
   },
   pending: {
     bgColor: "bg-amber-50 dark:bg-amber-900/20",
-    textColor: "text-amber-600",
+    textColor: "text-amber-600 dark:text-amber-400",
     dotColor: "bg-amber-500",
     label: "Pending"
   }
@@ -50,51 +50,51 @@ export const AuditTableRow = ({ log, onViewDetails }: AuditTableRowProps) => {
   const isSystem = log.username === "System";
 
   return (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-      <td className="px-6 py-5">
-        <div className="text-sm font-medium">{ts.date}</div>
-        <div className="text-xs text-slate-500">{ts.time}</div>
+    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+      <td className="px-6 py-4">
+        <div className="text-sm font-medium text-slate-900 dark:text-white">{ts.date}</div>
+        <div className="text-xs text-slate-400">{ts.time}</div>
       </td>
-      <td className="px-6 py-5">
+      <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           {isSystem ? (
             <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-[10px] font-bold">
               SYS
             </div>
           ) : (
-            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-xs font-medium">
+            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-xs font-medium text-slate-600 dark:text-slate-300">
               {log.username.charAt(0).toUpperCase()}
             </div>
           )}
           <div>
-            <div className={`text-sm font-semibold ${isSystem ? 'text-primary' : ''}`}>
+            <div className={`text-sm font-semibold ${isSystem ? 'text-primary' : 'text-slate-900 dark:text-white'}`}>
               {log.username}
             </div>
           </div>
         </div>
       </td>
-      <td className="px-6 py-5">
-        <div className="text-sm font-medium">{log.action}</div>
+      <td className="px-6 py-4">
+        <div className="text-sm font-medium text-slate-900 dark:text-white">{log.action}</div>
       </td>
-      <td className="px-6 py-5">
+      <td className="px-6 py-4">
         <div className="text-sm text-slate-600 dark:text-slate-400">{log.target || "-"}</div>
       </td>
-      <td className="px-6 py-5">
+      <td className="px-6 py-4">
         <div className="text-xs text-slate-500 dark:text-slate-400 max-w-[120px] truncate" title={log.user_agent || ""}>
           {parseUserAgent(log.user_agent)}
         </div>
       </td>
-      <td className="px-6 py-5 text-center">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.textColor}`}>
+      <td className="px-6 py-4 text-center">
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${status.bgColor} ${status.textColor}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${status.dotColor}`}></span>
           {status.label}
         </span>
       </td>
-      <td className="px-6 py-5 text-right">
+      <td className="px-6 py-4 text-right">
         <Dropdown
           trigger={
-            <button className="text-slate-400 hover:text-primary transition-colors">
-              <span className="material-symbols-outlined">more_vert</span>
+            <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+              <span className="material-symbols-outlined text-xl">more_vert</span>
             </button>
           }
         >

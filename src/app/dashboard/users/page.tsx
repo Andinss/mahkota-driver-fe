@@ -5,7 +5,7 @@ import { ExportOptions } from "@/components/ui/export";
 import SearchBar from "@/components/user/dashboard/search-bar-user";
 import type { UserFilters } from "@/components/user/dashboard/search-bar-user";
 import { UserTable } from "@/components/user/dashboard/table-user";
-import { UserPagination } from "@/components/user/dashboard/user-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { usersApi } from "@/lib/api/users";
@@ -30,7 +30,7 @@ export default function UserList() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [filters, setFilters] = useState<UserFilters>({
     search: "",
@@ -89,7 +89,7 @@ export default function UserList() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, filters]);
+  }, [currentPage, itemsPerPage, filters]);
 
   useEffect(() => {
     fetchUsers();
@@ -155,12 +155,13 @@ export default function UserList() {
               onDelete={handleDeleteClick}
               onExport={handleExport}
             />
-            <UserPagination
+            <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
               totalResults={totalResults}
               resultsPerPage={itemsPerPage}
               onPageChange={handlePageChange}
+              onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }}
             />
           </>
         )}

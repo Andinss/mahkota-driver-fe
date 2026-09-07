@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { PaymentCard } from "@/components/finance/payment-list/card";
-import { FinancePagination } from "@/components/finance/payment-list/payment-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
 import { PageHeader } from "@/components/page-header";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -31,6 +31,7 @@ export default function PaymentList() {
   const [searchValue, setSearchValue] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
 
   const [isDeleting, setIsDeleting] = useState(false);
@@ -55,7 +56,7 @@ export default function PaymentList() {
     try {
       const params: FinanceListParams = {
         page: currentPage,
-        limit: 10,
+        limit: itemsPerPage,
         search: searchValue || undefined,
         payment_method: paymentMethod || undefined,
       };
@@ -69,7 +70,7 @@ export default function PaymentList() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, searchValue, paymentMethod, user]);
+  }, [currentPage, itemsPerPage, searchValue, paymentMethod, user]);
 
   useEffect(() => {
     fetchFinances();
@@ -273,12 +274,13 @@ export default function PaymentList() {
                   onExport={handleExport}
                 />
                 <div className="border-t border-[#dbe0e6] dark:border-gray-700">
-                  <FinancePagination
+                  <Pagination
                     currentPage={meta.page}
                     totalPages={meta.totalPages}
                     totalResults={meta.total}
-                    resultsPerPage={meta.limit}
+                    resultsPerPage={itemsPerPage}
                     onPageChange={handlePageChange}
+                    onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }}
                   />
                 </div>
               </>

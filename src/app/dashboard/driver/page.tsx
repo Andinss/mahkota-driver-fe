@@ -8,7 +8,7 @@ import {
   DriverFilters,
 } from "@/components/driver/dashboard/driver-table-filters";
 import { DriverTable } from "@/components/driver/dashboard/driver-table";
-import { DriverPagination } from "@/components/driver/dashboard/driver-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import type { Driver } from "@/components/driver/dashboard/driver-table-row";
 import { PageHeader } from "@/components/page-header";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,7 @@ export default function DriverPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const hasReadAll = canAccess(user?.permissions, 'driver.read.all');
   const hasReadOwn = canAccess(user?.permissions, 'driver.read.own');
@@ -103,7 +103,7 @@ export default function DriverPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, filters.search, hasReadAll, hasReadOwn]);
+  }, [currentPage, itemsPerPage, filters.search, hasReadAll, hasReadOwn]);
 
   const fetchCount = useCallback(async () => {
     if (hasReadAll || !hasReadOwn) return;
@@ -264,12 +264,13 @@ export default function DriverPage() {
               onDetailsDriver={handleDetails}
             />
             <div className="border-t border-slate-200 dark:border-slate-800">
-              <DriverPagination
+              <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 totalResults={totalResults}
                 resultsPerPage={itemsPerPage}
                 onPageChange={handlePageChange}
+                onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }}
               />
             </div>
           </>

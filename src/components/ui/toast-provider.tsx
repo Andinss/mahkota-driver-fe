@@ -48,7 +48,7 @@ export function toastSuccess(msg: string) {
     autoClose: 5000,
     style: { borderLeft: "4px solid #3b82f6" },
     progressStyle: { background: "#3b82f6" },
-  });
+  } as any);
 }
 
 export function toastError(msg: string) {
@@ -59,7 +59,7 @@ export function toastError(msg: string) {
     toastId: id,
     style: { borderLeft: "4px solid #dc2626" },
     progressStyle: { background: "#dc2626" },
-  });
+  } as any);
 }
 
 export function toastWarning(msg: string) {
@@ -70,7 +70,7 @@ export function toastWarning(msg: string) {
     toastId: id,
     style: { borderLeft: "4px solid #f59e0b" },
     progressStyle: { background: "#f59e0b" },
-  });
+  } as any);
 }
 
 export function toastInfo(msg: string) {
@@ -81,7 +81,7 @@ export function toastInfo(msg: string) {
     toastId: id,
     style: { borderLeft: "4px solid #3b82f6" },
     progressStyle: { background: "#3b82f6" },
-  });
+  } as any);
 }
 
 /* ========== Confirm Toast ========== */
