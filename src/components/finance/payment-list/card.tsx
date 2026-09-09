@@ -10,6 +10,13 @@ interface PaymentCardProps {
   };
 }
 
+const colorToBg: Record<string, string> = {
+  "text-primary": "bg-primary/10 dark:bg-primary/20",
+  "text-green-700": "bg-green-50 dark:bg-green-900/20",
+  "text-orange-700": "bg-orange-50 dark:bg-orange-900/20",
+  "text-blue-600": "bg-blue-50 dark:bg-blue-900/20",
+};
+
 export function PaymentCard({
   title,
   value,
@@ -17,25 +24,25 @@ export function PaymentCard({
   iconColor,
   trend,
 }: PaymentCardProps) {
+  const bgClass = colorToBg[iconColor] || "bg-slate-100 dark:bg-slate-800";
+
   return (
-    <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-        {title}
-      </p>
-        <span className={`material-symbols-outlined text-4xl ${iconColor}`}>
-          {icon}
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+      <div className="flex items-center gap-4">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${bgClass}`}>
+          <span className={`material-symbols-outlined text-2xl ${iconColor}`}>{icon}</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-lg font-bold text-slate-900 dark:text-white leading-tight break-words">{value}</p>
+          <p className="text-xs text-slate-400 font-medium truncate mt-0.5">{title}</p>
+        </div>
+      </div>
+      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <span className={`text-xs font-medium flex items-center gap-1 ${trend.color}`}>
+          <span className="material-symbols-outlined text-sm">{trend.icon}</span>
+          {trend.value}
         </span>
       </div>
-        <p className="text-3xl font-bold dark:text-white">
-          {value}
-        </p>
-        <p className={`text-xs font-medium ${trend.color} mt-2 flex items-center gap-1`}>
-        <span className="material-symbols-outlined text-sm">
-          {trend.icon}
-        </span>{" "}
-        {trend.value}
-        </p>
     </div>
   );
 }

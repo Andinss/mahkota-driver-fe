@@ -10,21 +10,27 @@ import { rentalApi } from "@/lib/api/rentals";
 import { vehicleApi } from "@/lib/api/vehicle";
 import { driverApi } from "@/lib/api/driver";
 import { usersApi } from "@/lib/api/users";
+import type { MonthlyFinanceItem } from "@/lib/types/finances";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
   Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+  Filler,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
 
-const formatCurrency = (v: number) => `Rp ${v.toLocaleString("id-ID")}`;
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
+
+const formatCurrency = (v: number) =>
+  new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(v);
 
 export default function DashboardPage() {
   const router = useRouter();
   const [financeAmount, setFinanceAmount] = useState(0);
+  const [monthlyData, setMonthlyData] = useState<MonthlyFinanceItem[]>([]);
   const [totalVehicles, setTotalVehicles] = useState(0);
   const [totalDrivers, setTotalDrivers] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -38,6 +44,12 @@ export default function DashboardPage() {
         .getSummary()
         .then((r) => {
           setFinanceAmount(r.data.total_amount_received);
+        })
+        .catch(() => {}),
+      financeApi
+        .getMonthlySummary()
+        .then((r) => {
+          setMonthlyData(r.data.months);
         })
         .catch(() => {}),
       rentalApi
@@ -72,9 +84,70 @@ export default function DashboardPage() {
     fetchAll();
   }, [fetchAll]);
 
-  const lineData = [
-    { name: "Finance", revenue: financeAmount },
-  ];
+  const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
+  const monthlyTotals = monthlyData.map((d) => d.total);
+  const totalFinance = monthlyTotals.reduce((sum, v) => sum + v, 0);
+
+  const chartData = {
+    labels: MONTH_LABELS,
+    datasets: [
+      {
+        label: "Finance",
+        data: monthlyTotals,
+        borderColor: "#137fec",
+        backgroundColor: "rgba(19, 127, 236, 0.1)",
+        borderWidth: 3,
+        pointRadius: 5,
+        pointBackgroundColor: "#137fec",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 3,
+        pointHoverRadius: 7,
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        backgroundColor: "#1e293b",
+        titleColor: "#fff",
+        bodyColor: "#fff",
+        borderColor: "none",
+        borderWidth: 0,
+        cornerRadius: 8,
+        padding: 12,
+        callbacks: {
+          label: (ctx: any) => formatCurrency(ctx.parsed.y || 0),
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { color: "#e2e8f0" },
+        ticks: { color: "#94a3b8", font: { size: 13 } },
+        border: { color: "#e2e8f0" },
+      },
+      y: {
+        grid: { color: "#e2e8f0" },
+        ticks: {
+          color: "#94a3b8",
+          font: { size: 12 },
+          callback: (v: any) =>
+            v >= 1000000
+              ? `Rp${(v / 1000000).toFixed(1)}M`
+              : v >= 1000
+                ? `Rp${(v / 1000).toFixed(0)}K`
+                : `Rp${v}`,
+        },
+        border: { color: "#e2e8f0" },
+      },
+    },
+  };
 
   if (loading) {
     return (
@@ -130,75 +203,21 @@ export default function DashboardPage() {
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                {formatCurrency(financeAmount)}
+                {formatCurrency(totalFinance)}
               </p>
-              <p className="text-xs text-slate-400">Total finance</p>
+              <p className="text-xs text-slate-400">Total finance {new Date().getFullYear()}</p>
             </div>
           </div>
 
           <div className="w-full h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={lineData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fill: "#94a3b8", fontSize: 13 }}
-                  axisLine={{ stroke: "#e2e8f0" }}
-                />
-                <YAxis
-                  tick={{ fill: "#94a3b8", fontSize: 12 }}
-                  axisLine={{ stroke: "#e2e8f0" }}
-                  tickFormatter={(v) =>
-                    v >= 1000000
-                      ? `Rp${(v / 1000000).toFixed(1)}M`
-                      : v >= 1000
-                        ? `Rp${(v / 1000).toFixed(0)}K`
-                        : `Rp${v}`
-                  }
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "none",
-                    borderRadius: "8px",
-                    color: "#fff",
-                    fontSize: "13px",
-                  }}
-                  formatter={(value: any) => [
-                    formatCurrency(Number(value) || 0),
-                    "Revenue",
-                  ]}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#137fec"
-                  strokeWidth={3}
-                  dot={{
-                    fill: "#137fec",
-                    stroke: "#fff",
-                    strokeWidth: 3,
-                    r: 6,
-                  }}
-                  activeDot={{
-                    fill: "#137fec",
-                    stroke: "#fff",
-                    strokeWidth: 3,
-                    r: 8,
-                  }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <Line data={chartData} options={chartOptions} />
           </div>
 
           <div className="flex justify-center gap-8 mt-6 text-sm">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-blue-500" />
               <span className="text-slate-500">
-                Finance: {formatCurrency(financeAmount)}
+                Finance: {formatCurrency(totalFinance)}
               </span>
             </div>
           </div>

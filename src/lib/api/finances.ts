@@ -1,6 +1,6 @@
 import { api } from "../api-http";
 import type { SuccessResponse, SuccessResponsePaginated } from "../types/api";
-import type { FinanceItem, FinanceListParams, FinanceSummary, CreateFinancePayload, UpdateFinancePayload, LatePaymentItem, LatePaymentStats } from "../types/finances.ts";
+import type { FinanceItem, FinanceListParams, FinanceSummary, CreateFinancePayload, UpdateFinancePayload, LatePaymentItem, LatePaymentStats, FinanceMonthlySummary } from "../types/finances.ts";
 
 export const financeApi = {
   getList: (params?: FinanceListParams) =>
@@ -11,6 +11,9 @@ export const financeApi = {
 
   getSummary: () =>
     api.get<SuccessResponse<FinanceSummary>>("/finances/summary"),
+
+  getMonthlySummary: (year?: number) =>
+    api.get<SuccessResponse<FinanceMonthlySummary>>("/finances/monthly-summary", year ? { year } : undefined),
 
   getById: (id: string) =>
     api.get<SuccessResponse<FinanceItem>>(`/finances/${id}`),

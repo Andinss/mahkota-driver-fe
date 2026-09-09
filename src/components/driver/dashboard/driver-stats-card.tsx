@@ -10,6 +10,13 @@ export interface DriverStatsCardProps {
   };
 }
 
+const colorToBg: Record<string, string> = {
+  "text-primary": "bg-primary/10 dark:bg-primary/20",
+  "text-blue-500": "bg-blue-50 dark:bg-blue-900/20",
+  "text-emerald-500": "bg-emerald-50 dark:bg-emerald-900/20",
+  "text-slate-400": "bg-slate-100 dark:bg-slate-800",
+};
+
 export function DriverStatsCard({
   title,
   value,
@@ -17,21 +24,25 @@ export function DriverStatsCard({
   iconColor,
   trend,
 }: DriverStatsCardProps) {
+  const bgClass = colorToBg[iconColor] || "bg-slate-100 dark:bg-slate-800";
+
   return (
-    <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
-      <div className="flex justify-between items-start mb-4">
-        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-          {title}
-        </span>
-        <span className={`material-icons-round ${iconColor}`}>{icon}</span>
-      </div>
-      <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-        {value}
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+      <div className="flex items-center gap-4">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${bgClass}`}>
+          <span className={`material-symbols-outlined text-2xl ${iconColor}`}>{icon}</span>
+        </div>
+        <div className="min-w-0">
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+          <p className="text-xs text-slate-400 font-medium truncate">{title}</p>
+        </div>
       </div>
       {trend && (
-        <div className={`flex items-center gap-1 text-xs font-semibold ${trend.textColor}`}>
-          <span className="material-icons-round text-xs">{trend.icon}</span>
-          <span className="text-xs">{trend.text}</span>
+        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <span className={`text-xs font-medium flex items-center gap-1 ${trend.textColor}`}>
+            <span className="material-symbols-outlined text-sm">{trend.icon}</span>
+            {trend.text}
+          </span>
         </div>
       )}
     </div>

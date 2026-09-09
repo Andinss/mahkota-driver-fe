@@ -94,3 +94,14 @@ export interface CreateFinancePayload {
 export interface UpdateFinancePayload extends Partial<CreateFinancePayload> {
   is_active?: boolean;
 }
+
+export interface MonthlyFinanceItem {
+  month: number;
+  total: number;
+  count: number;
+}
+
+export interface FinanceMonthlySummary {
+  year: number;
+  months: MonthlyFinanceItem[];
+}
