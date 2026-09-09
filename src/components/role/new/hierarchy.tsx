@@ -48,16 +48,23 @@ const RoleHierarchy = ({ allPermissions, selectedIds }: RoleHierarchyProps) => {
     : [{ text: "No permissions selected yet", allowed: false }];
 
   return (
-    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 p-6">
-      <h3 className="font-bold text-blue-700 dark:text-blue-300 flex items-center gap-2 mb-3">
-        <span className="material-symbols-outlined">info</span>
-        Role Hierarchy
-      </h3>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-blue-500 text-xl">account_tree</span>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Role Hierarchy
+          </h3>
+          <p className="text-xs text-slate-400">Roles determine the visibility of data</p>
+        </div>
+      </div>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
         Roles determine the visibility of data. A higher hierarchy role can
         manage users in roles below them.
       </p>
-      <div className="p-4 bg-white dark:bg-[#1a2632] rounded-lg border border-blue-100 dark:border-blue-900">
+      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
           <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">

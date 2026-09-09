@@ -132,28 +132,70 @@ export default function VehicleRegisterPage() {
   };
   return (
     <PermissionGuard permission="vehicle.create">
-    <div className="bg-white dark:bg-slate-900 rounded-xl m-7 shadow-sm border border-[#f0f2f4] dark:border-slate-800 overflow-hidden">
-      <div className="flex flex-col md:flex-row min-h-[600px]">
-        <div className="w-full md:w-1/3 bg-gray-50/50 dark:bg-slate-800/50 p-8 border-r border-[#f0f2f4] dark:border-slate-800 flex flex-col gap-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCancel}
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            >
+              <span className="material-symbols-outlined text-slate-500">arrow_back</span>
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {mode === "add" ? "Tambah Kendaraan Baru" : "Edit Kendaraan"}
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {mode === "add" ? "Lengkapi form di bawah untuk mendaftarkan kendaraan" : "Perbarui informasi kendaraan"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Form Sections */}
+        <div className="space-y-6">
           <VehicleMediaUpload
             onImagesSelect={setImageFiles}
             initialImageUrls={initialImageUrls === undefined ? undefined : (initialImageUrls || [])}
             acceptedFormats={["JPG", "PNG"]}
             maxSizeMB={5}
           />
+
+          <VehicleSpecificationsForm
+            mode={mode}
+            initialValues={initialValues}
+            onSubmit={handleSubmit}
+          />
+
           <StatusSelect value={status} onChange={setStatus} />
+
+          {/* Submit Buttons */}
+          <div className="flex items-center justify-end gap-3 pt-4">
+            <button
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+            >
+              Batal
+            </button>
+            <button
+              onClick={() => {
+                const form = document.getElementById("vehicleForm") as HTMLFormElement;
+                if (form) form.requestSubmit();
+              }}
+              disabled={isSubmitting}
+              className="px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center gap-2 text-sm"
+            >
+              <span className="material-symbols-outlined text-xl">
+                {isSubmitting ? "hourglass_empty" : "check_circle"}
+              </span>
+              {isSubmitting ? "Menyimpan..." : mode === "add" ? "Simpan Kendaraan" : "Update Kendaraan"}
+            </button>
+          </div>
         </div>
-
-        <VehicleSpecificationsForm
-          mode={mode}
-          initialValues={initialValues}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          isSubmitting={isSubmitting}
-        />
       </div>
-
-
     </div>
     </PermissionGuard>
   );

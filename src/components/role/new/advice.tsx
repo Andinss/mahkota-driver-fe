@@ -1,19 +1,20 @@
 const Advice = () => {
   return (
-    <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-      <div className="flex items-center justify-center h-48 bg-gray-100 dark:bg-slate-800 rounded-lg mb-4 overflow-hidden">
-        <img
-          alt="Role Management Illustration"
-          className="object-cover h-full w-full"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ59Lb5aMIBmKR7sviJjoCMOT7bWRey9UeawrVvwau0BVDEPlSD5NBSshG3ynX5Yej_yZZeAShsEe7R4ozdbiZjVxWqq-9OA_mWkHAUrjyCxFbGQjhCSGAU1vxIgr_deDoZocLwRiA34RgGW2gXQMdSwTCSDm3PgTh2OVs2Yb0pIlW9i033mNYXt8FIZSRnDRED6Xg2kSq5x7FrJoHCOBHxccAEvuzMza14JMSXDhKEEgkoA-hzCqC9dI1EAIhbS-6tNINDkE7qJhJ"
-        />
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-amber-500 text-xl">tips_and_updates</span>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Security Best Practices
+          </h3>
+          <p className="text-xs text-slate-400">Panduan keamanan untuk pengelolaan role</p>
+        </div>
       </div>
-      <h4 className="font-bold text-sm mb-2 text-gray-900 dark:text-white">
-        Security Best Practices
-      </h4>
       <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
         Always follow the principle of least privilege. Only grant permissions
-        that are strictly necessary for the employee's daily tasks.
+        that are strictly necessary for the employee&apos;s daily tasks.
       </p>
     </div>
   );

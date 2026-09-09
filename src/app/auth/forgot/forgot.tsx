@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toastSuccess, toastError } from "@/components/ui/toast-provider";
@@ -66,48 +65,47 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a2632] rounded-xl p-[1px]">
-      <div className="bg-white dark:bg-[#1a2632] rounded-xl p-5 sm:p-12 flex flex-col">
-        <div className="mb-8">
-          <div className="flex items-center gap-2 text-primary-container dark:text-blue-400 mb-6">
-            <span className="material-symbols-outlined" data-icon="lock_reset">
-              lock_reset
-            </span>
-            <span className="text-xs font-bold tracking-widest uppercase">
-              Security Portal
-            </span>
-          </div>
-          <h1 className="text-on-surface dark:text-white text-[2rem] font-black leading-tight tracking-tight mb-4">
-            Forgot Password?
-          </h1>
-          <p className="text-on-surface-variant dark:text-gray-400 text-base leading-relaxed max-w-sm">
-            Enter your email to receive password reset instructions.
-          </p>
-        </div>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+          Lupa Password?
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Masukkan email Anda untuk menerima instruksi reset password
+        </p>
+      </div>
 
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-2">
-            <Input
-              id="email"
-              name="email"
-              label="Email"
-              placeholder="Enter your email"
-              type="email"
-              value={formValues.email}
-              onChange={(e) => handleInputChange(e.target.value)}
-              error={hasSubmitted ? errors.email : undefined}
-            />
-          </div>
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <Input
+          id="email"
+          name="email"
+          label="Email"
+          placeholder="Masukkan email Anda"
+          type="email"
+          value={formValues.email}
+          onChange={(e) => handleInputChange(e.target.value)}
+          error={hasSubmitted ? errors.email : undefined}
+        />
 
-          <Button
-            type="submit"
-            icon="lock_reset"
-            className="editorial-gradient"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Sending..." : "Send Instructions"}
-          </Button>
-        </form>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center justify-center gap-2 text-sm"
+        >
+          <span className="material-symbols-outlined text-xl">
+            {isSubmitting ? "hourglass_empty" : "send"}
+          </span>
+          {isSubmitting ? "Mengirim..." : "Kirim Instruksi"}
+        </button>
+      </form>
+
+      <div className="mt-6 text-center">
+        <a
+          href="/auth/login"
+          className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+        >
+          Kembali ke Login
+        </a>
       </div>
     </div>
   );

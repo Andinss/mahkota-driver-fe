@@ -119,8 +119,10 @@ export default function AddNewUserPage() {
   if (isLoadingUser) {
     return (
       <PermissionGuard permission="user.create">
-      <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <p className="text-slate-500 dark:text-slate-400">Loading user data...</p>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex items-center justify-center min-h-[400px]">
+          <p className="text-slate-500 dark:text-slate-400">Loading user data...</p>
+        </div>
       </div>
       </PermissionGuard>
     );
@@ -128,21 +130,43 @@ export default function AddNewUserPage() {
 
   return (
     <PermissionGuard permission="user.create">
-    <div className="p-8">
-      <AddUserForm
-        key={mode === "edit" ? userIdParam : "add"}
-        mode={mode}
-        initialData={initialData}
-        roles={filteredRoles}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-        onSaveDraft={handleSaveDraft}
-        isSubmitting={isSubmitting}
-      />
-      <CardUser />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCancel}
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            >
+              <span className="material-symbols-outlined text-slate-500">arrow_back</span>
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {mode === "add" ? "Tambah User Baru" : "Edit User"}
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {mode === "add" ? "Lengkapi form di bawah untuk membuat user baru" : "Perbarui informasi user"}
+              </p>
+            </div>
+          </div>
+        </div>
 
-      
-
+        {/* Form Sections */}
+        <div className="space-y-6">
+          <AddUserForm
+            key={mode === "edit" ? userIdParam : "add"}
+            mode={mode}
+            initialData={initialData}
+            roles={filteredRoles}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            onSaveDraft={handleSaveDraft}
+            isSubmitting={isSubmitting}
+          />
+          <CardUser />
+        </div>
+      </div>
     </div>
     </PermissionGuard>
   );
