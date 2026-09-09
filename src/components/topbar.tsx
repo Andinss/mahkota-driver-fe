@@ -112,9 +112,6 @@ const Topbar = () => {
       </nav>
 
       <div className="flex items-center gap-4 ml-auto">
-        <button className="sm:hidden p-2 text-slate-500 hover:text-primary transition-colors">
-          <span className="material-symbols-outlined">search</span>
-        </button>
         <div className="relative" ref={notifRef}>
           <div
             onClick={toggleNotif}

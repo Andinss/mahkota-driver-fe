@@ -3,72 +3,68 @@ interface RoleCardProps {
   value: string;
   icon: string;
   iconColor: string;
-  valueColor?: string;        
-  trend?: {                   
+  valueColor?: string;
+  trend?: {
     value: string;
     color: string;
     icon: string;
   };
-  progressBar?: {             
+  progressBar?: {
     percentage: number;
     label: string;
   };
 }
+
+const colorToBg: Record<string, string> = {
+  "text-slate-600": "bg-slate-100 dark:bg-slate-800",
+  "text-slate-400": "bg-slate-100 dark:bg-slate-800",
+  "text-blue-600": "bg-blue-50 dark:bg-blue-900/20",
+};
 
 export function RoleCard({
   title,
   value,
   icon,
   iconColor,
-  valueColor,
   trend,
   progressBar,
 }: RoleCardProps) {
-  return (
-    <div className="bg-white dark:bg-[#1a2632] border border-slate-200 dark:border-slate-700 rounded-3xl p-6 shadow-sm">
+  const bgClass = colorToBg[iconColor] || "bg-slate-100 dark:bg-slate-800";
 
-      
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center">
-          <span className={`material-symbols-outlined ${iconColor}`}>
-            {icon}
-          </span>
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+      <div className="flex items-center gap-4">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${bgClass}`}>
+          <span className={`material-symbols-outlined text-2xl ${iconColor}`}>{icon}</span>
         </div>
-        <div>
-          <h4 className="font-bold text-slate-900 dark:text-white">{title}</h4>
-          <p className={`text-2xl font-black tracking-tighter ${valueColor ?? "text-slate-900 dark:text-white"}`}>
-            {value}
-          </p>
+        <div className="min-w-0">
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+          <p className="text-xs text-slate-400 font-medium truncate">{title}</p>
         </div>
       </div>
 
-
       {trend && (
-        <div className="flex justify-between items-center text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest border-t border-slate-50 dark:border-slate-800 pt-4">
-          <span>Last 30 Days</span>
-          <span className={`flex items-center gap-1 ${trend.color}`}>
-            <span className="material-symbols-outlined text-sm">
-              {trend.icon}
-            </span>
+        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <span className={`text-xs font-medium flex items-center gap-1 ${trend.color}`}>
+            <span className="material-symbols-outlined text-sm">{trend.icon}</span>
             {trend.value}
           </span>
         </div>
       )}
 
       {progressBar && (
-        <div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
             <div
-              className="bg-blue-600 h-full rounded-full"
+              className="bg-primary h-full rounded-full transition-all"
               style={{ width: `${progressBar.percentage}%` }}
             />
           </div>
-          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-bold uppercase tracking-widest mt-2">
+          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wider mt-1.5">
             {progressBar.label}
           </p>
         </div>
       )}
-
     </div>
   );
 }

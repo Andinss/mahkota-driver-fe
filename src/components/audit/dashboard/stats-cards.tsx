@@ -11,33 +11,48 @@ interface AuditStatsCardProps {
   subtitle?: string;
 }
 
-function AuditCard({ 
-    title, 
-    value, 
-    icon, 
-    iconColor, 
-    trend, 
-    subtitle 
+const colorToBg: Record<string, string> = {
+  "text-indigo-600": "bg-indigo-50 dark:bg-indigo-900/20",
+  "text-red-600": "bg-red-50 dark:bg-red-900/20",
+  "text-amber-600": "bg-amber-50 dark:bg-amber-900/20",
+  "text-gray-600": "bg-gray-100 dark:bg-gray-800",
+  "text-gray-400": "bg-gray-100 dark:bg-gray-800",
+};
+
+function AuditCard({
+  title,
+  value,
+  icon,
+  iconColor,
+  trend,
+  subtitle,
 }: AuditStatsCardProps) {
+  const bgClass = colorToBg[iconColor] || "bg-slate-100 dark:bg-slate-800";
+
   return (
-    <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</span>
-        <div className={`p-2 rounded-xl`}>
-          <span className={`material-symbols-outlined text-xl ${iconColor}`}>{icon}</span>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+      <div className="flex items-center gap-4">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${bgClass}`}>
+          <span className={`material-symbols-outlined text-2xl ${iconColor}`}>{icon}</span>
+        </div>
+        <div className="min-w-0">
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{value.toLocaleString()}</p>
+          <p className="text-xs text-slate-400 font-medium truncate">{title}</p>
         </div>
       </div>
-      <div className="flex items-baseline gap-2">
-        <h3 className="text-2xl font-bold dark:text-white">{value.toLocaleString()}</h3>
-        {trend && (
-          <span className={`${trend.color} text-xs font-medium flex items-center`}>
-            <span className="material-symbols-outlined text-sm">{trend.icon}</span> {trend.value}
-          </span>
-        )}
-        {subtitle && (
-          <span className="text-gray-500 text-xs font-medium">{subtitle}</span>
-        )}
-      </div>
+      {(trend || subtitle) && (
+        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+          {trend && (
+            <span className={`text-xs font-medium flex items-center gap-1 ${trend.color}`}>
+              <span className="material-symbols-outlined text-sm">{trend.icon}</span>
+              {trend.value}
+            </span>
+          )}
+          {subtitle && (
+            <span className="text-xs text-slate-400 font-medium">{subtitle}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

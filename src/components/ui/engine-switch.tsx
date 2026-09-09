@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { monitoringApi } from "@/lib/api/monitoring";
+import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
 
 interface EngineSwitchProps {
   vehicleId: string;
@@ -15,13 +16,25 @@ export function EngineSwitch({ vehicleId, engineStatus = "off", onChanged }: Eng
 
   const handleToggle = async () => {
     const next = !isOn ? "on" : "off";
+
+    if (next === "off") {
+      const confirmed = await confirmToast({
+        title: "Matikan Mesin",
+        message: "Apakah Anda yakin ingin mematikan mesin kendaraan ini?",
+        confirmText: "Ya, Matikan",
+        variant: "danger",
+      });
+      if (!confirmed) return;
+    }
+
     setLoading(true);
     try {
       await monitoringApi.updateVehicleEngine(vehicleId, next);
       setIsOn(next === "on");
       onChanged?.(next);
+      toastSuccess(`Mesin kendaraan berhasil ${next === "on" ? "dinyalakan" : "dimatikan"}`);
     } catch {
-      // keep previous state on failure
+      toastError("Gagal mengubah status mesin kendaraan");
     } finally {
       setLoading(false);
     }
