@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -104,79 +103,76 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-[#1a2632] rounded-xl p-[1px]">
-      <div className="bg-white dark:bg-[#1a2632] rounded-xl p-5 sm:p-12 flex flex-col">
-        <div className="mb-4">
-          <h1 className="text-4xl font-black text-on-surface dark:text-white tracking-tighter leading-none mb-4 font-headline">
-            Sign In
-          </h1>
-          <p className="text-gray-700 dark:text-gray-400 text-base">
-            Please sign in to manage your vehicle fleet.
-          </p>
-        </div>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-2">
-            <Input
-              id="email"
-              name="email"
-              label="Email"
-              placeholder="Enter your email"
-              value={formValues.email}
-              onChange={(e) => handleInputChange("email", e.target.value)}
-              error={hasSubmitted ? errors.email : undefined}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <PasswordInput
-              id="password"
-              name="password"
-              label="Password"
-              placeholder="Enter your password"
-              value={formValues.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              error={hasSubmitted ? errors.password : undefined}
-            />
-          </div>
-
-          <div className="flex items-center justify-between mt-1">
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className="relative flex items-center">
-                <Checkbox
-                  label="Remember Me"
-                  checked={checked}
-                  onChange={(e) => setChecked(e.target.checked)}
-                />
-              </div>
-            </label>
-            <a
-              className="text-sm font-bold text-primary-container dark:text-blue-400 hover:text-primary dark:hover:text-blue-300 transition-colors"
-              href="/auth/forgot"
-            >
-              Forgot Password?
-            </a>
-          </div>
-
-          <div className="flex justify-center">
-            <Turnstile
-              ref={turnstileRef}
-              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-              onSuccess={(token) => setTurnstileToken(token)}
-              onError={() => setTurnstileToken("")}
-              onExpire={() => setTurnstileToken("")}
-            />
-          </div>
-
-          <Button
-            type="submit"
-            icon="login"
-            className="editorial-gradient w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+          Selamat Datang
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Masuk ke akun Mahkota Drive Anda
+        </p>
       </div>
+
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <Input
+          id="email"
+          name="email"
+          label="Email"
+          placeholder="Masukkan email Anda"
+          value={formValues.email}
+          onChange={(e) => handleInputChange("email", e.target.value)}
+          error={hasSubmitted ? errors.email : undefined}
+        />
+
+        <PasswordInput
+          id="password"
+          name="password"
+          label="Password"
+          placeholder="Masukkan password Anda"
+          value={formValues.password}
+          onChange={(e) => handleInputChange("password", e.target.value)}
+          error={hasSubmitted ? errors.password : undefined}
+        />
+
+        <div className="flex items-center justify-between mt-1">
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <div className="relative flex items-center">
+              <Checkbox
+                label="Ingat Saya"
+                checked={checked}
+                onChange={(e) => setChecked(e.target.checked)}
+              />
+            </div>
+          </label>
+          <a
+            className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+            href="/auth/forgot"
+          >
+            Lupa Password?
+          </a>
+        </div>
+
+        <div className="flex justify-center">
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+            onSuccess={(token) => setTurnstileToken(token)}
+            onError={() => setTurnstileToken("")}
+            onExpire={() => setTurnstileToken("")}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center justify-center gap-2 text-sm"
+        >
+          <span className="material-symbols-outlined text-xl">
+            {isSubmitting ? "hourglass_empty" : "login"}
+          </span>
+          {isSubmitting ? "Masuk..." : "Masuk"}
+        </button>
+      </form>
     </div>
   );
 };

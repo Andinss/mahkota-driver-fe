@@ -181,9 +181,30 @@ const RoleFormPage = () => {
 
   return (
     <PermissionGuard permission="role.create">
-    <div className="m-8">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-5">
-        <div className="lg:col-span-8 space-y-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCancel}
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            >
+              <span className="material-symbols-outlined text-slate-500">arrow_back</span>
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {mode === "add" ? "Tambah Role Baru" : "Edit Role"}
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {mode === "add" ? "Lengkapi form di bawah untuk membuat role baru" : "Perbarui informasi role"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Form Sections */}
+        <div className="space-y-6">
           <GeneralInformation 
             roleName={formValues.roleName}
             setRoleName={(value) => handleInputChange("roleName", value)}
@@ -198,35 +219,29 @@ const RoleFormPage = () => {
               onChange={setSelectedPermissionIds}
             />
           )}
-        </div>
-        <div className="lg:col-span-4 space-y-6">
           <RoleHierarchy allPermissions={allPermissions} selectedIds={selectedPermissionIds} />
           <Advice />
-        </div>
-      </div>
 
-      <div className="mt-12 mb-8 flex items-center justify-between p-6 bg-white dark:bg-[#1a2632] border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg sticky bottom-8 z-10">
-        <div className="hidden sm:block">
-          <p className="text-xs text-gray-500 dark:text-gray-400">Last saved: {lastSaved}</p>
-        </div>
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          <button 
-            onClick={handleCancel}
-            disabled={isSubmitting}
-            className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors active:opacity-80 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSaveClick}
-            disabled={isSubmitting || (hasSubmitted && !formValues.roleName.trim())}
-            className="flex-1 sm:flex-none px-8 py-2.5 rounded-lg bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20 hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:bg-gray-400 dark:disabled:bg-gray-600 flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-sm">
-              {mode === "add" ? "add" : "save"}
-            </span>
-            {isSubmitting ? "Saving..." : mode === "add" ? "Create Role" : "Update Role"}
-          </button>
+          {/* Submit Buttons */}
+          <div className="flex items-center justify-end gap-3 pt-4">
+            <button
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleSaveClick}
+              disabled={isSubmitting || (hasSubmitted && !formValues.roleName.trim())}
+              className="px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center gap-2 text-sm"
+            >
+              <span className="material-symbols-outlined text-xl">
+                {isSubmitting ? "hourglass_empty" : "check_circle"}
+              </span>
+              {isSubmitting ? "Menyimpan..." : mode === "add" ? "Simpan Role" : "Update Role"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

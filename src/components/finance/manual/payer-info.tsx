@@ -79,11 +79,10 @@ const PayerInfo = ({
 
   useEffect(() => {
     if (selectedPayerId) {
-      driverApi.getList({ search: selectedPayerId, limit: 1 })
+      driverApi.getById(selectedPayerId)
         .then((res) => {
-          const items = (res?.data ?? []) as DriverItem[];
-          if (items.length > 0) {
-            const d = items[0];
+          const d = (res as any)?.data ?? (res as any);
+          if (d) {
             const driver: DriverOption = {
               id: d.id,
               employeeId: d.employee_id,

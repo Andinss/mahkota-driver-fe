@@ -125,137 +125,82 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
   };
 
   return (
-    <div className="absolute top-4 right-4 bottom-auto w-80 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[1001] flex flex-col overflow-hidden">
-      <div className="relative h-36 bg-slate-200 dark:bg-slate-700">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-        <div className="absolute top-3 right-3">
-          <button
-            onClick={handleClose}
-            className="size-8 bg-black/40 text-white hover:bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">close</span>
-          </button>
-        </div>
-        <div className="absolute bottom-3 left-4 text-white w-full pr-8">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-bold">{vehicle.plate}</h3>
-            <span className={`${
-              statusColor === "red" ? "bg-red-600" : statusColor === "blue" ? "bg-blue-600" : "bg-gray-500"
-            } text-white text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide`}>
-              {statusLabel}
-            </span>
-          </div>
-          <p className="text-xs opacity-90 font-medium">
-            Updated: <span className="text-green-400">{vehicle.lastUpdated || "Just now"}</span>
-          </p>
-        </div>
+    <div className="absolute top-2 right-2 bottom-auto w-60 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm shadow-lg border border-slate-200 dark:border-slate-700 z-[1001] flex flex-col overflow-hidden rounded-xl">
+      <div className={`flex items-center gap-1.5 px-2.5 py-1.5 ${
+        statusColor === "red" ? "bg-red-50 dark:bg-red-900/20" :
+        statusColor === "blue" ? "bg-blue-50 dark:bg-blue-900/20" :
+        "bg-slate-50 dark:bg-slate-700/50"
+      }`}>
+        <span className={`material-symbols-outlined text-base ${
+          statusColor === "red" ? "text-red-500" :
+          statusColor === "blue" ? "text-blue-500" :
+          "text-slate-400 dark:text-slate-500"
+        }`}>local_shipping</span>
+        <span className="text-[11px] font-bold text-slate-900 dark:text-white">{vehicle.plate}</span>
+        <span className={`ml-auto ${
+          statusColor === "red" ? "bg-red-600" : statusColor === "blue" ? "bg-blue-600" : "bg-gray-500"
+        } text-white text-[8px] px-1 py-px rounded font-bold uppercase`}>
+          {statusLabel}
+        </span>
       </div>
-      <div className="p-4 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="size-11 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-300 font-bold text-lg ring-2 ring-white dark:ring-slate-700 shadow-sm">
+      <div className="p-2.5 space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="size-7 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-300 font-bold text-[10px]">
             {vehicle.driverName.charAt(0).toUpperCase()}
           </div>
-          <div>
-            <p className="text-sm font-bold text-slate-900 dark:text-white">
-              {vehicle.driverName}
-            </p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate">{vehicle.driverName}</p>
             {vehicle.driverPhone && (
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {vehicle.driverPhone}
-              </p>
+              <p className="text-[9px] text-slate-400 dark:text-slate-500 truncate">{vehicle.driverPhone}</p>
             )}
           </div>
           {vehicle.driverPhone && (
             <button
               onClick={handleContactDriver}
               disabled={isSendingAction}
-              className="ml-auto size-9 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors ring-1 ring-green-100 dark:ring-green-900/30 disabled:opacity-50"
+              className="shrink-0 size-6 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors disabled:opacity-50"
             >
-              <span className="material-symbols-outlined text-xl">call</span>
+              <span className="material-symbols-outlined text-xs">call</span>
             </button>
           )}
         </div>
-        <div className="h-px bg-slate-100 dark:bg-slate-700"></div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
-            <p className="text-[10px] uppercase text-slate-500 dark:text-slate-400 font-bold mb-1">
-              Speed
-            </p>
-            <p className="text-sm font-bold flex items-center gap-1.5 text-slate-900 dark:text-white">
-              <span className="material-symbols-outlined text-slate-400 text-base">
-                speed
-              </span>
-              {vehicle.speed !== undefined ? `${vehicle.speed} km/h` : "N/A"}
-            </p>
+
+        <div className="flex items-center gap-1">
+          <div className="flex-1 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-1 rounded border border-slate-100 dark:border-slate-700/50 flex items-center gap-1">
+            <span className="material-symbols-outlined text-slate-400 text-[10px]">speed</span>
+            <span className="text-[10px] font-bold text-slate-900 dark:text-white">{vehicle.speed !== undefined ? `${vehicle.speed}` : "N/A"}</span>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
-            <p className="text-[10px] uppercase text-slate-500 dark:text-slate-400 font-bold mb-1">
-              Fuel
-            </p>
-            <p className="text-sm font-bold flex items-center gap-1.5 text-slate-900 dark:text-white">
-              <span className="material-symbols-outlined text-slate-400 text-base">
-                local_gas_station
-              </span>
-              {vehicle.fuelLevel !== undefined ? `${vehicle.fuelLevel}%` : "N/A"}
-            </p>
+          <div className="flex-1 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-1 rounded border border-slate-100 dark:border-slate-700/50 flex items-center gap-1">
+            <span className="material-symbols-outlined text-slate-400 text-[10px]">local_gas_station</span>
+            <span className="text-[10px] font-bold text-slate-900 dark:text-white">{vehicle.fuelLevel !== undefined ? `${vehicle.fuelLevel}%` : "N/A"}</span>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
-            <p className="text-[10px] uppercase text-slate-500 dark:text-slate-400 font-bold mb-1">
-              Engine
-            </p>
-            <p className={`text-sm font-bold flex items-center gap-1.5 ${
-              vehicle.engineStatus === "on"
-                ? "text-green-700 dark:text-green-400"
-                : "text-slate-500 dark:text-slate-400"
-            }`}>
-              <span className={`material-symbols-outlined text-base ${
-                vehicle.engineStatus === "on" ? "text-green-500" : "text-slate-400"
-              }`}>
-                power_settings_new
-              </span>
-              {vehicle.engineStatus === "on" ? "Running" : "Off"}
-            </p>
-          </div>
-          <div className="col-span-2">
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-              Status
-            </p>
-            <p className="text-sm font-medium leading-snug text-slate-800 dark:text-slate-200 capitalize">
-              {vehicle.status === "emergency" ? "Geofence Violation - Outside Operational Area" : 
-               vehicle.status === "moving" ? `Moving at ${vehicle.speed} km/h` : 
-               "Parked / Idle"}
-            </p>
+          <div className={`flex-1 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-1 rounded border border-slate-100 dark:border-slate-700/50 flex items-center gap-1 ${
+            vehicle.engineStatus === "on" ? "text-green-700 dark:text-green-400" : "text-slate-400 dark:text-slate-500"
+          }`}>
+            <span className={`material-symbols-outlined text-[10px] ${
+              vehicle.engineStatus === "on" ? "text-green-500" : "text-slate-400"
+            }`}>power_settings_new</span>
+            <span className="text-[10px] font-bold">{vehicle.engineStatus === "on" ? "On" : "Off"}</span>
           </div>
         </div>
 
         {vehicle.status === "emergency" && (
-          <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/30 animate-pulse-slow">
-            <div className="flex items-start gap-2">
-              <span className="material-symbols-outlined text-red-500 mt-0.5 text-lg">
-                warning
-              </span>
-              <div>
-                <p className="text-xs font-bold text-red-700 dark:text-red-400">
-                  Geofence Violation Alert
-                </p>
-                <p className="text-xs text-red-600 dark:text-red-300/80 leading-relaxed mt-1">
-                  Vehicle has exited the operational area. Immediate action required.
-                </p>
-              </div>
-            </div>
+          <div className="bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-100 dark:border-red-900/30 flex items-center gap-1">
+            <span className="material-symbols-outlined text-red-500 text-[10px]">warning</span>
+            <p className="text-[9px] font-bold text-red-600 dark:text-red-400">Geofence Violation</p>
           </div>
         )}
 
         {showActionAlert && (
-          <div className={`p-3 rounded-lg border ${
+          <div className={`px-2 py-1 rounded border ${
             actionAlertMessage.includes("Failed")
               ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
               : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
           }`}>
-            <p className={`text-xs font-medium ${
+            <p className={`text-[9px] font-medium ${
               actionAlertMessage.includes("Failed")
-                ? "text-red-700 dark:text-red-400"
-                : "text-green-700 dark:text-green-400"
+                ? "text-red-600 dark:text-red-400"
+                : "text-green-600 dark:text-green-400"
             }`}>
               {actionAlertMessage}
             </p>
@@ -263,69 +208,69 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
         )}
 
         {showConfirm ? (
-          <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
-            <p className="text-sm font-medium text-orange-800 dark:text-orange-300 mb-3">
-              Shutdown vehicle <strong>{vehicle.plate}</strong> to Maintenance?
+          <div className="bg-orange-50 dark:bg-orange-900/20 px-2 py-1.5 rounded border border-orange-200 dark:border-orange-800">
+            <p className="text-[10px] font-medium text-orange-800 dark:text-orange-300 mb-1.5">
+              Shutdown <strong>{vehicle.plate}</strong>?
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <button
                 onClick={handleShutdown}
                 disabled={isShuttingDown}
-                className="flex-1 px-3 py-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
+                className="flex-1 px-2 py-1 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white rounded text-[10px] font-semibold transition-colors"
               >
-                {isShuttingDown ? "Shutting down..." : "Yes, Shutdown"}
+                {isShuttingDown ? "..." : "Yes"}
               </button>
               <button
                 onClick={() => setShowConfirm(false)}
                 disabled={isShuttingDown}
-                className="flex-1 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-semibold transition-colors"
+                className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded text-[10px] font-semibold transition-colors"
               >
-                Cancel
+                Batal
               </button>
             </div>
           </div>
         ) : (
-          <div className="space-y-3 pt-2">
-            {/* Action Buttons for Field Team */}
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={handleContactDriver}
-                disabled={isSendingAction}
-                className="flex flex-col items-center justify-center gap-1.5 px-2 py-3 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 rounded-lg text-green-700 dark:text-green-400 transition-colors border border-green-200 dark:border-green-800 disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-lg">call</span>
-                <span className="text-[10px] font-bold">Hubungi Driver</span>
-              </button>
-              <button
-                onClick={handleVehicleRetrieval}
-                disabled={isSendingAction}
-                className="flex flex-col items-center justify-center gap-1.5 px-2 py-3 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded-lg text-orange-700 dark:text-orange-400 transition-colors border border-orange-200 dark:border-orange-800 disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-lg">local_shipping</span>
-                <span className="text-[10px] font-bold">Penarikan</span>
-              </button>
-              <button
-                onClick={handleEmergencyAssist}
-                disabled={isSendingAction}
-                className="flex flex-col items-center justify-center gap-1.5 px-2 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg text-red-700 dark:text-red-400 transition-colors border border-red-200 dark:border-red-800 disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-lg">emergency</span>
-                <span className="text-[10px] font-bold">Bantuan Darurat</span>
-              </button>
-            </div>
+          <div className="flex gap-1">
+            <button
+              onClick={handleContactDriver}
+              disabled={isSendingAction}
+              className="flex-1 flex flex-col items-center gap-px py-1.5 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 rounded text-green-700 dark:text-green-400 transition-colors border border-green-200 dark:border-green-800 disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-xs">call</span>
+              <span className="text-[7px] font-bold leading-none">Hubungi</span>
+            </button>
+            <button
+              onClick={handleVehicleRetrieval}
+              disabled={isSendingAction}
+              className="flex-1 flex flex-col items-center gap-px py-1.5 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 rounded text-orange-700 dark:text-orange-400 transition-colors border border-orange-200 dark:border-orange-800 disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-xs">local_shipping</span>
+              <span className="text-[7px] font-bold leading-none">Tarik</span>
+            </button>
+            <button
+              onClick={handleEmergencyAssist}
+              disabled={isSendingAction}
+              className="flex-1 flex flex-col items-center gap-px py-1.5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded text-red-700 dark:text-red-400 transition-colors border border-red-200 dark:border-red-800 disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-xs">emergency</span>
+              <span className="text-[7px] font-bold leading-none">Darurat</span>
+            </button>
+          </div>
+        )}
 
-            <div className="grid grid-cols-2 gap-3">
-              <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 transition-colors">
-                History
-              </button>
-              <button
-                onClick={() => setShowConfirm(true)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-semibold text-white transition-colors shadow-lg shadow-red-500/30"
-              >
-                <span className="material-symbols-outlined text-base">power_settings_new</span>
-                Shutdown
-              </button>
-            </div>
+        {!showConfirm && (
+          <div className="flex gap-1">
+            <button className="flex-1 flex items-center justify-center gap-0.5 px-2 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded text-[10px] font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+              <span className="material-symbols-outlined text-[9px]">history</span>
+              History
+            </button>
+            <button
+              onClick={() => setShowConfirm(true)}
+              className="flex-1 flex items-center justify-center gap-0.5 px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-[10px] font-semibold text-white transition-colors"
+            >
+              <span className="material-symbols-outlined text-[9px]">power_settings_new</span>
+              Shutdown
+            </button>
           </div>
         )}
       </div>

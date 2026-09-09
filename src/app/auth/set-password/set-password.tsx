@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useState, useEffect } from "react";
 import { toastSuccess, toastError } from "@/components/ui/toast-provider";
@@ -117,11 +116,9 @@ const SetPasswordPage = ({ token }: SetPasswordPageProps) => {
 
   if (isVerifying) {
     return (
-      <div className="bg-white dark:bg-[#1a2632] rounded-xl p-[1px]">
-        <div className="bg-white dark:bg-[#1a2632] rounded-xl p-6 sm:p-12 flex flex-col items-center justify-center min-h-[300px]">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="mt-4 text-on-surface-variant dark:text-gray-400">Verifying link...</p>
-        </div>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-8 flex flex-col items-center justify-center min-h-[250px]">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Verifying link...</p>
       </div>
     );
   }
@@ -131,48 +128,56 @@ const SetPasswordPage = ({ token }: SetPasswordPageProps) => {
   }
 
   return (
-    <div className="bg-white dark:bg-[#1a2632] rounded-xl p-[1px]">
-      <div className="bg-white dark:bg-[#1a2632] rounded-xl p-6 sm:p-12 flex flex-col">
-        <div className="flex items-center gap-2 mb-1 text-primary dark:text-blue-400"></div>
-        <h1 className="text-[2rem] font-bold leading-tight tracking-tight text-on-surface dark:text-white mb-2">
-          Set Your Password
+    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+          Buat Password
         </h1>
-        <p className="text-on-surface-variant dark:text-gray-400 font-body leading-relaxed opacity-80">
-          Create a password for your account to get started.
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Buat password untuk akun Anda
         </p>
-        <form className="flex flex-col gap-4 mt-2" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-2">
-            <PasswordInput
-              id="password"
-              name="password"
-              label="New Password"
-              placeholder="Enter your new password"
-              value={formValues.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              error={hasSubmitted ? errors.password : undefined}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <PasswordInput
-              id="password_confirmation"
-              name="password_confirmation"
-              label="Confirm New Password"
-              placeholder="Confirm your new password"
-              value={formValues.password_confirmation}
-              onChange={(e) => handleInputChange("password_confirmation", e.target.value)}
-              error={hasSubmitted ? errors.password_confirmation : undefined}
-            />
-          </div>
+      </div>
 
-          <Button
-            type="submit"
-            icon="login"
-            className="editorial-gradient"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Setting Password..." : "Set Password"}
-          </Button>
-        </form>
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <PasswordInput
+          id="password"
+          name="password"
+          label="Password Baru"
+          placeholder="Masukkan password baru"
+          value={formValues.password}
+          onChange={(e) => handleInputChange("password", e.target.value)}
+          error={hasSubmitted ? errors.password : undefined}
+        />
+
+        <PasswordInput
+          id="password_confirmation"
+          name="password_confirmation"
+          label="Konfirmasi Password"
+          placeholder="Konfirmasi password baru"
+          value={formValues.password_confirmation}
+          onChange={(e) => handleInputChange("password_confirmation", e.target.value)}
+          error={hasSubmitted ? errors.password_confirmation : undefined}
+        />
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center justify-center gap-2 text-sm"
+        >
+          <span className="material-symbols-outlined text-xl">
+            {isSubmitting ? "hourglass_empty" : "lock"}
+          </span>
+          {isSubmitting ? "Menyimpan..." : "Simpan Password"}
+        </button>
+      </form>
+
+      <div className="mt-6 text-center">
+        <a
+          href="/auth/login"
+          className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+        >
+          Kembali ke Login
+        </a>
       </div>
     </div>
   );

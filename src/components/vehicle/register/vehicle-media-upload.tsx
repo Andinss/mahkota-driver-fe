@@ -196,10 +196,18 @@ export function VehicleMediaUpload({
   const remainingPhotos = minPhotos - images.length;
 
   return (
-    <div>
-      <h3 className="text-[#111418] dark:text-white text-lg font-bold mb-4">
-        Vehicle Photos
-      </h3>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-emerald-500 text-xl">photo_camera</span>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Foto Kendaraan
+          </h3>
+          <p className="text-xs text-slate-400">Upload foto kendaraan (min. 4 foto)</p>
+        </div>
+      </div>
 
       {images.length > 0 ? (
         <div className="space-y-4">

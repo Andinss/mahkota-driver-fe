@@ -37,7 +37,6 @@ const RealtimeMonitoring = () => {
   const [selectedVehicle, setSelectedVehicle] = useState<FleetVehicle | null>(null);
   const [vehicles, setVehicles] = useState<FleetVehicle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const mountedRef = useRef(true);
 
@@ -68,18 +67,9 @@ const RealtimeMonitoring = () => {
     };
   }, [fetchLocations]);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isExpanded) {
-        setIsExpanded(false);
-      }
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [isExpanded]);
-
   const handleVehicleClick = (vehicle: FleetVehicle) => {
     setSelectedVehicle(vehicle);
+    setIsSidebarOpen(true);
   };
 
   const handleCloseDetail = () => {
@@ -88,22 +78,20 @@ const RealtimeMonitoring = () => {
 
   return (
     <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
-      <div className={`flex flex-1 bg-white dark:bg-slate-950 ${isExpanded ? "fixed inset-0 z-50" : "mx-2 my-2 md:mx-4 md:my-4 lg:m-8"}`}>
+      <div className="flex flex-1 bg-white dark:bg-slate-950 mx-2 my-2 md:mx-4 md:my-4 lg:m-8">
         {/* Sidebar */}
-        {!isExpanded && (
-          <SideStatus
-            vehicles={vehicles}
-            onVehicleClick={handleVehicleClick}
-            selectedVehicleId={selectedVehicle?.id}
-            isOpen={isSidebarOpen}
-            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-          />
-        )}
+        <SideStatus
+          vehicles={vehicles}
+          onVehicleClick={handleVehicleClick}
+          selectedVehicleId={selectedVehicle?.id}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 relative">
           {/* Toolbar */}
-          <div className="h-12 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-3 shrink-0">
+          <div className="h-10 border-b border-slate-200 dark:border-slate-700 flex items-center px-3 shrink-0">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                 Real-time Fleet Monitoring
@@ -111,25 +99,6 @@ const RealtimeMonitoring = () => {
               <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full uppercase tracking-wider">
                 Live
               </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <button
-                className="h-8 px-3 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 transition-colors"
-                title="Center on my location"
-              >
-                <span className="material-symbols-outlined text-lg">my_location</span>
-                <span className="hidden sm:inline">Locate</span>
-              </button>
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="h-8 px-3 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 transition-colors"
-                title={isExpanded ? "Exit fullscreen" : "Fullscreen"}
-              >
-                <span className="material-symbols-outlined text-lg">
-                  {isExpanded ? "fullscreen_exit" : "fullscreen"}
-                </span>
-                <span className="hidden sm:inline">{isExpanded ? "Exit" : "Expand"}</span>
-              </button>
             </div>
           </div>
 
@@ -145,15 +114,14 @@ const RealtimeMonitoring = () => {
                 center={[-6.2088, 106.8456]}
                 zoom={12}
                 onVehicleClick={handleVehicleClick}
+                selectedVehicle={selectedVehicle}
               />
+            )}
+            {selectedVehicle && (
+              <DetailStatusCard onClose={handleCloseDetail} vehicle={selectedVehicle} onStatusChanged={fetchLocations} />
             )}
           </div>
         </div>
-
-        {/* Detail Card - slides in from right */}
-        {selectedVehicle && (
-          <DetailStatusCard onClose={handleCloseDetail} vehicle={selectedVehicle} onStatusChanged={fetchLocations} />
-        )}
       </div>
     </PermissionGuard>
   );

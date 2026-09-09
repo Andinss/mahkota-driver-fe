@@ -17,11 +17,18 @@ const GeneralInformation = ({
   error
 }: GeneralInformationProps) => {
   return (
-    <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden p-6">
-      <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-        <span className="material-symbols-outlined text-blue-600">badge</span>
-        General Information
-      </h2>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-blue-500 text-xl">badge</span>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Informasi Umum
+          </h3>
+          <p className="text-xs text-slate-400">Masukkan detail informasi role</p>
+        </div>
+      </div>
       <div className="space-y-4">
         <div>
           <label

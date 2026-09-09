@@ -33,6 +33,7 @@ interface MonitoringMapProps {
   center?: [number, number];
   zoom?: number;
   onVehicleClick?: (vehicle: FleetVehicle) => void;
+  selectedVehicle?: FleetVehicle | null;
 }
 
 const vehicleIcons: Record<string, L.DivIcon> = {
@@ -61,6 +62,7 @@ export default function MonitoringMap({
   center = [-6.2088, 106.8456],
   zoom = 12,
   onVehicleClick,
+  selectedVehicle,
 }: MonitoringMapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -196,6 +198,27 @@ export default function MonitoringMap({
       mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
     }
   }, [vehicles, onVehicleClick]);
+
+  useEffect(() => {
+    if (!mapRef.current || !selectedVehicle) return;
+
+    mapRef.current.flyTo(
+      [selectedVehicle.latitude, selectedVehicle.longitude],
+      16,
+      { duration: 1.0 }
+    );
+
+    const marker = markersRef.current.find(
+      (m) => {
+        const pos = m.getLatLng();
+        return Math.abs(pos.lat - selectedVehicle.latitude) < 0.0001 &&
+               Math.abs(pos.lng - selectedVehicle.longitude) < 0.0001;
+      }
+    );
+    if (marker) {
+      marker.openPopup();
+    }
+  }, [selectedVehicle]);
 
   return <div ref={mapContainerRef} className="w-full h-full" />;
 }

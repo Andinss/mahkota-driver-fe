@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
-import { Button } from "@/components/ui/button";
 
 export interface VehicleFormData {
   make: string;
@@ -33,16 +32,12 @@ interface VehicleSpecificationsFormProps {
   mode?: FormMode;
   initialValues?: Partial<VehicleFormData>;
   onSubmit?: (data: VehicleFormData) => void;
-  onCancel?: () => void;
-  isSubmitting?: boolean;
 }
 
 export function VehicleSpecificationsForm({
   mode = "add",
   initialValues,
   onSubmit,
-  onCancel,
-  isSubmitting = false,
 }: VehicleSpecificationsFormProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const formRef = useRef<HTMLFormElement>(null);
@@ -156,128 +151,114 @@ export function VehicleSpecificationsForm({
     onSubmit?.(data);
   };
 
-  const buttonText = isSubmitting
-    ? "Saving..."
-    : mode === "add"
-      ? "Save Vehicle"
-      : "Update Vehicle";
-
   return (
-    <div className="w-full md:w-2/3 p-8 flex flex-col justify-between">
-      <div>
-        <h3 className="text-[#111418] dark:text-white text-lg font-bold mb-6">
-          Vehicle Specifications
-        </h3>
-        <form
-          ref={formRef}
-          className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5"
-          id="vehicleForm"
-          onSubmit={handleSubmit}
-        >
-          <Input
-            id="make"
-            name="make"
-            label="Make"
-            placeholder="e.g. Toyota"
-            defaultValue={initialValues?.make}
-            required
-            error={errors.make}
-            onInput={(e) => sanitizeInput(e, /[^a-zA-Z\s'-]/g)}
-          />
-
-          <Input
-            id="model"
-            name="model"
-            label="Model"
-            placeholder="e.g. Camry"
-            defaultValue={initialValues?.model}
-            required
-            error={errors.model}
-            onInput={(e) => sanitizeInput(e, /[^a-zA-Z0-9\s'-]/g)}
-          />
-
-          <Input
-            id="year"
-            name="year"
-            label="Year"
-            placeholder="2024"
-            type="number"
-            defaultValue={initialValues?.year}
-            required
-            error={errors.year}
-          />
-
-          <Input
-            id="licensePlate"
-            name="licensePlate"
-            label="License Plate"
-            placeholder="B 1234 XYZ"
-            className="uppercase"
-            defaultValue={initialValues?.licensePlate}
-            required
-            error={errors.licensePlate}
-            onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9\s]/g)}
-          />
-
-          <Input
-            id="color"
-            name="color"
-            label="Color"
-            placeholder="e.g. Midnight Black"
-            defaultValue={initialValues?.color}
-            required
-            error={errors.color}
-            onInput={(e) => sanitizeInput(e, /[^a-zA-Z\s]/g)}
-          />
-
-          <Input
-            id="vin"
-            name="vin"
-            label="VIN (Vehicle Identification Number)"
-            placeholder="17-digit code"
-            className="uppercase"
-            defaultValue={initialValues?.vin}
-            required
-            error={errors.vin}
-            onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9]/g)}
-          />
-
-          <Input
-            id="engineNumber"
-            name="engineNumber"
-            label="Engine Number"
-            placeholder="EN-XXXXXX"
-            defaultValue={initialValues?.engineNumber}
-            required
-            error={errors.engineNumber}
-            onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9-]/g)}
-          />
-
-          <CurrencyInput
-              id="dailyRate"
-              name="dailyRate"
-              label="Daily Rate"
-              placeholder="0"
-              value={initialValues?.dailyRate}
-              required
-              error={errors.dailyRate}
-            />
-        </form>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-blue-500 text-xl">directions_car</span>
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">
+            Spesifikasi Kendaraan
+          </h3>
+          <p className="text-xs text-slate-400">Masukkan detail informasi kendaraan</p>
+        </div>
       </div>
+      <form
+        ref={formRef}
+        className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5"
+        id="vehicleForm"
+        onSubmit={handleSubmit}
+      >
+        <Input
+          id="make"
+          name="make"
+          label="Make"
+          placeholder="e.g. Toyota"
+          defaultValue={initialValues?.make}
+          required
+          error={errors.make}
+          onInput={(e) => sanitizeInput(e, /[^a-zA-Z\s'-]/g)}
+        />
 
-      <div className="flex items-center justify-end gap-4 mt-12 pt-6 border-t border-[#f0f2f4] dark:border-slate-800">
-          <Button variant="ghost" onClick={onCancel}>
-            Cancel
-          </Button>
-        <Button
-          variant="primary"
-          type="submit"
-          form="vehicleForm"
-          disabled={isSubmitting}
-        >
-          {buttonText}
-        </Button>
-      </div>
+        <Input
+          id="model"
+          name="model"
+          label="Model"
+          placeholder="e.g. Camry"
+          defaultValue={initialValues?.model}
+          required
+          error={errors.model}
+          onInput={(e) => sanitizeInput(e, /[^a-zA-Z0-9\s'-]/g)}
+        />
+
+        <Input
+          id="year"
+          name="year"
+          label="Year"
+          placeholder="2024"
+          type="number"
+          defaultValue={initialValues?.year}
+          required
+          error={errors.year}
+        />
+
+        <Input
+          id="licensePlate"
+          name="licensePlate"
+          label="License Plate"
+          placeholder="B 1234 XYZ"
+          className="uppercase"
+          defaultValue={initialValues?.licensePlate}
+          required
+          error={errors.licensePlate}
+          onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9\s]/g)}
+        />
+
+        <Input
+          id="color"
+          name="color"
+          label="Color"
+          placeholder="e.g. Midnight Black"
+          defaultValue={initialValues?.color}
+          required
+          error={errors.color}
+          onInput={(e) => sanitizeInput(e, /[^a-zA-Z\s]/g)}
+        />
+
+        <Input
+          id="vin"
+          name="vin"
+          label="VIN (Vehicle Identification Number)"
+          placeholder="17-digit code"
+          className="uppercase"
+          defaultValue={initialValues?.vin}
+          required
+          error={errors.vin}
+          onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9]/g)}
+        />
+
+        <Input
+          id="engineNumber"
+          name="engineNumber"
+          label="Engine Number"
+          placeholder="EN-XXXXXX"
+          defaultValue={initialValues?.engineNumber}
+          required
+          error={errors.engineNumber}
+          onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9-]/g)}
+        />
+
+        <CurrencyInput
+            id="dailyRate"
+            name="dailyRate"
+            label="Daily Rate"
+            placeholder="0"
+            value={initialValues?.dailyRate}
+            required
+            error={errors.dailyRate}
+          />
+      </form>
     </div>
   );
 }

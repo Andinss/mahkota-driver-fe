@@ -33,9 +33,24 @@ const menuStructure: SidebarItem[] = [
     label: "Fleet Operations",
     icon: "directions_car",
     children: [
-      { path: "/dashboard/driver", label: "Drivers", icon: "badge", permission: "driver.read.all" },
-      { path: "/dashboard/vehicle", label: "Vehicles", icon: "car_repair", permission: "vehicle.read" },
-      { path: "/dashboard/monitoring", label: "Monitoring", icon: "monitoring", permission: "monitoring.read" },
+      {
+        path: "/dashboard/driver",
+        label: "Drivers",
+        icon: "badge",
+        permission: "driver.read.all",
+      },
+      {
+        path: "/dashboard/vehicle",
+        label: "Vehicles",
+        icon: "car_repair",
+        permission: "vehicle.read",
+      },
+      {
+        path: "/dashboard/monitoring",
+        label: "Monitoring",
+        icon: "monitoring",
+        permission: "monitoring.read",
+      },
     ],
   },
   {
@@ -43,21 +58,51 @@ const menuStructure: SidebarItem[] = [
     label: "Transactions",
     icon: "receipt_long",
     children: [
-      { path: "/dashboard/rent", label: "Rentals", icon: "contract", permission: "rental.read" },
-      { path: "/dashboard/finance", label: "Finance", icon: "account_balance", permission: "finance.read" },
+      {
+        path: "/dashboard/rent",
+        label: "Rentals",
+        icon: "contract",
+        permission: "rental.read",
+      },
+      {
+        path: "/dashboard/finance",
+        label: "Finance",
+        icon: "account_balance",
+        permission: "finance.read",
+      },
     ],
   },
   {
     type: "group",
-    label: "System Administration",
+    label: "System",
     icon: "admin_panel_settings",
     children: [
-      { path: "/dashboard/users", label: "Users", icon: "people", permission: "user.read" },
-      { path: "/dashboard/role", label: "Roles", icon: "shield", permission: "role.read" },
-      { path: "/dashboard/setting", label: "Settings", icon: "settings", permission: "setting.read" },
+      {
+        path: "/dashboard/users",
+        label: "Users",
+        icon: "people",
+        permission: "user.read",
+      },
+      {
+        path: "/dashboard/role",
+        label: "Roles",
+        icon: "shield",
+        permission: "role.read",
+      },
+      {
+        path: "/dashboard/setting",
+        label: "Settings",
+        icon: "settings",
+        permission: "setting.read",
+      },
     ],
   },
-  { path: "/dashboard/audit-logs", label: "Audit Logs", icon: "description", permission: "audit.read" },
+  {
+    path: "/dashboard/audit-logs",
+    label: "Audit Logs",
+    icon: "description",
+    permission: "audit.read",
+  },
 ];
 
 const Sidebar = () => {
@@ -66,23 +111,32 @@ const Sidebar = () => {
   const [menuPosition, setMenuPosition] = useState({ top: 0, height: 0 });
   const menuRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
   const groupRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const groupHeaderRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const groupHeaderRefs = useRef<{ [key: string]: HTMLButtonElement | null }>(
+    {},
+  );
   const isOpenRef = useRef(isOpen);
   const navRef = useRef<HTMLElement | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const [activeMenu, setActiveMenu] = useState(pathname);
   const activeMenuRef = useRef(activeMenu);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    {},
+  );
   const expandedGroupsRef = useRef(expandedGroups);
 
-  const hasPermissions = Array.isArray(user?.permissions) && user.permissions.length > 0;
+  const hasPermissions =
+    Array.isArray(user?.permissions) && user.permissions.length > 0;
 
   const checkAccess = useCallback(
     (permission: string) => {
       if (!permission || !hasPermissions) return true;
       if (canAccess(user?.permissions, permission)) return true;
-      if (permission === "driver.read.all" && canAccess(user?.permissions, "driver.read.own")) return true;
+      if (
+        permission === "driver.read.all" &&
+        canAccess(user?.permissions, "driver.read.own")
+      )
+        return true;
       return false;
     },
     [user?.permissions, hasPermissions],
@@ -94,7 +148,9 @@ const Sidebar = () => {
       return items
         .map((item) => {
           if (isGroup(item)) {
-            const filteredChildren = item.children.filter((child) => checkAccess(child.permission));
+            const filteredChildren = item.children.filter((child) =>
+              checkAccess(child.permission),
+            );
             if (filteredChildren.length === 0) return null;
             return { ...item, children: filteredChildren };
           }
@@ -230,7 +286,10 @@ const Sidebar = () => {
     setExpandedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
-  const handleMenuClick = (path: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleMenuClick = (
+    path: string,
+    e: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
     e.preventDefault();
     setActiveMenu(path);
     router.push(path);
@@ -283,9 +342,15 @@ const Sidebar = () => {
               const active = isChildActive(item);
 
               return (
-                <div key={item.label} className="flex flex-col" data-group-label={item.label}>
+                <div
+                  key={item.label}
+                  className="flex flex-col"
+                  data-group-label={item.label}
+                >
                   <button
-                    ref={(el) => { groupHeaderRefs.current[item.label] = el; }}
+                    ref={(el) => {
+                      groupHeaderRefs.current[item.label] = el;
+                    }}
                     onClick={() => toggleGroup(item.label)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer relative z-10 w-full text-left ${
                       active
@@ -293,7 +358,9 @@ const Sidebar = () => {
                         : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                     }`}
                   >
-                    <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                    <span className="material-symbols-outlined text-[20px]">
+                      {item.icon}
+                    </span>
                     <span className="flex-1 truncate">{item.label}</span>
                     <svg
                       className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
@@ -304,7 +371,11 @@ const Sidebar = () => {
                       stroke="currentColor"
                       strokeWidth={2}
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </button>
 
@@ -314,7 +385,9 @@ const Sidebar = () => {
                     }}
                     className="overflow-hidden transition-all duration-200 ease-in-out"
                     style={{
-                      maxHeight: expanded ? `${item.children.length * 44 + 8}px` : "0px",
+                      maxHeight: expanded
+                        ? `${item.children.length * 44 + 8}px`
+                        : "0px",
                       opacity: expanded ? 1 : 0,
                     }}
                   >
@@ -332,7 +405,9 @@ const Sidebar = () => {
                           }`}
                           onClick={(e) => handleMenuClick(child.path, e)}
                         >
-                          <span className="material-symbols-outlined text-[18px]">{child.icon}</span>
+                          <span className="material-symbols-outlined text-[18px]">
+                            {child.icon}
+                          </span>
                           <span className="truncate">{child.label}</span>
                         </a>
                       ))}
@@ -355,8 +430,12 @@ const Sidebar = () => {
                 }`}
                 onClick={(e) => handleMenuClick(item.path, e)}
               >
-                <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-                <span className="text-sm font-medium leading-normal">{item.label}</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  {item.icon}
+                </span>
+                <span className="text-sm font-medium leading-normal">
+                  {item.label}
+                </span>
               </a>
             );
           })}
@@ -367,7 +446,9 @@ const Sidebar = () => {
             className="flex items-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer gap-3 px-3 py-2.5"
             onClick={handleLogout}
           >
-            <span className="material-symbols-outlined text-[20px]">logout</span>
+            <span className="material-symbols-outlined text-[20px]">
+              logout
+            </span>
             <p className="text-sm font-medium leading-normal">Logout</p>
           </a>
         </div>

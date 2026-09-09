@@ -1,12 +1,20 @@
 import type { ReactNode } from "react";
 export default function LayoutLogin({ children }: { children: ReactNode }) {
   return (
-    <main className="flex-grow flex items-center justify-center p-10 sm:p-12">
-      <div className="w-full max-w-[480px] flex flex-col gap-8">{children}</div>
-      <div className="fixed top-0 right-0 -z-10 w-1/3 h-full opacity-5 pointer-events-none overflow-hidden">
-        <div className="absolute top-20 right-[-10%] w-[500px] h-[500px] border-[40px] border-primary rounded-full"></div>
-        <div className="absolute bottom-20 right-[20%] w-[300px] h-[300px] border-[20px] border-primary-container rounded-full"></div>
+    <div className="h-screen w-full flex items-center justify-center bg-slate-100 dark:bg-slate-900 relative overflow-hidden">
+      {/* Background Logo */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+        <img
+          src="/logo.png"
+          alt=""
+          className="w-[600px] h-[600px] object-contain"
+          style={{ transform: "rotate(-15deg) translateX(50%)", opacity: 0.12 }}
+        />
       </div>
-    </main>
+
+      <div className="w-full max-w-[420px] px-6 relative z-10">
+        {children}
+      </div>
+    </div>
   );
 }
