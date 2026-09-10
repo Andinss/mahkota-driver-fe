@@ -59,7 +59,7 @@ export function ReviewStep({
             <div className="border border-slate-100 dark:border-slate-800 rounded-2xl p-6 bg-slate-50/50 dark:bg-slate-900/30">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
-                  Personal &amp; Contact Info
+                  Personal, Contact &amp; Address Info
                 </h3>
                 <button className="text-primary text-xs font-semibold flex items-center gap-1 hover:underline">
                   <span className="material-symbols-outlined text-sm">
@@ -130,6 +130,54 @@ export function ReviewStep({
                     </p>
                   </div>
                   <div>
+                    <p className="text-xs text-slate-400 mb-1">House Type</p>
+                    <p className="font-semibold text-slate-800 dark:text-white capitalize">
+                      {data.contact.addressType?.replace(/_/g, " ") || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Province</p>
+                    <p className="font-semibold text-slate-800 dark:text-white">
+                      {data.contact.province_name || data.contact.province || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">City / Regency</p>
+                    <p className="font-semibold text-slate-800 dark:text-white">
+                      {data.contact.city_name || data.contact.city || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">District</p>
+                    <p className="font-semibold text-slate-800 dark:text-white">
+                      {data.contact.district_name || data.contact.district || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Subdistrict</p>
+                    <p className="font-semibold text-slate-800 dark:text-white">
+                      {data.contact.subdistrict_name || data.contact.subdistrict || "-"}
+                    </p>
+                  </div>
+                  <div className="md:col-span-2 lg:col-span-3">
+                    <p className="text-xs text-slate-400 mb-1">Full Address</p>
+                    <p className="font-semibold text-slate-800 dark:text-white">
+                      {data.contact.fullAddress || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Ready To Sign Contract</p>
+                    <p className="font-semibold text-slate-800 dark:text-white">
+                      {data.contact.readySignContract === "true" ? "Yes" : "No"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Willing To Be Surveyed</p>
+                    <p className="font-semibold text-slate-800 dark:text-white">
+                      {data.contact.willingToBeSurveyed === "true" ? "Yes" : "No"}
+                    </p>
+                  </div>
+                  <div>
                     <p className="text-xs text-slate-400 mb-1">
                       Emergency Contact
                     </p>
@@ -143,20 +191,6 @@ export function ReviewStep({
                     </p>
                     <p className="font-semibold text-slate-800 dark:text-white">
                       {data.contact.emergencyContactRelationship}
-                    </p>
-                  </div>
-                  <div className="md:col-span-2 lg:col-span-3">
-                    <p className="text-xs text-slate-400 mb-1">
-                      Permanent Address
-                    </p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.permanentAddress}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Address Type</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.addressType}
                     </p>
                   </div>
                 </div>
