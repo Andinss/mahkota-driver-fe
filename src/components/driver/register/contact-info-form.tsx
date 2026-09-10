@@ -337,6 +337,7 @@ export function ContactInfoForm({
                 label="House"
                 defaultValue={initialData?.addressType || ""}
                 error={errors.house}
+                required
               >
                 <option value="">Select house type</option>
                 <option value="contract">Contract</option>
@@ -344,71 +345,37 @@ export function ContactInfoForm({
                 <option value="own_yourself">Own Yourself</option>
               </Select>
             </div>
-
-            <div className="space-y-3">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                Ready To Sign Contract <span className="text-red-500">*</span>
-              </label>
-              <div className="flex items-center gap-4">
-                <Radio
-                  id="readyToSignYes"
-                  name="readyToSignContract"
-                  value="true"
-                  label="Yes"
-                  checked={readyToSignContract === "true"}
-                  onChange={(e) => setReadyToSignContract(e.target.value)}
-                />
-                <Radio
-                  id="readyToSignNo"
-                  name="readyToSignContract"
-                  value="false"
-                  label="No"
-                  checked={readyToSignContract === "false"}
-                  onChange={(e) => setReadyToSignContract(e.target.value)}
-                />
-              </div>
-              {errors.readyToSignContract && (
-                <p className="text-xs text-red-500">
-                  {errors.readyToSignContract}
-                </p>
-              )}
+            <div>
+              <Select
+                id="province"
+                name="province"
+                label="Province"
+                value={selectedProvince}
+                onChange={(e) => {
+                  const provinceId = e.target.value;
+                  setSelectedProvince(e.target.value);
+                  setSelectedCity('');
+                  setSelectedDistrict('');
+                  setSelectedSubdistrict('');
+                  const province = provinces.find(p => p.id === provinceId);
+                  setSelectedProvinceName(province?.name || '');
+                }}
+                error={errors.province}
+                disabled={isLoadingProvinces}
+                required
+              >
+                <option value="">{isLoadingProvinces ? "Loading..." : "Select province"}</option>
+                {provinces.map((province) => (
+                  <option key={province.id} value={province.id}>
+                    {province.name}
+                  </option>
+                ))}
+              </Select>
             </div>
           </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">
-                Address Information
-              </h3>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Province */}
-                <div>
-                  <Select
-                    id="province"
-                    name="province"
-                    label="Province"
-                    value={selectedProvince}
-                    onChange={(e) => {
-                      const provinceId = e.target.value;
-                      setSelectedProvince(e.target.value);
-                      setSelectedCity('');
-                      setSelectedDistrict('');
-                      setSelectedSubdistrict('');
-                      const province = provinces.find(p => p.id === provinceId);
-                      setSelectedProvinceName(province?.name || '');
-                    }}
-                    error={errors.province}
-                    disabled={isLoadingProvinces}
-                  >
-                    <option value="">{isLoadingProvinces ? "Loading..." : "Select province"}</option>
-                    {provinces.map((province) => (
-                      <option key={province.id} value={province.id}>
-                        {province.name}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-
                 {/* City/Regency */}
                 <div>
                   <Select
@@ -426,6 +393,7 @@ export function ContactInfoForm({
                     }}
                     error={errors.city}
                     disabled={!selectedProvince || isLoadingCities}
+                    required
                   >
                     <option value="">{isLoadingCities ? "Loading..." : "Select city/regency"}</option>
                     {cities.map((city) => (
@@ -452,6 +420,7 @@ export function ContactInfoForm({
                     }}
                     error={errors.district}
                     disabled={!selectedCity || isLoadingDistricts}
+                    required
                   >
                     <option value="">{isLoadingDistricts ? "Loading..." : "Select district"}</option>
                     {districts.map((district) => (
@@ -477,6 +446,7 @@ export function ContactInfoForm({
                     }}
                     error={errors.subdistrict}
                     disabled={!selectedDistrict || isLoadingSubdistricts}
+                    required
                   >
                     <option value="">{isLoadingSubdistricts ? "Loading..." : "Select subdistrict"}</option>
                     {subdistricts.map((subdistrict) => (
@@ -512,35 +482,64 @@ export function ContactInfoForm({
                   </div>
                 </div>
 
-                <div className="md:col-span-2">
-                  <div className="space-y-3">
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Willing To Be Surveyed <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex items-center gap-4">
-                      <Radio
-                        id="willingToSurveyYes"
-                        name="willingToBeSurveyed"
-                        value="true"
-                        label="Yes"
-                        checked={willingToBeSurveyed === "true"}
-                        onChange={(e) => setWillingToBeSurveyed(e.target.value)}
-                      />
-                      <Radio
-                        id="willingToSurveyNo"
-                        name="willingToBeSurveyed"
-                        value="false"
-                        label="No"
-                        checked={willingToBeSurveyed === "false"}
-                        onChange={(e) => setWillingToBeSurveyed(e.target.value)}
-                      />
-                    </div>
-                    {errors.willingToBeSurveyed && (
-                      <p className="text-xs text-red-500">
-                        {errors.willingToBeSurveyed}
-                      </p>
-                    )}
+                {/* Willing To Be Surveyed */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Willing To Be Surveyed <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <Radio
+                      id="willingToSurveyYes"
+                      name="willingToBeSurveyed"
+                      value="true"
+                      label="Yes"
+                      checked={willingToBeSurveyed === "true"}
+                      onChange={(e) => setWillingToBeSurveyed(e.target.value)}
+                    />
+                    <Radio
+                      id="willingToSurveyNo"
+                      name="willingToBeSurveyed"
+                      value="false"
+                      label="No"
+                      checked={willingToBeSurveyed === "false"}
+                      onChange={(e) => setWillingToBeSurveyed(e.target.value)}
+                    />
                   </div>
+                  {errors.willingToBeSurveyed && (
+                    <p className="text-xs text-red-500">
+                      {errors.willingToBeSurveyed}
+                    </p>
+                  )}
+                </div>
+
+                {/* Ready To Sign Contract */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Ready To Sign Contract <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <Radio
+                      id="readyToSignYes"
+                      name="readyToSignContract"
+                      value="true"
+                      label="Yes"
+                      checked={readyToSignContract === "true"}
+                      onChange={(e) => setReadyToSignContract(e.target.value)}
+                    />
+                    <Radio
+                      id="readyToSignNo"
+                      name="readyToSignContract"
+                      value="false"
+                      label="No"
+                      checked={readyToSignContract === "false"}
+                      onChange={(e) => setReadyToSignContract(e.target.value)}
+                    />
+                  </div>
+                  {errors.readyToSignContract && (
+                    <p className="text-xs text-red-500">
+                      {errors.readyToSignContract}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

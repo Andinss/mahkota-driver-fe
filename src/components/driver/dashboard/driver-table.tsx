@@ -6,10 +6,18 @@ import { ExportColumn, ModalExport } from "@/components/ui/export";
 
 const driverColumns: ExportColumn[] = [
   { id: "name", label: "Driver Name", defaultChecked: true },
-  { id: "employeeId", label: "Employee ID", defaultChecked: true },
-  { id: "phoneNumber", label: "Phone Number", defaultChecked: true },
+  { id: "employee_id", label: "Employee ID", defaultChecked: true },
+  { id: "phone", label: "Phone Number", defaultChecked: true },
   { id: "email", label: "Email", defaultChecked: true },
   { id: "saldo", label: "Saldo", defaultChecked: true },
+  { id: "gender", label: "Gender", defaultChecked: false },
+  { id: "date_of_birth", label: "Date of Birth", defaultChecked: false },
+  { id: "citizenship", label: "Citizenship", defaultChecked: false },
+  { id: "house_type", label: "House Type", defaultChecked: false },
+  { id: "province_name", label: "Province", defaultChecked: false },
+  { id: "city_name", label: "City / Regency", defaultChecked: false },
+  { id: "willing_to_be_survey", label: "Willing to be Surveyed", defaultChecked: false },
+  { id: "ready_sign_contract", label: "Ready Sign Contract", defaultChecked: false },
 ];
 
 interface DriverTableProps {

@@ -6,12 +6,12 @@ export interface DriverItem {
   profile_photo?: string;
   gender: string;
   employee_id: string;
+  citizenship: string;
   phone: string;
   email: string;
   emergency_contact: string;
   emergency_email: string;
   house_type: string;
-  permanent_address: string;
   ready_sign_contract: boolean;
   willing_to_be_survey: boolean;
   national_id_card?: string;
@@ -22,6 +22,15 @@ export interface DriverItem {
   created_by_id?: string;
   created_by?: { id: string; username: string; email: string };
   saldo?: { id: string; balance: number };
+  province?: string;
+  province_name?: string;
+  city?: string;
+  city_name?: string;
+  district?: string;
+  district_name?: string;
+  subdistrict?: string;
+  subdistrict_name?: string;
+  full_address?: string;
   created_at?: string;
   updated_at?: string;
 }
