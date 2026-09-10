@@ -6,7 +6,7 @@ interface StepperProps {
 
 const steps = [
   { number: 1, label: "Personal Details" },
-  { number: 2, label: "Contact Info" },
+  { number: 2, label: "Contact & Address Info" },
   { number: 3, label: "Documents" },
   { number: 4, label: "Review" },
 ];
