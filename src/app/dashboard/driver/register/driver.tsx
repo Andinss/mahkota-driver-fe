@@ -184,7 +184,6 @@ export default function DriverRegisterPage() {
     router.push("/dashboard/driver");
   };
 
-<<<<<<< HEAD
   const handleEditSection = (section: "personal" | "emergency" | "address" | "survey" | "documents") => {
     switch (section) {
       case "personal":
@@ -199,13 +198,13 @@ export default function DriverRegisterPage() {
         setCurrentStep(3);
         break;
     }
-=======
+  };
+
   const stepTitles: Record<number, { title: string; subtitle: string }> = {
     1: { title: "Informasi Personal", subtitle: "Lengkapi data diri driver yang akan didaftarkan" },
     2: { title: "Informasi Kontak", subtitle: "Masukkan data kontak dan alamat driver" },
     3: { title: "Upload Dokumen", subtitle: "Unggah dokumen penting driver (SIM, KTP, NPWP)" },
     4: { title: "Review & Konfirmasi", subtitle: "Periksa kembali semua data sebelum disimpan" },
->>>>>>> nauval
   };
 
   const renderStep = () => {
