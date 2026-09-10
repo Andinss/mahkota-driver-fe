@@ -46,8 +46,8 @@ export function toastSuccess(msg: string) {
     ...baseOpts,
     toastId: id,
     autoClose: 5000,
-    style: { borderLeft: "4px solid #3b82f6" },
-    progressStyle: { background: "#3b82f6" },
+    style: { borderLeft: "4px solid #2563eb" },
+    progressStyle: { background: "#2563eb" },
   } as any);
 }
 
