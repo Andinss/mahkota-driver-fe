@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
+import { Select } from "@/components/ui/select";
 
 export interface VehicleFormData {
   make: string;
@@ -13,6 +14,7 @@ export interface VehicleFormData {
   vin: string;
   engineNumber: string;
   dailyRate: string;
+  pricingCategory: string;
 }
 
 type FormMode = "add" | "edit";
@@ -26,6 +28,7 @@ interface FormErrors {
   vin?: string;
   engineNumber?: string;
   dailyRate?: string;
+  pricingCategory?: string;
 }
 
 interface VehicleSpecificationsFormProps {
@@ -44,7 +47,7 @@ export function VehicleSpecificationsForm({
 
   const sanitizeInput = (
     e: React.FormEvent<HTMLInputElement>,
-    denyPattern: RegExp
+    denyPattern: RegExp,
   ) => {
     const input = e.currentTarget;
     const sanitized = input.value.replace(denyPattern, "");
@@ -65,6 +68,7 @@ export function VehicleSpecificationsForm({
     const vin = formData.get("vin") as string;
     const engineNumber = formData.get("engineNumber") as string;
     const dailyRate = formData.get("dailyRate") as string;
+    const pricingCategory = formData.get("pricingCategory") as string;
 
     if (!make?.trim()) {
       newErrors.make = "Make is required";
@@ -126,6 +130,10 @@ export function VehicleSpecificationsForm({
       newErrors.dailyRate = "Daily rate must be greater than 0";
     }
 
+    if (!pricingCategory) {
+      newErrors.pricingCategory = "Pricing category is required";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -147,6 +155,7 @@ export function VehicleSpecificationsForm({
       vin: formData.get("vin") as string,
       engineNumber: formData.get("engineNumber") as string,
       dailyRate: formData.get("dailyRate") as string,
+      pricingCategory: formData.get("pricingCategory") as string,
     };
     onSubmit?.(data);
   };
@@ -155,13 +164,17 @@ export function VehicleSpecificationsForm({
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-          <span className="material-symbols-outlined text-blue-500 text-xl">directions_car</span>
+          <span className="material-symbols-outlined text-blue-500 text-xl">
+            directions_car
+          </span>
         </div>
         <div>
           <h3 className="font-bold text-slate-800 dark:text-white text-base">
             Spesifikasi Kendaraan
           </h3>
-          <p className="text-xs text-slate-400">Masukkan detail informasi kendaraan</p>
+          <p className="text-xs text-slate-400">
+            Masukkan detail informasi kendaraan
+          </p>
         </div>
       </div>
       <form
@@ -250,14 +263,41 @@ export function VehicleSpecificationsForm({
         />
 
         <CurrencyInput
-            id="dailyRate"
-            name="dailyRate"
-            label="Daily Rate"
-            placeholder="0"
-            value={initialValues?.dailyRate}
-            required
-            error={errors.dailyRate}
-          />
+          id="dailyRate"
+          name="dailyRate"
+          label="Daily Rate"
+          placeholder="0"
+          value={initialValues?.dailyRate}
+          required
+          error={errors.dailyRate}
+        />
+
+        <div className="flex flex-col gap-2">
+          <label
+            className="text-sm font-medium text-[#111418] dark:text-white"
+            htmlFor="pricingCategory"
+          >
+            Pricing Category
+          </label>
+          <div className="relative">
+            <Select
+              id="pricingCategory"
+              name="pricingCategory"
+              defaultValue={initialValues?.pricingCategory}
+              required
+              className="appearance-none pr-10 w-full"
+            >
+              <option value="Reguler">Reguler</option>
+              <option value="Premium">Premium</option>
+            </Select>
+            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#617589] dark:text-slate-400">
+              expand_more
+            </span>
+          </div>
+          {errors.pricingCategory && (
+            <p className="text-xs text-red-500">{errors.pricingCategory}</p>
+          )}
+        </div>
       </form>
     </div>
   );

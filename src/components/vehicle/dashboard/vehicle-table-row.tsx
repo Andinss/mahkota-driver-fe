@@ -10,6 +10,7 @@ interface Vehicle {
   plate: string;
   type: string;
   rate: string;
+  pricingCategory: string;
   status: "available" | "rented" | "maintenance";
   image: string;
   imageAlt: string;
@@ -54,6 +55,9 @@ export const VehicleTableRow = ({
       </td>
       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
         {vehicle.type}
+      </td>
+      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+        {vehicle.pricingCategory}
       </td>
       <td className="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">
         {vehicle.rate}

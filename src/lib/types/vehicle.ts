@@ -1,4 +1,5 @@
 export type VehicleStatus = "Available" | "Maintenance" | "Service" | "Reserved" | "rented" | "retrieved";
+export type PricingCategory = "Reguler" | "Premium";
 
 export interface VehicleItem {
   id: string;
@@ -11,6 +12,7 @@ export interface VehicleItem {
   engine_number: string;
   engine_status: 'on' | 'off';
   daily_rate: number;
+  pricing_category: PricingCategory;
   status: VehicleStatus;
   vehicle_photo?: string | string[];
   created_at?: string;
