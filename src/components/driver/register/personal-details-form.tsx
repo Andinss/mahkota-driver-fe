@@ -62,59 +62,55 @@ export function PersonalDetailsForm({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-      <div className="px-8 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-2xl">badge</span>
-          </div>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-            Step 1: Personal Information
-          </h2>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      {/* Section Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-blue-500 text-xl">badge</span>
         </div>
-        <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-primary text-[10px] font-bold rounded-full border border-blue-100 dark:border-blue-800 uppercase tracking-widest">
-          Draft Auto-saved
-        </span>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">Step 1: Personal Information</h3>
+          <p className="text-xs text-slate-400">Isi data diri driver dengan lengkap</p>
+        </div>
       </div>
 
-      <div className="flex flex-col md:flex-row">
-        <div className="w-full md:w-1/3 bg-gray-50/50 dark:bg-slate-800/50 p-8 border-r border-[#f0f2f4] dark:border-slate-800">
-          <DriverProfileUpload
-            onImageSelect={handlePhotoSelect}
-            initialImageUrl={initialProfilePhotoUrl}
-            acceptedFormats={["JPG", "JPEG", "PNG"]}
-            maxSizeMB={5}
-          />
-        </div>
+      {/* Profile Photo Upload */}
+      <div className="mb-6">
+        <DriverProfileUpload
+          onImageSelect={handlePhotoSelect}
+          initialImageUrl={initialProfilePhotoUrl}
+          acceptedFormats={["JPG", "JPEG", "PNG"]}
+          maxSizeMB={5}
+        />
+      </div>
 
-        <div className="w-full md:w-2/3 p-8 flex flex-col justify-between">
-          <PersonalFormComponent
-            mode={mode}
-            initialValues={initialData}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-          />
+      {/* Personal Form Fields */}
+      <PersonalFormComponent
+        mode={mode}
+        initialValues={initialData}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+      />
 
-          <div className="mt-6 flex items-center justify-end gap-6">
-            <Link href="/dashboard/driver">
-              <button
-                type="button"
-                className="text-sm font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-              >
-                Cancel
-              </button>
-            </Link>
-            <Button
-              variant="primary"
-              type="submit"
-              form="personalForm"
-              icon="arrow_forward"
-              iconPosition="right"
-            >
-              Next Step
-            </Button>
-          </div>
-        </div>
+      {/* Buttons */}
+      <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
+        <Link href="/dashboard/driver">
+          <button
+            type="button"
+            className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+          >
+            Batal
+          </button>
+        </Link>
+        <Button
+          variant="primary"
+          type="submit"
+          form="personalForm"
+          icon="arrow_forward"
+          iconPosition="right"
+        >
+          Next Step
+        </Button>
       </div>
     </div>
   );

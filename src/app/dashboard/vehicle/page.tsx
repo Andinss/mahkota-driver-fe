@@ -25,6 +25,7 @@ interface VehicleDisplay {
   plate: string;
   type: string;
   rate: string;
+  pricingCategory: string;
   status: VehicleStatus;
   image: string;
   imageAlt: string;
@@ -93,6 +94,7 @@ export default function DashboardVehiclePage() {
           plate: item.license_plate,
           type: "Sedan",
           rate: `Rp ${Number(item.daily_rate || 0).toLocaleString("id-ID")}`,
+          pricingCategory: item.pricing_category || "Reguler",
           status: statusMap[item.status] || "available",
           image,
           imageAlt: `${name} side view`,

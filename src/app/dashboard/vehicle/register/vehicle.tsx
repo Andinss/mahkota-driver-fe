@@ -51,6 +51,7 @@ export default function VehicleRegisterPage() {
             vin: vehicle.vin_number,
             engineNumber: vehicle.engine_number,
             dailyRate: String(vehicle.daily_rate),
+            pricingCategory: vehicle.pricing_category,
           });
           const imageBase = (
             process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
@@ -103,6 +104,7 @@ export default function VehicleRegisterPage() {
         formData.append("vin_number", data.vin);
         formData.append("engine_number", data.engineNumber);
         formData.append("daily_rate", data.dailyRate.replace(/\./g, ""));
+        formData.append("pricing_category", data.pricingCategory);
         formData.append("status", status);
 
         imageFiles.forEach((file) => {

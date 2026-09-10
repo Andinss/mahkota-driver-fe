@@ -24,7 +24,6 @@ import { PermissionGuard } from "@/components/auth-guard-permission";
 import { HttpClientError } from "@/lib/api-http";
 import { renameFile } from "@/lib/utils/file";
 import { toastError } from "@/components/ui/toast-provider";
-import { Button } from "@/components/ui/button";
 type Step = 1 | 2 | 3 | 4;
 
 export default function DriverRegisterPage() {
@@ -185,6 +184,7 @@ export default function DriverRegisterPage() {
     router.push("/dashboard/driver");
   };
 
+<<<<<<< HEAD
   const handleEditSection = (section: "personal" | "emergency" | "address" | "survey" | "documents") => {
     switch (section) {
       case "personal":
@@ -199,6 +199,13 @@ export default function DriverRegisterPage() {
         setCurrentStep(3);
         break;
     }
+=======
+  const stepTitles: Record<number, { title: string; subtitle: string }> = {
+    1: { title: "Informasi Personal", subtitle: "Lengkapi data diri driver yang akan didaftarkan" },
+    2: { title: "Informasi Kontak", subtitle: "Masukkan data kontak dan alamat driver" },
+    3: { title: "Upload Dokumen", subtitle: "Unggah dokumen penting driver (SIM, KTP, NPWP)" },
+    4: { title: "Review & Konfirmasi", subtitle: "Periksa kembali semua data sebelum disimpan" },
+>>>>>>> nauval
   };
 
   const renderStep = () => {
@@ -259,10 +266,38 @@ export default function DriverRegisterPage() {
 
   return (
     <PermissionGuard permission="driver.create">
-    <div className="p-7">
-      <Stepper currentStep={currentStep} />
-      {renderStep()}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={currentStep > 1 ? handleBack : handleCancel}
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
+            >
+              <span className="material-symbols-outlined text-slate-500">arrow_back</span>
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {mode === "add" ? "Tambah Driver Baru" : "Edit Driver"}
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {mode === "add"
+                  ? "Lengkapi form di bawah untuk mendaftarkan driver baru"
+                  : "Perbarui informasi data driver"}
+              </p>
+            </div>
+          </div>
+        </div>
 
+        {/* Stepper */}
+        <Stepper currentStep={currentStep} />
+
+        {/* Form Sections */}
+        <div className="space-y-6">
+          {renderStep()}
+        </div>
+      </div>
     </div>
     </PermissionGuard>
   );

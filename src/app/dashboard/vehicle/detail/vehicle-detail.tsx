@@ -125,6 +125,7 @@ const VehicleDetail = () => {
     { label: "Model", value: vehicle.model },
     { label: "Color", value: vehicle.color },
     { label: "Launching Year", value: vehicle.launching_year ? new Date(vehicle.launching_year).getFullYear().toString() : "-" },
+    { label: "Pricing Category", value: vehicle.pricing_category || "-" },
   ] : [];
 
   const registrationDetails = vehicle ? [
@@ -136,7 +137,10 @@ const VehicleDetail = () => {
 
   const rentalPricing = vehicle ? {
     baseRate: `Rp ${Number(vehicle.daily_rate || 0).toLocaleString("id-ID")}`,
-    features: [{ text: `Status: ${vehicle.status}` }],
+    features: [
+      { text: `Status: ${vehicle.status}` },
+      { text: `Category: ${vehicle.pricing_category || "-"}` },
+    ],
   } : { baseRate: "-", features: [] };
 
   const rentalHistory = vehicleRentals.map((r) => ({

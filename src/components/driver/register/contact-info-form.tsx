@@ -276,59 +276,55 @@ export function ContactInfoForm({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-      <div className="px-8 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-2xl">badge</span>
-          </div>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-            Step 2: Contact & Address Information
-          </h2>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      {/* Section Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-emerald-500 text-xl">contact_mail</span>
         </div>
-        <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-primary text-[10px] font-bold rounded-full border border-blue-100 dark:border-blue-800 uppercase tracking-widest">
-          Draft Auto-saved
-        </span>
+        <div>
+          <h3 className="font-bold text-slate-800 dark:text-white text-base">Step 2: Contact Information</h3>
+          <p className="text-xs text-slate-400">Masukkan data kontak dan alamat driver</p>
+        </div>
       </div>
 
-      <div className="p-8">
-        <form
-          ref={formRef}
-          id="contactInfoForm"
-          onSubmit={handleSubmit}
-          className="space-y-8"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Input
-              id="emergencyContactNumber"
-              name="emergencyContactNumber"
-              label="Emergency Contact Number"
-              placeholder="Phone number of emergency contact"
-              defaultValue={initialData?.emergencyContactName}
-              onChange={(e) => {
-                const val = e.target.value.replace(/[^0-9]/g, "");
-                const nativeInput = e.target;
-                nativeInput.value = val;
-              }}
-              required
-              error={errors.emergencyContactNumber}
-            />
+      <form
+        ref={formRef}
+        id="contactInfoForm"
+        onSubmit={handleSubmit}
+        className="space-y-6"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Input
+            id="emergencyContactNumber"
+            name="emergencyContactNumber"
+            label="Emergency Contact Number"
+            placeholder="Phone number of emergency contact"
+            defaultValue={initialData?.emergencyContactName}
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^0-9]/g, "");
+              const nativeInput = e.target;
+              nativeInput.value = val;
+            }}
+            required
+            error={errors.emergencyContactNumber}
+          />
 
-            <Input
-              id="emergencyContactEmail"
-              name="emergencyContactEmail"
-              label="Emergency Contact Email"
-              placeholder="Email address of emergency contact"
-              type="email"
-              defaultValue={initialData?.emergencyContactRelationship}
-              onChange={(e) => {
-                const val = sanitizeEmailInput(e.target.value);
-                const nativeInput = e.target;
-                nativeInput.value = val;
-              }}
-              required
-              error={errors.emergencyContactEmail}
-            />
+          <Input
+            id="emergencyContactEmail"
+            name="emergencyContactEmail"
+            label="Emergency Contact Email"
+            placeholder="Email address of emergency contact"
+            type="email"
+            defaultValue={initialData?.emergencyContactRelationship}
+            onChange={(e) => {
+              const val = sanitizeEmailInput(e.target.value);
+              const nativeInput = e.target;
+              nativeInput.value = val;
+            }}
+            required
+            error={errors.emergencyContactEmail}
+          />
 
             <div>
               <Select
@@ -544,27 +540,26 @@ export function ContactInfoForm({
               </div>
             </div>
 
-          <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
-            <Button variant="ghost" onClick={onBack} icon="arrow_back">
-              Back
-            </Button>
-            <div className="flex gap-4">
-              <Button variant="ghost" onClick={onSaveDraft}>
-                Save Draft
-              </Button>
-              <Button
-                variant="primary"
-                type="submit"
-                form="contactInfoForm"
-                icon="arrow_forward"
-                iconPosition="right"
-              >
-                Next Step
-              </Button>
-            </div>
-          </div>
-        </form>
-      </div>
+        {/* Buttons */}
+        <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+          >
+            Back
+          </button>
+          <Button
+            variant="primary"
+            type="submit"
+            form="contactInfoForm"
+            icon="arrow_forward"
+            iconPosition="right"
+          >
+            Next Step
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }
