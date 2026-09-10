@@ -19,6 +19,7 @@ interface ReviewStepProps {
   onBack: () => void;
   onSaveDraft?: () => void;
   onSubmit: () => Promise<void>;
+  onEditSection?: (section: "personal" | "emergency" | "address" | "survey" | "documents") => void;
   mode?: "add" | "edit";
 }
 
@@ -30,10 +31,9 @@ export function ReviewStep({
   onBack,
   onSaveDraft,
   onSubmit,
+  onEditSection,
   mode = "add",
 }: ReviewStepProps) {
-
-
   return (
     <>
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -59,139 +59,172 @@ export function ReviewStep({
             <div className="border border-slate-100 dark:border-slate-800 rounded-2xl p-6 bg-slate-50/50 dark:bg-slate-900/30">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
-                  Personal, Contact &amp; Address Info
+                  Personal, Contact &amp; Address Details
                 </h3>
-                <button className="text-primary text-xs font-semibold flex items-center gap-1 hover:underline">
-                  <span className="material-symbols-outlined text-sm">
-                    edit
-                  </span>{" "}
-                  Edit
+                <button
+                  type="button"
+                  onClick={() => onEditSection?.("personal")}
+                  className="text-primary text-xs font-semibold flex items-center gap-1 hover:underline"
+                >
+                  <span className="material-symbols-outlined text-sm">edit</span> Edit
                 </button>
               </div>
 
-              <div className="flex flex-col md:flex-row gap-8">
-                <div className="shrink-0">
-                  {data.photo ? (
-                    <img
-                      alt="Driver Photo"
-                      className="w-32 h-32 rounded-2xl object-cover border-4 border-white dark:border-slate-800 shadow-sm"
-                      src={data.photo}
-                    />
-                  ) : (
-                    <div className="w-32 h-32 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-slate-300 text-4xl">
-                        person
-                      </span>
+              <div className="space-y-6">
+                {/* Personal Information */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 pb-2 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-sm">account_circle</span>
+                    Personal Information
+                  </h4>
+                  <div className="flex gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12 flex-1">
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Full Name</p>
+                        <p className="font-semibold text-slate-800 dark:text-white">
+                          {data.personal.firstName} {data.personal.lastName}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Employee ID</p>
+                        <p className="font-semibold text-primary">
+                          {data.personal.employeeId || "Auto-generated"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Date of Birth</p>
+                        <p className="font-semibold text-slate-800 dark:text-white">
+                          {data.personal.dateOfBirth}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Gender</p>
+                        <p className="font-semibold text-slate-800 dark:text-white">
+                          {data.personal.gender}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Citizenship</p>
+                        <p className="font-semibold text-slate-800 dark:text-white">
+                          {data.personal.citizenship}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Phone Number</p>
+                        <p className="font-semibold text-slate-800 dark:text-white">
+                          {data.contact.phoneNumber}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Email Address</p>
+                        <p className="font-semibold text-slate-800 dark:text-white">
+                          {data.contact.email}
+                        </p>
+                      </div>
                     </div>
-                  )}
+                    <div className="shrink-0">
+                      {data.photo ? (
+                        <img
+                          alt="Driver Photo"
+                          className="w-24 h-24 rounded-xl object-cover border-2 border-white dark:border-slate-800 shadow-sm"
+                          src={data.photo}
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-sm">
+                          <span className="material-symbols-outlined text-slate-300 text-3xl">person</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12 flex-1">
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Full Name</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.personal.firstName} {data.personal.lastName}
-                    </p>
+                {/* Emergency Contact */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 pb-2 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-sm">contact_emergency</span>
+                    Emergency Contact
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">Emergency Contact</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">
+                        {data.contact.emergencyContactName}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">Emergency Relationship</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">
+                        {data.contact.emergencyContactRelationship}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Employee ID</p>
-                    <p className="font-semibold text-primary">
-                      {data.personal.employeeId || "Auto-generated"}
-                    </p>
+                </div>
+
+                {/* Address Details */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 pb-2 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-sm">location_on</span>
+                    Address Details
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">House Type</p>
+                      <p className="font-semibold text-slate-800 dark:text-white capitalize">
+                        {data.contact.addressType?.replace(/_/g, " ") || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">Province</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">
+                        {data.contact.province_name || data.contact.province || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">City / Regency</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">
+                        {data.contact.city_name || data.contact.city || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">District</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">
+                        {data.contact.district_name || data.contact.district || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">Subdistrict</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">
+                        {data.contact.subdistrict_name || data.contact.subdistrict || "-"}
+                      </p>
+                    </div>
+                    <div className="md:col-span-2 lg:col-span-3">
+                      <p className="text-xs text-slate-400 mb-1">Full Address</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">
+                        {data.contact.fullAddress || "-"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Email Address</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.email}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Phone Number</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.phoneNumber}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Date of Birth</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.personal.dateOfBirth}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Gender</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.personal.gender}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Citizenship</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.personal.citizenship}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">House Type</p>
-                    <p className="font-semibold text-slate-800 dark:text-white capitalize">
-                      {data.contact.addressType?.replace(/_/g, " ") || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Province</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.province_name || data.contact.province || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">City / Regency</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.city_name || data.contact.city || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">District</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.district_name || data.contact.district || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Subdistrict</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.subdistrict_name || data.contact.subdistrict || "-"}
-                    </p>
-                  </div>
-                  <div className="md:col-span-2 lg:col-span-3">
-                    <p className="text-xs text-slate-400 mb-1">Full Address</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.fullAddress || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Ready To Sign Contract</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.readySignContract === "true" ? "Yes" : "No"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Willing To Be Surveyed</p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.willingToBeSurveyed === "true" ? "Yes" : "No"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">
-                      Emergency Contact
-                    </p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.emergencyContactName}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">
-                      Emergency Relationship
-                    </p>
-                    <p className="font-semibold text-slate-800 dark:text-white">
-                      {data.contact.emergencyContactRelationship}
-                    </p>
+                </div>
+
+                {/* Survey & Contract */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 pb-2 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-sm">fact_check</span>
+                    Survey & Contract
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">Willing To Be Surveyed</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">
+                        {data.contact.willingToBeSurveyed === "true" ? "Yes" : "No"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">Ready To Sign Contract</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">
+                        {data.contact.readySignContract === "true" ? "Yes" : "No"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -203,7 +236,11 @@ export function ReviewStep({
                 <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
                   Technical Documents
                 </h3>
-                <button className="text-primary text-xs font-semibold flex items-center gap-1 hover:underline">
+                <button
+                  type="button"
+                  onClick={() => onEditSection?.("documents")}
+                  className="text-primary text-xs font-semibold flex items-center gap-1 hover:underline"
+                >
                   <span className="material-symbols-outlined text-sm">
                     edit
                   </span>{" "}

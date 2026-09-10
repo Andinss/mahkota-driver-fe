@@ -82,7 +82,7 @@ const Topbar = () => {
   }, [isNotifOpen]);
 
   return (
-    <header className="h-16 flex items-center justify-between border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shrink-0 z-[9999]">
+    <header className="h-16 flex items-center justify-between border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shrink-0 z-30">
       <button
         onClick={handleToggleSidebar}
         className="mr-4 p-2 -ml-2 text-slate-500 hover:text-primary transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"

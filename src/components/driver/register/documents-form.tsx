@@ -484,18 +484,19 @@ export function DocumentsForm({
                   onChange={handleHouseGarageUpload}
                 />
               </div>
-            )}
-            <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 mt-4">
-              <div className="flex gap-3">
-                <span className="material-symbols-outlined text-blue-500 text-xl">
-                  info
-                </span>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Ensure all details on your ID cards are clearly visible and
-                  not cut off. Reflections or blurriness may cause registration
-                  delays.
-                </p>
-              </div>
+            )} 
+          </div>
+
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 md:col-span-2">
+            <div className="flex gap-3">
+              <span className="material-symbols-outlined text-blue-500 text-xl">
+                info
+              </span>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Ensure all details on your ID cards are clearly visible and
+                not cut off. Reflections or blurriness may cause registration
+                delays.
+              </p>
             </div>
           </div>
 

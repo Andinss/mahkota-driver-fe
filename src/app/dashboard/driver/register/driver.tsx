@@ -72,10 +72,18 @@ export default function DriverRegisterPage() {
             contact: {
               emergencyContactName: driver.emergency_contact || "",
               emergencyContactRelationship: driver.emergency_email || "",
-              permanentAddress: driver.permanent_address || "",
               addressType: driver.house_type || "",
               readySignContract: driver.ready_sign_contract != null ? String(driver.ready_sign_contract) : "",
               willingToBeSurveyed: driver.willing_to_be_survey != null ? String(driver.willing_to_be_survey) : "",
+              province: driver.province || "",
+              province_name: driver.province_name || "",
+              city: driver.city || "",
+              city_name: driver.city_name || "",
+              district: driver.district || "",
+              district_name: driver.district_name || "",
+              subdistrict: driver.subdistrict || "",
+              subdistrict_name: driver.subdistrict_name || "",
+              fullAddress: driver.full_address || "",
             },
             photo: buildUrl(photo),
             documentsUrl: {
@@ -135,7 +143,6 @@ export default function DriverRegisterPage() {
     fd.append("emergency_contact", contact.emergencyContactName);
     fd.append("emergency_email", contact.emergencyContactRelationship);
     fd.append("house_type", contact.addressType);
-    fd.append("permanent_address", contact.permanentAddress);
     fd.append("ready_sign_contract", contact.readySignContract);
     fd.append("willing_to_be_survey", contact.willingToBeSurveyed);
 
@@ -176,6 +183,22 @@ export default function DriverRegisterPage() {
 
   const handleCancel = () => {
     router.push("/dashboard/driver");
+  };
+
+  const handleEditSection = (section: "personal" | "emergency" | "address" | "survey" | "documents") => {
+    switch (section) {
+      case "personal":
+        setCurrentStep(1);
+        break;
+      case "emergency":
+      case "address":
+      case "survey":
+        setCurrentStep(2);
+        break;
+      case "documents":
+        setCurrentStep(3);
+        break;
+    }
   };
 
   const renderStep = () => {
@@ -225,6 +248,7 @@ export default function DriverRegisterPage() {
             onBack={handleBack}
             onSaveDraft={handleSaveDraft}
             onSubmit={handleSubmit}
+            onEditSection={handleEditSection}
             mode={mode}
           />
         );
