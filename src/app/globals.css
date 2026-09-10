@@ -175,7 +175,7 @@
 
 /* Toastify progress bar color overrides */
 .Toastify__progress-bar--success {
-  background: #3b82f6 !important;
+  background: #2563eb !important;
 }
 .Toastify__progress-bar--error {
   background: #dc2626 !important;
