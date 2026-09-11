@@ -43,8 +43,8 @@ export function ReviewStep({
             <span className="material-symbols-outlined text-blue-500 text-xl">person</span>
           </div>
           <div>
-            <h3 className="font-bold text-slate-800 dark:text-white text-base">Personal &amp; Contact Info</h3>
-            <p className="text-xs text-slate-400">Ringkasan data diri dan kontak driver</p>
+            <h3 className="font-bold text-slate-800 dark:text-white text-base">Review</h3>
+            <p className="text-xs text-slate-400">Ringkasan data diri, kontak dan alamat driver</p>
           </div>
         </div>
 
@@ -132,19 +132,6 @@ export function ReviewStep({
                           {data.contact.email}
                         </p>
                       </div>
-                    </div>
-                    <div className="shrink-0">
-                      {data.photo ? (
-                        <img
-                          alt="Driver Photo"
-                          className="w-24 h-24 rounded-xl object-cover border-2 border-white dark:border-slate-800 shadow-sm"
-                          src={data.photo}
-                        />
-                      ) : (
-                        <div className="w-24 h-24 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-sm">
-                          <span className="material-symbols-outlined text-slate-300 text-3xl">person</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
