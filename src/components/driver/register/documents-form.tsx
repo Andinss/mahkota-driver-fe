@@ -497,7 +497,7 @@ export function DocumentsForm({
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center md:col-span-2">
+          <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end items-center gap-3 md:col-span-2">
             <button
               type="button"
               onClick={onBack}
@@ -505,17 +505,15 @@ export function DocumentsForm({
             >
               Back
             </button>
-            <div className="flex gap-3">
-              <Button
-                variant="primary"
-                type="submit"
-                form="documentsForm"
-                icon="arrow_forward"
-                iconPosition="right"
-              >
-                Next Step
-              </Button>
-            </div>
+            <Button
+              variant="primary"
+              type="submit"
+              form="documentsForm"
+              icon="arrow_forward"
+              iconPosition="right"
+            >
+              Next Step
+            </Button>
           </div>
         </form>
     </div>

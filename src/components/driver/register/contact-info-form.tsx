@@ -6,6 +6,7 @@ import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Radio } from "@/components/ui/radio";
 import { sanitizeEmailInput } from "@/lib/utils/validation";
+import { provinsi, kabupaten, kecamatan, desa } from 'daftar-wilayah-indonesia';
 
 export interface ContactInfoData {
   emergencyContactName: string;
@@ -77,105 +78,43 @@ export function ContactInfoForm({
   const [selectedDistrictName, setSelectedDistrictName] = useState<string>("");
   const [selectedSubdistrictName, setSelectedSubdistrictName] = useState<string>("");
 
-  const [isLoadingProvinces, setIsLoadingProvinces] = useState(false);
-  const [isLoadingCities, setIsLoadingCities] = useState(false);
-  const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
-  const [isLoadingSubdistricts, setIsLoadingSubdistricts] = useState(false);
-
+  // Load provinces from library 
   useEffect(() => {
-    const fetchProvinces = async () => {
-      setIsLoadingProvinces(true);
-      try {
-        const response = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
-        const data = await response.json();
-        setProvinces(data);
-      } catch (error) {
-        console.error('Error fetching provinces:', error);
-        setProvinces([
-          { id: '1', name: 'DKI Jakarta' },
-          { id: '2', name: 'Jawa Barat' },
-          { id: '3', name: 'Jawa Tengah' },
-          { id: '4', name: 'Jawa Timur' },
-          { id: '5', name: 'Banten' },
-          { id: '6', name: 'Yogyakarta' },
-        ]);
-      } finally {
-        setIsLoadingProvinces(false);
-      }
-    };
-    fetchProvinces();
+    const data = provinsi();
+    setProvinces(data.map((p: any) => ({ id: p.kode, name: p.nama })));
   }, []);
 
-  // Fetch cities when province changes
+  // Load cities when province changes
   useEffect(() => {
     if (!selectedProvince) {
       setCities([]);
       setSelectedCity('');
       return;
     }
-
-    const fetchCities = async () => {
-      setIsLoadingCities(true);
-      try {
-        const response = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${selectedProvince}.json`);
-        const data = await response.json();
-        setCities(data);
-      } catch (error) {
-        console.error('Error fetching cities:', error);
-        setCities([]);
-      } finally {
-        setIsLoadingCities(false);
-      }
-    };
-    fetchCities();
+    const data = kabupaten(selectedProvince);
+    setCities(data.map((c: any) => ({ id: c.kode, name: c.nama })));
   }, [selectedProvince]);
 
-  // Fetch districts when city changes
+  // Load districts when city changes
   useEffect(() => {
     if (!selectedCity) {
       setDistricts([]);
       setSelectedDistrict('');
       return;
     }
-
-    const fetchDistricts = async () => {
-      setIsLoadingDistricts(true);
-      try {
-        const response = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${selectedCity}.json`);
-        const data = await response.json();
-        setDistricts(data);
-      } catch (error) {
-        console.error('Error fetching districts:', error);
-        setDistricts([]);
-      } finally {
-        setIsLoadingDistricts(false);
-      }
-    };
-    fetchDistricts();
+    const data = kecamatan(selectedCity);
+    setDistricts(data.map((d: any) => ({ id: d.kode, name: d.nama })));
   }, [selectedCity]);
 
-  // Fetch subdistricts when district changes
+  // Load subdistricts when district changes
   useEffect(() => {
     if (!selectedDistrict) {
       setSubdistricts([]);
       setSelectedSubdistrict('');
       return;
     }
-
-    const fetchSubdistricts = async () => {
-      setIsLoadingSubdistricts(true);
-      try {
-        const response = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/villages/${selectedDistrict}.json`);
-        const data = await response.json();
-        setSubdistricts(data);
-      } catch (error) {
-        console.error('Error fetching subdistricts:', error);
-        setSubdistricts([]);
-      } finally {
-        setIsLoadingSubdistricts(false);
-      }
-    };
-    fetchSubdistricts();
+    const data = desa(selectedDistrict);
+    setSubdistricts(data.map((s: any) => ({ id: s.kode, name: s.nama })));
   }, [selectedDistrict]);
 
   const validateForm = (): boolean => {
@@ -349,7 +288,7 @@ export function ContactInfoForm({
                 value={selectedProvince}
                 onChange={(e) => {
                   const provinceId = e.target.value;
-                  setSelectedProvince(e.target.value);
+                  setSelectedProvince(provinceId);
                   setSelectedCity('');
                   setSelectedDistrict('');
                   setSelectedSubdistrict('');
@@ -357,10 +296,9 @@ export function ContactInfoForm({
                   setSelectedProvinceName(province?.name || '');
                 }}
                 error={errors.province}
-                disabled={isLoadingProvinces}
                 required
               >
-                <option value="">{isLoadingProvinces ? "Loading..." : "Select province"}</option>
+                <option value="">Select province</option>
                 {provinces.map((province) => (
                   <option key={province.id} value={province.id}>
                     {province.name}
@@ -381,17 +319,17 @@ export function ContactInfoForm({
                     value={selectedCity}
                     onChange={(e) => {
                       const cityId = e.target.value;
-                      setSelectedCity(e.target.value);
+                      setSelectedCity(cityId);
                       setSelectedDistrict('');
                       setSelectedSubdistrict('');
                       const city = cities.find(c => c.id === cityId);
                       setSelectedCityName(city?.name || '');
                     }}
                     error={errors.city}
-                    disabled={!selectedProvince || isLoadingCities}
+                    disabled={!selectedProvince}
                     required
                   >
-                    <option value="">{isLoadingCities ? "Loading..." : "Select city/regency"}</option>
+                    <option value="">Select city/regency</option>
                     {cities.map((city) => (
                       <option key={city.id} value={city.id}>
                         {city.name}
@@ -415,10 +353,10 @@ export function ContactInfoForm({
                       setSelectedDistrictName(district?.name || '');
                     }}
                     error={errors.district}
-                    disabled={!selectedCity || isLoadingDistricts}
+                    disabled={!selectedCity}
                     required
                   >
-                    <option value="">{isLoadingDistricts ? "Loading..." : "Select district"}</option>
+                    <option value="">Select district</option>
                     {districts.map((district) => (
                       <option key={district.id} value={district.id}>
                         {district.name}
@@ -441,10 +379,10 @@ export function ContactInfoForm({
                       setSelectedSubdistrictName(subdistrict?.name || '');
                     }}
                     error={errors.subdistrict}
-                    disabled={!selectedDistrict || isLoadingSubdistricts}
+                    disabled={!selectedDistrict}
                     required
                   >
-                    <option value="">{isLoadingSubdistricts ? "Loading..." : "Select subdistrict"}</option>
+                    <option value="">Select subdistrict</option>
                     {subdistricts.map((subdistrict) => (
                       <option key={subdistrict.id} value={subdistrict.id}>
                         {subdistrict.name}
