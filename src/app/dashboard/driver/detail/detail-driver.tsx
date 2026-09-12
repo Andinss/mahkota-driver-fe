@@ -19,13 +19,25 @@ import { VehicleHistoryTable } from "@/components/driver/detail/vehicle-history-
 import { VehicleHistoryPagination } from "@/components/driver/detail/vehicle-history-pagination";
 import { VehicleHistory } from "@/components/driver/detail/vehicle-history-table-row";
 import { DriverOverview } from "@/components/driver/detail/overview";
+import { DepositHistoryList } from "@/components/driver/detail/deposit-history-list";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { driverApi } from "@/lib/api/driver";
 import { rentalApi } from "@/lib/api/rentals";
 import { HttpClientError } from "@/lib/api-http";
 import type { DriverItem } from "@/lib/types/driver";
 import type { RentalTransaction } from "@/lib/types/rentals";
+import type { HistorySetoran } from "@/lib/types/history";
 import { toastError, toastInfo } from "@/components/ui/toast-provider";
+
+const DUMMY_HISTORY: HistorySetoran[] = [
+  { id: "1", payment_date: "2026-09-10T14:30:00", reference_number: "TRX-20260910-001", payment_method: "cash", amount_received: 500000, finance_type: "paid", notes: "Setoran harian", rental_number: "RNT-2026-0910" },
+  { id: "2", payment_date: "2026-09-09T10:15:00", reference_number: "TRX-20260909-002", payment_method: "transfer", amount_received: 350000, finance_type: "paid", rental_number: "RNT-2026-0909" },
+  { id: "3", payment_date: "2026-09-08T16:45:00", reference_number: "TRX-20260908-001", payment_method: "saldo", amount_received: 450000, finance_type: "pending", notes: "Menunggu verifikasi admin" },
+  { id: "4", payment_date: "2026-08-28T09:00:00", reference_number: "TRX-20260828-003", payment_method: "cash", amount_received: 600000, finance_type: "paid", rental_number: "RNT-2026-0828" },
+  { id: "5", payment_date: "2026-08-25T14:00:00", reference_number: "TRX-20260825-001", payment_method: "e-wallet", amount_received: 300000, finance_type: "paid", notes: "Setoran via GoPay" },
+  { id: "6", payment_date: "2026-08-20T11:30:00", reference_number: "TRX-20260820-002", payment_method: "cash", amount_received: 750000, finance_type: "paid", rental_number: "RNT-2026-0820" },
+  { id: "7", payment_date: "2026-08-15T15:00:00", reference_number: "TRX-20260815-001", payment_method: "transfer", amount_received: 400000, finance_type: "paid", notes: "Setoran mingguan" },
+];
 
 const detailDriverPage = () => {
   const searchParams = useSearchParams();
@@ -243,6 +255,10 @@ const detailDriverPage = () => {
             currentPage={1}
           />
         </div>
+      )}
+
+      {activeTab === "deposit-history" && (
+        <DepositHistoryList history={DUMMY_HISTORY} />
       )}
     </div>
     </PermissionGuard>
