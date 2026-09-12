@@ -138,7 +138,15 @@ const Summary = ({
               >
                 {formatCurrency(currentBalance.toString())}
               </span>
-              . Pembayaran ini tidak mempengaruhi saldo driver.
+              {paymentMethod === "saldo" ? (
+                <>
+                  . Metode Saldo Driver akan mengurangi saldo driver.
+                </>
+              ) : (
+                <>
+                  . Pembayaran ini tidak mempengaruhi saldo driver.
+                </>
+              )}
             </p>
           </div>
 

@@ -20,12 +20,16 @@ interface PaymentTableProps {
 const paymentColumns: ExportColumn[] = [
   { id: "reference_number", label: "Reference Number", defaultChecked: true },
   { id: "payer", label: "Payer", defaultChecked: true },
-  { id: "amount_received", label: "Amount Received", defaultChecked: true },
+  { id: "total_amount", label: "Total Tagihan", defaultChecked: true },
+  { id: "amount_received", label: "Dibayar", defaultChecked: true },
+  { id: "remaining_amount", label: "Sisa Tagihan", defaultChecked: true },
+  { id: "payment_terms", label: "Cicilan (Kali)", defaultChecked: true },
   { id: "deposit_amount", label: "Deposit Amount", defaultChecked: true },
   { id: "payment_date", label: "Payment Date", defaultChecked: true },
+  { id: "created_at", label: "Tanggal Dibuat", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
   { id: "payment_method", label: "Payment Method", defaultChecked: true },
-  { id: "notes", label: "Notes", defaultChecked: true },
+  { id: "fee_admin_join", label: "Admin Fee Join", defaultChecked: false },
 ];
 
 export function PaymentTable({
@@ -96,11 +100,15 @@ export function PaymentTable({
             <tr>
               <th className="px-6 py-4">Reference Number</th>
               <th className="px-6 py-4">Payer</th>
-              <th className="px-6 py-4">Amount Received</th>
+              <th className="px-6 py-4">Total Tagihan</th>
+              <th className="px-6 py-4">Dibayar</th>
+              <th className="px-6 py-4">Sisa Tagihan</th>
+              <th className="px-6 py-4">Cicilan</th>
+              <th className="px-6 py-4">Deposit</th>
               <th className="px-6 py-4">Payment Date</th>
+              <th className="px-6 py-4">Tanggal Dibuat</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4">Method</th>
-              <th className="px-6 py-4">Notes</th>
               <th className="px-6 py-4 text-center">Aksi</th>
             </tr>
           </thead>

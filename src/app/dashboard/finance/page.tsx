@@ -11,7 +11,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
 import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
 import { financeApi } from "@/lib/api/finances";
-import { saldoApi } from "@/lib/api/saldo";
 import { HttpClientError } from "@/lib/api-http";
 import type { FinanceItem, FinanceListParams, FinanceSummary } from "@/lib/types/finances";
 import { PermissionGuard } from "@/components/auth-guard-permission";
@@ -114,46 +113,17 @@ export default function PaymentList() {
   };
 
   const handleDelete = async (finance: FinanceItem) => {
-    let saldoLoading = false;
-    let driverSaldoVal: number | null = null;
-
-    if (finance.payment_method !== "saldo" && finance.driver_id) {
-      saldoLoading = true;
-      try {
-        const res = await saldoApi.getBalance(finance.driver_id);
-        driverSaldoVal = res.data?.balance ?? 0;
-      } catch {
-        driverSaldoVal = 0;
-      } finally {
-        saldoLoading = false;
-      }
-    }
-
-    const canDelete = () => {
-      if (finance.payment_method === "saldo") return true;
-      if (saldoLoading) return false;
-      return driverSaldoVal !== null && driverSaldoVal >= Number(finance.amount_received);
-    };
-
-    const getDeleteMessage = () => {
-      const base = `Are you sure you want to delete ${finance.reference_number}?`;
-      if (finance.payment_method === "saldo") return base;
-      if (saldoLoading) return `${base}\n\nLoading saldo information...`;
-      const saldoText = `Saldo driver saat ini: Rp ${Number(driverSaldoVal ?? 0).toLocaleString("id-ID")}`;
-      const amountText = `Perlu dikurangi: Rp ${Number(finance.amount_received).toLocaleString("id-ID")}`;
-      if (driverSaldoVal !== null && driverSaldoVal >= Number(finance.amount_received)) {
-        return `${base}\n\n${saldoText}\n${amountText}`;
-      }
-      return `${base}\n\n⚠️ ${saldoText}. ${amountText}. Saldo tidak mencukupi untuk membatalkan finance ini.`;
-    };
+    const base = `Are you sure you want to delete ${finance.reference_number}?`;
+    const message = finance.payment_method === "saldo"
+      ? base
+      : `${base}\n\nDeleting this finance will not affect the driver's saldo.`;
 
     const confirmed = await confirmToast({
       title: "Delete Payment",
-      message: getDeleteMessage(),
-      confirmText: canDelete() ? "Yes, Delete" : "Saldo Tidak Cukup",
+      message,
+      confirmText: "Yes, Delete",
       cancelText: "Cancel",
-      variant: canDelete() ? "danger" : "warning",
-      disabled: !canDelete(),
+      variant: "danger",
     });
 
     if (!confirmed) return;

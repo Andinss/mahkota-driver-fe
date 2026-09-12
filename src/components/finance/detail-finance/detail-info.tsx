@@ -1,4 +1,4 @@
-import type { FinanceItem } from "@/lib/types/finances";
+import type { FinanceItem, FinanceStatus } from "@/lib/types/finances";
 
 const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
 
@@ -27,6 +27,14 @@ const formatDate = (dateStr: string) => {
   });
 };
 
+const statusLabel: Record<FinanceStatus, string> = {
+  unpaid: "Unpaid",
+  pending: "Pending",
+  partially_paid: "Partially Paid",
+  paid: "Paid",
+  cancelled: "Cancelled",
+};
+
 interface DetailInfoProps {
   finance: FinanceItem;
 }
@@ -35,6 +43,8 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
   const driverName = finance.driver
     ? `${finance.driver.first_name} ${finance.driver.last_name}`
     : finance.payer;
+
+  const status: FinanceStatus = finance.status || finance.finance_type || "unpaid";
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -45,9 +55,9 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
           </div>
           <div>
             <h3 className="font-bold text-slate-800 dark:text-white text-base">
-              Informasi Payer
+              Informasi Driver
             </h3>
-            <p className="text-xs text-slate-400">Data driver sebagai payer</p>
+            <p className="text-xs text-slate-400">Data driver pemilik tagihan</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -70,7 +80,7 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
         <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
           <div className="flex justify-between text-sm">
             <span className="text-slate-500 dark:text-slate-400">Status:</span>
-            <span className="font-medium text-slate-900 dark:text-white capitalize">{finance.finance_type}</span>
+            <span className="font-medium text-slate-900 dark:text-white capitalize">{statusLabel[status]}</span>
           </div>
         </div>
       </div>
@@ -82,9 +92,9 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
           </div>
           <div>
             <h3 className="font-bold text-slate-800 dark:text-white text-base">
-              Detail Pembayaran
+              Detail Tagihan
             </h3>
-            <p className="text-xs text-slate-400">Informasi transaksi</p>
+            <p className="text-xs text-slate-400">Informasi transaksi tagihan</p>
           </div>
         </div>
         <div className="flex flex-col gap-3">
@@ -97,8 +107,28 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
             <span className="text-sm font-bold text-slate-900 dark:text-white">{formatDate(finance.payment_date)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-sm text-slate-500 dark:text-slate-400">Jumlah:</span>
-            <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(finance.amount_received)}</span>
+            <span className="text-sm text-slate-500 dark:text-slate-400">Cicilan:</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white">
+              {(finance.payment_terms ?? 1) > 1 ? `${finance.payment_terms} Kali` : "Lunas (1 Kali)"}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-slate-500 dark:text-slate-400">Admin Fee (Join):</span>
+            <span className={`text-sm font-bold ${(finance.fee_admin_join ?? 0) > 0 ? "text-slate-900 dark:text-white" : "text-slate-400"}`}>
+              {formatCurrency(finance.fee_admin_join ?? 0)}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-slate-500 dark:text-slate-400">Total Tagihan:</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(finance.total_amount ?? finance.amount_received)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-slate-500 dark:text-slate-400">Sudah Dibayar:</span>
+            <span className="text-sm font-bold text-green-600 dark:text-green-400">{formatCurrency(finance.paid_amount ?? finance.amount_received)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-slate-500 dark:text-slate-400">Sisa Tagihan:</span>
+            <span className={`text-sm font-bold ${finance.remaining_amount > 0 ? "text-orange-500" : "text-slate-900 dark:text-white"}`}>{formatCurrency(finance.remaining_amount ?? 0)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-slate-500 dark:text-slate-400">Deposit:</span>

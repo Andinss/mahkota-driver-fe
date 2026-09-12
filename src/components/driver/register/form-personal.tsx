@@ -132,7 +132,7 @@ export function PersonalDetailsForm({
       lastName,
       dateOfBirth: formData.get("dateOfBirth") as string,
       gender: formData.get("gender") as string,
-      employeeId,
+employeeId: employeeId === "DRV-" ? "" : employeeId,
       citizenship: formData.get("citizenship") as string,
       phoneNumber: formData.get("phoneNumber") as string,
       email: formData.get("email") as string,
@@ -201,18 +201,18 @@ export function PersonalDetailsForm({
             label="Employee ID"
             placeholder="DRV-0000"
             value={employeeId}
+            onFocus={() => {
+              if (!employeeId) setEmployeeId("DRV-");
+            }}
             onChange={(e) => {
               let val = e.target.value.replace(/[^a-zA-Z0-9-]/g, "");
               val = val.replace(/^(DRV)+-?/i, "");
-              if (val) {
-                val = "DRV-" + val;
-              }
-              setEmployeeId(val);
+              setEmployeeId(val ? "DRV-" + val : "DRV-");
             }}
             error={errors.employeeId}
           />
           <p className="text-xs text-slate-400">
-            Leave blank to auto-generate.
+            DRV- will be added automatically. Leave just &quot;DRV-&quot; to auto-generate.
           </p>
         </div>
 
