@@ -1,4 +1,6 @@
-export type TabValue = "overview" | "vehicle-history";
+"use client";
+
+export type TabValue = "overview" | "vehicle-history" | "deposit-history";
 
 interface TabNavigationProps {
   activeTab: TabValue;
@@ -28,6 +30,16 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           onClick={() => onTabChange("vehicle-history")}
         >
           Vehicle history
+        </button>
+        <button
+          className={`pb-4 px-2 text-sm font-semibold transition-colors ${
+            activeTab === "deposit-history"
+              ? "text-primary tab-active"
+              : "text-slate-500 hover:text-primary"
+          }`}
+          onClick={() => onTabChange("deposit-history")}
+        >
+          Deposit History
         </button>
       </div>
     </div>
