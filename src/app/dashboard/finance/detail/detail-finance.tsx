@@ -5,7 +5,7 @@ import { PermissionGuard } from "@/components/auth-guard-permission";
 import DetailInfo from "@/components/finance/detail-finance/detail-info";
 import FinanceSummary from "@/components/finance/detail-finance/finance-summary";
 import FlowFinance from "@/components/finance/detail-finance/flow";
-import RecordCard from "@/components/finance/detail-finance/record";
+import PaymentHistory from "@/components/finance/detail-finance/payment-history";
 import { financeApi } from "@/lib/api/finances";
 import type { FinanceItem } from "@/lib/types/finances";
 
@@ -17,6 +17,7 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
   const router = useRouter();
   const [finance, setFinance] = useState<FinanceItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -32,18 +33,21 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
           }
         })
         .catch(() => {
-          financeApi.getById(id).then((res) => {
-            const item = (res as any)?.data ?? (res as any);
-            if (item?.payer) {
-              setFinance(item);
-            }
-          }).catch(() => setFinance(null));
+          financeApi
+            .getById(id)
+            .then((res) => {
+              const item = (res as any)?.data ?? (res as any);
+              if (item?.payer) {
+                setFinance(item);
+              }
+            })
+            .catch(() => setFinance(null));
         })
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
     }
-  }, [id]);
+  }, [id, reloadKey]);
 
   if (isLoading) {
     return (
@@ -51,8 +55,12 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center py-24">
             <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
-              <span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>
-              <span className="text-sm font-medium">Memuat detail pembayaran...</span>
+              <span className="material-symbols-outlined text-xl animate-spin">
+                progress_activity
+              </span>
+              <span className="text-sm font-medium">
+                Memuat detail pembayaran...
+              </span>
             </div>
           </div>
         </div>
@@ -70,17 +78,27 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
                 onClick={() => router.push("/dashboard/finance")}
                 className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
               >
-                <span className="material-symbols-outlined text-slate-500">arrow_back</span>
+                <span className="material-symbols-outlined text-slate-500">
+                  arrow_back
+                </span>
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Detail Pembayaran</h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Pembayaran tidak ditemukan</p>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  Detail Pembayaran
+                </h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Pembayaran tidak ditemukan
+                </p>
               </div>
             </div>
           </div>
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
-            <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 mb-4">search_off</span>
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Data pembayaran tidak ditemukan</p>
+            <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 mb-4">
+              search_off
+            </span>
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+              Data pembayaran tidak ditemukan
+            </p>
             <button
               onClick={() => router.push("/dashboard/finance")}
               className="mt-4 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
@@ -108,7 +126,9 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
                 onClick={() => router.push("/dashboard/finance")}
                 className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
               >
-                <span className="material-symbols-outlined text-slate-500">arrow_back</span>
+                <span className="material-symbols-outlined text-slate-500">
+                  arrow_back
+                </span>
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -125,11 +145,11 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
           <div className="space-y-6">
             <FinanceSummary finance={finance} />
             <DetailInfo finance={finance} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <FlowFinance
-                status={finance.is_active ? "completed" : "pending"}
+            <div className="grid grid-cols-1 gap-6">
+              <PaymentHistory
+                finance={finance}
+                onChanged={() => setReloadKey((k) => k + 1)}
               />
-              <RecordCard />
             </div>
           </div>
         </div>

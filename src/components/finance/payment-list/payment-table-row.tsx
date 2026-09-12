@@ -45,12 +45,16 @@ const statusLabel: Record<string, string> = {
   paid: "Paid",
   unpaid: "Unpaid",
   pending: "Pending",
+  partially_paid: "Partially Paid",
+  cancelled: "Cancelled",
 };
 
 const statusVariant: Record<string, "success" | "info" | "warning" | "neutral"> = {
   paid: "success",
   unpaid: "neutral",
   pending: "warning",
+  partially_paid: "info",
+  cancelled: "neutral",
 };
 
 const methodLabel: Record<string, string> = {
@@ -72,6 +76,19 @@ export const PaymentTableRow = ({
     ? `${payment.driver.first_name} ${payment.driver.last_name}`
     : payment.payer;
   const avatarUrl = photoUrl(payment.driver?.profile_photo) || "";
+
+  const latestPaymentDate = (() => {
+    const payments = payment.payments || [];
+    if (payments.length === 0) return payment.payment_date;
+    return payments
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(a.payment_date).getTime() -
+          new Date(b.payment_date).getTime(),
+      )
+      .pop()!.payment_date;
+  })();
 
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
@@ -99,27 +116,42 @@ export const PaymentTableRow = ({
           </div>
         </div>
       </td>
-      <td className="px-6 py-4 font-semibold text-slate-900 dark:text-white">
-        {formatCurrency(payment.amount_received)}
+      <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
+        {formatCurrency(payment.total_amount ?? payment.amount_received ?? 0)}
+      </td>
+      <td className="px-6 py-4 font-semibold text-emerald-600 dark:text-emerald-400">
+        {formatCurrency(payment.paid_amount ?? payment.amount_received ?? 0)}
+      </td>
+      <td className="px-6 py-4 font-semibold text-orange-500">
+        {formatCurrency(payment.remaining_amount ?? 0)}
+      </td>
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-1.5">
+          <span className="font-bold text-slate-900 dark:text-white">
+            {payment.payments_count ?? payment.payments?.length ?? 0}
+          </span>
+          <span className="text-xs text-slate-400">/ {payment.payment_terms ?? 1} kali</span>
+        </div>
+      </td>
+      <td className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">
+        {payment.deposit_amount ? formatCurrency(payment.deposit_amount) : "-"}
       </td>
       <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-        {formatDate(payment.payment_date)}
+        {formatDate(latestPaymentDate)}
+      </td>
+      <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
+        {formatDate(payment.created_at || payment.payment_date)}
       </td>
       <td className="px-6 py-4">
         <Badge
-          variant={statusVariant[payment.finance_type] || "neutral"}
+          variant={statusVariant[payment.status] || "neutral"}
           dot
         >
-          {statusLabel[payment.finance_type] || payment.finance_type}
+          {statusLabel[payment.status] || payment.status}
         </Badge>
       </td>
       <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
         {methodLabel[payment.payment_method] || payment.payment_method}
-      </td>
-      <td className="px-6 py-4 max-w-[220px] truncate" title={payment.notes}>
-        <span className="text-sm text-slate-500 dark:text-slate-400">
-          {payment.notes || "-"}
-        </span>
       </td>
       <td className="px-6 py-4 text-right">
         <Dropdown

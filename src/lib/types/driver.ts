@@ -1,3 +1,20 @@
+export interface DriverRentalVehicle {
+  merk: string;
+  model: string;
+  license_plate: string;
+  pricing_category?: "Reguler" | "Premium";
+}
+
+export interface DriverRentalItem {
+  id: string;
+  rental_number: string;
+  start_date?: string;
+  end_date?: string;
+  daily_rate?: number;
+  rental_duration?: string;
+  vehicle?: DriverRentalVehicle;
+}
+
 export interface DriverItem {
   id: string;
   first_name: string;
@@ -31,6 +48,8 @@ export interface DriverItem {
   subdistrict?: string;
   subdistrict_name?: string;
   full_address?: string;
+  permanent_address?: string;
+  rentals?: DriverRentalItem[];
   created_at?: string;
   updated_at?: string;
 }

@@ -11,14 +11,54 @@ const photoUrl = (path?: string) =>
     ? path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`
     : "";
 
+interface DriverRentalOption {
+  rentalNumber: string;
+  carName: string;
+  plate: string;
+  pricingCategory?: string;
+}
+
 interface DriverOption {
   id: string;
   employeeId: string;
   name: string;
   avatar: string;
+  rentals: DriverRentalOption[];
 }
 
-interface PayerInfoProps {
+const mapRentals = (d: DriverItem): DriverRentalOption[] =>
+  (d.rentals || []).map((r) => ({
+    rentalNumber: r.rental_number,
+    carName:
+      [r.vehicle?.merk, r.vehicle?.model].filter(Boolean).join(" ") ||
+      "Mobil",
+    plate: r.vehicle?.license_plate || "",
+    pricingCategory: r.vehicle?.pricing_category,
+  }));
+
+const mapDriver = (d: DriverItem): DriverOption => ({
+  id: d.id,
+  employeeId: d.employee_id,
+  name: `${d.first_name} ${d.last_name}`.trim(),
+  avatar: photoUrl(d.profile_photo) || "",
+  rentals: mapRentals(d),
+});
+
+const TypePill = ({ category }: { category?: string }) => {
+  if (!category) return null;
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+        category === "Premium"
+          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+          : "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400"
+      }`}
+    >
+      {category}
+    </span>
+  );
+};
+  interface PayerInfoProps {
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   onPayerSelect?: (name: string, id: string, employeeId: string) => void;
@@ -58,12 +98,7 @@ const PayerInfo = ({
       driverApi.getList({ search: searchValue, limit: 10 })
         .then((res) => {
           const items = (res?.data ?? []) as DriverItem[];
-          const mapped: DriverOption[] = items.map((d) => ({
-            id: d.id,
-            employeeId: d.employee_id,
-            name: `${d.first_name} ${d.last_name}`.trim(),
-            avatar: photoUrl(d.profile_photo) || "",
-          }));
+          const mapped: DriverOption[] = items.map((d) => mapDriver(d));
           setFilteredDrivers(mapped);
           setShowDropdown(true);
         })
@@ -83,12 +118,7 @@ const PayerInfo = ({
         .then((res) => {
           const d = (res as any)?.data ?? (res as any);
           if (d) {
-            const driver: DriverOption = {
-              id: d.id,
-              employeeId: d.employee_id,
-              name: `${d.first_name} ${d.last_name}`.trim(),
-              avatar: photoUrl(d.profile_photo) || "",
-            };
+            const driver: DriverOption = mapDriver(d as DriverItem);
             setSelectedDriver(driver);
             onSearchChange?.(driver.name);
           }
@@ -161,6 +191,20 @@ const PayerInfo = ({
                     Active
                   </span>
                 </div>
+                {selectedDriver.rentals.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-blue-100 dark:border-blue-900/40 flex flex-col gap-2">
+                    {selectedDriver.rentals.map((r) => (
+                      <div key={r.rentalNumber} className="flex items-center gap-2 text-xs">
+                        <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 text-sm shrink-0">directions_car</span>
+                        <span className="font-medium text-slate-700 dark:text-slate-300 truncate">{r.carName}</span>
+                        {r.plate && (
+                          <span className="font-mono text-slate-500 dark:text-slate-400">{r.plate}</span>
+                        )}
+                        <TypePill category={r.pricingCategory} />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <button
                 onClick={handleClearSelection}
@@ -177,7 +221,7 @@ const PayerInfo = ({
                   <span className="material-symbols-outlined text-xl">search</span>
                 </div>
                 <input
-                  placeholder="Cari ber nama atau ID karyawan..."
+                  placeholder="Cari nama, ID karyawan, atau mobil rental..."
                   className="flex w-full flex-1 bg-transparent border-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 px-3 focus:ring-0 focus:outline-none h-full text-sm"
                   value={searchValue}
                   onChange={(e) => onSearchChange?.(e.target.value.replace(/[^a-zA-Z0-9\s'-]/g, ""))}
@@ -229,6 +273,20 @@ const PayerInfo = ({
                             </span>
                           )}
                         </p>
+                        {driver.rentals.length > 0 && (
+                          <div className="mt-1 flex flex-col gap-1">
+                            {driver.rentals.map((r) => (
+                              <div key={r.rentalNumber} className="flex items-center gap-2 text-xs">
+                                <span className="material-symbols-outlined text-[12px] text-slate-400 dark:text-slate-500">directions_car</span>
+                                <span className="font-medium text-slate-600 dark:text-slate-300 truncate">{r.carName}</span>
+                                {r.plate && (
+                                  <span className="font-mono text-slate-400">{r.plate}</span>
+                                )}
+                                <TypePill category={r.pricingCategory} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 text-base">chevron_right</span>
                     </div>

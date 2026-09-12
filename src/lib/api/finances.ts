@@ -1,6 +1,19 @@
 import { api } from "../api-http";
 import type { SuccessResponse, SuccessResponsePaginated } from "../types/api";
-import type { FinanceItem, FinanceListParams, FinanceSummary, CreateFinancePayload, UpdateFinancePayload, LatePaymentItem, LatePaymentStats, FinanceMonthlySummary } from "../types/finances.ts";
+import type {
+  FinanceItem,
+  FinanceListParams,
+  FinanceSummary,
+  CreateFinancePayload,
+  UpdateFinancePayload,
+  LatePaymentItem,
+  LatePaymentStats,
+  FinanceMonthlySummary,
+  DriverFinanceSummary,
+  FinancePaymentItem,
+  CreateFinancePaymentPayload,
+  UpdateFinancePaymentPayload,
+} from "../types/finances.ts";
 
 export const financeApi = {
   getList: (params?: FinanceListParams) =>
@@ -13,13 +26,45 @@ export const financeApi = {
     api.get<SuccessResponse<FinanceSummary>>("/finances/summary"),
 
   getMonthlySummary: (year?: number) =>
-    api.get<SuccessResponse<FinanceMonthlySummary>>("/finances/monthly-summary", year ? { year } : undefined),
+    api.get<SuccessResponse<FinanceMonthlySummary>>(
+      "/finances/monthly-summary",
+      year ? { year } : undefined,
+    ),
 
   getById: (id: string) =>
     api.get<SuccessResponse<FinanceItem>>(`/finances/${id}`),
 
   getDetail: (id: string) =>
     api.get<SuccessResponse<FinanceItem>>(`/finances/detail/${id}`),
+
+  getDriverSummary: (driverId: string) =>
+    api.get<SuccessResponse<DriverFinanceSummary>>(
+      `/finances/driver/${driverId}/summary`,
+    ),
+
+  getPayments: (financeId: string) =>
+    api.get<SuccessResponse<FinancePaymentItem[]>>(
+      `/finances/${financeId}/payments`,
+    ),
+
+  createPayment: (financeId: string, payload: CreateFinancePaymentPayload) =>
+    api.post<SuccessResponse<FinanceItem>>(
+      `/finances/${financeId}/payments`,
+      payload,
+    ),
+
+  updatePaymentStatus: (
+    financeId: string,
+    paymentId: string,
+    payload: UpdateFinancePaymentPayload,
+  ) =>
+    api.patch<SuccessResponse<FinanceItem>>(
+      `/finances/${financeId}/payments/${paymentId}`,
+      payload,
+    ),
+
+  cancel: (id: string) =>
+    api.patch<SuccessResponse<FinanceItem>>(`/finances/${id}/cancel`),
 
   create: (payload: CreateFinancePayload) =>
     api.post<SuccessResponse<FinanceItem>>("/finances/create", payload),
@@ -38,10 +83,14 @@ export const financeApi = {
     api.get<SuccessResponse<LatePaymentStats>>("/late-payments/stats"),
 
   lateApprove: (id: string, adminNote?: string) =>
-    api.post<SuccessResponse<LatePaymentItem>>(`/late-payments/${id}/approve`, { admin_note: adminNote }),
+    api.post<SuccessResponse<LatePaymentItem>>(`/late-payments/${id}/approve`, {
+      admin_note: adminNote,
+    }),
 
   lateReject: (id: string, adminNote?: string) =>
-    api.post<SuccessResponse<LatePaymentItem>>(`/late-payments/${id}/reject`, { admin_note: adminNote }),
+    api.post<SuccessResponse<LatePaymentItem>>(`/late-payments/${id}/reject`, {
+      admin_note: adminNote,
+    }),
 
   exportData: async (params: Record<string, string | number | undefined>) => {
     const { blob, filename } = await api.download("/finances/export", params);

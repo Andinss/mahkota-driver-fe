@@ -82,7 +82,7 @@ export default function DriverRegisterPage() {
               district_name: driver.district_name || "",
               subdistrict: driver.subdistrict || "",
               subdistrict_name: driver.subdistrict_name || "",
-              fullAddress: driver.full_address || "",
+              fullAddress: driver.full_address || driver.permanent_address || "",
             },
             photo: buildUrl(photo),
             documentsUrl: {
@@ -144,6 +144,16 @@ export default function DriverRegisterPage() {
     fd.append("house_type", contact.addressType);
     fd.append("ready_sign_contract", contact.readySignContract);
     fd.append("willing_to_be_survey", contact.willingToBeSurveyed);
+    fd.append("citizenship", personal.citizenship || "Indonesian (WNI)");
+    fd.append("province", contact.province || "");
+    fd.append("province_name", contact.province_name || "");
+    fd.append("city", contact.city || "");
+    fd.append("city_name", contact.city_name || "");
+    fd.append("district", contact.district || "");
+    fd.append("district_name", contact.district_name || "");
+    fd.append("subdistrict", contact.subdistrict || "");
+    fd.append("subdistrict_name", contact.subdistrict_name || "");
+    fd.append("permanent_address", contact.fullAddress || "");
 
     const namePrefix = `${personal.firstName}_${personal.lastName}`.toLowerCase().replace(/\s+/g, "_");
 

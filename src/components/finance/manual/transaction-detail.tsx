@@ -10,6 +10,7 @@ interface FormErrors {
   paymentDate?: string;
   referenceNumber?: string;
   paymentMethod?: string;
+  totalAmount?: string;
   amount?: string;
   depositAmount?: string;
 }
@@ -18,16 +19,25 @@ interface TransactionDetailProps {
   paymentDate?: string;
   referenceNumber?: string;
   paymentMethod?: string;
+  totalAmount?: string;
   amount?: string;
   depositAmount?: string;
+  initialStatus?: "paid" | "unpaid" | "pending";
   notes?: string;
+  paymentTerms?: number;
+  feeAdminJoin?: string;
+  mode?: "add" | "edit";
   onPaymentDateChange?: (value: string) => void;
   onReferenceNumberChange?: (value: string) => void;
   onPaymentMethodChange?: (value: string) => void;
   onPaymentDetailChange?: (detail: string) => void;
+  onTotalAmountChange?: (value: string) => void;
   onAmountChange?: (value: string) => void;
   onDepositAmountChange?: (value: string) => void;
+  onInitialStatusChange?: (value: "paid" | "unpaid" | "pending") => void;
   onNotesChange?: (value: string) => void;
+  onPaymentTermsChange?: (value: number) => void;
+  onFeeAdminJoinChange?: (value: string) => void;
   hasSubmitted?: boolean;
   serverErrors?: Record<string, string[]>;
 }
@@ -36,22 +46,32 @@ const TransactionDetail = ({
   paymentDate = "",
   referenceNumber = "",
   paymentMethod = "",
+  totalAmount = "",
   amount = "",
   depositAmount = "",
+  initialStatus = "paid",
   notes = "",
+  paymentTerms = 1,
+  feeAdminJoin = "",
+  mode = "add",
   onPaymentDateChange,
   onReferenceNumberChange,
   onPaymentMethodChange,
   onPaymentDetailChange,
+  onTotalAmountChange,
   onAmountChange,
   onDepositAmountChange,
+  onInitialStatusChange,
   onNotesChange,
+  onPaymentTermsChange,
+  onFeeAdminJoinChange,
   hasSubmitted = false,
   serverErrors = {},
 }: TransactionDetailProps) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showEwalletModal, setShowEwalletModal] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [statusNote, setStatusNote] = useState<"auto-paid" | "unpaid-warning" | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -76,10 +96,22 @@ const TransactionDetail = ({
         newErrors.paymentMethod = "Please select a payment method";
       }
 
-      if (!amount) {
-        newErrors.amount = "Amount is required";
-      } else if (parseFloat(amount) <= 0) {
-        newErrors.amount = "Amount must be greater than 0";
+      if (!totalAmount) {
+        newErrors.totalAmount = "Total tagihan is required";
+      } else if (parseFloat(totalAmount) <= 0) {
+        newErrors.totalAmount = "Total tagihan must be greater than 0";
+      } else if (amount && parseFloat(amount) > parseFloat(totalAmount)) {
+        newErrors.amount = "Initial payment cannot exceed total tagihan";
+      }
+
+      if (mode === "add") {
+        if (!amount) {
+          newErrors.amount = "Amount is required";
+        } else if (parseFloat(amount) <= 0) {
+          newErrors.amount = "Amount must be greater than 0";
+        }
+      } else if (amount && parseFloat(amount) > parseFloat(totalAmount)) {
+        newErrors.amount = "Pembayaran tidak boleh melebihi total tagihan";
       }
 
       if (serverErrors["payment_date"]?.[0]) {
@@ -91,6 +123,9 @@ const TransactionDetail = ({
       if (serverErrors["payment_method"]?.[0]) {
         newErrors.paymentMethod = serverErrors["payment_method"][0];
       }
+      if (serverErrors["total_amount"]?.[0]) {
+        newErrors.totalAmount = serverErrors["total_amount"][0];
+      }
       if (serverErrors["amount_received"]?.[0]) {
         newErrors.amount = serverErrors["amount_received"][0];
       }
@@ -100,7 +135,7 @@ const TransactionDetail = ({
 
       setErrors(newErrors);
     }
-  }, [hasSubmitted, paymentDate, referenceNumber, paymentMethod, amount, depositAmount, serverErrors]);
+  }, [hasSubmitted, paymentDate, referenceNumber, paymentMethod, totalAmount, amount, depositAmount, serverErrors, mode]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -123,10 +158,22 @@ const TransactionDetail = ({
       newErrors.paymentMethod = "Please select a payment method";
     }
 
-    if (!amount) {
-      newErrors.amount = "Amount is required";
-    } else if (parseFloat(amount) <= 0) {
-      newErrors.amount = "Amount must be greater than 0";
+    if (!totalAmount) {
+      newErrors.totalAmount = "Total tagihan is required";
+    } else if (parseFloat(totalAmount) <= 0) {
+      newErrors.totalAmount = "Total tagihan must be greater than 0";
+    } else if (amount && parseFloat(amount) > parseFloat(totalAmount)) {
+      newErrors.amount = "Initial payment cannot exceed total tagihan";
+    }
+
+    if (mode === "add") {
+      if (!amount) {
+        newErrors.amount = "Amount is required";
+      } else if (parseFloat(amount) <= 0) {
+        newErrors.amount = "Amount must be greater than 0";
+      }
+    } else if (amount && parseFloat(amount) > parseFloat(totalAmount)) {
+      newErrors.amount = "Pembayaran tidak boleh melebihi total tagihan";
     }
 
     setErrors(newErrors);
@@ -137,6 +184,20 @@ const TransactionDetail = ({
     onAmountChange?.(value);
     if (errors.amount && value) {
       setErrors((prev) => ({ ...prev, amount: undefined }));
+    }
+    const num = parseFloat(value.replace(/[^\d.]/g, "")) || 0;
+    if (num > 0 && initialStatus === "unpaid") {
+      onInitialStatusChange?.("paid");
+      setStatusNote("auto-paid");
+    } else if (num === 0 && statusNote === "auto-paid") {
+      setStatusNote(null);
+    }
+  };
+
+  const handleTotalAmountChange = (value: string) => {
+    onTotalAmountChange?.(value);
+    if (errors.totalAmount && value) {
+      setErrors((prev) => ({ ...prev, totalAmount: undefined }));
     }
   };
 
@@ -393,8 +454,111 @@ const TransactionDetail = ({
 
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-slate-400 text-base">receipt_long</span>
+            Total Tagihan <span className="text-red-500">*</span>
+          </label>
+          <CurrencyInput
+            placeholder="0"
+            value={totalAmount}
+            onChange={(value) => handleTotalAmountChange(value)}
+            error={errors.totalAmount}
+          />
+          <p className="text-xs text-slate-400 italic">
+            Total nominal tagihan/kewajiban driver. Sisa tagihan dihitung dari total dikurangi pembayaran yang valid.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-slate-400 text-base">payments</span>
+            Opsi Pembayaran (Cicilan)
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 4].map((term) => (
+              <RadioCard
+                key={term}
+                icon={term === 1 ? "payments" : term === 2 ? "repeat" : "calendar_month"}
+                label={`${term} Kali`}
+                name="payment_terms"
+                value={String(term)}
+                checked={paymentTerms === term}
+                onChange={() => onPaymentTermsChange?.(term)}
+              />
+            ))}
+          </div>
+          <p className="text-xs text-slate-400 italic">
+            Jumlah angsuran atau cicilan tagihan. Cicilan pertama dibayarkan dari nominal pembayaran awal.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-slate-400 text-base">verified_user</span>
+            Admin Fee (Join) <span className="text-xs font-normal text-slate-400">(Opsional)</span>
+          </label>
+          <CurrencyInput
+            placeholder="0"
+            value={feeAdminJoin}
+            onChange={(value) => onFeeAdminJoinChange?.(value)}
+          />
+          <p className="text-xs text-slate-400 italic">
+            Biaya admin untuk akun yang pertama kali melakukan sewa. Reguler Rp 500.000 / Premium Rp 700.000.
+          </p>
+        </div>
+
+        {mode === "add" && (
+          <div className="flex flex-col gap-3">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+              <span className="material-symbols-outlined text-slate-400 text-base">flag</span>
+              Kondisi Awal
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              <RadioCard
+                icon="payments"
+                label="Paid"
+                name="initial_status"
+                value="paid"
+                checked={initialStatus === "paid"}
+                onChange={() => {
+                  onInitialStatusChange?.("paid");
+                  setStatusNote(null);
+                }}
+              />
+              <RadioCard
+                icon="schedule"
+                label="Pending"
+                name="initial_status"
+                value="pending"
+                checked={initialStatus === "pending"}
+                onChange={() => {
+                  onInitialStatusChange?.("pending");
+                  setStatusNote(null);
+                }}
+              />
+              <RadioCard
+                icon="hourglass_top"
+                label="Unpaid"
+                name="initial_status"
+                value="unpaid"
+                checked={initialStatus === "unpaid"}
+                onChange={() => {
+                  onInitialStatusChange?.("unpaid");
+                  const num = parseFloat(amount.replace(/[^\d.]/g, "")) || 0;
+                  setStatusNote(num > 0 ? "unpaid-warning" : null);
+                }}
+              />
+            </div>
+            <p className="text-xs text-slate-400 italic">
+              Paid = pembayaran awal diterima langsung. Pending = menunggu verifikasi. Unpaid = belum ada pembayaran.
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
             <span className="material-symbols-outlined text-slate-400 text-base">attach_money</span>
-            Jumlah Diterima <span className="text-red-500">*</span>
+            {mode === "add" ? "Jumlah Dibayar Awal" : "Nominal Pembayaran Baru"}{" "}
+            {mode === "add" && <span className="text-red-500">*</span>}
           </label>
           <CurrencyInput
             placeholder="0"
@@ -403,8 +567,22 @@ const TransactionDetail = ({
             error={errors.amount}
           />
           <p className="text-xs text-slate-400 italic">
-            Masukkan jumlah dalam IDR. Pastikan mata uang benar sebelum mengirim.
+            {mode === "add"
+              ? "Nominal cicilan pertama yang dibayarkan. Mencatat pembayaran dan mengurangi sisa tagihan (tidak boleh melebihi total tagihan)."
+              : "Nominal pembayaran yang dicatat sekarang, akan mengurangi sisa tagihan. Kosongkan jika hanya mengubah detail tagihan."}
           </p>
+          {statusNote === "auto-paid" && (
+            <p className="text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg px-3 py-2">
+              Karena Anda mengisi Jumlah Dibayar Awal, Kondisi Awal otomatis diubah menjadi{" "}
+              <strong>Paid</strong>.
+            </p>
+          )}
+          {statusNote === "unpaid-warning" && (
+            <p className="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 rounded-lg px-3 py-2">
+              Kondisi Awal <strong>Unpaid</strong> akan <strong>mengabaikan</strong> Jumlah Dibayar Awal yang
+              sudah diisi. Pilih <strong>Paid</strong> jika ingin mencatatnya sebagai pembayaran.
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -419,7 +597,8 @@ const TransactionDetail = ({
             error={errors.depositAmount}
           />
           <p className="text-xs text-slate-400 italic">
-            Masukkan jumlah deposit (contoh: DP untuk sewa) dalam IDR.
+            Nominal uang jaminan/DP yang dicatat terpisah dari cicilan. Hanya sebagai catatan,{" "}
+            <span className="font-semibold not-italic">tidak mengurangi sisa tagihan</span>.
           </p>
         </div>
 

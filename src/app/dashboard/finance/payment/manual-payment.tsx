@@ -29,10 +29,16 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   const [referenceNumber, setReferenceNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [amount, setAmount] = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
+  const [initialStatus, setInitialStatus] = useState<"paid" | "unpaid" | "pending">("paid");
   const [depositAmount, setDepositAmount] = useState("");
   const [notes, setNotes] = useState("");
+  const [paymentTerms, setPaymentTerms] = useState(1);
+  const [feeAdminJoin, setFeeAdminJoin] = useState("");
   const [paymentDetail, setPaymentDetail] = useState("");
   const [selectedPayer, setSelectedPayer] = useState<{name: string; id: string; employeeId?: string} | null>(null);
+  const [currentPaid, setCurrentPaid] = useState(0);
+  const [currentRemaining, setCurrentRemaining] = useState(0);
 
   const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
   const [generalError, setGeneralError] = useState<string>("");
@@ -54,9 +60,14 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
           setPaymentDate(item.payment_date);
           setReferenceNumber(item.reference_number);
           setPaymentMethod(item.payment_method);
-          setAmount(String(item.amount_received));
+          setTotalAmount(String(item.total_amount ?? item.amount_received ?? ""));
+          setAmount("");
           setDepositAmount(item.deposit_amount ? String(item.deposit_amount) : "");
           setNotes(item.notes || "");
+          setPaymentTerms(item.payment_terms ?? 1);
+          setFeeAdminJoin(item.fee_admin_join ? String(item.fee_admin_join) : "");
+          setCurrentPaid(item.paid_amount ?? item.amount_received ?? 0);
+          setCurrentRemaining(item.remaining_amount ?? 0);
         } catch (err) {
           console.error("Failed to fetch finance:", err);
           setMode("add");
@@ -75,10 +86,17 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
       setPaymentMethod("");
       setPaymentDetail("");
       setAmount("");
+      setTotalAmount("");
+      setInitialStatus("paid");
       setDepositAmount("");
       setNotes("");
+      setPaymentTerms(1);
+      setFeeAdminJoin("");
     }
   }, [paymentIdParam]);
+
+  const parsedFeePreview =
+    parseFloat(feeAdminJoin.replace(/[^\d.]/g, "")) || 0;
 
   const handlePaymentDetailChange = (detail: string) => {
     setPaymentDetail(detail);
@@ -107,20 +125,51 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
 
     setIsSubmitting(true);
 
+    const parsedTotal = parseFloat(totalAmount.replace(/[^\d.]/g, "")) || 0;
+    const parsedInitial = parseFloat(amount.replace(/[^\d.]/g, "")) || 0;
+    const parsedFeeAdminJoin = parseFloat(feeAdminJoin.replace(/[^\d.]/g, "")) || 0;
+
     try {
       const payload = {
         payment_date: paymentDate,
         reference_number: referenceNumber,
         payment_method: paymentMethod as FinanceItem["payment_method"],
-        amount_received: parseFloat(amount.replace(/[^\d.]/g, "")) || 0,
+        total_amount: parsedTotal > 0 ? parsedTotal : undefined,
+        amount_received: parsedInitial > 0 ? parsedInitial : undefined,
         deposit_amount: parseFloat(depositAmount.replace(/[^\d.]/g, "")) || 0,
+        payment_terms: paymentTerms,
+        fee_admin_join:
+          parsedFeeAdminJoin > 0 ? parsedFeeAdminJoin : undefined,
         notes,
         payer: selectedPayer?.name || "",
         driver_id: selectedPayer.id,
+        finance_type: initialStatus,
       };
 
       if (mode === "edit" && paymentIdParam) {
-        await financeApi.update(paymentIdParam, payload);
+        await financeApi.update(paymentIdParam, {
+          payment_date: paymentDate,
+          reference_number: referenceNumber,
+          payment_method: paymentMethod as FinanceItem["payment_method"],
+          total_amount: parsedTotal > 0 ? parsedTotal : undefined,
+          deposit_amount: parseFloat(depositAmount.replace(/[^\d.]/g, "")) || 0,
+          payment_terms: paymentTerms,
+          fee_admin_join:
+            parsedFeeAdminJoin > 0 ? parsedFeeAdminJoin : undefined,
+          notes,
+          payer: selectedPayer?.name || "",
+          driver_id: selectedPayer.id,
+        });
+
+        if (parsedInitial > 0) {
+          await financeApi.createPayment(paymentIdParam, {
+            amount: parsedInitial,
+            payment_method: paymentMethod as FinanceItem["payment_method"],
+            payment_date: paymentDate,
+            reference_number: referenceNumber,
+            notes: notes || undefined,
+          });
+        }
       } else {
         await financeApi.create(payload);
       }
@@ -154,6 +203,8 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     setPaymentMethod("");
     setPaymentDetail("");
     setAmount("");
+    setTotalAmount("");
+    setInitialStatus("paid");
     setDepositAmount("");
     setNotes("");
     setHasSubmitted(false);
@@ -184,6 +235,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     if (!paymentDate) return false;
     if (!referenceNumber?.trim() || !/^[a-zA-Z0-9\/\-_]+$/.test(referenceNumber) || referenceNumber.length < 3) return false;
     if (!paymentMethod) return false;
+    if (!totalAmount || parseFloat(totalAmount) <= 0) return false;
     if (!amount || parseFloat(amount) <= 0) return false;
     return true;
   };
@@ -243,16 +295,25 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
             paymentDate={paymentDate}
             referenceNumber={referenceNumber}
             paymentMethod={paymentMethod}
+            totalAmount={totalAmount}
             amount={amount}
             depositAmount={depositAmount}
+            initialStatus={initialStatus}
             notes={notes}
+            paymentTerms={paymentTerms}
+            feeAdminJoin={feeAdminJoin}
+            mode={mode}
             onPaymentDateChange={setPaymentDate}
             onReferenceNumberChange={setReferenceNumber}
             onPaymentMethodChange={setPaymentMethod}
             onPaymentDetailChange={handlePaymentDetailChange}
+            onTotalAmountChange={setTotalAmount}
             onAmountChange={setAmount}
             onDepositAmountChange={setDepositAmount}
+            onInitialStatusChange={setInitialStatus}
             onNotesChange={setNotes}
+            onPaymentTermsChange={setPaymentTerms}
+            onFeeAdminJoinChange={setFeeAdminJoin}
             hasSubmitted={hasSubmitted}
             serverErrors={serverErrors}
           />
@@ -268,7 +329,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
                     Informasi Saldo Driver
                   </h3>
-                  <p className="text-xs text-slate-400">Saldo saat ini tidak terpengaruh oleh pembayaran ini</p>
+                  <p className="text-xs text-slate-400">Saldo driver saat ini</p>
                 </div>
               </div>
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 flex gap-3 items-start">
@@ -291,8 +352,57 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
                       maximumFractionDigits: 0,
                     }).format(driverSaldoBalance)}
                   </span>
-                  . Pembayaran ini tidak mempengaruhi saldo driver.
+                  . Pembayaran tunai/transfer/e-wallet hanya mengurangi tagihan dan tidak mempengaruhi saldo driver. Metode Saldo Driver akan mengurangi saldo driver.
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* Ringkasan Tagihan (edit mode) */}
+          {mode === "edit" && (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-emerald-500 text-xl">receipt_long</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                    Ringkasan Tagihan
+                  </h3>
+                  <p className="text-xs text-slate-400">Status tagihan saat ini</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total Tagihan</p>
+                  <p className="font-bold text-slate-900 dark:text-white">
+                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(parseFloat(totalAmount.replace(/[^\d.]/g, "")) || currentPaid + currentRemaining)}
+                  </p>
+                </div>
+                <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-4">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Sudah Dibayar</p>
+                  <p className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(currentPaid)}
+                  </p>
+                </div>
+                <div className="bg-orange-50 dark:bg-orange-900/10 rounded-xl p-4">
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mb-1">Sisa Tagihan</p>
+                  <p className="font-bold text-orange-600 dark:text-orange-400">
+                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(currentRemaining)}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Cicilan:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{paymentTerms} Kali</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Admin Fee (Join):</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(parsedFeePreview)}
+                  </span>
+                </div>
               </div>
             </div>
           )}

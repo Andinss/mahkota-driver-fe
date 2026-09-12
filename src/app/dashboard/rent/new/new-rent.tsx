@@ -106,10 +106,12 @@ const NewRentPage = () => {
     vehicleApi.getList().then((res) => {
       const items = Array.isArray(res.data) ? res.data : [];
       setVehicleOptions(
-        items.map((v: VehicleItem) => ({
-          label: `${v.license_plate} - ${v.merk} ${v.model}`,
-          value: v.id,
-        })),
+        items
+          .filter((v: VehicleItem) => v.status === "Available")
+          .map((v: VehicleItem) => ({
+            label: `${v.license_plate} - ${v.merk} ${v.model}`,
+            value: v.id,
+          })),
       );
     }).catch(() => {});
   }, [isSupervisor]);

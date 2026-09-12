@@ -1,4 +1,4 @@
-import type { FinanceItem } from "@/lib/types/finances";
+import type { FinanceItem, FinanceStatus } from "@/lib/types/finances";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -27,6 +27,30 @@ const methodLabel: Record<string, string> = {
   saldo: "Saldo",
 };
 
+const statusLabel: Record<FinanceStatus, string> = {
+  unpaid: "Unpaid",
+  pending: "Pending",
+  partially_paid: "Partially Paid",
+  paid: "Paid",
+  cancelled: "Cancelled",
+};
+
+const statusStyle: Record<FinanceStatus, string> = {
+  unpaid: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+  pending: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
+  partially_paid: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+  paid: "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400",
+  cancelled: "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400",
+};
+
+const statusDot: Record<FinanceStatus, string> = {
+  unpaid: "bg-slate-400",
+  pending: "bg-amber-500",
+  partially_paid: "bg-blue-500",
+  paid: "bg-green-500",
+  cancelled: "bg-red-500",
+};
+
 interface FinanceSummaryProps {
   finance: FinanceItem;
 }
@@ -36,6 +60,8 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
     ? `${finance.driver.first_name} ${finance.driver.last_name}`
     : finance.payer;
 
+  const status: FinanceStatus = finance.status || finance.finance_type || "unpaid";
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 overflow-hidden relative">
       <div className="flex items-center gap-3 mb-6">
@@ -44,9 +70,9 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
         </div>
         <div>
           <h3 className="font-bold text-slate-800 dark:text-white text-base">
-            Ringkasan Pembayaran
+            Ringkasan Tagihan
           </h3>
-          <p className="text-xs text-slate-400">Detail transaksi pembayaran</p>
+          <p className="text-xs text-slate-400">Detail tagihan driver</p>
         </div>
       </div>
 
@@ -65,9 +91,9 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
           <p className="text-xs text-slate-400 mt-1 font-medium">
             {formatDate(finance.payment_date)}
           </p>
-          <span className={`mt-2 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${finance.is_active ? "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${finance.is_active ? "bg-green-500" : "bg-slate-400"}`}></span>
-            {finance.is_active ? "Aktif" : "Tidak Aktif"}
+          <span className={`mt-2 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${statusStyle[status]}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${statusDot[status]}`}></span>
+            {statusLabel[status]}
           </span>
         </div>
       </div>
@@ -75,12 +101,12 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-t border-slate-100 dark:border-slate-800 mb-8 pt-6">
         <div>
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
-            Jumlah Diterima
+            Total Tagihan
           </h3>
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-semibold text-slate-400">Rp</span>
             <span className="text-4xl lg:text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
-              {formatCurrency(finance.amount_received).replace("Rp", "").trim()}
+              {formatCurrency(finance.total_amount ?? finance.amount_received).replace("Rp", "").trim()}
             </span>
           </div>
         </div>
@@ -97,6 +123,22 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
         <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            Sudah Dibayar
+          </p>
+          <p className="text-sm font-bold text-green-600 dark:text-green-400">
+            {formatCurrency(finance.paid_amount ?? finance.amount_received)}
+          </p>
+        </div>
+        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            Sisa Tagihan
+          </p>
+          <p className={`text-sm font-bold ${finance.remaining_amount > 0 ? "text-orange-500" : "text-slate-900 dark:text-white"}`}>
+            {formatCurrency(finance.remaining_amount ?? 0)}
+          </p>
+        </div>
+        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
             Metode Pembayaran
           </p>
           <div className="flex items-center gap-2">
@@ -105,22 +147,6 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
               {methodLabel[finance.payment_method] || finance.payment_method}
             </span>
           </div>
-        </div>
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-            Tipe Pembayaran
-          </p>
-          <p className="text-sm font-bold text-slate-900 dark:text-white capitalize">
-            {finance.finance_type}
-          </p>
-        </div>
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-            Jumlah Deposit
-          </p>
-          <p className="text-sm font-bold text-slate-900 dark:text-white">
-            {formatCurrency(finance.deposit_amount)}
-          </p>
         </div>
       </div>
 

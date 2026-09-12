@@ -73,10 +73,10 @@ export function ContactInfoForm({
   const [selectedDistrict, setSelectedDistrict] = useState<string>(initialData?.district || "");
   const [selectedSubdistrict, setSelectedSubdistrict] = useState<string>(initialData?.subdistrict || "");
 
-  const [selectedProvinceName, setSelectedProvinceName] = useState<string>("");
-  const [selectedCityName, setSelectedCityName] = useState<string>("");
-  const [selectedDistrictName, setSelectedDistrictName] = useState<string>("");
-  const [selectedSubdistrictName, setSelectedSubdistrictName] = useState<string>("");
+  const [selectedProvinceName, setSelectedProvinceName] = useState<string>(initialData?.province_name || "");
+  const [selectedCityName, setSelectedCityName] = useState<string>(initialData?.city_name || "");
+  const [selectedDistrictName, setSelectedDistrictName] = useState<string>(initialData?.district_name || "");
+  const [selectedSubdistrictName, setSelectedSubdistrictName] = useState<string>(initialData?.subdistrict_name || "");
 
   // Load provinces from library 
   useEffect(() => {
