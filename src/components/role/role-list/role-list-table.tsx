@@ -42,14 +42,19 @@ const COLORS = [
 ];
 
 const MODULE_COLUMNS = [
-  { key: "driver", label: "Driver Management" },
-  { key: "vehicle", label: "Vehicle Management" },
-  { key: "rental", label: "Rentals Management" },
-  { key: "user", label: "User Management" },
-  { key: "role", label: "Roles & Permissions" },
-  { key: "finance", label: "Finance Management" },
-  { key: "late_payment", label: "Late Payment" },
+  { key: "driver", label: "Drivers" },
+  { key: "vehicle", label: "Vehicles" },
   { key: "monitoring", label: "Monitoring" },
+  { key: "vendor", label: "Vendor Vehicles" },
+  { key: "rental", label: "Rentals" },
+  { key: "finance", label: "Finance" },
+  { key: "late_payment", label: "Late Payment" },
+  { key: "saldo", label: "Driver Saldo" },
+  { key: "user", label: "Users" },
+  { key: "role", label: "Roles" },
+  { key: "permission", label: "Permissions" },
+  { key: "setting", label: "Settings" },
+  { key: "audit", label: "Audit Logs" },
 ];
 
 interface RoleTableProps {
