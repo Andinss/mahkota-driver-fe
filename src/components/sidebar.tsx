@@ -51,6 +51,12 @@ const menuStructure: SidebarItem[] = [
         icon: "monitoring",
         permission: "monitoring.read",
       },
+      {
+        path: "/dashboard/vendor-vehicle",
+        label: "Vendor Vehicles",
+        icon: "storefront",
+        permission: "vendor.read",
+      },
     ],
   },
   {

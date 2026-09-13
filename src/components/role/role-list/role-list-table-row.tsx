@@ -14,7 +14,7 @@ interface RoleTableRowProps {
   onDelete?: (role: Role) => void;
 }
 
-const MODULES = ["driver", "vehicle", "rental", "user", "role", "finance", "late_payment", "monitoring"];
+const MODULES = ["driver", "vehicle", "monitoring", "vendor", "rental", "finance", "late_payment", "saldo", "user", "role", "permission", "setting", "audit"];
 const ALL_ACTIONS = ["create", "read", "update", "delete"];
 
 function formatAction(action: string): string {

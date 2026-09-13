@@ -6,6 +6,7 @@ import { PermissionGuard } from "@/components/auth-guard-permission";
 import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import { VehicleMediaUpload } from "@/components/vehicle/register/vehicle-media-upload";
 import { StatusSelect } from "@/components/vehicle/register/status-select";
+import { VendorSelect } from "@/components/vehicle/register/vendor-select";
 import type { VehicleStatus } from "@/lib/types/vehicle";
 import {
   VehicleSpecificationsForm,
@@ -21,6 +22,7 @@ export default function VehicleRegisterPage() {
 
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [status, setStatus] = useState<VehicleStatus>("Available");
+  const [vendorId, setVendorId] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialValues, setInitialValues] = useState<Partial<VehicleFormData> | undefined>();
@@ -39,6 +41,7 @@ export default function VehicleRegisterPage() {
           setMode("edit");
           setEditingId(vehicle.id);
           setStatus(vehicle.status);
+          setVendorId(vehicle.vendor_id || "");
           const year = vehicle.launching_year
             ? new Date(vehicle.launching_year).getFullYear().toString()
             : "";
@@ -106,6 +109,7 @@ export default function VehicleRegisterPage() {
         formData.append("daily_rate", data.dailyRate.replace(/\./g, ""));
         formData.append("pricing_category", data.pricingCategory);
         formData.append("status", status);
+        if (vendorId) formData.append("vendor_id", vendorId);
 
         imageFiles.forEach((file) => {
           formData.append("vehicle_photo", file);
@@ -164,6 +168,8 @@ export default function VehicleRegisterPage() {
             acceptedFormats={["JPG", "PNG"]}
             maxSizeMB={5}
           />
+
+          <VendorSelect value={vendorId} onChange={setVendorId} />
 
           <VehicleSpecificationsForm
             mode={mode}

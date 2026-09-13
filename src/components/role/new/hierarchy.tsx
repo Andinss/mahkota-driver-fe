@@ -24,10 +24,14 @@ const moduleLabels: Record<string, string> = {
   permission: "Permission",
   driver: "Driver",
   vehicle: "Vehicle",
+  vendor: "Vendor Vehicle",
   finance: "Finance",
   rental: "Rental",
   late_payment: "Late Payment",
   monitoring: "Monitoring",
+  saldo: "Saldo",
+  setting: "Setting",
+  audit: "Audit Log",
 };
 
 interface RoleHierarchyProps {

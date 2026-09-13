@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
+import {
+  confirmToast,
+  toastSuccess,
+  toastError,
+} from "@/components/ui/toast-provider";
 import { PaymentCard } from "@/components/finance/payment-list/card";
 import { Pagination } from "@/components/ui/pagination";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
@@ -12,7 +16,11 @@ import type { ExportOptions } from "@/components/ui/export";
 import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
 import { financeApi } from "@/lib/api/finances";
 import { HttpClientError } from "@/lib/api-http";
-import type { FinanceItem, FinanceListParams, FinanceSummary } from "@/lib/types/finances";
+import type {
+  FinanceItem,
+  FinanceListParams,
+  FinanceSummary,
+} from "@/lib/types/finances";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
@@ -24,14 +32,18 @@ export default function PaymentList() {
 
   const [finances, setFinances] = useState<FinanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+  const [meta, setMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  });
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
 
   const [searchValue, setSearchValue] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-
 
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -47,7 +59,7 @@ export default function PaymentList() {
   }, []);
 
   const fetchFinances = useCallback(async () => {
-    if (!canAccess(user?.permissions, 'finance.read')) {
+    if (!canAccess(user?.permissions, "finance.read")) {
       setIsLoading(false);
       return;
     }
@@ -86,17 +98,23 @@ export default function PaymentList() {
     if (success && ref && !toastShownRef.current) {
       toastShownRef.current = true;
       const action = success === "updated" ? "Update" : "Registration";
-      toastSuccess(`${action} Successful: Finance ${decodeURIComponent(ref)} has been ${success} successfully.`);
+      toastSuccess(
+        `${action} Successful: Finance ${decodeURIComponent(ref)} has been ${success} successfully.`,
+      );
       window.history.replaceState({}, "", "/dashboard/finance");
     }
   }, [searchParams]);
 
-  const totalAmount = summary?.total_amount_received ?? finances.reduce((sum, f) => {
-    return sum + (Number(f.amount_received) || 0);
-  }, 0);
+  const totalAmount =
+    summary?.total_amount_received ??
+    finances.reduce((sum, f) => {
+      return sum + (Number(f.amount_received) || 0);
+    }, 0);
 
-  const activeCount = summary?.total_active ?? finances.filter((f) => f.is_active).length;
-  const inactiveCount = summary?.total_inactive ?? finances.filter((f) => !f.is_active).length;
+  const activeCount =
+    summary?.total_active ?? finances.filter((f) => f.is_active).length;
+  const inactiveCount =
+    summary?.total_inactive ?? finances.filter((f) => !f.is_active).length;
 
   const handleExport = async (options?: ExportOptions) => {
     if (!options) return;
@@ -114,9 +132,10 @@ export default function PaymentList() {
 
   const handleDelete = async (finance: FinanceItem) => {
     const base = `Are you sure you want to delete ${finance.reference_number}?`;
-    const message = finance.payment_method === "saldo"
-      ? base
-      : `${base}\n\nDeleting this finance will not affect the driver's saldo.`;
+    const message =
+      finance.payment_method === "saldo"
+        ? base
+        : `${base}\n\nDeleting this finance will not affect the driver's saldo.`;
 
     const confirmed = await confirmToast({
       title: "Delete Payment",
@@ -131,16 +150,21 @@ export default function PaymentList() {
     setIsDeleting(true);
     try {
       await financeApi.delete(finance.id);
-      toastSuccess(`Finance ${finance.reference_number} has been deleted successfully`);
+      toastSuccess(
+        `Finance ${finance.reference_number} has been deleted successfully`,
+      );
       fetchFinances();
       fetchSummary();
     } catch (err) {
-      toastError(err instanceof HttpClientError ? err.message : "Failed to delete finance record");
+      toastError(
+        err instanceof HttpClientError
+          ? err.message
+          : "Failed to delete finance record",
+      );
     } finally {
       setIsDeleting(false);
     }
   };
-
 
   const handleDetails = (finance: FinanceItem) => {
     router.push(`/dashboard/finance/detail?id=${finance.id}`);
@@ -164,102 +188,112 @@ export default function PaymentList() {
 
   return (
     <PermissionGuard permission="finance.read">
-    <div className="m-8">
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 pb-10">
-          <PageHeader
-            title="Finance Dashboard"
-            description={`Total Records: ${summary?.total_records ?? meta.total}`}
-            buttonText={canAccess(user?.permissions, "finance.create") ? "Manual Entry" : undefined}
-            buttonHref={canAccess(user?.permissions, "finance.create") ? "/dashboard/finance/payment" : undefined}
-          />
+      <div className="m-8">
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 pb-10">
+            <PageHeader
+              title="Finance List Overview"
+              description={`Total Records: ${summary?.total_records ?? meta.total}`}
+              buttonText={
+                canAccess(user?.permissions, "finance.create")
+                  ? "Manual Entry"
+                  : undefined
+              }
+              buttonHref={
+                canAccess(user?.permissions, "finance.create")
+                  ? "/dashboard/finance/payment"
+                  : undefined
+              }
+            />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <PaymentCard
-              title="Total Amount Received"
-              value={`Rp ${totalAmount.toLocaleString("id-ID")}`}
-              icon="payments"
-              iconColor="text-primary"
-              trend={{
-                value: `${summary?.total_records ?? finances.length} transactions`,
-                color: "text-green-600",
-                icon: "trending_up",
-              }}
-            />
-            <PaymentCard
-              title="Active Records"
-              value={activeCount.toString()}
-              icon="verified"
-              iconColor="text-green-700"
-              trend={{
-                value: `${summary ? ((activeCount / (summary.total_records || 1)) * 100).toFixed(0) : ((activeCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
-                color: "text-green-700",
-                icon: "trending_up",
-              }}
-            />
-            <PaymentCard
-              title="Inactive Records"
-              value={inactiveCount.toString()}
-              icon="warning"
-              iconColor="text-orange-700"
-              trend={{
-                value: `${summary ? ((inactiveCount / (summary.total_records || 1)) * 100).toFixed(0) : ((inactiveCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
-                color: "text-[#e73908]",
-                icon: "trending_down",
-              }}
-            />
-            <PaymentCard
-              title="Page"
-              value={`${meta.page} / ${meta.totalPages}`}
-              icon="description"
-              iconColor="text-blue-600"
-              trend={{
-                value: `${meta.total} total records`,
-                color: "text-blue-600",
-                icon: "info",
-              }}
-            />
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <PaymentCard
+                title="Total Amount Received"
+                value={`Rp ${totalAmount.toLocaleString("id-ID")}`}
+                icon="payments"
+                iconColor="text-primary"
+                trend={{
+                  value: `${summary?.total_records ?? finances.length} transactions`,
+                  color: "text-green-600",
+                  icon: "trending_up",
+                }}
+              />
+              <PaymentCard
+                title="Active Records"
+                value={activeCount.toString()}
+                icon="verified"
+                iconColor="text-green-700"
+                trend={{
+                  value: `${summary ? ((activeCount / (summary.total_records || 1)) * 100).toFixed(0) : ((activeCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
+                  color: "text-green-700",
+                  icon: "trending_up",
+                }}
+              />
+              <PaymentCard
+                title="Inactive Records"
+                value={inactiveCount.toString()}
+                icon="warning"
+                iconColor="text-orange-700"
+                trend={{
+                  value: `${summary ? ((inactiveCount / (summary.total_records || 1)) * 100).toFixed(0) : ((inactiveCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
+                  color: "text-[#e73908]",
+                  icon: "trending_down",
+                }}
+              />
+              <PaymentCard
+                title="Page"
+                value={`${meta.page} / ${meta.totalPages}`}
+                icon="description"
+                iconColor="text-blue-600"
+                trend={{
+                  value: `${meta.total} total records`,
+                  color: "text-blue-600",
+                  icon: "info",
+                }}
+              />
+            </div>
 
-          <PaymentFilters
-            searchValue={searchValue}
-            paymentMethod={paymentMethod}
-            onSearchChange={handleSearchChange}
-            onPaymentMethodChange={handlePaymentMethodChange}
-          />
-          <div className="flex flex-col gap-4 bg-surface-light dark:bg-surface-dark border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-            {isLoading ? (
-              <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-                Loading...
-              </div>
-            ) : (
-              <>
-                <PaymentTable
-                  payment={finances}
-                  onDetails={handleDetails}
-                  onEdit={(f) => {
-                    router.push(`/dashboard/finance/payment?id=${f.id}`);
-                  }}
-                  onDelete={handleDelete}
-                  onExport={handleExport}
-                />
-                <div className="border-t border-[#dbe0e6] dark:border-gray-700">
-                  <Pagination
-                    currentPage={meta.page}
-                    totalPages={meta.totalPages}
-                    totalResults={meta.total}
-                    resultsPerPage={itemsPerPage}
-                    onPageChange={handlePageChange}
-                    onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }}
-                  />
+            <PaymentFilters
+              searchValue={searchValue}
+              paymentMethod={paymentMethod}
+              onSearchChange={handleSearchChange}
+              onPaymentMethodChange={handlePaymentMethodChange}
+            />
+            <div className="flex flex-col gap-4 bg-surface-light dark:bg-surface-dark border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+              {isLoading ? (
+                <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+                  Loading...
                 </div>
-              </>
-            )}
+              ) : (
+                <>
+                  <PaymentTable
+                    payment={finances}
+                    onDetails={handleDetails}
+                    onEdit={(f) => {
+                      router.push(`/dashboard/finance/payment?id=${f.id}`);
+                    }}
+                    onDelete={handleDelete}
+                    onExport={handleExport}
+                  />
+                  <div className="border-t border-[#dbe0e6] dark:border-gray-700">
+                    <Pagination
+                      currentPage={meta.page}
+                      totalPages={meta.totalPages}
+                      totalResults={meta.total}
+                      resultsPerPage={itemsPerPage}
+                      onPageChange={handlePageChange}
+                      onPageSizeChange={(size) => {
+                        setItemsPerPage(size);
+                        setCurrentPage(1);
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
-
-    </div>
     </PermissionGuard>
   );
 }

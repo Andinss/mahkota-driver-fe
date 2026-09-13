@@ -33,7 +33,7 @@ function formatActionLabel(name: string): string {
 
 function groupByModule(permissions: ApiPermission[]): ModuleGroup[] {
   const map = new Map<string, ApiPermission[]>();
-  const moduleOrder = ["user", "role", "permission", "driver", "vehicle", "finance", "rental", "late_payment", "monitoring", "setting", "audit"];
+  const moduleOrder = ["driver", "vehicle", "monitoring", "vendor", "rental", "finance", "late_payment", "saldo", "user", "role", "permission", "setting", "audit"];
 
   permissions.forEach((perm) => {
     const list = map.get(perm.module) || [];
@@ -50,29 +50,35 @@ function groupByModule(permissions: ApiPermission[]): ModuleGroup[] {
 }
 
 const moduleIcons: Record<string, string> = {
+  driver: "badge",
+  vehicle: "directions_car",
+  monitoring: "monitoring",
+  vendor: "storefront",
+  rental: "contract",
+  finance: "account_balance",
+  late_payment: "payments",
+  saldo: "account_balance_wallet",
   user: "people",
   role: "shield",
   permission: "lock",
-  driver: "badge",
-  vehicle: "directions_car",
-  finance: "finance",
-  rental: "contract",
-  late_payment: "payments",
-  monitoring: "monitoring",
   setting: "settings",
-  audit: "receipt_long",
+  audit: "description",
 };
 
 const moduleLabels: Record<string, string> = {
-  user: "User",
-  role: "Role",
-  permission: "Permission",
-  driver: "Driver",
-  vehicle: "Vehicle",
-  finance: "Finance",
-  rental: "Rental",
-  late_payment: "Late Payment",
+  driver: "Drivers",
+  vehicle: "Vehicles",
   monitoring: "Monitoring",
+  vendor: "Vendor Vehicles",
+  rental: "Rentals",
+  finance: "Finance",
+  late_payment: "Late Payment",
+  saldo: "Driver Saldo",
+  user: "Users",
+  role: "Roles",
+  permission: "Permissions",
+  setting: "Settings",
+  audit: "Audit Logs",
 };
 
 function getActionBadge(name: string): { color: string; border: string } {
@@ -154,7 +160,7 @@ export function PermissionList({
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900 dark:text-white capitalize">
-                    {moduleLabels[group.module] || group.module} Management
+                    {moduleLabels[group.module] || group.module}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {group.permissions.length} permission
