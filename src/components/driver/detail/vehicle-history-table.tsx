@@ -9,7 +9,7 @@ export function VehicleHistoryTable({ vehicles }: VehicleHistoryTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full text-left">
         <thead>
-          <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
+          <tr className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <th className="px-6 py-4">Kendaraan</th>
             <th className="px-6 py-4">Periode</th>
             <th className="px-6 py-4 text-center">Total Jarak</th>

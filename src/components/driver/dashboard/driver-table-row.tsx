@@ -23,7 +23,7 @@ export function DriverTableRow({
   onDetailsClick,
 }: DriverTableRowProps) {
   return (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+    <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 shrink-0 overflow-hidden">

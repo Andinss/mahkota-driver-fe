@@ -259,7 +259,7 @@ export default function PaymentList() {
               onSearchChange={handleSearchChange}
               onPaymentMethodChange={handlePaymentMethodChange}
             />
-            <div className="flex flex-col gap-4 bg-surface-light dark:bg-surface-dark border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+            <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
               {isLoading ? (
                 <div className="p-8 text-center text-slate-500 dark:text-slate-400">
                   Loading...

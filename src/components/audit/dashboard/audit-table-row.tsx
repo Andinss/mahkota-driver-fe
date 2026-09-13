@@ -50,7 +50,7 @@ export const AuditTableRow = ({ log, onViewDetails }: AuditTableRowProps) => {
   const isSystem = log.username === "System";
 
   return (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+    <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-4">
         <div className="text-sm font-medium text-slate-900 dark:text-white">{ts.date}</div>
         <div className="text-xs text-slate-400">{ts.time}</div>

@@ -51,7 +51,7 @@ export function TaskPagination({
   const isNextDisabled = currentPage === totalPages;
 
   return (
-    <div className="p-6 bg-slate-50 dark:bg-slate-800/50 flex flex-col md:flex-row gap-4 items-center justify-between">
+    <div className="p-6 bg-white dark:bg-slate-800/50 flex flex-col md:flex-row gap-4 items-center justify-between">
       <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
         Menampilkan{" "}
         <span className="font-bold text-slate-900 dark:text-white">

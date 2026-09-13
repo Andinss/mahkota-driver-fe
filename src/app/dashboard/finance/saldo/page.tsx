@@ -425,7 +425,7 @@ const SaldoPage = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-800">
+                    <tr className="bg-white dark:bg-slate-800">
                       <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
                         Tanggal
                       </th>
@@ -450,7 +450,7 @@ const SaldoPage = () => {
                     {transactions.map((tx) => (
                       <tr
                         key={tx.id}
-                        className="hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                        className="hover:bg-white dark:hover:bg-slate-800/50"
                       >
                         <td className="px-4 py-3 text-slate-900 dark:text-white">
                           {new Date(tx.created_at).toLocaleDateString("id-ID", {

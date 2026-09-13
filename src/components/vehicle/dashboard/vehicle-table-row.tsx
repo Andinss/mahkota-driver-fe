@@ -31,7 +31,7 @@ export const VehicleTableRow = ({
   onDetails,
 }: VehicleTableRowProps) => {
   return (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+    <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-4">
           <div

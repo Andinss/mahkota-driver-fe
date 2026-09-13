@@ -31,7 +31,7 @@ export const UserTableRow = ({
   const perms = currentUser?.permissions;
 
   return (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+    <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-4 align-middle">
         <input
           className="rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 h-4 w-4"

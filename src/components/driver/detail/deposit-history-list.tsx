@@ -116,6 +116,8 @@ export function DepositHistoryList({ history }: DepositHistoryListProps) {
               <option value="paid">Paid</option>
               <option value="pending">Pending</option>
               <option value="unpaid">Unpaid</option>
+              <option value="partially_paid">Partially Paid</option>
+              <option value="cancelled">Cancelled</option>
             </Select>
           </div>
         </div>

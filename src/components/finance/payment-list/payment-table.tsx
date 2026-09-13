@@ -97,7 +97,7 @@ export function PaymentTable({
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
+          <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
               <th className="px-6 py-4">Reference Number</th>
               <th className="px-6 py-4">Payer</th>

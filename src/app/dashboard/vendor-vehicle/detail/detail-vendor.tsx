@@ -193,7 +193,7 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
             {vendor.vehicles && vendor.vehicles.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap">
-                  <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
+                  <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
                     <tr>
                       <th className="px-6 py-3">Kendaraan</th>
                       <th className="px-6 py-3">Plat Nomor</th>
@@ -203,7 +203,7 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                     {(vendor.vehicles || []).map((vehicle) => (
-                      <tr key={vehicle.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <tr key={vehicle.id} className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
                         <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                           {vehicle.merk} {vehicle.model}
                         </td>

@@ -18,6 +18,8 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; i
   paid: { label: "Paid", color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20", icon: "check_circle" },
   unpaid: { label: "Unpaid", color: "text-red-500", bg: "bg-red-50 dark:bg-red-900/20", icon: "cancel" },
   pending: { label: "Pending", color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20", icon: "schedule" },
+  partially_paid: { label: "Partially Paid", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20", icon: "account_balance_wallet" },
+  cancelled: { label: "Cancelled", color: "text-slate-500", bg: "bg-slate-100 dark:bg-slate-800", icon: "block" },
 };
 
 export function DepositHistoryCard({ item }: DepositHistoryCardProps) {

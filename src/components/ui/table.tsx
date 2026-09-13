@@ -20,7 +20,7 @@ interface TableCellProps {
 export const Table = ({ headers, children, className = "" }: TableProps) => {
   return (
     <table className={`w-full text-left text-sm ${className}`}>
-      <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+      <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
         <tr>
           {headers.map((header, index) => (
             <th key={index} className="px-6 py-4 font-semibold">
@@ -38,7 +38,7 @@ export const Table = ({ headers, children, className = "" }: TableProps) => {
 
 export const TableRow = ({ children, className = "" }: TableRowProps) => {
   return (
-    <tr className={`hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${className}`}>
+    <tr className={`hover:bg-white dark:hover:bg-slate-800 transition-colors ${className}`}>
       {children}
     </tr>
   );

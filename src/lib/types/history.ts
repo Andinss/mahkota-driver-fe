@@ -4,7 +4,7 @@ export interface HistorySetoran {
   reference_number: string;
   payment_method: "cash" | "transfer" | "e-wallet" | "saldo";
   amount_received: number;
-  finance_type: "paid" | "unpaid" | "pending";
+  finance_type: "paid" | "unpaid" | "pending" | "partially_paid" | "cancelled";
   notes?: string;
   rental_number?: string;
 }
