@@ -41,7 +41,7 @@ export function VehicleHistoryTableRow({ vehicle }: VehicleHistoryTableRowProps)
   const statusStyle = statusStyles[vehicle.status];
 
   return (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+    <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-4">
         <div className="flex items-center gap-4">
           <div className="w-16 h-10 rounded-lg overflow-hidden shrink-0 bg-slate-100 dark:bg-slate-800">

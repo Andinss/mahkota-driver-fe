@@ -32,7 +32,7 @@ export const VendorTableRow = ({
   const logoUrl = buildLogoUrl(vendor.logo);
 
   return (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
+    <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors group">
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">

@@ -101,7 +101,7 @@ export const PaymentTableRow = ({
   })();
 
   return (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
+    <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors group">
       <td className="px-6 py-4">
         <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
           {payment.reference_number}

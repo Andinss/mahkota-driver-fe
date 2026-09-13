@@ -23,29 +23,35 @@ import { DepositHistoryList } from "@/components/driver/detail/deposit-history-l
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { driverApi } from "@/lib/api/driver";
 import { rentalApi } from "@/lib/api/rentals";
+import { financeApi } from "@/lib/api/finances";
 import { HttpClientError } from "@/lib/api-http";
 import type { DriverItem } from "@/lib/types/driver";
 import type { RentalTransaction } from "@/lib/types/rentals";
 import type { HistorySetoran } from "@/lib/types/history";
+import type { FinanceItem } from "@/lib/types/finances";
 import { toastError, toastInfo } from "@/components/ui/toast-provider";
+import type { ExportOptions } from "@/components/ui/export";
 
-const DUMMY_HISTORY: HistorySetoran[] = [
-  { id: "1", payment_date: "2026-09-10T14:30:00", reference_number: "TRX-20260910-001", payment_method: "cash", amount_received: 500000, finance_type: "paid", notes: "Setoran harian", rental_number: "RNT-2026-0910" },
-  { id: "2", payment_date: "2026-09-09T10:15:00", reference_number: "TRX-20260909-002", payment_method: "transfer", amount_received: 350000, finance_type: "paid", rental_number: "RNT-2026-0909" },
-  { id: "3", payment_date: "2026-09-08T16:45:00", reference_number: "TRX-20260908-001", payment_method: "saldo", amount_received: 450000, finance_type: "pending", notes: "Menunggu verifikasi admin" },
-  { id: "4", payment_date: "2026-08-28T09:00:00", reference_number: "TRX-20260828-003", payment_method: "cash", amount_received: 600000, finance_type: "paid", rental_number: "RNT-2026-0828" },
-  { id: "5", payment_date: "2026-08-25T14:00:00", reference_number: "TRX-20260825-001", payment_method: "e-wallet", amount_received: 300000, finance_type: "paid", notes: "Setoran via GoPay" },
-  { id: "6", payment_date: "2026-08-20T11:30:00", reference_number: "TRX-20260820-002", payment_method: "cash", amount_received: 750000, finance_type: "paid", rental_number: "RNT-2026-0820" },
-  { id: "7", payment_date: "2026-08-15T15:00:00", reference_number: "TRX-20260815-001", payment_method: "transfer", amount_received: 400000, finance_type: "paid", notes: "Setoran mingguan" },
-];
+const mapFinanceToHistory = (f: FinanceItem): HistorySetoran => ({
+  id: f.id,
+  payment_date: f.payment_date,
+  reference_number: f.reference_number,
+  payment_method: f.payment_method,
+  amount_received: f.paid_amount ?? f.amount_received ?? 0,
+  finance_type: f.finance_type ?? f.status ?? "pending",
+  notes: f.notes || undefined,
+  rental_number: f.rentals?.[0]?.rental_number,
+});
 
-const detailDriverPage = () => {
+const DetailDriverPage = () => {
   const searchParams = useSearchParams();
   const driverId = searchParams.get("id");
 
   const [driver, setDriver] = useState<DriverItem | null>(null);
   const [currentRental, setCurrentRental] = useState<RentalTransaction | null>(null);
   const [driverRentals, setDriverRentals] = useState<RentalTransaction[]>([]);
+  const [depositHistory, setDepositHistory] = useState<HistorySetoran[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
@@ -61,12 +67,12 @@ const detailDriverPage = () => {
     const fetchDriver = async () => {
       try {
         const res = await driverApi.getById(driverId);
-        const item = (res as any)?.data ?? (res as any);
+        const item = res.data ?? (res as unknown as DriverItem);
         if (item?.employee_id) {
           setDriver(item);
           return;
         }
-      } catch (err: any) {
+      } catch (err) {
         const msg = err instanceof HttpClientError ? err.message : "Failed to load driver data.";
         toastError(msg);
         setDriver(null);
@@ -75,14 +81,14 @@ const detailDriverPage = () => {
 
       try {
         const res = await driverApi.getDetail(driverId);
-        const item = (res as any)?.data ?? (res as any);
+        const item = res.data ?? (res as unknown as DriverItem);
         if (item?.employee_id) {
           setDriver(item);
         } else {
           setDriver(null);
           toastError("Driver data is empty or invalid.");
         }
-      } catch (err: any) {
+      } catch (err) {
         const msg = err instanceof HttpClientError ? err.message : "Failed to load driver details.";
         toastError(msg);
         setDriver(null);
@@ -92,7 +98,7 @@ const detailDriverPage = () => {
     const fetchRental = async () => {
       try {
         const res = await rentalApi.getList({ limit: 1000 });
-        const rentals = (res as any)?.data ?? [];
+        const rentals = res.data ?? [];
         const driverRentalsList = rentals
           .filter((r: RentalTransaction) => r.driver_id === driverId)
           .sort((a: RentalTransaction, b: RentalTransaction) => new Date(b.created_at || b.start_date).getTime() - new Date(a.created_at || a.start_date).getTime());
@@ -102,12 +108,26 @@ const detailDriverPage = () => {
         if (driverRentalsList.length > 0) {
           setCurrentRental(driverRentalsList[0]);
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error("Failed to load rental data:", err);
       }
     };
 
+    const fetchHistory = async () => {
+      setIsLoadingHistory(true);
+      try {
+        const res = await financeApi.getList({ driver_id: driverId, limit: 1000 });
+        setDepositHistory(res.data.map(mapFinanceToHistory));
+      } catch (err) {
+        console.error("Failed to load deposit history:", err instanceof Error ? err.message : err);
+        setDepositHistory([]);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
     fetchDriver().then(fetchRental).finally(() => setIsLoading(false));
+    fetchHistory();
   }, [driverId]);
 
   const driverHeader: DriverHeaderData = driver ? {
@@ -171,7 +191,7 @@ const detailDriverPage = () => {
     setCurrentPage(1);
   };
 
-  const handleExport = (options?: any) => {
+  const handleExport = (options?: ExportOptions) => {
     if (!options) return;
     toastInfo(`Exporting vehicle history as ${options.format} with ${options.type} data`);
   };
@@ -258,7 +278,15 @@ const detailDriverPage = () => {
       )}
 
       {activeTab === "deposit-history" && (
-        <DepositHistoryList history={DUMMY_HISTORY} />
+        <div>
+          {isLoadingHistory ? (
+            <div className="py-20 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+              Loading deposit history...
+            </div>
+          ) : (
+            <DepositHistoryList history={depositHistory} />
+          )}
+        </div>
       )}
     </div>
     </PermissionGuard>
@@ -266,4 +294,4 @@ const detailDriverPage = () => {
   );
 };
 
-export default detailDriverPage;
+export default DetailDriverPage;

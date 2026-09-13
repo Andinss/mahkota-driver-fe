@@ -90,7 +90,7 @@ function PermissionCell({ actions }: { actions: string[] }) {
 
 export const RoleTableRow = ({ role, onEdit, onDelete }: RoleTableRowProps) => {
   return (
-    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+    <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-5">
         <div className="flex items-center gap-3">
           <div className={`w-2 h-2 rounded-full shrink-0 ${role.color}`} />

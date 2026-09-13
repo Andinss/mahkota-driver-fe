@@ -127,7 +127,7 @@ export function MonitoringTable({ vehicles, loading, onRefresh }: MonitoringTabl
         </div>
       ) : (
         <table className="w-full text-left">
-          <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
+          <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
               <th className="px-4 py-4 whitespace-nowrap">Kendaraan</th>
               <th className="px-4 py-4 whitespace-nowrap">Plat</th>
@@ -144,7 +144,7 @@ export function MonitoringTable({ vehicles, loading, onRefresh }: MonitoringTabl
             {vehicles.map((v) => (
               <tr
                 key={v.id}
-                className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer"
+                className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors cursor-pointer"
                 onClick={() => router.push(`/dashboard/monitoring/detail?id=${v.id}`)}
               >
                 <td className="px-4 py-4 whitespace-nowrap">

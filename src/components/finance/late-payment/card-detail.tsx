@@ -209,7 +209,7 @@ export function CardDetail({
           </div>
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 dark:bg-slate-800/50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <thead className="bg-white dark:bg-slate-800/50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 <tr>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Type</th>

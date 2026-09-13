@@ -38,7 +38,7 @@ export function RentalHistoryTable({ rentals }: RentalHistoryTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
+          <tr className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <th className="px-6 py-4">
               Date Range
             </th>
@@ -62,7 +62,7 @@ export function RentalHistoryTable({ rentals }: RentalHistoryTableProps) {
             return (
               <tr
                 key={index}
-                className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group"
+                className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors group"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col">
