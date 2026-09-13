@@ -12,9 +12,9 @@ interface PaymentCardProps {
 
 const colorToBg: Record<string, string> = {
   "text-primary": "bg-primary/10 dark:bg-primary/20",
-  "text-green-700": "bg-green-50 dark:bg-green-900/20",
-  "text-orange-700": "bg-orange-50 dark:bg-orange-900/20",
-  "text-blue-600": "bg-blue-50 dark:bg-blue-900/20",
+  "text-emerald-500": "bg-emerald-50 dark:bg-emerald-900/20",
+  "text-amber-500": "bg-amber-50 dark:bg-amber-900/20",
+  "text-blue-500": "bg-blue-50 dark:bg-blue-900/20",
 };
 
 export function PaymentCard({

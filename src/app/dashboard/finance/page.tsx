@@ -208,46 +208,46 @@ export default function PaymentList() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <PaymentCard
-                title="Total Amount Received"
+                title="Total Finance"
                 value={`Rp ${totalAmount.toLocaleString("id-ID")}`}
                 icon="payments"
                 iconColor="text-primary"
                 trend={{
                   value: `${summary?.total_records ?? finances.length} transactions`,
-                  color: "text-green-600",
+                  color: "text-primary",
                   icon: "trending_up",
                 }}
               />
               <PaymentCard
-                title="Active Records"
-                value={activeCount.toString()}
-                icon="verified"
-                iconColor="text-green-700"
+                title="This Month"
+                value={`Rp ${(summary?.total_this_month ?? 0).toLocaleString("id-ID")}`}
+                icon="calendar_month"
+                iconColor="text-emerald-500"
                 trend={{
-                  value: `${summary ? ((activeCount / (summary.total_records || 1)) * 100).toFixed(0) : ((activeCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
-                  color: "text-green-700",
+                  value: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+                  color: "text-emerald-500",
                   icon: "trending_up",
                 }}
               />
               <PaymentCard
-                title="Inactive Records"
-                value={inactiveCount.toString()}
-                icon="warning"
-                iconColor="text-orange-700"
+                title="Today"
+                value={`Rp ${(summary?.total_today ?? 0).toLocaleString("id-ID")}`}
+                icon="today"
+                iconColor="text-amber-500"
                 trend={{
-                  value: `${summary ? ((inactiveCount / (summary.total_records || 1)) * 100).toFixed(0) : ((inactiveCount / (finances.length || 1)) * 100).toFixed(0)}% of total`,
-                  color: "text-[#e73908]",
-                  icon: "trending_down",
+                  value: new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "short" }),
+                  color: "text-amber-500",
+                  icon: "schedule",
                 }}
               />
               <PaymentCard
-                title="Page"
-                value={`${meta.page} / ${meta.totalPages}`}
-                icon="description"
-                iconColor="text-blue-600"
+                title="Total Transactions"
+                value={`${summary?.total_records ?? meta.total}`}
+                icon="receipt_long"
+                iconColor="text-blue-500"
                 trend={{
-                  value: `${meta.total} total records`,
-                  color: "text-blue-600",
+                  value: `${summary?.total_active ?? 0} active • ${summary?.total_inactive ?? 0} inactive`,
+                  color: "text-blue-500",
                   icon: "info",
                 }}
               />
