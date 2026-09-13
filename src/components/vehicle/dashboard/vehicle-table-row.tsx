@@ -14,6 +14,7 @@ interface Vehicle {
   status: "available" | "rented" | "maintenance";
   image: string;
   imageAlt: string;
+  vendorName: string;
 }
 
 interface VehicleTableRowProps {
@@ -31,7 +32,7 @@ export const VehicleTableRow = ({
 }: VehicleTableRowProps) => {
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-      <td className="px-6 py-4">
+      <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-4">
           <div
             className="h-12 w-20 rounded-lg bg-cover bg-center shrink-0 border border-slate-200 dark:border-slate-700"
@@ -48,24 +49,27 @@ export const VehicleTableRow = ({
           </div>
         </div>
       </td>
-      <td className="px-6 py-4">
+      <td className="px-6 py-4 whitespace-nowrap">
         <span className="font-mono text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
           {vehicle.plate}
         </span>
       </td>
-      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
         {vehicle.type}
       </td>
-      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
+        {vehicle.vendorName || "-"}
+      </td>
+      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
         {vehicle.pricingCategory}
       </td>
-      <td className="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">
+      <td className="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
         {vehicle.rate}
       </td>
-      <td className="px-6 py-4">
+      <td className="px-6 py-4 whitespace-nowrap">
         <StatusBadge status={vehicle.status} />
       </td>
-      <td className="px-6 py-4 text-right">
+      <td className="px-6 py-4 text-right whitespace-nowrap">
         <Dropdown
           trigger={
             <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">

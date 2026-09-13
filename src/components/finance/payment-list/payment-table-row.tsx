@@ -41,6 +41,16 @@ const formatDate = (dateStr: string) => {
   });
 };
 
+const formatShortDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+};
+
 const statusLabel: Record<string, string> = {
   paid: "Paid",
   unpaid: "Unpaid",
@@ -135,6 +145,11 @@ export const PaymentTableRow = ({
       </td>
       <td className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">
         {payment.deposit_amount ? formatCurrency(payment.deposit_amount) : "-"}
+      </td>
+      <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
+        {payment.rentals?.[0]?.start_date && payment.rentals?.[0]?.end_date
+          ? `${formatShortDate(payment.rentals[0].start_date)} - ${formatShortDate(payment.rentals[0].end_date)}`
+          : "-"}
       </td>
       <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
         {formatDate(latestPaymentDate)}

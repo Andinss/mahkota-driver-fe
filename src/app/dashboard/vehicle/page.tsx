@@ -29,6 +29,7 @@ interface VehicleDisplay {
   status: VehicleStatus;
   image: string;
   imageAlt: string;
+  vendorName: string;
 }
 
 export default function DashboardVehiclePage() {
@@ -98,6 +99,7 @@ export default function DashboardVehiclePage() {
           status: statusMap[item.status] || "available",
           image,
           imageAlt: `${name} side view`,
+          vendorName: item.vendor?.name || "-",
         };
       });
       setVehicles(mapped);

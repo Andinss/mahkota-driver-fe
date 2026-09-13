@@ -129,6 +129,7 @@ const VehicleDetail = () => {
   ] : [];
 
   const registrationDetails = vehicle ? [
+    { label: "Vendor", value: vehicle.vendor?.name || "-" },
     { label: "License Plate", value: vehicle.license_plate || "-" },
     { label: "VIN Number", value: vehicle.vin_number || "-" },
     { label: "Engine Number", value: vehicle.engine_number || "-" },

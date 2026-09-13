@@ -11,6 +11,9 @@ export interface DriverBrief {
 export interface RentalBrief {
   id: string;
   rental_number: string;
+  start_date?: string;
+  end_date?: string;
+  created_at?: string;
 }
 
 export type FinanceStatus =

@@ -25,6 +25,7 @@ const paymentColumns: ExportColumn[] = [
   { id: "remaining_amount", label: "Sisa Tagihan", defaultChecked: true },
   { id: "payment_terms", label: "Cicilan (Kali)", defaultChecked: true },
   { id: "deposit_amount", label: "Deposit Amount", defaultChecked: true },
+  { id: "rental_period", label: "Rental Period", defaultChecked: true },
   { id: "payment_date", label: "Payment Date", defaultChecked: true },
   { id: "created_at", label: "Tanggal Dibuat", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
@@ -105,6 +106,7 @@ export function PaymentTable({
               <th className="px-6 py-4">Sisa Tagihan</th>
               <th className="px-6 py-4">Cicilan</th>
               <th className="px-6 py-4">Deposit</th>
+              <th className="px-6 py-4">Rental Period</th>
               <th className="px-6 py-4">Payment Date</th>
               <th className="px-6 py-4">Tanggal Dibuat</th>
               <th className="px-6 py-4">Status</th>
