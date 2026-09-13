@@ -27,6 +27,16 @@ const formatDate = (dateStr: string) => {
   });
 };
 
+const formatShortDate = (dateStr: string) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+};
+
 const statusLabel: Record<FinanceStatus, string> = {
   unpaid: "Unpaid",
   pending: "Pending",
@@ -102,6 +112,16 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
             <span className="text-sm text-slate-500 dark:text-slate-400">Referensi:</span>
             <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">{finance.reference_number}</span>
           </div>
+          {finance.rentals && finance.rentals.length > 0 && (
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Rental Period:</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white text-right">
+                {finance.rentals
+                  .map((r) => `${formatShortDate(r.start_date || "")} - ${formatShortDate(r.end_date || "")}`)
+                  .join(", ")}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-sm text-slate-500 dark:text-slate-400">Tanggal:</span>
             <span className="text-sm font-bold text-slate-900 dark:text-white">{formatDate(finance.payment_date)}</span>
