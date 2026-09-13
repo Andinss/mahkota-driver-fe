@@ -8,6 +8,7 @@ const vehicleColumns: ExportColumn[] = [
   { id: "transmission", label: "Transmission", defaultChecked: true},
   { id: "licensePlate", label: "License Plate", defaultChecked: true},
   { id: "type", label: "Type", defaultChecked: true},
+  { id: "vendor", label: "Vendor", defaultChecked: true},
   { id: "dailyRate", label: "Daily Rate", defaultChecked: true},
   { id: "pricingCategory", label: "Pricing Category", defaultChecked: true},
   { id: "status", label: "Status", defaultChecked: true},
@@ -25,6 +26,7 @@ interface Vehicle {
   status: "available" | "rented" | "maintenance";
   image: string;
   imageAlt: string;
+  vendorName: string;
 }
 
 interface VehicleTableProps {
@@ -69,13 +71,14 @@ export const VehicleTable = ({
         <table className="w-full text-left">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-6 py-4">Kendaraan</th>
-              <th className="px-6 py-4">Plat</th>
-              <th className="px-6 py-4">Tipe</th>
-              <th className="px-6 py-4">Kategori</th>
-              <th className="px-6 py-4">Tarif/Hari</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4 text-right">Aksi</th>
+              <th className="px-6 py-4 whitespace-nowrap">Kendaraan</th>
+              <th className="px-6 py-4 whitespace-nowrap">Plat</th>
+              <th className="px-6 py-4 whitespace-nowrap">Tipe</th>
+              <th className="px-6 py-4 whitespace-nowrap">Vendor</th>
+              <th className="px-6 py-4 whitespace-nowrap">Kategori</th>
+              <th className="px-6 py-4 whitespace-nowrap">Tarif/Hari</th>
+              <th className="px-6 py-4 whitespace-nowrap">Status</th>
+              <th className="px-6 py-4 text-right whitespace-nowrap">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
