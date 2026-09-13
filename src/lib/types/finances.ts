@@ -107,6 +107,8 @@ export interface LatePaymentStats {
 
 export interface FinanceSummary {
   total_amount_received: number;
+  total_this_month: number;
+  total_today: number;
   total_active: number;
   total_inactive: number;
   total_records: number;
