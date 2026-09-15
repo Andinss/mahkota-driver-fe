@@ -125,6 +125,8 @@ export default function PaymentList() {
       type: options.type,
     };
     if (options.type === "filtered") {
+      if (searchValue) params.search = searchValue;
+      if (paymentMethod) params.payment_method = paymentMethod;
       if (options.dateRange?.start) params.start_date = options.dateRange.start;
       if (options.dateRange?.end) params.end_date = options.dateRange.end;
     }

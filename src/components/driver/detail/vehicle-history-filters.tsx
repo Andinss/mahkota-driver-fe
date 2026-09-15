@@ -7,8 +7,8 @@ import { ModalExport, ExportColumn } from "@/components/ui/export";
 
 const vehicleHistoryColumns: ExportColumn[] = [
   { id: "vehicleName", label: "Vehicle Name", defaultChecked: true },
-  { id: "plateNumber", label: "Plate Number", defaultChecked: true },
-  { id: "period", label: "Period", defaultChecked: true },
+  { id: "vehiclePlate", label: "Plate Number", defaultChecked: true },
+  { id: "rentalPeriod", label: "Period", defaultChecked: true },
   { id: "totalDistance", label: "Total Distance", defaultChecked: true },
   { id: "fuelEfficiency", label: "Fuel Efficiency", defaultChecked: true },
   { id: "maintenance", label: "Maintenance", defaultChecked: true },
@@ -40,10 +40,10 @@ export function VehicleHistoryFilters({
     setIsExportModalOpen(true);
   };
 
-  const handleConfirmExport = (options?: any) => {
-    setIsExportModalOpen(false);
-    onExport?.(options);
-  };
+const handleConfirmExport = (options?: any) => {
+     setIsExportModalOpen(false);
+     onExport?.(options);
+   };
   return (
     <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
       <div className="relative w-full md:w-96">

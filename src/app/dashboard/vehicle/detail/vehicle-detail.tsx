@@ -21,7 +21,7 @@ import { vehicleApi } from "@/lib/api/vehicle";
 import { rentalApi } from "@/lib/api/rentals";
 import type { VehicleItem } from "@/lib/types/vehicle";
 import type { RentalTransaction } from "@/lib/types/rentals";
-import { toastInfo } from "@/components/ui/toast-provider";
+import { toastInfo, toastError } from "@/components/ui/toast-provider";
 
 const statusMap: Record<string, string> = {
   Available: "ACTIVE",
@@ -153,8 +153,8 @@ const VehicleDetail = () => {
   }));
 
   const rentalHistoryColumns: ExportColumn[] = [
-    { id: "dateRange", label: "Date Range", defaultChecked: true },
-    { id: "tripDuration", label: "Trip Duration", defaultChecked: true },
+    { id: "rentalPeriod", label: "Date Range", defaultChecked: true },
+    { id: "duration", label: "Trip Duration", defaultChecked: true },
     { id: "driverName", label: "Driver Name", defaultChecked: true },
     { id: "dailyRate", label: "Daily Rate", defaultChecked: true },
     { id: "status", label: "Status", defaultChecked: true },
@@ -168,12 +168,27 @@ const VehicleDetail = () => {
     setCurrentFilters({ dateRange: "", driver: "" });
   };
 
-  const handleExport = () => {
+const handleExport = () => {
     setIsExportModalOpen(true);
   };
 
-  const handleExportConfirm = (options: ExportOptions) => {
-    toastInfo(`Exporting rental history as ${options.format}`);
+  const handleExportConfirm = async (options: ExportOptions) => {
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+      type: options.type,
+    };
+    if (vehicleId) {
+      params.vehicle_id = vehicleId;
+    }
+    if (options.dateRange?.start) params.start_date = options.dateRange.start;
+    if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    try {
+      await rentalApi.exportData(params);
+      toastInfo(`Exporting rental history as ${options.format}`);
+    } catch {
+      toastError("Failed to export rental history. Please try again.");
+    }
     setIsExportModalOpen(false);
   };
 
@@ -214,11 +229,11 @@ const VehicleDetail = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              <RentalHistoryFilters
-                onFilterChange={handleFilterChange}
-                onClearFilters={handleClearFilters}
-                onExport={handleExport}
-              />
+<RentalHistoryFilters
+                 onFilterChange={handleFilterChange}
+                 onClearFilters={handleClearFilters}
+                 onExport={handleExport}
+               />
               <RentalHistoryTable rentals={rentalHistory} />
             </div>
           )}

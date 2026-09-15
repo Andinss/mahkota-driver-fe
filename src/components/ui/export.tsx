@@ -131,7 +131,7 @@ export function ModalExport({
   const handleExport = () => {
     onExport({
       type: exportType,
-      columns: selectedColumns,
+      columns: exportType === "all" ? columns.map((c) => c.id) : selectedColumns,
       format: selectedFormat,
       dateRange: {
         start: formatDate(startDate),

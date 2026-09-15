@@ -74,6 +74,7 @@ export default function AuditLogPage() {
       type: options.type,
     };
     if (options.type === "filtered") {
+      if (searchValue) params.search = searchValue;
       if (options.dateRange?.start) params.start_date = options.dateRange.start;
       if (options.dateRange?.end) params.end_date = options.dateRange.end;
     }

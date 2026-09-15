@@ -191,9 +191,27 @@ const DetailDriverPage = () => {
     setCurrentPage(1);
   };
 
-  const handleExport = (options?: ExportOptions) => {
+  const handleExport = async (options?: ExportOptions) => {
     if (!options) return;
-    toastInfo(`Exporting vehicle history as ${options.format} with ${options.type} data`);
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+      type: options.type,
+    };
+    if (driverId) {
+      params.driver_id = driverId;
+    }
+    if (options.type === "filtered") {
+      if (options.dateRange?.start) params.start_date = options.dateRange.start;
+      if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    }
+    try {
+      await rentalApi.exportData(params);
+      toastInfo(`Exporting vehicle history as ${options.format}`);
+    } catch (err) {
+      const msg = err instanceof HttpClientError ? err.message : "Failed to export vehicle history.";
+      toastError(msg);
+    }
   };
 
   if (isLoading) {
