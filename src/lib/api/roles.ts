@@ -3,6 +3,17 @@ import type { SuccessResponse } from "../types/api";
 import type { RoleItem, CreateRolePayload, UpdateRolePayload, AddPermissionsToRolePayload } from "../types/role";
 import type { PermissionItem } from "../types/permission";
 
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export const rolesApi = {
   getList: () =>
     api.get<SuccessResponse<RoleItem[]>>("/roles"),
@@ -27,4 +38,9 @@ export const rolesApi = {
 
   getPermissions: (id: string) =>
     api.get<SuccessResponse<PermissionItem[]>>(`/roles/${id}/permissions`),
+
+  exportData: async (params: Record<string, string | number | undefined>) => {
+    const { blob, filename } = await api.download("/roles/export", params);
+    triggerDownload(blob, filename);
+  },
 };

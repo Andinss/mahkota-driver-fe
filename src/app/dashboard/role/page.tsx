@@ -21,11 +21,22 @@ import { PermissionGuard } from "@/components/auth-guard-permission";
 
 const RolePage = () => {
   const { user } = useAuth();
-  const handleExport = (options: ExportOptions) => {
-    console.log("Export options from role page:", options);
-    toastInfo(
-      `Exporting role data as ${options.format} with ${options.type} data`,
-    );
+  const handleExport = async (options: ExportOptions) => {
+    if (!options) return;
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+      type: options.type,
+    };
+    if (options.type === "filtered" && search.trim()) {
+      params.search = search.trim();
+    }
+    try {
+      await rolesApi.exportData(params);
+      toastInfo(`Exporting role data as ${options.format}`);
+    } catch {
+      toastError("Failed to export role data. Please try again.");
+    }
   };
 
   const searchParams = useSearchParams();
