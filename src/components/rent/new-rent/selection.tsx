@@ -17,6 +17,7 @@ interface SelectOption {
   label: string;
   value: string;
   image?: string;
+  dailyRate?: number;
 }
 
 interface SelectionFormProps {

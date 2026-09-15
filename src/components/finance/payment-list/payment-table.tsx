@@ -20,6 +20,8 @@ interface PaymentTableProps {
 const paymentColumns: ExportColumn[] = [
   { id: "reference_number", label: "Reference Number", defaultChecked: true },
   { id: "payer", label: "Payer", defaultChecked: true },
+  { id: "vehicle", label: "Mobil", defaultChecked: true },
+  { id: "vendor", label: "Vendor", defaultChecked: true },
   { id: "total_amount", label: "Total Tagihan", defaultChecked: true },
   { id: "amount_received", label: "Dibayar", defaultChecked: true },
   { id: "remaining_amount", label: "Sisa Tagihan", defaultChecked: true },
@@ -30,7 +32,7 @@ const paymentColumns: ExportColumn[] = [
   { id: "created_at", label: "Tanggal Dibuat", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
   { id: "payment_method", label: "Payment Method", defaultChecked: true },
-  { id: "fee_admin_join", label: "Admin Fee Join", defaultChecked: false },
+  { id: "fee_admin_join", label: "Admin Fee Join", defaultChecked: true },
 ];
 
 export function PaymentTable({
@@ -101,6 +103,8 @@ export function PaymentTable({
             <tr>
               <th className="px-6 py-4">Reference Number</th>
               <th className="px-6 py-4">Payer</th>
+              <th className="px-6 py-4">Mobil</th>
+              <th className="px-6 py-4">Vendor</th>
               <th className="px-6 py-4">Total Tagihan</th>
               <th className="px-6 py-4">Dibayar</th>
               <th className="px-6 py-4">Sisa Tagihan</th>

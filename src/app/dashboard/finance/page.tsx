@@ -72,7 +72,8 @@ export default function PaymentList() {
         payment_method: paymentMethod || undefined,
       };
       const response = await financeApi.getList(params);
-      setFinances(response.data);
+      const items = Array.isArray(response.data) ? response.data : [];
+      setFinances(items);
       if (response.meta) {
         setMeta(response.meta);
       }

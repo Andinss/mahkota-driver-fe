@@ -8,12 +8,19 @@ export interface DriverBrief {
   profile_photo?: string;
 }
 
+export interface VendorBrief {
+  id: string;
+  name: string;
+  owner_name?: string;
+}
+
 export interface VehicleBrief {
   id: string;
   merk: string;
   model: string;
   license_plate: string;
   engine_status?: 'on' | 'off';
+  vendor?: VendorBrief | null;
 }
 
 export interface RentalTransaction {

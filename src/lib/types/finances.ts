@@ -8,12 +8,29 @@ export interface DriverBrief {
   email?: string;
 }
 
+export interface VehicleBrief {
+  id: string;
+  merk: string;
+  model: string;
+  license_plate: string;
+  engine_status?: "on" | "off";
+  vendor?: VendorBrief | null;
+}
+
+export interface VendorBrief {
+  id: string;
+  name: string;
+  owner_name?: string;
+}
+
 export interface RentalBrief {
   id: string;
   rental_number: string;
   start_date?: string;
   end_date?: string;
   created_at?: string;
+  vehicle?: VehicleBrief;
+  vendor?: VendorBrief;
 }
 
 export type FinanceStatus =
@@ -56,6 +73,8 @@ export interface FinanceItem {
   payer: string;
   driver_id: string;
   driver?: DriverBrief;
+  vehicle?: VehicleBrief;
+  vendor?: VendorBrief;
   finance_type?: FinanceStatus;
   status: FinanceStatus;
   rentals?: RentalBrief[];
@@ -71,6 +90,7 @@ export interface FinanceListParams {
   search?: string;
   payment_method?: string;
   driver_id?: string;
+  rental_id?: string;
   status?: FinanceStatus;
   start_date?: string;
   end_date?: string;
