@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
+import {
+  confirmToast,
+  toastSuccess,
+  toastError,
+} from "@/components/ui/toast-provider";
 import { PageHeader } from "@/components/page-header";
 import { RentalCard } from "@/components/rent/dashboard/card";
 import { FiltersSearch } from "@/components/rent/dashboard/filters-search";
@@ -28,23 +32,32 @@ interface RentalDisplay {
   rentalService?: string;
 }
 
-const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+const imageBase = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+).replace(/\/api\/?$/, "");
 
 const buildPhotoUrl = (path?: string) =>
   path
-    ? path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`
+    ? path.startsWith("http")
+      ? path
+      : `${imageBase}/${path.replace(/^\//, "")}`
     : "";
 
 const formatDateShort = (d?: string) => {
   if (!d) return "-";
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 };
 
 const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
   id: item.id,
   transactionId: item.rental_number || `#${item.id?.slice(0, 8).toUpperCase()}`,
   driver: {
-    name: item.driver ? `${item.driver.first_name} ${item.driver.last_name}` : "-",
+    name: item.driver
+      ? `${item.driver.first_name} ${item.driver.last_name}`
+      : "-",
     id: item.driver?.employee_id || item.driver_id?.slice(0, 8) || "-",
     avatar: buildPhotoUrl(item.driver?.profile_photo) || undefined,
   },
@@ -65,21 +78,21 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
 
 export default function RentalManagementPage() {
   const { user } = useAuth();
-const searchParams = useSearchParams();
+  const searchParams = useSearchParams();
 
   const handleExport = async (options?: ExportOptions) => {
-      if (!options) return;
-      const params: Record<string, string | number | undefined> = {
-        format: options.format,
-        columns: options.columns.join(","),
-        type: options.type,
-      };
-      if (options.type === "filtered") {
-        if (options.dateRange?.start) params.start_date = options.dateRange.start;
-        if (options.dateRange?.end) params.end_date = options.dateRange.end;
-      }
-      await rentalApi.exportData(params);
+    if (!options) return;
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+      type: options.type,
     };
+    if (options.type === "filtered") {
+      if (options.dateRange?.start) params.start_date = options.dateRange.start;
+      if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    }
+    await rentalApi.exportData(params);
+  };
 
   // Data state
   const [rentals, setRentals] = useState<RentalDisplay[]>([]);
@@ -109,22 +122,26 @@ const searchParams = useSearchParams();
     if (success && rent && !toastShownRef.current) {
       toastShownRef.current = true;
       const action = success === "updated" ? "Update" : "Registration";
-      toastSuccess(`${action} Successful: Rent ${decodeURIComponent(rent)} has been ${success} successfully.`);
+      toastSuccess(
+        `${action} Successful: Rent ${decodeURIComponent(rent)} has been ${success} successfully.`,
+      );
 
       // Hapus query params dari URL agar alert tidak muncul lagi saat refresh
       window.history.replaceState({}, "", "/dashboard/rent");
     }
-
   }, [searchParams]);
 
   const fetchRentals = useCallback(async () => {
-    if (!canAccess(user?.permissions, 'rental.read')) {
+    if (!canAccess(user?.permissions, "rental.read")) {
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
     try {
-      const res = await rentalApi.getList({ page: currentPage, limit: itemsPerPage });
+      const res = await rentalApi.getList({
+        page: currentPage,
+        limit: itemsPerPage,
+      });
       const items = Array.isArray(res.data) ? res.data : [];
       const mapped = items.map(mapToDisplay);
       setRentals(mapped);
@@ -152,14 +169,14 @@ const searchParams = useSearchParams();
     fetchSummary();
   }, [fetchSummary]);
 
-const handlePageChange = (page: number) => {
-  if (page >= 1 && page <= totalPages) {
-    setCurrentPage(page);
-  }
-};
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
-// Handler Delete
-   const handleDeleteClick = async (rental: RentalDisplay) => {
+  // Handler Delete
+  const handleDeleteClick = async (rental: RentalDisplay) => {
     const confirmed = await confirmToast({
       title: "Delete Rental",
       message: `Are you sure you want to delete ${rental.transactionId}? This action cannot be undone.`,
@@ -169,106 +186,132 @@ const handlePageChange = (page: number) => {
     if (confirmed) {
       try {
         await rentalApi.delete(rental.id);
-        toastSuccess(`Rent ${rental.transactionId} has been deleted successfully`);
+        toastSuccess(
+          `Rent ${rental.transactionId} has been deleted successfully`,
+        );
         fetchRentals();
         fetchSummary();
       } catch (err) {
-        toastError(err instanceof HttpClientError ? err.message : "Failed to delete rental. Please try again.");
+        toastError(
+          err instanceof HttpClientError
+            ? err.message
+            : "Failed to delete rental. Please try again.",
+        );
       }
     }
   };
 
-
-
   return (
     <PermissionGuard permission="rental.read">
-    <div className="p-8 space-y-8">
-      <PageHeader
-        title="Rentals List Overview"
-        description="Monitor active rentals, handle pending and late payments, and review daily completed transactions."
-        buttonText={canAccess(user?.permissions, "rental.create") ? "Add New Rentals" : undefined}
-        buttonHref={canAccess(user?.permissions, "rental.create") ? "/dashboard/rent/new" : undefined}
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <RentalCard
-          title="Total Rentals"
-          value={(summary?.total_rentals ?? rentals.length).toString()}
-          icon="key"
-          iconColor="text-primary"
-          trend={{
-            value: summary ? "Seluruh transaksi sewa" : "Viewing current page",
-            color: "text-green-600",
-            icon: "trending_up",
-          }}
+      <div className="p-8 space-y-8">
+        <PageHeader
+          title="Rentals List Overview"
+          description="Monitor active rentals, handle pending and late payments, and review daily completed transactions."
+          buttonText={
+            canAccess(user?.permissions, "rental.create")
+              ? "Add New Rentals"
+              : undefined
+          }
+          buttonHref={
+            canAccess(user?.permissions, "rental.create")
+              ? "/dashboard/rent/new"
+              : undefined
+          }
         />
 
-        <RentalCard
-          title="Rata-Rata Tarif Harian"
-          value={summary ? `Rp ${Math.round(summary.avg_daily_rate).toLocaleString("id-ID")}/day` : "-"}
-          icon="payments"
-          iconColor="text-emerald-600"
-          trend={{
-            value: "Berdasarkan semua data sewa",
-            color: "text-emerald-600",
-            icon: "trending_up",
-          }}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <RentalCard
+            title="Total Rentals"
+            value={(summary?.total_rentals ?? rentals.length).toString()}
+            icon="key"
+            iconColor="text-primary"
+            trend={{
+              value: summary
+                ? "Seluruh transaksi sewa"
+                : "Viewing current page",
+              color: "text-green-600",
+              icon: "trending_up",
+            }}
+          />
 
-        <RentalCard
-          title="Lepas Kunci"
-          value={(summary ? summary.lepas_kunci : rentals.filter((r) => r.rentalService === "lepas kunci").length).toString()}
-          icon="no_crash"
-          iconColor="text-blue-600"
-          trend={{
-            value: "Rental tanpa supir",
-            color: "text-blue-600",
-            icon: "info",
-          }}
-        />
+          <RentalCard
+            title="Rata-Rata"
+            value={
+              summary
+                ? `Rp ${Math.round(summary.avg_daily_rate).toLocaleString("id-ID")}/day`
+                : "-"
+            }
+            icon="payments"
+            iconColor="text-emerald-600"
+            trend={{
+              value: "Berdasarkan semua data sewa",
+              color: "text-emerald-600",
+              icon: "trending_up",
+            }}
+          />
 
-        <RentalCard
-          title="Pakai Supir"
-          value={(summary ? summary.pakai_supir : rentals.filter((r) => r.rentalService === "pakai supir").length).toString()}
-          icon="person"
-          iconColor="text-purple-600"
-          trend={{
-            value: "Rental dengan supir",
-            color: "text-purple-600",
-            icon: "info",
-          }}
-        />
-      </div>
+          <RentalCard
+            title="Lepas Kunci"
+            value={(summary
+              ? summary.lepas_kunci
+              : rentals.filter((r) => r.rentalService === "lepas kunci").length
+            ).toString()}
+            icon="no_crash"
+            iconColor="text-blue-600"
+            trend={{
+              value: "Rental tanpa supir",
+              color: "text-blue-600",
+              icon: "info",
+            }}
+          />
 
-      <FiltersSearch />
+          <RentalCard
+            title="Pakai Supir"
+            value={(summary
+              ? summary.pakai_supir
+              : rentals.filter((r) => r.rentalService === "pakai supir").length
+            ).toString()}
+            icon="person"
+            iconColor="text-purple-600"
+            trend={{
+              value: "Rental dengan supir",
+              color: "text-purple-600",
+              icon: "info",
+            }}
+          />
+        </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-        {isLoading ? (
-          <div className="p-12 text-center text-slate-500 dark:text-slate-400">Loading rentals...</div>
-        ) : (
-          <>
-            <RentalTable
-              rentals={rentals}
-              onExport={handleExport}
-              onDelete={handleDeleteClick}
-            />
-            <div className="border-t border-slate-200 dark:border-slate-800">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalResults={totalResults}
-                resultsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-                onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }}
-              />
+        <FiltersSearch />
+
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+          {isLoading ? (
+            <div className="p-12 text-center text-slate-500 dark:text-slate-400">
+              Loading rentals...
             </div>
-          </>
-        )}
+          ) : (
+            <>
+              <RentalTable
+                rentals={rentals}
+                onExport={handleExport}
+                onDelete={handleDeleteClick}
+              />
+              <div className="border-t border-slate-200 dark:border-slate-800">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalResults={totalResults}
+                  resultsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={(size) => {
+                    setItemsPerPage(size);
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+            </>
+          )}
+        </div>
       </div>
-
-
-
-    </div>
     </PermissionGuard>
   );
 }

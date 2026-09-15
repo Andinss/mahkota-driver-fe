@@ -5,11 +5,15 @@ import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 import Link from "next/link";
 import type { FinanceItem } from "@/lib/types/finances";
 
-const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+const imageBase = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+).replace(/\/api\/?$/, "");
 
 const photoUrl = (path?: string) =>
   path
-    ? path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`
+    ? path.startsWith("http")
+      ? path
+      : `${imageBase}/${path.replace(/^\//, "")}`
     : "";
 
 interface PaymentTableRowProps {
@@ -59,7 +63,10 @@ const statusLabel: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
-const statusVariant: Record<string, "success" | "info" | "warning" | "neutral"> = {
+const statusVariant: Record<
+  string,
+  "success" | "info" | "warning" | "neutral"
+> = {
   paid: "success",
   unpaid: "neutral",
   pending: "warning",
@@ -87,6 +94,13 @@ export const PaymentTableRow = ({
     : payment.payer;
   const avatarUrl = photoUrl(payment.driver?.profile_photo) || "";
 
+  const vehicleInfo = payment.vehicle || payment.rentals?.[0]?.vehicle;
+  const vendorInfo =
+    payment.vendor ||
+    vehicleInfo?.vendor ||
+    payment.rentals?.[0]?.vendor ||
+    payment.rentals?.[0]?.vehicle?.vendor;
+
   const latestPaymentDate = (() => {
     const payments = payment.payments || [];
     if (payments.length === 0) return payment.payment_date;
@@ -111,7 +125,11 @@ export const PaymentTableRow = ({
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0 flex items-center justify-center text-xs font-medium">
             {avatarUrl ? (
-              <img src={avatarUrl} alt={driverName} className="w-full h-full rounded-full object-cover" />
+              <img
+                src={avatarUrl}
+                alt={driverName}
+                className="w-full h-full rounded-full object-cover"
+              />
             ) : (
               driverName.charAt(0).toUpperCase()
             )}
@@ -121,10 +139,29 @@ export const PaymentTableRow = ({
               {driverName}
             </p>
             {payment.driver?.employee_id && (
-              <p className="text-xs text-slate-400">{payment.driver.employee_id}</p>
+              <p className="text-xs text-slate-400">
+                {payment.driver.employee_id}
+              </p>
             )}
           </div>
         </div>
+      </td>
+      <td className="px-6 py-4">
+        {vehicleInfo ? (
+          <div>
+            <p className="font-medium text-slate-900 dark:text-white">
+              {vehicleInfo.merk} {vehicleInfo.model}
+            </p>
+            <p className="text-xs text-slate-400 font-mono">
+              {vehicleInfo.license_plate}
+            </p>
+          </div>
+        ) : (
+          <span className="text-slate-400">-</span>
+        )}
+      </td>
+      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
+        {vendorInfo?.name || "-"}
       </td>
       <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
         {formatCurrency(payment.total_amount ?? payment.amount_received ?? 0)}
@@ -140,7 +177,9 @@ export const PaymentTableRow = ({
           <span className="font-bold text-slate-900 dark:text-white">
             {payment.payments_count ?? payment.payments?.length ?? 0}
           </span>
-          <span className="text-xs text-slate-400">/ {payment.payment_terms ?? 1} kali</span>
+          <span className="text-xs text-slate-400">
+            / {payment.payment_terms ?? 1} kali
+          </span>
         </div>
       </td>
       <td className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">
@@ -158,10 +197,7 @@ export const PaymentTableRow = ({
         {formatDate(payment.created_at || payment.payment_date)}
       </td>
       <td className="px-6 py-4">
-        <Badge
-          variant={statusVariant[payment.status] || "neutral"}
-          dot
-        >
+        <Badge variant={statusVariant[payment.status] || "neutral"} dot>
           {statusLabel[payment.status] || payment.status}
         </Badge>
       </td>
@@ -181,10 +217,17 @@ export const PaymentTableRow = ({
           <Link href={`/dashboard/finance/payment?id=${payment.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
-          <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(payment)}>
+          <DropdownMenuItem
+            icon="delete"
+            danger
+            onClick={() => onDelete?.(payment)}
+          >
             Delete
           </DropdownMenuItem>
-          <DropdownMenuItem icon="visibility" onClick={() => onDetails?.(payment)}>
+          <DropdownMenuItem
+            icon="visibility"
+            onClick={() => onDetails?.(payment)}
+          >
             Details
           </DropdownMenuItem>
         </Dropdown>

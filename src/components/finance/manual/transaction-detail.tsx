@@ -1,10 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { RadioCard } from "@/components/ui/radio-card";
 import { Icon } from "@/components/ui/icon";
 import { Textarea } from "@/components/ui/textarea";
 import { Modal } from "@/components/ui/modal";
 import { CurrencyInput } from "@/components/ui/currency-input";
+
+export interface RentalSelectOption {
+  id: string;
+  label: string;
+  category?: string;
+  dailyRate?: number;
+  totalDuration?: number;
+}
 
 interface FormErrors {
   paymentDate?: string;
@@ -25,7 +34,10 @@ interface TransactionDetailProps {
   initialStatus?: "paid" | "unpaid" | "pending";
   notes?: string;
   paymentTerms?: number;
-  feeAdminJoin?: string;
+  rentals?: RentalSelectOption[];
+  selectedRentalId?: string;
+  adminFeePreview?: number;
+  adminFeeNote?: string;
   mode?: "add" | "edit";
   onPaymentDateChange?: (value: string) => void;
   onReferenceNumberChange?: (value: string) => void;
@@ -37,9 +49,10 @@ interface TransactionDetailProps {
   onInitialStatusChange?: (value: "paid" | "unpaid" | "pending") => void;
   onNotesChange?: (value: string) => void;
   onPaymentTermsChange?: (value: number) => void;
-  onFeeAdminJoinChange?: (value: string) => void;
+  onRentalSelectChange?: (value: string) => void;
   hasSubmitted?: boolean;
   serverErrors?: Record<string, string[]>;
+  totalAmountReadOnly?: boolean;
 }
 
 const TransactionDetail = ({
@@ -52,7 +65,10 @@ const TransactionDetail = ({
   initialStatus = "paid",
   notes = "",
   paymentTerms = 1,
-  feeAdminJoin = "",
+  rentals = [],
+  selectedRentalId = "",
+  adminFeePreview = 0,
+  adminFeeNote = "",
   mode = "add",
   onPaymentDateChange,
   onReferenceNumberChange,
@@ -64,15 +80,27 @@ const TransactionDetail = ({
   onInitialStatusChange,
   onNotesChange,
   onPaymentTermsChange,
-  onFeeAdminJoinChange,
+  onRentalSelectChange,
   hasSubmitted = false,
   serverErrors = {},
+  totalAmountReadOnly = false,
 }: TransactionDetailProps) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showEwalletModal, setShowEwalletModal] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [statusNote, setStatusNote] = useState<"auto-paid" | "unpaid-warning" | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const baseTotal = parseFloat(totalAmount.replace(/[^\d.]/g, "")) || 0;
+  const selectedRentalName =
+    rentals.find((r) => r.id === selectedRentalId)?.label || "Kendaraan Terpilih";
+  const formatIDR = (value: number) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
 
   useEffect(() => {
     if (hasSubmitted) {
@@ -454,6 +482,29 @@ const TransactionDetail = ({
 
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <span className="material-symbols-outlined text-slate-400 text-base">directions_car</span>
+            Bayar untuk Kendaraan
+          </label>
+          <Select
+            value={selectedRentalId}
+            onChange={(e) => onRentalSelectChange?.(e.target.value)}
+          >
+            <option value="">Pilih mobil / rental driver...</option>
+            {rentals.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label}
+                {r.category ? ` (${r.category})` : ""}
+              </option>
+            ))}
+          </Select>
+          <p className="text-xs text-slate-400 italic">
+            Pilih kendaraan yang ingin dibayarkan driver. Admin fee dihitung otomatis dari
+            jenis mobil (Reguler Rp 500.000 / Premium Rp 700.000) untuk finance pertama driver.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
             <span className="material-symbols-outlined text-slate-400 text-base">receipt_long</span>
             Total Tagihan <span className="text-red-500">*</span>
           </label>
@@ -462,10 +513,49 @@ const TransactionDetail = ({
             value={totalAmount}
             onChange={(value) => handleTotalAmountChange(value)}
             error={errors.totalAmount}
+            readOnly={totalAmountReadOnly}
           />
+          {totalAmountReadOnly && (
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 italic">
+              Dihitung otomatis dari durasi × tarif harian
+            </p>
+          )}
           <p className="text-xs text-slate-400 italic">
-            Total nominal tagihan/kewajiban driver. Sisa tagihan dihitung dari total dikurangi pembayaran yang valid.
+            Nominal tagihan sewa driver (belum termasuk admin fee). Admin fee ditambahkan
+            otomatis bila ini finance pertama driver.
           </p>
+          {adminFeeNote && (
+            <div
+              className={`flex items-start gap-2 rounded-lg px-3 py-2.5 text-xs font-medium ${
+                adminFeePreview > 0
+                  ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300"
+                  : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300"
+              }`}
+            >
+              <span className="material-symbols-outlined text-base shrink-0">
+                {adminFeePreview > 0 ? "verified_user" : "check_circle"}
+              </span>
+              <span>{adminFeeNote}</span>
+            </div>
+          )}
+          {adminFeePreview > 0 && (
+            <div className="rounded-lg px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/60 flex flex-col gap-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-amber-700 dark:text-amber-300 font-medium">Admin Fee (Join) — {selectedRentalName}</span>
+                <span className="font-bold text-amber-800 dark:text-amber-200">
+                  {formatIDR(adminFeePreview)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-amber-700 dark:text-amber-300 font-medium">Nominal tagihan (belum termasuk fee)</span>
+                <span className="font-semibold text-amber-800 dark:text-amber-200">{formatIDR(baseTotal)}</span>
+              </div>
+              <div className="flex items-center justify-between pt-1.5 border-t border-amber-200/70 dark:border-amber-800 text-sm">
+                <span className="text-amber-800 dark:text-amber-200 font-semibold">Total yang dibayarkan driver</span>
+                <span className="font-bold text-amber-900 dark:text-amber-100">{formatIDR(baseTotal + adminFeePreview)}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-3">
@@ -488,21 +578,6 @@ const TransactionDetail = ({
           </div>
           <p className="text-xs text-slate-400 italic">
             Jumlah angsuran atau cicilan tagihan. Cicilan pertama dibayarkan dari nominal pembayaran awal.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-            <span className="material-symbols-outlined text-slate-400 text-base">verified_user</span>
-            Admin Fee (Join) <span className="text-xs font-normal text-slate-400">(Opsional)</span>
-          </label>
-          <CurrencyInput
-            placeholder="0"
-            value={feeAdminJoin}
-            onChange={(value) => onFeeAdminJoinChange?.(value)}
-          />
-          <p className="text-xs text-slate-400 italic">
-            Biaya admin untuk akun yang pertama kali melakukan sewa. Reguler Rp 500.000 / Premium Rp 700.000.
           </p>
         </div>
 

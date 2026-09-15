@@ -9,12 +9,8 @@ import { canAccess } from "@/lib/can-access";
 import { monitoringApi } from "@/lib/api/monitoring";
 import type { FleetLocation } from "@/lib/types/monitoring";
 import type { MonitoringTask } from "@/lib/api/monitoring";
-import {
-  MonitoringTable,
-  mergeData,
-  type MergedVehicle,
-} from "@/components/monitoring/task-list/monitoring-table";
-import { TaskPagination } from "@/components/monitoring/task-list/task-pagination";
+import { MonitoringTable, mergeData, type MergedVehicle } from "@/components/monitoring/task-list/monitoring-table";
+import { Pagination } from "@/components/ui/pagination";
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
@@ -224,35 +220,17 @@ export default function MonitoringPage() {
                 onRefresh={fetchData}
               />
               {!loading && filtered.length > 0 && (
-                <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <span>Tampilkan</span>
-                    <select
-                      value={pageSize}
-                      onChange={(e) => {
-                        setPageSize(Number(e.target.value));
-                        setPage(1);
-                      }}
-                      className="px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      {PAGE_SIZE_OPTIONS.map((size) => (
-                        <option key={size} value={size}>
-                          {size}
-                        </option>
-                      ))}
-                    </select>
-                    <span>data per halaman</span>
-                  </div>
-                  {filtered.length > pageSize && (
-                    <TaskPagination
-                      currentPage={safePage}
-                      totalPages={totalPages}
-                      totalResults={filtered.length}
-                      resultsPerPage={pageSize}
-                      onPageChange={setPage}
-                    />
-                  )}
-                </div>
+                <Pagination
+                  currentPage={safePage}
+                  totalPages={totalPages}
+                  totalResults={filtered.length}
+                  resultsPerPage={pageSize}
+                  onPageChange={setPage}
+                  onPageSizeChange={(size) => {
+                    setPageSize(size);
+                    setPage(1);
+                  }}
+                />
               )}
             </div>
           </div>

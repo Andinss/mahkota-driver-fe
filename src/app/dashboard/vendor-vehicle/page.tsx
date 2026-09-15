@@ -191,7 +191,7 @@ export default function VendorVehiclePage() {
         buttonHref="/dashboard/vendor-vehicle/new"
       />
 
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <VendorCard
           title="Total Vendor"
           value={totalVendors.toString()}
@@ -215,7 +215,7 @@ export default function VendorVehiclePage() {
           }}
         />
         <VendorCard
-          title="Rata-Rata Pendapatan"
+          title="Rata-Rata"
           value={formatRupiah(averagePendapatan)}
           icon="insights"
           iconColor="text-blue-600"

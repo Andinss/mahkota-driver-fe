@@ -11,11 +11,14 @@ const photoUrl = (path?: string) =>
     ? path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`
     : "";
 
-interface DriverRentalOption {
+export interface DriverRentalOption {
+  id: string;
   rentalNumber: string;
   carName: string;
   plate: string;
   pricingCategory?: string;
+  dailyRate?: number;
+  totalDuration?: number;
 }
 
 interface DriverOption {
@@ -28,12 +31,15 @@ interface DriverOption {
 
 const mapRentals = (d: DriverItem): DriverRentalOption[] =>
   (d.rentals || []).map((r) => ({
+    id: r.id,
     rentalNumber: r.rental_number,
     carName:
       [r.vehicle?.merk, r.vehicle?.model].filter(Boolean).join(" ") ||
       "Mobil",
     plate: r.vehicle?.license_plate || "",
     pricingCategory: r.vehicle?.pricing_category,
+    dailyRate: r.daily_rate,
+    totalDuration: r.total_duration,
   }));
 
 const mapDriver = (d: DriverItem): DriverOption => ({
@@ -58,14 +64,15 @@ const TypePill = ({ category }: { category?: string }) => {
     </span>
   );
 };
-  interface PayerInfoProps {
-  searchValue?: string;
-  onSearchChange?: (value: string) => void;
-  onPayerSelect?: (name: string, id: string, employeeId: string) => void;
-  selectedPayerId?: string; 
-  hasSubmitted?: boolean;
-  serverError?: string;
-}
+
+interface PayerInfoProps {
+    searchValue?: string;
+    onSearchChange?: (value: string) => void;
+    onPayerSelect?: (name: string, id: string, employeeId: string, rentals: DriverRentalOption[]) => void;
+    selectedPayerId?: string; 
+    hasSubmitted?: boolean;
+    serverError?: string;
+  }
 
 const PayerInfo = ({ 
   searchValue = "", 
@@ -130,14 +137,14 @@ const PayerInfo = ({
   const handleSelectDriver = (driver: DriverOption) => {
     setSelectedDriver(driver);
     onSearchChange?.(driver.name);
-    onPayerSelect?.(driver.name, driver.id, driver.employeeId);
+    onPayerSelect?.(driver.name, driver.id, driver.employeeId, driver.rentals);
     setShowDropdown(false);
   };
 
   const handleClearSelection = () => {
     onSearchChange?.("");
     setSelectedDriver(null);
-    onPayerSelect?.("", "", "");
+    onPayerSelect?.("", "", "", []);
   };
 
   return (

@@ -2,7 +2,7 @@
 
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Select } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 interface FormErrors {
   vehicleId?: string;
@@ -15,6 +15,7 @@ interface FormErrors {
 interface FinancialRentalProps {
   onDataChange?: (data: {
     dailyRate: number;
+    totalAmount: number;
   }) => void;
   onRentalTypeChange?: (data: {
     rentalDuration?: string;
@@ -22,10 +23,12 @@ interface FinancialRentalProps {
   }) => void;
   initialData?: {
     dailyRate?: number;
+    totalAmount?: number;
     rentalDuration?: string;
     rentalService?: string;
   };
   error?: FormErrors;
+  duration?: number;
 }
 
 const parseCurrency = (val: string) =>
@@ -36,6 +39,7 @@ const FinancialRental = ({
   onRentalTypeChange,
   initialData,
   error,
+  duration = 0,
 }: FinancialRentalProps) => {
   const initRate = initialData?.dailyRate
     ? initialData.dailyRate.toString()
@@ -48,11 +52,22 @@ const FinancialRental = ({
     initialData?.rentalService || ""
   );
 
+  const totalAmount = useMemo(() => {
+    const rate = dailyRate ? parseCurrency(dailyRate) : 0;
+    return rate * duration;
+  }, [dailyRate, duration]);
+
+  useEffect(() => {
+    if (dailyRate || duration > 0) {
+      onDataChange?.({
+        dailyRate: dailyRate ? parseCurrency(dailyRate) : 0,
+        totalAmount,
+      });
+    }
+  }, [totalAmount, dailyRate, duration, onDataChange]);
+
   const handleDailyRateChange = (val: string) => {
     setDailyRate(val);
-    onDataChange?.({
-      dailyRate: parseCurrency(val),
-    });
   };
 
   const handleDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -129,6 +144,40 @@ const FinancialRental = ({
           <p className="text-[10px] text-slate-400 italic">
             *Otomatis dari data kendaraan
           </p>
+        </div>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+              Durasi
+            </p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">
+              {duration > 0 ? `${duration} Hari` : "-"}
+            </p>
+          </div>
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+              Tarif/Hari
+            </p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">
+              {dailyRate ? `Rp ${parseCurrency(dailyRate).toLocaleString("id-ID")}` : "-"}
+            </p>
+          </div>
+          <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-4">
+            <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">
+              Total Harga
+            </p>
+            <p className="text-lg font-black text-emerald-700 dark:text-emerald-300">
+              Rp {totalAmount.toLocaleString("id-ID")}
+            </p>
+            {duration > 0 && dailyRate && (
+              <p className="text-[10px] text-emerald-500 mt-0.5">
+                {duration} hari × Rp {parseCurrency(dailyRate).toLocaleString("id-ID")}/hari
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

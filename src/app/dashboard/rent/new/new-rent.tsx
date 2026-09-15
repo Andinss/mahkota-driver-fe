@@ -36,6 +36,7 @@ interface RentalData {
   endDate: string;
   duration: number;
   dailyRate: number;
+  totalAmount: number;
   documents?: File[];
   rentalDuration?: string;
   rentalService?: string;
@@ -45,6 +46,7 @@ interface SelectOption {
   label: string;
   value: string;
   image?: string;
+  dailyRate?: number;
 }
 
 const NewRentPage = () => {
@@ -60,6 +62,7 @@ const NewRentPage = () => {
     endDate: "",
     duration: 0,
     dailyRate: 0,
+    totalAmount: 0,
     rentalDuration: "",
     rentalService: "",
   });
@@ -69,6 +72,7 @@ const NewRentPage = () => {
     startDate: "",
     endDate: "",
     dailyRate: 0,
+    totalAmount: 0,
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -111,6 +115,7 @@ const NewRentPage = () => {
           .map((v: VehicleItem) => ({
             label: `${v.license_plate} - ${v.merk} ${v.model}`,
             value: v.id,
+            dailyRate: v.daily_rate,
           })),
       );
     }).catch(() => {});
@@ -148,6 +153,10 @@ const NewRentPage = () => {
       isValid = false;
     }
 
+    if (!rentalData.totalAmount || rentalData.totalAmount <= 0) {
+      isValid = false;
+    }
+
     if (!rentalData.rentalDuration) {
       isValid = false;
     }
@@ -166,6 +175,7 @@ const NewRentPage = () => {
     !rentalData.startDate ||
     !rentalData.endDate ||
     !rentalData.dailyRate ||
+    !rentalData.totalAmount ||
     !rentalData.rentalDuration ||
     !rentalData.rentalService
   );
@@ -185,6 +195,7 @@ const NewRentPage = () => {
           endDate: rental.end_date || "",
           duration: rental.total_duration || 0,
           dailyRate: Number(rental.daily_rate) || 0,
+          totalAmount: Number(rental.daily_rate) * (rental.total_duration || 0),
           rentalDuration: rental.rental_duration || "",
           rentalService: rental.rental_service || "",
         });
@@ -194,6 +205,7 @@ const NewRentPage = () => {
           startDate: rental.start_date || "",
           endDate: rental.end_date || "",
           dailyRate: Number(rental.daily_rate) || 0,
+          totalAmount: Number(rental.daily_rate) * (rental.total_duration || 0),
         });
       }).catch(() => {
         setMode("add");
@@ -205,6 +217,7 @@ const NewRentPage = () => {
         endDate: "",
         duration: 0,
         dailyRate: 0,
+        totalAmount: 0,
         rentalDuration: "",
         rentalService: "",
       });
@@ -216,43 +229,62 @@ const NewRentPage = () => {
     driverId?: string;
     driverType?: string;
   }) => {
+    let dailyRate = 0;
+    if (data.vehicleId) {
+      const selectedVehicle = vehicleOptions.find((v) => v.value === data.vehicleId);
+      if (selectedVehicle?.dailyRate) {
+        dailyRate = selectedVehicle.dailyRate;
+      }
+    }
     setRentalData((prev) => ({
       ...prev,
       ...data,
+      dailyRate,
+      totalAmount: dailyRate * prev.duration,
     }));
     setFormValues((prev) => ({
       ...prev,
       vehicleId: data.vehicleId ?? prev.vehicleId,
       driverId: data.driverId ?? prev.driverId,
+      dailyRate,
+      totalAmount: dailyRate * rentalData.duration,
     }));
-  }, []);
+  }, [vehicleOptions, rentalData.duration]);
 
   const handlePeriodChange = useCallback((data: {
     startDate: string;
     endDate: string;
     duration: number;
   }) => {
-    setRentalData((prev) => ({
-      ...prev,
-      ...data,
-    }));
+    setRentalData((prev) => {
+      const total = prev.dailyRate * data.duration;
+      return {
+        ...prev,
+        ...data,
+        totalAmount: total,
+      };
+    });
     setFormValues((prev) => ({
       ...prev,
       startDate: data.startDate,
       endDate: data.endDate,
+      totalAmount: prev.dailyRate * data.duration,
     }));
   }, []);
 
   const handleFinancialChange = useCallback((data: {
     dailyRate: number;
+    totalAmount: number;
   }) => {
     setRentalData((prev) => ({
       ...prev,
-      ...data,
+      dailyRate: data.dailyRate,
+      totalAmount: data.totalAmount,
     }));
     setFormValues((prev) => ({
       ...prev,
       dailyRate: data.dailyRate,
+      totalAmount: data.totalAmount,
     }));
   }, []);
 
@@ -302,6 +334,7 @@ const NewRentPage = () => {
     try {
       const totalDuration = rentalData.duration;
       const dailyRate = rentalData.dailyRate;
+      const totalAmount = rentalData.totalAmount;
 
       const formData = new FormData();
       formData.append("driver_id", rentalData.driverId || "");
@@ -310,6 +343,7 @@ const NewRentPage = () => {
       formData.append("end_date", rentalData.endDate);
       formData.append("total_duration", String(totalDuration));
       formData.append("daily_rate", String(dailyRate));
+      formData.append("total_amount", String(totalAmount));
       formData.append("rental_duration", rentalData.rentalDuration || "harian");
       formData.append("rental_service", rentalData.rentalService || "lepas kunci");
 
@@ -418,10 +452,12 @@ const NewRentPage = () => {
             onDataChange={handleFinancialChange}
             initialData={{
               dailyRate: rentalData.dailyRate,
+              totalAmount: rentalData.totalAmount,
               rentalDuration: rentalData.rentalDuration,
               rentalService: rentalData.rentalService,
             }}
             onRentalTypeChange={handleRentalTypeChange}
+            duration={rentalData.duration}
             error={hasSubmitted ? errors : undefined}
           />
 

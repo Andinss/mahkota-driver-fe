@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { EngineSwitch } from "@/components/ui/engine-switch";
 import type { FleetLocation } from "@/lib/types/monitoring";
 import type { MonitoringTask } from "@/lib/api/monitoring";
@@ -109,8 +108,6 @@ export function mergeData(
 }
 
 export function MonitoringTable({ vehicles, loading, onRefresh }: MonitoringTableProps) {
-  const router = useRouter();
-
   return (
     <div className="overflow-x-auto">
       {loading ? (
@@ -144,8 +141,7 @@ export function MonitoringTable({ vehicles, loading, onRefresh }: MonitoringTabl
             {vehicles.map((v) => (
               <tr
                 key={v.id}
-                className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors cursor-pointer"
-                onClick={() => router.push(`/dashboard/monitoring/detail?id=${v.id}`)}
+                className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors"
               >
                 <td className="px-4 py-4 whitespace-nowrap">
                   <p className="font-medium text-slate-900 dark:text-white">{v.vehicleName}</p>

@@ -11,6 +11,7 @@ export interface DriverRentalItem {
   start_date?: string;
   end_date?: string;
   daily_rate?: number;
+  total_duration?: number;
   rental_duration?: string;
   vehicle?: DriverRentalVehicle;
 }

@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PermissionGuard } from "@/components/auth-guard-permission";
-import PayerInfo from "@/components/finance/manual/payer-info";
-import TransactionDetail from "@/components/finance/manual/transaction-detail";
+import PayerInfo, { DriverRentalOption } from "@/components/finance/manual/payer-info";
+import TransactionDetail, { RentalSelectOption } from "@/components/finance/manual/transaction-detail";
 import { financeApi } from "@/lib/api/finances";
 import { saldoApi } from "@/lib/api/saldo";
 import { HttpClientError } from "@/lib/api-http";
@@ -30,13 +30,17 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [amount, setAmount] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
+  const [totalAmountReadOnly, setTotalAmountReadOnly] = useState(false);
   const [initialStatus, setInitialStatus] = useState<"paid" | "unpaid" | "pending">("paid");
   const [depositAmount, setDepositAmount] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState(1);
-  const [feeAdminJoin, setFeeAdminJoin] = useState("");
   const [paymentDetail, setPaymentDetail] = useState("");
   const [selectedPayer, setSelectedPayer] = useState<{name: string; id: string; employeeId?: string} | null>(null);
+  const [payerRentals, setPayerRentals] = useState<RentalSelectOption[]>([]);
+  const [selectedRentalId, setSelectedRentalId] = useState("");
+  const [rentalFinanceCount, setRentalFinanceCount] = useState<number | null>(null);
+  const [feeAdminJoin, setFeeAdminJoin] = useState(0);
   const [currentPaid, setCurrentPaid] = useState(0);
   const [currentRemaining, setCurrentRemaining] = useState(0);
 
@@ -51,7 +55,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
       const fetchFinance = async () => {
         try {
           const response = await financeApi.getById(paymentIdParam);
-          const item = (response as any)?.data ?? (response as any);
+          const item = ((response as any)?.data ?? (response as any)) as FinanceItem;
           if (!item?.payer) {
             throw new Error("Invalid response format");
           }
@@ -60,12 +64,24 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
           setPaymentDate(item.payment_date);
           setReferenceNumber(item.reference_number);
           setPaymentMethod(item.payment_method);
-          setTotalAmount(String(item.total_amount ?? item.amount_received ?? ""));
+          const fee = Number(item.fee_admin_join) || 0;
+          setFeeAdminJoin(fee);
+           setTotalAmount(String(Math.max(0, (Number(item.total_amount) || 0) - fee)));
+           setTotalAmountReadOnly(false);
+           setSelectedRentalId(item.rentals?.[0]?.id || "");
+          setPayerRentals(
+            (item.rentals || []).map((r) => ({
+              id: r.id,
+              label: r.vehicle
+                ? `${r.vehicle.merk} ${r.vehicle.model}${r.vehicle.license_plate ? ` - ${r.vehicle.license_plate}` : ""}`
+                : r.rental_number || r.id,
+              category: undefined,
+            })),
+          );
           setAmount("");
           setDepositAmount(item.deposit_amount ? String(item.deposit_amount) : "");
           setNotes(item.notes || "");
           setPaymentTerms(item.payment_terms ?? 1);
-          setFeeAdminJoin(item.fee_admin_join ? String(item.fee_admin_join) : "");
           setCurrentPaid(item.paid_amount ?? item.amount_received ?? 0);
           setCurrentRemaining(item.remaining_amount ?? 0);
         } catch (err) {
@@ -87,16 +103,72 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
       setPaymentDetail("");
       setAmount("");
       setTotalAmount("");
+      setTotalAmountReadOnly(false);
       setInitialStatus("paid");
       setDepositAmount("");
       setNotes("");
       setPaymentTerms(1);
-      setFeeAdminJoin("");
+      setPayerRentals([]);
+      setSelectedRentalId("");
+      setRentalFinanceCount(null);
+      setFeeAdminJoin(0);
     }
   }, [paymentIdParam]);
 
-  const parsedFeePreview =
-    parseFloat(feeAdminJoin.replace(/[^\d.]/g, "")) || 0;
+  const baseTotal = parseFloat(totalAmount.replace(/[^\d.]/g, "")) || 0;
+  const selectedRental = payerRentals.find((r) => r.id === selectedRentalId) || null;
+  const isThisRentalFirstFinanced = rentalFinanceCount === 0;
+  const rentalCategory = (selectedRental?.category || "").toLowerCase();
+
+  let adminFeePreview = 0;
+  if (mode === "edit") {
+    adminFeePreview = feeAdminJoin;
+  } else if (
+    selectedRental &&
+    rentalCategory &&
+    rentalFinanceCount !== null &&
+    isThisRentalFirstFinanced
+  ) {
+    if (rentalCategory === "premium") adminFeePreview = 700000;
+    else if (rentalCategory === "reguler" || rentalCategory === "regular") adminFeePreview = 500000;
+  }
+
+  const formattedCategory =
+    rentalCategory === "premium"
+      ? "Premium"
+      : rentalCategory === "reguler" || rentalCategory === "regular"
+        ? "Reguler"
+        : selectedRental?.category || "";
+
+  let adminFeeNote = "";
+  if (mode === "edit") {
+    adminFeeNote =
+      feeAdminJoin > 0
+        ? `Admin Fee (Join) Rp ${feeAdminJoin.toLocaleString("id-ID")} sudah termasuk dalam total tagihan.`
+        : "Finance ini tidak memiliki admin fee.";
+  } else if (!selectedPayer?.id) {
+    adminFeeNote = "Pilih driver/payer terlebih dahulu untuk menghitung admin fee.";
+  } else if (payerRentals.length === 0) {
+    adminFeeNote = "Driver ini tidak memiliki rental/mobil. Admin fee tidak dapat dihitung.";
+  } else if (!selectedRental) {
+    adminFeeNote = "Pilih mobil untuk menghitung admin fee otomatis.";
+  } else if (rentalFinanceCount === null) {
+    adminFeeNote = "Menghitung admin fee...";
+  } else if (!isThisRentalFirstFinanced) {
+    adminFeeNote = `Mobil ini sudah pernah masuk ${rentalFinanceCount} finance sebelumnya. Admin fee tidak dikenakan lagi untuk mobil yang sama.`;
+  } else if (adminFeePreview > 0) {
+    adminFeeNote = `Mobil baru pertama kali dibiayai — Admin Fee (Join) ${formattedCategory}: Rp ${adminFeePreview.toLocaleString("id-ID")} akan ditambahkan ke total tagihan.`;
+  } else {
+    adminFeeNote = "Admin fee tidak dikenakan untuk mobil ini.";
+  }
+
+  const formatIDR = (value: number) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
 
   const handlePaymentDetailChange = (detail: string) => {
     setPaymentDetail(detail);
@@ -127,7 +199,6 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
 
     const parsedTotal = parseFloat(totalAmount.replace(/[^\d.]/g, "")) || 0;
     const parsedInitial = parseFloat(amount.replace(/[^\d.]/g, "")) || 0;
-    const parsedFeeAdminJoin = parseFloat(feeAdminJoin.replace(/[^\d.]/g, "")) || 0;
 
     try {
       const payload = {
@@ -135,11 +206,10 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
         reference_number: referenceNumber,
         payment_method: paymentMethod as FinanceItem["payment_method"],
         total_amount: parsedTotal > 0 ? parsedTotal : undefined,
+        rental_ids: selectedRentalId ? [selectedRentalId] : undefined,
         amount_received: parsedInitial > 0 ? parsedInitial : undefined,
         deposit_amount: parseFloat(depositAmount.replace(/[^\d.]/g, "")) || 0,
         payment_terms: paymentTerms,
-        fee_admin_join:
-          parsedFeeAdminJoin > 0 ? parsedFeeAdminJoin : undefined,
         notes,
         payer: selectedPayer?.name || "",
         driver_id: selectedPayer.id,
@@ -152,10 +222,9 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
           reference_number: referenceNumber,
           payment_method: paymentMethod as FinanceItem["payment_method"],
           total_amount: parsedTotal > 0 ? parsedTotal : undefined,
+          rental_ids: selectedRentalId ? [selectedRentalId] : [],
           deposit_amount: parseFloat(depositAmount.replace(/[^\d.]/g, "")) || 0,
           payment_terms: paymentTerms,
-          fee_admin_join:
-            parsedFeeAdminJoin > 0 ? parsedFeeAdminJoin : undefined,
           notes,
           payer: selectedPayer?.name || "",
           driver_id: selectedPayer.id,
@@ -198,12 +267,17 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   const handleClear = () => {
     setSearchValue("");
     setSelectedPayer(null);
+    setPayerRentals([]);
+    setSelectedRentalId("");
+    setRentalFinanceCount(null);
+    setFeeAdminJoin(0);
     setPaymentDate("");
     setReferenceNumber("");
     setPaymentMethod("");
     setPaymentDetail("");
     setAmount("");
     setTotalAmount("");
+    setTotalAmountReadOnly(false);
     setInitialStatus("paid");
     setDepositAmount("");
     setNotes("");
@@ -212,9 +286,64 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     setGeneralError("");
   };
 
-  const handlePayerSelect = (name: string, id: string, employeeId?: string) => {
+  const handlePayerSelect = (
+    name: string,
+    id: string,
+    employeeId?: string,
+    rentals?: DriverRentalOption[],
+  ) => {
     setSelectedPayer({ name, id, employeeId });
+    setSelectedRentalId("");
+    if (mode === "add") {
+      setPayerRentals(
+        (rentals || []).map((r) => {
+          const cat = (r.pricingCategory || "").toLowerCase();
+          const category =
+            cat === "premium"
+              ? "Premium"
+              : cat === "reguler" || cat === "regular"
+                ? "Reguler"
+                : undefined;
+          return {
+            id: r.id,
+            label: `${r.carName}${r.plate ? ` - ${r.plate}` : ""}`,
+            category,
+            dailyRate: r.dailyRate,
+            totalDuration: r.totalDuration,
+          };
+        }),
+      );
+      setRentalFinanceCount(null);
+    }
   };
+
+  useEffect(() => {
+    if (mode === "add" && selectedRentalId) {
+      financeApi
+        .getList({ rental_id: selectedRentalId, limit: 1 })
+        .then((res) => setRentalFinanceCount(res.meta?.total ?? 0))
+        .catch(() => setRentalFinanceCount(null));
+    } else {
+      setRentalFinanceCount(null);
+    }
+  }, [mode, selectedRentalId]);
+
+  useEffect(() => {
+    if (selectedRentalId) {
+      const selected = payerRentals.find((r) => r.id === selectedRentalId);
+      if (selected && selected.dailyRate && selected.totalDuration) {
+        const calculated = selected.dailyRate * selected.totalDuration;
+        setTotalAmount(calculated.toString());
+        setTotalAmountReadOnly(true);
+      } else {
+        setTotalAmount("");
+        setTotalAmountReadOnly(false);
+      }
+    } else {
+      setTotalAmount("");
+      setTotalAmountReadOnly(false);
+    }
+  }, [selectedRentalId, payerRentals]);
 
   useEffect(() => {
     if (selectedPayer?.id) {
@@ -301,21 +430,25 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
             initialStatus={initialStatus}
             notes={notes}
             paymentTerms={paymentTerms}
-            feeAdminJoin={feeAdminJoin}
+            rentals={payerRentals}
+            selectedRentalId={selectedRentalId}
+            onRentalSelectChange={setSelectedRentalId}
+            adminFeePreview={adminFeePreview}
+            adminFeeNote={adminFeeNote}
             mode={mode}
             onPaymentDateChange={setPaymentDate}
             onReferenceNumberChange={setReferenceNumber}
             onPaymentMethodChange={setPaymentMethod}
             onPaymentDetailChange={handlePaymentDetailChange}
-            onTotalAmountChange={setTotalAmount}
+             onTotalAmountChange={setTotalAmount}
             onAmountChange={setAmount}
             onDepositAmountChange={setDepositAmount}
             onInitialStatusChange={setInitialStatus}
             onNotesChange={setNotes}
             onPaymentTermsChange={setPaymentTerms}
-            onFeeAdminJoinChange={setFeeAdminJoin}
             hasSubmitted={hasSubmitted}
             serverErrors={serverErrors}
+            totalAmountReadOnly={totalAmountReadOnly}
           />
 
           {/* Saldo Info */}
@@ -376,7 +509,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
                 <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total Tagihan</p>
                   <p className="font-bold text-slate-900 dark:text-white">
-                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(parseFloat(totalAmount.replace(/[^\d.]/g, "")) || currentPaid + currentRemaining)}
+                    {formatIDR(baseTotal + adminFeePreview || currentPaid + currentRemaining)}
                   </p>
                 </div>
                 <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-4">
@@ -400,7 +533,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-500 dark:text-slate-400">Admin Fee (Join):</span>
                   <span className="font-bold text-slate-900 dark:text-white">
-                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(parsedFeePreview)}
+                    {formatIDR(adminFeePreview)}
                   </span>
                 </div>
               </div>
