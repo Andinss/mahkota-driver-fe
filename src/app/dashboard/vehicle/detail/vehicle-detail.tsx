@@ -181,8 +181,10 @@ const handleExport = () => {
     if (vehicleId) {
       params.vehicle_id = vehicleId;
     }
-    if (options.dateRange?.start) params.start_date = options.dateRange.start;
-    if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    if (options.type === "filtered") {
+      if (options.dateRange?.start) params.start_date = options.dateRange.start;
+      if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    }
     try {
       await rentalApi.exportData(params);
       toastInfo(`Exporting rental history as ${options.format}`);

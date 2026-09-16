@@ -8,9 +8,11 @@ import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import CardUser from "@/components/user/new/card-user";
 import { usersApi } from "@/lib/api/users";
 import { rolesApi } from "@/lib/api/roles";
+import { driverApi } from "@/lib/api/driver";
 import { useAuth } from "@/lib/auth-context";
 import type { RoleItem } from "@/lib/types/role";
-import type { CreateUserPayload } from "@/lib/types/user";
+import type { CreateUserPayload, UserItem } from "@/lib/types/user";
+import type { DriverItem } from "@/lib/types/driver";
 
 export default function AddNewUserPage() {
   const router = useRouter();
@@ -23,6 +25,8 @@ export default function AddNewUserPage() {
   const [initialData, setInitialData] = useState<UserFormData | undefined>();
   const [isLoadingUser, setIsLoadingUser] = useState(!!userIdParam);
   const [roles, setRoles] = useState<RoleItem[]>([]);
+  const [availableDrivers, setAvailableDrivers] = useState<{ id: string; name: string; employeeId: string; email: string }[]>([]);
+  const [selectedDriverId, setSelectedDriverId] = useState<string>("");
 
   const isAdmin = user?.permissions?.includes("role.create") ?? false;
   const filteredRoles = isAdmin
@@ -33,6 +37,30 @@ export default function AddNewUserPage() {
     rolesApi.getList().then((res) => {
       const list = Array.isArray(res.data) ? res.data : [];
       setRoles(list);
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    Promise.all([
+      driverApi.getList({ limit: 1000 }),
+      usersApi.getList({ limit: 1000 }),
+    ]).then(([driverRes, userRes]) => {
+      const driverItems = Array.isArray(driverRes.data) ? driverRes.data : [];
+      const userItems = Array.isArray(userRes.data) ? userRes.data : [];
+      const linkedDriverIds = new Set(
+        userItems
+          .map((u: UserItem) => (u as any).driver_id)
+          .filter(Boolean)
+      );
+      const driversWithoutUser = driverItems
+        .filter((d: DriverItem) => !linkedDriverIds.has(d.id))
+        .map((d: DriverItem) => ({
+          id: d.id,
+          name: `${d.first_name} ${d.last_name}`.trim(),
+          employeeId: d.employee_id,
+          email: d.email,
+        }));
+      setAvailableDrivers(driversWithoutUser);
     }).catch(() => {});
   }, []);
 
@@ -51,7 +79,11 @@ export default function AddNewUserPage() {
               email: u.email || "",
               role: u.role_id || "",
               isActive: u.is_active !== undefined ? u.is_active : true,
+              driver_id: u.driver_id || "",
             });
+            if (u.driver_id) {
+              setSelectedDriverId(u.driver_id);
+            }
           }
           setIsLoadingUser(false);
         })
@@ -84,6 +116,7 @@ export default function AddNewUserPage() {
             email: data.email,
             role_id: data.role,
             is_active: data.isActive,
+            driver_id: data.driver_id,
           };
           await usersApi.update(userIdParam, payload);
         } else {
@@ -93,6 +126,7 @@ export default function AddNewUserPage() {
             email: data.email,
             role_id: data.role,
             is_active: data.isActive,
+            driver_id: data.driver_id,
           };
           await usersApi.create(payload);
         }
@@ -159,6 +193,9 @@ export default function AddNewUserPage() {
             mode={mode}
             initialData={initialData}
             roles={filteredRoles}
+            drivers={availableDrivers}
+            selectedDriverId={selectedDriverId}
+            onDriverChange={setSelectedDriverId}
             onSubmit={handleSubmit}
             onCancel={handleCancel}
             onSaveDraft={handleSaveDraft}
