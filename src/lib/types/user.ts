@@ -27,6 +27,7 @@ export interface CreateUserPayload {
   role_id?: string;
   is_active?: boolean;
   phoneNumber?: string;
+  driver_id?: string;
 }
 
 export interface UpdateUserPayload extends Partial<CreateUserPayload> {}

@@ -41,7 +41,14 @@ const defaultRentalColumns: ExportColumn[] = [
   { id: "status", label: "Status", defaultChecked: true },
 ];
 
-const formatDate = (date: Date): string => {
+const formatDateISO = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const formatDateDisplay = (date: Date): string => {
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -83,6 +90,7 @@ export function ModalExport({
 
   const [startDate, setStartDate] = useState<Date>(resetTime(defaultStart));
   const [endDate, setEndDate] = useState<Date>(resetTime(today));
+  const [dateRangeSelected, setDateRangeSelected] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [lastViewedMonth, setLastViewedMonth] = useState<Date>(
     resetTime(today),
@@ -96,8 +104,14 @@ export function ModalExport({
   useEffect(() => {
     if (isOpen) {
       setLastViewedMonth(resetTime(endDate));
+      setDateRangeSelected(false);
+      setSelectedColumns(
+        defaultSelectedColumns
+          ? defaultSelectedColumns
+          : columns.filter((col) => col.defaultChecked).map((col) => col.id),
+      );
     }
-  }, [isOpen, endDate]);
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -131,12 +145,16 @@ export function ModalExport({
   const handleExport = () => {
     onExport({
       type: exportType,
-      columns: exportType === "all" ? columns.map((c) => c.id) : selectedColumns,
+      columns:
+        exportType === "all" ? columns.map((c) => c.id) : selectedColumns,
       format: selectedFormat,
-      dateRange: {
-        start: formatDate(startDate),
-        end: formatDate(endDate),
-      },
+      dateRange:
+        exportType === "filtered" && dateRangeSelected
+          ? {
+              start: formatDateISO(startDate),
+              end: formatDateISO(endDate),
+            }
+          : undefined,
     });
     onClose();
   };
@@ -195,6 +213,7 @@ export function ModalExport({
         setTimeout(() => {
           setStartDate(tempStartDate);
           setEndDate(date);
+          setDateRangeSelected(true);
           setLastViewedMonth(date);
           closeCalendar();
         }, 150);
@@ -269,12 +288,12 @@ export function ModalExport({
         <div className="mb-3 p-2 bg-slate-50 dark:bg-slate-700/30 rounded-lg text-center">
           {tempStartDate && !tempEndDate && (
             <span className="text-sm text-slate-600 dark:text-slate-300">
-              Start: {formatDate(tempStartDate)} - Select end date
+              Start: {formatDateDisplay(tempStartDate)} - Select end date
             </span>
           )}
           {tempStartDate && tempEndDate && (
             <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-              {formatDate(tempStartDate)} → {formatDate(tempEndDate)}
+              {formatDateDisplay(tempStartDate)} → {formatDateDisplay(tempEndDate)}
             </span>
           )}
           {!tempStartDate && (
@@ -409,7 +428,9 @@ export function ModalExport({
                         calendar_today
                       </span>
                       <span>
-                        {formatDate(startDate)} - {formatDate(endDate)}
+                        {dateRangeSelected
+                          ? `${formatDateDisplay(startDate)} - ${formatDateDisplay(endDate)}`
+                          : "All dates"}
                       </span>
                     </div>
                     <span className="material-symbols-outlined text-slate-400">

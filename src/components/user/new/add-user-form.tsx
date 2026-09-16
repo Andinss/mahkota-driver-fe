@@ -20,11 +20,19 @@ export interface UserFormData {
   role: string;
   isActive: boolean;
   phoneNumber?: string;
+  driver_id?: string;
 }
 
 interface Option {
   id: string;
   name: string;
+}
+
+interface DriverOption {
+  id: string;
+  name: string;
+  employeeId: string;
+  email: string;
 }
 
 interface AddUserFormProps {
@@ -35,6 +43,9 @@ interface AddUserFormProps {
   onSaveDraft?: () => void;
   isSubmitting?: boolean;
   roles?: Option[];
+  drivers?: DriverOption[];
+  selectedDriverId?: string;
+  onDriverChange?: (driverId: string) => void;
 }
 
 interface FormErrors {
@@ -53,6 +64,9 @@ export function AddUserForm({
   onSaveDraft,
   isSubmitting = false,
   roles = [],
+  drivers = [],
+  selectedDriverId,
+  onDriverChange,
 }: AddUserFormProps) {
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
   const [formValues, setFormValues] = useState({
@@ -63,7 +77,7 @@ export function AddUserForm({
     phoneNumber: initialData?.phoneNumber || "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-
+  const [localDriverId, setLocalDriverId] = useState<string>(selectedDriverId || initialData?.driver_id || "");
 
   useEffect(() => {
     if (initialData) {
@@ -78,7 +92,38 @@ export function AddUserForm({
     }
   }, [initialData]);
 
+  useEffect(() => {
+    if (selectedDriverId !== undefined) {
+      setLocalDriverId(selectedDriverId);
+    }
+  }, [selectedDriverId]);
+
   const isDriver = roles.find(role => role.id === formValues.role)?.name?.toLowerCase() === "driver";
+
+  useEffect(() => {
+    if (isDriver && localDriverId) {
+      const driver = drivers.find((d) => d.id === localDriverId);
+      if (driver) {
+        setFormValues((prev) => ({
+          ...prev,
+          username: driver.employeeId,
+          fullname: driver.name,
+          email: driver.email,
+        }));
+      }
+    }
+  }, [localDriverId, isDriver, drivers]);
+
+  useEffect(() => {
+    if (!isDriver && mode === "add") {
+      setLocalDriverId("");
+    }
+  }, [isDriver, mode]);
+
+  const handleDriverSelect = (driverId: string) => {
+    setLocalDriverId(driverId);
+    onDriverChange?.(driverId);
+  };
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -139,6 +184,7 @@ export function AddUserForm({
       role: formValues.role,
       isActive: isActive,
       phoneNumber: isDriver ? formValues.phoneNumber : undefined,
+      driver_id: isDriver && localDriverId ? localDriverId : undefined,
     };
 
     onSubmit?.(data);
@@ -152,6 +198,7 @@ export function AddUserForm({
       role: formValues.role,
       isActive: isActive,
       phoneNumber: formValues.phoneNumber,
+      driver_id: localDriverId,
     };
 
     // Simpan ke localStorage
@@ -251,6 +298,34 @@ export function AddUserForm({
               </option>
             ))}
           </Select>
+
+          {isDriver && (
+            <div className="space-y-2">
+              <Select
+                id="driver_id"
+                name="driver_id"
+                label="Pilih Driver"
+                required
+                value={localDriverId}
+                onChange={(e) => handleDriverSelect(e.target.value)}
+              >
+                <option value="">Pilih driver yang ingin dibuatkan akun</option>
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.name} ({driver.employeeId})
+                  </option>
+                ))}
+              </Select>
+              {drivers.length === 0 && (
+                <p className="text-xs text-amber-500 italic">
+                  Semua driver sudah memiliki akun
+                </p>
+              )}
+              <p className="text-xs text-slate-500 italic">
+                Data driver akan otomatis mengisi field di bawah
+              </p>
+            </div>
+          )}
 
           {isDriver && (
             <div className="md:col-span-2">
