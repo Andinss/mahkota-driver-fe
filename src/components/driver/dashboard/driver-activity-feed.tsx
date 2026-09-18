@@ -70,7 +70,7 @@ const defaultActivities: ActivityItem[] = [
 
 export function DriverActivityFeed({ activities = defaultActivities }: DriverActivityFeedProps) {
   return (
-    <Card className="p-6" id="riwayat-layanan">
+    <Card className="p-6">
       <div className="flex items-center justify-between pb-4">
         <div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">
