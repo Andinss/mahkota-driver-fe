@@ -112,7 +112,7 @@ export const RoleTableRow = ({ role, onEdit, onDelete }: RoleTableRowProps) => {
             </button>
           }
         >
-          <Link href={`/dashboard/role/new?id=${role.id}`}>
+          <Link href={`/dashboard/roles/new?id=${role.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
           <DropdownMenuItem

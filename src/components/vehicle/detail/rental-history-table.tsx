@@ -105,7 +105,7 @@ export function RentalHistoryTable({ rentals }: RentalHistoryTableProps) {
                       </button>
                     }
                   >
-                    <Link href={`/dashboard/rent/detail/`}>
+                    <Link href={`/dashboard/rentals/detail/`}>
                       <DropdownMenuItem icon="visibility">
                         Details
                       </DropdownMenuItem>

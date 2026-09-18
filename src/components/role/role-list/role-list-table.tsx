@@ -131,7 +131,7 @@ export const RoleTable = ({ roles, onDelete, onExport }: RoleTableProps) => {
                 key={role.id}
                 role={role}
                 onEdit={(r) => {
-                  window.location.href = `/dashboard/role/new?id=${r.id}`;
+                  window.location.href = `/dashboard/roles/new?id=${r.id}`;
                 }}
                 onDelete={onDelete}
               />

@@ -94,7 +94,7 @@ export function PersonalDetailsForm({
 
       {/* Buttons */}
       <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
-        <Link href="/dashboard/driver">
+        <Link href="/dashboard/drivers">
           <button
             type="button"
             className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"

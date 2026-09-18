@@ -79,13 +79,13 @@ export const VehicleTableRow = ({
             </button>
           }
         >
-          <Link href={`/dashboard/vehicle/register?plate=${vehicle.plate}`}>
+          <Link href={`/dashboard/vehicles/register?plate=${vehicle.plate}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
           <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(vehicle)}>
             Delete
           </DropdownMenuItem>
-          <Link href={`/dashboard/vehicle/detail?id=${vehicle.id}`}>
+          <Link href={`/dashboard/vehicles/detail?id=${vehicle.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>
