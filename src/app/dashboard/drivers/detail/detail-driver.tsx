@@ -5,21 +5,21 @@ import { useSearchParams } from "next/navigation";
 import {
   DriverHeader,
   DriverHeaderData,
-} from "@/components/driver/detail/driver-header";
-import { DriverStatsCard } from "@/components/driver/detail/driver-stats-card";
+} from "@/components/drivers/detail/driver-header";
+import { DriverStatsCard } from "@/components/drivers/detail/driver-stats-card";
 import {
   TabNavigation,
   TabValue,
-} from "@/components/driver/detail/tab-navigation";
+} from "@/components/drivers/detail/tab-navigation";
 import {
   VehicleHistoryFilters,
   VehicleHistoryFilters as FilterType,
-} from "@/components/driver/detail/vehicle-history-filters";
-import { VehicleHistoryTable } from "@/components/driver/detail/vehicle-history-table";
-import { VehicleHistoryPagination } from "@/components/driver/detail/vehicle-history-pagination";
-import { VehicleHistory } from "@/components/driver/detail/vehicle-history-table-row";
-import { DriverOverview } from "@/components/driver/detail/overview";
-import { DepositHistoryList } from "@/components/driver/detail/deposit-history-list";
+} from "@/components/drivers/detail/vehicle-history-filters";
+import { VehicleHistoryTable } from "@/components/drivers/detail/vehicle-history-table";
+import { VehicleHistoryPagination } from "@/components/drivers/detail/vehicle-history-pagination";
+import { VehicleHistory } from "@/components/drivers/detail/vehicle-history-table-row";
+import { DriverOverview } from "@/components/drivers/detail/overview";
+import { DepositHistoryList } from "@/components/drivers/detail/deposit-history-list";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { driverApi } from "@/lib/api/driver";
 import { rentalApi } from "@/lib/api/rentals";

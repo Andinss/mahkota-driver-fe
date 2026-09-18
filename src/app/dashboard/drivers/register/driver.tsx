@@ -1,21 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Stepper } from "@/components/driver/register/stepper";
+import { Stepper } from "@/components/drivers/register/stepper";
 import {
   PersonalDetailsForm,
   PersonalDetailsData,
-} from "@/components/driver/register/personal-details-form";
+} from "@/components/drivers/register/personal-details-form";
 import {
   ContactInfoForm,
   ContactInfoData,
-} from "@/components/driver/register/contact-info-form";
+} from "@/components/drivers/register/contact-info-form";
 import {
   DocumentsForm,
   DocumentsData,
   DocumentsUrlData,
-} from "@/components/driver/register/documents-form";
-import { ReviewStep } from "@/components/driver/register/review-step";
+} from "@/components/drivers/register/documents-form";
+import { ReviewStep } from "@/components/drivers/register/review-step";
 import { useSearchParams, useRouter } from "next/navigation";
 import { driverApi } from "@/lib/api/driver";
 import { supervisorApi } from "@/lib/api/supervisor";
