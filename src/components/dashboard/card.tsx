@@ -4,6 +4,7 @@ import { Icon } from "@/components/ui/icon";
 interface StatCardProps {
   title: string;
   value: string;
+  subtitle?: string;
   icon: string;
   iconColor: string;
   trend?: {
@@ -23,7 +24,7 @@ const colorToBg: Record<string, string> = {
   "text-primary": "bg-primary/10 dark:bg-primary/20",
 };
 
-export const StatCard = ({ title, value, icon, iconColor, trend }: StatCardProps) => {
+export const StatCard = ({ title, value, subtitle, icon, iconColor, trend }: StatCardProps) => {
   const bgClass = colorToBg[iconColor] || "bg-slate-100 dark:bg-slate-800";
 
   return (
@@ -35,7 +36,12 @@ export const StatCard = ({ title, value, icon, iconColor, trend }: StatCardProps
           </span>
         </div>
         <div className="min-w-0">
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+            {subtitle && (
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{subtitle}</span>
+            )}
+          </div>
           <p className="text-xs text-slate-400 font-medium truncate">{title}</p>
         </div>
       </div>

@@ -72,7 +72,7 @@ const SearchBar = ({ filters, onFilterChange }: SearchBarProps) => {
             </Select>
           </div>
         </label>
-        <Link href="/dashboard/role" className="mb-0.5">
+        <Link href="/dashboard/roles" className="mb-0.5">
           <Button>Roles and Permission</Button>
         </Link>
       </div>

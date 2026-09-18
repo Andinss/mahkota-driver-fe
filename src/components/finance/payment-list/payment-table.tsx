@@ -75,14 +75,14 @@ export function PaymentTable({
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href="/dashboard/finance/late"
+            href="/dashboard/finances/late"
             className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
           >
             <span className="material-symbols-outlined text-base">warning</span>
             Late Payment
           </Link>
           <Link
-            href="/dashboard/finance/saldo"
+            href="/dashboard/finances/saldo"
             className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm font-medium rounded-xl hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
           >
             <span className="material-symbols-outlined text-base">account_balance_wallet</span>

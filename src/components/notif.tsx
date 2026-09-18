@@ -117,7 +117,7 @@ export const DropdownNotif = () => {
           })
         )}
       </div>
-      <Link href="/dashboard/notification">
+      <Link href="/dashboard/notifications">
         <button className="w-full py-3 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary bg-slate-50 dark:bg-slate-800/30 transition-colors">
           View All Notifications
         </button>

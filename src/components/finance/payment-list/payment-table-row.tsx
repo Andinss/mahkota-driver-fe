@@ -214,7 +214,7 @@ export const PaymentTableRow = ({
             </button>
           }
         >
-          <Link href={`/dashboard/finance/payment?id=${payment.id}`}>
+          <Link href={`/dashboard/finances/payment?id=${payment.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
           <DropdownMenuItem

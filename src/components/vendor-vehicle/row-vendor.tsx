@@ -75,7 +75,7 @@ export const VendorTableRow = ({
             </button>
           }
         >
-          <Link href={`/dashboard/vendor-vehicle/new?id=${vendor.id}`}>
+          <Link href={`/dashboard/vendor-vehicles/new?id=${vendor.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
           <DropdownMenuItem
@@ -85,7 +85,7 @@ export const VendorTableRow = ({
           >
             Delete
           </DropdownMenuItem>
-          <Link href={`/dashboard/vendor-vehicle/detail?id=${vendor.id}`}>
+          <Link href={`/dashboard/vendor-vehicles/detail?id=${vendor.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>

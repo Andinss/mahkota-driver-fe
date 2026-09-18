@@ -107,7 +107,7 @@ export function VehicleHistoryTableRow({ vehicle }: VehicleHistoryTableRowProps)
             </button>
           }
         >
-          <Link href={`/dashboard/vehicle/detail/`}>
+          <Link href={`/dashboard/vehicles/detail/`}>
             <DropdownMenuItem icon="visibility">
               View Details
             </DropdownMenuItem>

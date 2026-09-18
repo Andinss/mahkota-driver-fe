@@ -79,7 +79,7 @@ export function DriverTableRow({
             </button>
           }
         >
-          <Link href={`/dashboard/driver/register?id=${driver.id}`}>
+          <Link href={`/dashboard/drivers/register?id=${driver.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
           <DropdownMenuItem
@@ -89,7 +89,7 @@ export function DriverTableRow({
           >
             Delete
           </DropdownMenuItem>
-          <Link href={`/dashboard/driver/detail?id=${driver.id}`}>
+          <Link href={`/dashboard/drivers/detail?id=${driver.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>

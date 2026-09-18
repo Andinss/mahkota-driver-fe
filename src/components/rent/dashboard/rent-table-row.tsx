@@ -127,7 +127,7 @@ export const RentalTableRow = ({
             </button>
           }
         >
-          <Link href={`/dashboard/rent/new?id=${rental.id}`}>
+          <Link href={`/dashboard/rentals/new?id=${rental.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
           <DropdownMenuItem
@@ -137,7 +137,7 @@ export const RentalTableRow = ({
           >
             Delete
           </DropdownMenuItem>
-          <Link href={`/dashboard/rent/detail/?id=${rental.id}`}>
+          <Link href={`/dashboard/rentals/detail/?id=${rental.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>

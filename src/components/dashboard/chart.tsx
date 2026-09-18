@@ -178,28 +178,28 @@ export const ChartCard = ({ financeByMethod = [], rentalByMethod = [] }: ChartCa
               title="Finance Entry"
               description="Record payment"
               variant="primary"
-              onClick={() => router.push("/dashboard/finance/payment")}
+              onClick={() => router.push("/dashboard/finances/payment")}
             />
             <QuickAction
               icon="add_car"
               title="New Rental"
               description="Create rental contract"
               variant="amber"
-              onClick={() => router.push("/dashboard/rent/new")}
+              onClick={() => router.push("/dashboard/rentals/new")}
             />
             <QuickAction
               icon="person_add"
               title="Add Driver"
               description="Register new driver"
               variant="indigo"
-              onClick={() => router.push("/dashboard/driver/register")}
+              onClick={() => router.push("/dashboard/drivers/register")}
             />
             <QuickAction
               icon="local_taxi"
               title="Add Vehicle"
               description="Register new vehicle"
               variant="slate"
-              onClick={() => router.push("/dashboard/vehicle/register")}
+              onClick={() => router.push("/dashboard/vehicles/register")}
             />
           </div>
         </Card>

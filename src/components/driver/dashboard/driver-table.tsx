@@ -40,7 +40,7 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
       toastShownRef.current = true;
       const action = success === "updated" ? "Update" : "Registration";
       toastSuccess(`Driver ${decodeURIComponent(driver)} has been ${success} successfully.`);
-      window.history.replaceState({}, "", "/dashboard/driver");
+      window.history.replaceState({}, "", "/dashboard/drivers");
     }
   }, [searchParams]);
 

@@ -34,25 +34,25 @@ const menuStructure: SidebarItem[] = [
     icon: "directions_car",
     children: [
       {
-        path: "/dashboard/driver",
+        path: "/dashboard/drivers",
         label: "Drivers",
         icon: "badge",
         permission: "driver.read.all",
       },
       {
-        path: "/dashboard/vehicle",
+        path: "/dashboard/vehicles",
         label: "Vehicles",
         icon: "car_repair",
         permission: "vehicle.read",
       },
       {
-        path: "/dashboard/monitoring",
+        path: "/dashboard/monitorings",
         label: "Monitoring",
         icon: "monitoring",
         permission: "monitoring.read",
       },
       {
-        path: "/dashboard/vendor-vehicle",
+        path: "/dashboard/vendor-vehicles",
         label: "Vendor Vehicles",
         icon: "storefront",
         permission: "vendor.read",
@@ -65,13 +65,13 @@ const menuStructure: SidebarItem[] = [
     icon: "receipt_long",
     children: [
       {
-        path: "/dashboard/rent",
+        path: "/dashboard/rentals",
         label: "Rentals",
         icon: "contract",
         permission: "rental.read",
       },
       {
-        path: "/dashboard/finance",
+        path: "/dashboard/finances",
         label: "Finance",
         icon: "account_balance",
         permission: "finance.read",
@@ -90,7 +90,7 @@ const menuStructure: SidebarItem[] = [
         permission: "user.read",
       },
       {
-        path: "/dashboard/role",
+        path: "/dashboard/roles",
         label: "Roles",
         icon: "shield",
         permission: "role.read",
