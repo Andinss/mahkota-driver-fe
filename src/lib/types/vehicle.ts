@@ -27,6 +27,7 @@ export interface VehicleSummary {
   available: number;
   maintenance: number;
   service: number;
+  reserved: number;
   retrieved: number;
   status_breakdown: Record<string, number>;
 }

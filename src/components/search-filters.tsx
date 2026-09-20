@@ -16,9 +16,12 @@ export const SearchFilters = () => {
             defaultValue=""
           >
             <option value="">All Statuses</option>
-            <option value="available">Available</option>
+            <option value="Available">Available</option>
             <option value="rented">Rented</option>
-            <option value="maintenance">Maintenance</option>
+            <option value="Reserved">Reserved</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Service">Service</option>
+            <option value="retrieved">Retrieved</option>
           </Select>
           <Select
             id="filter-type"

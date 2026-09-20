@@ -86,9 +86,10 @@ const LoginPage = () => {
     setIsSubmitting(true);
 
     try {
-      await login(formValues.email.trim(), formValues.password, turnstileToken);
+      const userData = await login(formValues.email.trim(), formValues.password, turnstileToken);
       toastSuccess("Welcome back! You are being redirected to the dashboard.");
-      setTimeout(() => router.push("/dashboard"), 500);
+      const isDriver = userData?.role?.code === "DRIVER";
+      setTimeout(() => router.push(isDriver ? "/dashboard/driver" : "/dashboard"), 500);
     } catch (error) {
       turnstileRef.current?.reset();
       setTurnstileToken("");

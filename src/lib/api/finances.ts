@@ -22,6 +22,18 @@ export const financeApi = {
       params as Record<string, string | number | undefined>,
     ),
 
+  getMyFinances: (params?: Record<string, string | number | undefined>) =>
+    api.get<SuccessResponsePaginated<FinanceItem>>(
+      "/finances/my-finances",
+      params,
+    ),
+
+  createMyPayment: (financeId: string, payload: CreateFinancePaymentPayload) =>
+    api.post<SuccessResponse<FinanceItem>>(
+      `/finances/my-finances/${financeId}/payments`,
+      payload,
+    ),
+
   getSummary: () =>
     api.get<SuccessResponse<FinanceSummary>>("/finances/summary"),
 

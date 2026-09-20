@@ -14,8 +14,12 @@ interface RoleTableRowProps {
   onDelete?: (role: Role) => void;
 }
 
-const MODULES = ["driver", "vehicle", "monitoring", "vendor", "rental", "finance", "late_payment", "saldo", "user", "role", "permission", "setting", "audit"];
+const MODULES = ["driver", "vehicle", "monitoring", "vendor", "rental", "finance", "late_payment", "saldo", "driver_portal", "user", "role", "permission", "setting", "audit"];
 const ALL_ACTIONS = ["create", "read", "update", "delete"];
+
+const FULL_ACCESS_MODULES: Record<string, string[]> = {
+  driver_portal: ["dashboard", "payment", "profile"],
+};
 
 function formatAction(action: string): string {
   const parts = action.split(".");
@@ -45,14 +49,17 @@ function formatAction(action: string): string {
   return label;
 }
 
-function PermissionCell({ actions }: { actions: string[] }) {
+function PermissionCell({ actions, module }: { actions: string[]; module: string }) {
   const baseActions = actions.map((a) => a.split(".")[0]);
   const hasAll = actions.length > 0 && ALL_ACTIONS.every((a) => baseActions.includes(a));
   const hasRead = actions.length === 1 && baseActions[0] === "read";
 
-  if (hasAll) {
+  const fullAccessList = FULL_ACCESS_MODULES[module];
+  const hasFullAccess = fullAccessList && fullAccessList.length > 0 && fullAccessList.every((a) => actions.includes(a));
+
+  if (hasAll || hasFullAccess) {
     return (
-      <span className="inline-block px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-bold uppercase tracking-tight">
+      <span className="inline-block px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-bold uppercase tracking-tight whitespace-nowrap">
         FULL ACCESS
       </span>
     );
@@ -60,7 +67,7 @@ function PermissionCell({ actions }: { actions: string[] }) {
 
   if (hasRead) {
     return (
-      <span className="inline-block px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-tight">
+      <span className="inline-block px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-tight whitespace-nowrap">
         READ ONLY
       </span>
     );
@@ -68,7 +75,7 @@ function PermissionCell({ actions }: { actions: string[] }) {
 
   if (actions.length === 0) {
     return (
-      <span className="inline-block px-2 py-1 rounded bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600 text-[10px] font-bold uppercase tracking-tight">
+      <span className="inline-block px-2 py-1 rounded bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-600 text-[10px] font-bold uppercase tracking-tight whitespace-nowrap">
         NO ACCESS
       </span>
     );
@@ -99,7 +106,7 @@ export const RoleTableRow = ({ role, onEdit, onDelete }: RoleTableRowProps) => {
       </td>
       {MODULES.map((module) => (
         <td key={module} className="px-2 py-5 text-center">
-          <PermissionCell actions={role.permissionsByModule[module] || []} />
+          <PermissionCell actions={role.permissionsByModule[module] || []} module={module} />
         </td>
       ))}
       <td className="px-6 py-5 text-right">

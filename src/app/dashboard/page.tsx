@@ -10,6 +10,7 @@ import { rentalApi } from "@/lib/api/rentals";
 import { vehicleApi } from "@/lib/api/vehicle";
 import { driverApi } from "@/lib/api/driver";
 import { usersApi } from "@/lib/api/users";
+import { useAuth } from "@/lib/auth-context";
 import type { MonthlyFinanceItem } from "@/lib/types/finances";
 import {
   Chart as ChartJS,
@@ -29,6 +30,7 @@ const formatCurrency = (v: number) =>
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { user, isLoading } = useAuth();
   const [financeAmount, setFinanceAmount] = useState(0);
   const [monthlyData, setMonthlyData] = useState<MonthlyFinanceItem[]>([]);
   const [totalVehicles, setTotalVehicles] = useState(0);
@@ -36,6 +38,20 @@ export default function DashboardPage() {
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalRentals, setTotalRentals] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isLoading && user?.role?.code === "DRIVER") {
+      router.replace("/dashboard/driver");
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || user?.role?.code === "DRIVER") {
+    return (
+      <div className="p-7 flex items-center justify-center min-h-[400px]">
+        <p className="text-slate-500 dark:text-slate-400">Loading dashboard...</p>
+      </div>
+    );
+  }
 
   const fetchAll = useCallback(async () => {
     setLoading(true);

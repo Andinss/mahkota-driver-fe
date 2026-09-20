@@ -1,10 +1,52 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/page-header";
 import { PaymentCard } from "@/components/finance/payment-list/card";
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/lib/auth-context";
+import { driverApi } from "@/lib/api/driver";
+import type { DriverItem } from "@/lib/types/driver";
+
+const formatIDR = (value: number) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
 
 export default function ProfilDriver() {
+  const { user } = useAuth();
+  const [driver, setDriver] = useState<DriverItem | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.driver_id) {
+      setIsLoading(false);
+      return;
+    }
+    driverApi
+      .getMe()
+      .then((res: any) => {
+        const data = res?.data ?? res;
+        setDriver(data);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch driver profile:", err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [user?.driver_id]);
+
+  const fullName = driver
+    ? `${driver.first_name} ${driver.last_name}`.trim()
+    : user?.username || "-";
+  const employeeId = driver?.employee_id || "-";
+  const saldo = driver?.saldo?.balance ?? 0;
+  const activeRentals = driver?.rentals?.length ?? 0;
+
   return (
     <div className="m-8">
       <div className="flex-1 overflow-y-auto">
@@ -28,35 +70,35 @@ export default function ProfilDriver() {
             />
             <PaymentCard
               title="ID Karyawan"
-              value="-"
+              value={employeeId}
               icon="badge"
               iconColor="text-primary"
               trend={{
-                value: "Belum terdaftar",
-                color: "text-primary",
-                icon: "info",
+                value: employeeId !== "-" ? "Terdaftar" : "Belum terdaftar",
+                color: employeeId !== "-" ? "text-emerald-500" : "text-primary",
+                icon: employeeId !== "-" ? "check_circle" : "info",
               }}
             />
             <PaymentCard
               title="Saldo Koin"
-              value="0 Koin"
+              value={`${saldo.toLocaleString("id-ID")} Koin`}
               icon="toll"
               iconColor="text-blue-500"
               trend={{
-                value: "Belum ada transaksi",
-                color: "text-blue-500",
+                value: saldo > 0 ? "Tersedia" : "Belum ada transaksi",
+                color: saldo > 0 ? "text-blue-500" : "text-blue-500",
                 icon: "account_balance_wallet",
               }}
             />
             <PaymentCard
               title="Unit Operasional"
-              value="Kosong"
+              value={`${activeRentals} Unit`}
               icon="directions_car"
-              iconColor="text-slate-400"
+              iconColor={activeRentals > 0 ? "text-emerald-500" : "text-slate-400"}
               trend={{
-                value: "Belum ada unit terdaftar",
-                color: "text-slate-400",
-                icon: "info",
+                value: activeRentals > 0 ? "Aktif Beroperasi" : "Belum ada unit terdaftar",
+                color: activeRentals > 0 ? "text-emerald-500" : "text-slate-400",
+                icon: activeRentals > 0 ? "check_circle" : "info",
               }}
             />
           </div>
@@ -64,10 +106,18 @@ export default function ProfilDriver() {
           <Card className="p-6">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
-                <span className="material-symbols-outlined text-4xl text-slate-400">person</span>
+                {driver?.profile_photo ? (
+                  <img
+                    src={driver.profile_photo}
+                    alt={fullName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="material-symbols-outlined text-4xl text-slate-400">person</span>
+                )}
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Driver</h2>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">{fullName}</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Profil mitra driver</p>
               </div>
             </div>
@@ -75,29 +125,33 @@ export default function ProfilDriver() {
               <div className="space-y-4">
                 <div>
                   <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium">Nama Lengkap</label>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">-</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">{fullName}</p>
                 </div>
                 <div>
                   <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium">Email</label>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">-</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">{driver?.email || user?.email || "-"}</p>
                 </div>
                 <div>
                   <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium">Telepon</label>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">-</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">{driver?.phone || "-"}</p>
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
                   <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium">Tanggal Lahir</label>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">-</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">
+                    {driver?.date_of_birth
+                      ? new Date(driver.date_of_birth).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+                      : "-"}
+                  </p>
                 </div>
                 <div>
                   <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium">Jenis Kelamin</label>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">-</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">{driver?.gender || "-"}</p>
                 </div>
                 <div>
                   <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium">Kewarganegaraan</label>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">Indonesian (WNI)</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">{driver?.citizenship || "Indonesian (WNI)"}</p>
                 </div>
               </div>
             </div>

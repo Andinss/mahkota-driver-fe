@@ -50,6 +50,7 @@ const MODULE_COLUMNS = [
   { key: "finance", label: "Finance" },
   { key: "late_payment", label: "Late Payment" },
   { key: "saldo", label: "Driver Saldo" },
+  { key: "driver_portal", label: "Driver Portal" },
   { key: "user", label: "Users" },
   { key: "role", label: "Roles" },
   { key: "permission", label: "Permissions" },

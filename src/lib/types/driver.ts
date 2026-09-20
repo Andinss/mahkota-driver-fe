@@ -2,7 +2,9 @@ export interface DriverRentalVehicle {
   merk: string;
   model: string;
   license_plate: string;
+  color?: string;
   pricing_category?: "Reguler" | "Premium";
+  vehicle_photo?: string[];
 }
 
 export interface DriverRentalItem {
