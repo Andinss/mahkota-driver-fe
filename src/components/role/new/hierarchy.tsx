@@ -30,6 +30,7 @@ const moduleLabels: Record<string, string> = {
   late_payment: "Late Payment",
   monitoring: "Monitoring",
   saldo: "Saldo",
+  driver_portal: "Driver Portal",
   setting: "Setting",
   audit: "Audit Log",
 };

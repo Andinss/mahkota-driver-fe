@@ -11,7 +11,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string, turnstileToken?: string) => Promise<void>;
+  login: (email: string, password: string, turnstileToken?: string) => Promise<User | null>;
   logout: () => void;
 }
 
@@ -94,15 +94,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [startIdleTimer, clearIdleTimer, resetIdleTimer]);
 
-  const login = useCallback(async (email: string, password: string, turnstileToken?: string) => {
+  const login = useCallback(async (email: string, password: string, turnstileToken?: string): Promise<User | null> => {
     const result = await authApi.login({ email, password, turnstile_token: turnstileToken });
     const raw = result.user as any;
     const permissions = raw.permissions?.length
       ? raw.permissions
       : raw.role?.permissions?.map((p: any) => p.name) || [];
-    setUser({ ...result.user, permissions } as User);
+    const userData = { ...result.user, permissions } as User;
+    setUser(userData);
     isAuthenticatedRef.current = true;
     startIdleTimer();
+    return userData;
   }, [startIdleTimer]);
 
   const logout = useCallback(() => {

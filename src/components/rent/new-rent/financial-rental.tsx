@@ -31,8 +31,11 @@ interface FinancialRentalProps {
   duration?: number;
 }
 
-const parseCurrency = (val: string) =>
-  val ? parseInt(val.replace(/\./g, ""), 10) : 0;
+const parseCurrency = (val: string) => {
+  if (!val) return 0;
+  const num = parseFloat(val.replace(/[^0-9.]/g, ""));
+  return isNaN(num) ? 0 : Math.round(num);
+};
 
 const FinancialRental = ({
   onDataChange,
@@ -51,6 +54,13 @@ const FinancialRental = ({
   const [rentalService, setRentalService] = useState<string>(
     initialData?.rentalService || ""
   );
+
+  useEffect(() => {
+    const newRate = initialData?.dailyRate ? initialData.dailyRate.toString() : "";
+    if (newRate !== dailyRate) {
+      setDailyRate(newRate);
+    }
+  }, [initialData?.dailyRate]);
 
   const totalAmount = useMemo(() => {
     const rate = dailyRate ? parseCurrency(dailyRate) : 0;

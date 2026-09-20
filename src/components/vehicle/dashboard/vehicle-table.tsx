@@ -23,7 +23,7 @@ interface Vehicle {
   type: string;
   rate: string;
   pricingCategory: string;
-  status: "available" | "rented" | "maintenance";
+  status: string;
   image: string;
   imageAlt: string;
   vendorName: string;

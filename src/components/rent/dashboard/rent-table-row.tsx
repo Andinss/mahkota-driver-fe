@@ -88,12 +88,12 @@ export const RentalTableRow = ({
           {rental.rentalPeriod.duration} Hari
         </p>
       </td>
-      <td className="px-6 py-4">
+      <td className="px-6 py-4 whitespace-nowrap">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 capitalize">
           {rental.rentalDuration || "-"}
         </span>
       </td>
-      <td className="px-6 py-4">
+      <td className="px-6 py-4 whitespace-nowrap">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 capitalize">
           {rental.rentalService || "-"}
         </span>

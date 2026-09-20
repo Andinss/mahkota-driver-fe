@@ -115,7 +115,7 @@ const NewRentPage = () => {
           .map((v: VehicleItem) => ({
             label: `${v.license_plate} - ${v.merk} ${v.model}`,
             value: v.id,
-            dailyRate: v.daily_rate,
+            dailyRate: Number(v.daily_rate) || 0,
           })),
       );
     }).catch(() => {});

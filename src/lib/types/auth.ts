@@ -19,6 +19,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  driver_id?: string | null;
   role?: RoleInfo | null;
   permissions?: string[];
 }

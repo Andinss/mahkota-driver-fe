@@ -14,6 +14,9 @@ function triggerDownload(blob: Blob, filename: string) {
 }
 
 export const driverApi = {
+  getMe: () =>
+    api.get<SuccessResponse<DriverItem>>("/drivers/me"),
+
   getList: (params?: DriverListParams) =>
     api.get<SuccessResponsePaginated<DriverItem>>(
       "/drivers",

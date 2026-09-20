@@ -10,12 +10,10 @@ import { PageHeader } from "@/components/page-header";
 import { Pagination } from "@/components/ui/pagination";
 import { ExportOptions } from "@/components/ui/export";
 import { vehicleApi } from "@/lib/api/vehicle";
-import type { VehicleItem, VehicleSummary } from "@/lib/types/vehicle";
+import type { VehicleItem, VehicleSummary, VehicleStatus } from "@/lib/types/vehicle";
 import { useAuth } from "@/lib/auth-context";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { canAccess } from "@/lib/can-access";
-
-type VehicleStatus = "available" | "rented" | "maintenance";
 
 interface VehicleDisplay {
   id?: string;
@@ -79,14 +77,6 @@ export default function DashboardVehiclePage() {
             : `${imageBase}/${photoUrl.replace(/^\//, "")}`
           : "";
         const year = item.launching_year ? new Date(item.launching_year).getFullYear() : 0;
-        const statusMap: Record<string, VehicleStatus> = {
-          Available: "available",
-          Maintenance: "maintenance",
-          Service: "rented",
-          Reserved: "available",
-          rented: "rented",
-          retrieved: "maintenance",
-        };
         return {
           id: item.id,
           name,
@@ -96,7 +86,7 @@ export default function DashboardVehiclePage() {
           type: "Sedan",
           rate: `Rp ${Number(item.daily_rate || 0).toLocaleString("id-ID")}`,
           pricingCategory: item.pricing_category || "Reguler",
-          status: statusMap[item.status] || "available",
+          status: item.status || "Available",
           image,
           imageAlt: `${name} side view`,
           vendorName: item.vendor?.name || "-",
@@ -189,16 +179,16 @@ export default function DashboardVehiclePage() {
           buttonText={canAccess(user?.permissions, "vehicle.create") ? "Add New Vehicle" : undefined}
           buttonHref={canAccess(user?.permissions, "vehicle.create") ? "/dashboard/vehicles/register" : undefined}
         />
-        <section className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <section className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <VehicleStatsCard
             title="Total Vehicles"
             value={(summary?.total_vehicles ?? 0).toString()}
             icon="local_taxi"
             iconColor="text-primary"
             trend={{
-              value: `Rented: ${summary?.rented ?? 0} | Available: ${summary?.available ?? 0}`,
-              color: "text-green-600",
-              icon: "trending_up",
+              value: `Fleet overview`,
+              color: "text-slate-500",
+              icon: "info",
             }}
           />
           <VehicleStatsCard
@@ -208,7 +198,7 @@ export default function DashboardVehiclePage() {
             iconColor="text-blue-500"
             trend={{
               value: `${((summary?.rented ?? 0) / (summary?.total_vehicles || 1) * 100).toFixed(0)}% of fleet`,
-              color: "text-green-600",
+              color: "text-blue-500",
               icon: "trending_up",
             }}
           />
@@ -219,8 +209,19 @@ export default function DashboardVehiclePage() {
             iconColor="text-green-500"
             trend={{
               value: `${((summary?.available ?? 0) / (summary?.total_vehicles || 1) * 100).toFixed(0)}% of fleet`,
-              color: "text-red-600",
-              icon: "trending_down",
+              color: "text-green-500",
+              icon: "trending_up",
+            }}
+          />
+          <VehicleStatsCard
+            title="Reserved"
+            value={((summary as any)?.reserved ?? (summary?.status_breakdown as any)?.Reserved ?? 0).toString()}
+            icon="bookmark"
+            iconColor="text-purple-500"
+            trend={{
+              value: "Booked units",
+              color: "text-purple-500",
+              icon: "event",
             }}
           />
           <VehicleStatsCard
@@ -230,19 +231,8 @@ export default function DashboardVehiclePage() {
             iconColor="text-orange-500"
             trend={{
               value: `Service: ${summary?.service ?? 0}`,
-              color: "text-gray-500",
-              icon: "equal",
-            }}
-          />
-          <VehicleStatsCard
-            title="Retrieved"
-            value={(summary?.retrieved ?? 0).toString()}
-            icon="assignment_return"
-            iconColor="text-purple-500"
-            trend={{
-              value: "Pending inspection",
-              color: "text-green-600",
-              icon: "history",
+              color: "text-orange-500",
+              icon: "build",
             }}
           />
         </section>
