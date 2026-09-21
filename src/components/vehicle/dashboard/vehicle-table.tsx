@@ -7,6 +7,7 @@ const vehicleColumns: ExportColumn[] = [
   { id: "year", label: "Year", defaultChecked: true },
   { id: "licensePlate", label: "License Plate", defaultChecked: true },
   { id: "vendor", label: "Vendor", defaultChecked: true },
+  { id: "device", label: "Device", defaultChecked: true },
   { id: "dailyRate", label: "Daily Rate", defaultChecked: true },
   { id: "pricingCategory", label: "Pricing Category", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
@@ -23,6 +24,7 @@ interface Vehicle {
   image: string;
   imageAlt: string;
   vendorName: string;
+  deviceName: string;
 }
 
 interface VehicleTableProps {
@@ -70,6 +72,7 @@ export const VehicleTable = ({
               <th className="px-6 py-4 whitespace-nowrap">Kendaraan</th>
               <th className="px-6 py-4 whitespace-nowrap">Plat</th>
               <th className="px-6 py-4 whitespace-nowrap">Vendor</th>
+              <th className="px-6 py-4 whitespace-nowrap">Device</th>
               <th className="px-6 py-4 whitespace-nowrap">Kategori</th>
               <th className="px-6 py-4 whitespace-nowrap">Tarif/Hari</th>
               <th className="px-6 py-4 whitespace-nowrap">Status</th>
