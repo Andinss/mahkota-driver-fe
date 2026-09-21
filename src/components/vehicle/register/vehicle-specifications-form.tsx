@@ -15,6 +15,7 @@ export interface VehicleFormData {
   engineNumber: string;
   dailyRate: string;
   pricingCategory: string;
+  deviceName: string;
 }
 
 type FormMode = "add" | "edit";
@@ -29,6 +30,7 @@ interface FormErrors {
   engineNumber?: string;
   dailyRate?: string;
   pricingCategory?: string;
+  deviceName?: string;
 }
 
 interface VehicleSpecificationsFormProps {
@@ -36,6 +38,19 @@ interface VehicleSpecificationsFormProps {
   initialValues?: Partial<VehicleFormData>;
   onSubmit?: (data: VehicleFormData) => void;
 }
+
+const deviceNameOptions = [
+  "GPS-001",
+  "GPS-002",
+  "GPS-003",
+  "GPS-004",
+  "GPS-005",
+  "GPS-006",
+  "GPS-007",
+  "GPS-008",
+  "GPS-009",
+  "GPS-010",
+];
 
 export function VehicleSpecificationsForm({
   mode = "add",
@@ -69,6 +84,7 @@ export function VehicleSpecificationsForm({
     const engineNumber = formData.get("engineNumber") as string;
     const dailyRate = formData.get("dailyRate") as string;
     const pricingCategory = formData.get("pricingCategory") as string;
+    const deviceName = formData.get("deviceName") as string;
 
     if (!make?.trim()) {
       newErrors.make = "Make is required";
@@ -134,6 +150,11 @@ export function VehicleSpecificationsForm({
       newErrors.pricingCategory = "Pricing category is required";
     }
 
+    // Validasi Device Name
+    if (!deviceName?.trim()) {
+      newErrors.deviceName = "Device name is required";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -156,6 +177,7 @@ export function VehicleSpecificationsForm({
       engineNumber: formData.get("engineNumber") as string,
       dailyRate: formData.get("dailyRate") as string,
       pricingCategory: formData.get("pricingCategory") as string,
+      deviceName: formData.get("deviceName") as string,
     };
     onSubmit?.(data);
   };
@@ -296,6 +318,37 @@ export function VehicleSpecificationsForm({
           </div>
           {errors.pricingCategory && (
             <p className="text-xs text-red-500">{errors.pricingCategory}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label
+            className="text-sm font-medium text-[#111418] dark:text-white"
+            htmlFor="deviceName"
+          >
+            Device Name <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <Select
+              id="deviceName"
+              name="deviceName"
+              defaultValue={initialValues?.deviceName}
+              required
+              className="appearance-none pr-10 w-full"
+            >
+              <option value="">Select device...</option>
+              {deviceNameOptions.map((device) => (
+                <option key={device} value={device}>
+                  {device}
+                </option>
+              ))}
+            </Select>
+            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#617589] dark:text-slate-400">
+              expand_more
+            </span>
+          </div>
+          {errors.deviceName && (
+            <p className="text-xs text-red-500">{errors.deviceName}</p>
           )}
         </div>
       </form>
