@@ -89,12 +89,18 @@ export const RentalTableRow = ({
         </p>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 capitalize">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 capitalize">
           {rental.rentalDuration || "-"}
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 capitalize">
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold capitalize ${
+          rental.rentalService === "lepas kunci"
+            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+            : rental.rentalService === "pakai supir"
+            ? "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
+            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+        }`}>
           {rental.rentalService || "-"}
         </span>
       </td>
