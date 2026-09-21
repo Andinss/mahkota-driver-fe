@@ -54,4 +54,6 @@ export interface RentalListParams {
   page?: number;
   limit?: number;
   search?: string;
+  rental_duration?: string;
+  rental_service?: string;
 }

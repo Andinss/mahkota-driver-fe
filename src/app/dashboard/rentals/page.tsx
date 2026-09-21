@@ -102,6 +102,10 @@ export default function RentalManagementPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [summary, setSummary] = useState<RentalSummary | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [searchValue, setSearchValue] = useState("");
+  const [rentalDuration, setRentalDuration] = useState("");
+  const [rentalService, setRentalService] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const toastShownRef = useRef(false);
 
@@ -141,6 +145,9 @@ export default function RentalManagementPage() {
       const res = await rentalApi.getList({
         page: currentPage,
         limit: itemsPerPage,
+        search: debouncedSearch || undefined,
+        rental_duration: rentalDuration || undefined,
+        rental_service: rentalService || undefined,
       });
       const items = Array.isArray(res.data) ? res.data : [];
       const mapped = items.map(mapToDisplay);
@@ -159,7 +166,7 @@ export default function RentalManagementPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, itemsPerPage, user]);
+  }, [currentPage, itemsPerPage, user, debouncedSearch, rentalDuration, rentalService]);
 
   useEffect(() => {
     fetchRentals();
@@ -168,6 +175,14 @@ export default function RentalManagementPage() {
   useEffect(() => {
     fetchSummary();
   }, [fetchSummary]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchValue);
+      setCurrentPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchValue]);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -235,10 +250,10 @@ export default function RentalManagementPage() {
           />
 
           <RentalCard
-            title="Rata-Rata"
+            title="Rata-Rata Harian"
             value={
               summary
-                ? `Rp ${Math.round(summary.avg_daily_rate).toLocaleString("id-ID")}/day`
+                ? `Rp ${Math.round(summary.avg_daily_rate).toLocaleString("id-ID")}`
                 : "-"
             }
             icon="payments"
@@ -281,7 +296,20 @@ export default function RentalManagementPage() {
           />
         </div>
 
-        <FiltersSearch />
+        <FiltersSearch
+          searchValue={searchValue}
+          rentalDuration={rentalDuration}
+          rentalService={rentalService}
+          onSearchChange={(v) => setSearchValue(v)}
+          onRentalDurationChange={(v) => {
+            setRentalDuration(v);
+            setCurrentPage(1);
+          }}
+          onRentalServiceChange={(v) => {
+            setRentalService(v);
+            setCurrentPage(1);
+          }}
+        />
 
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
           {isLoading ? (
