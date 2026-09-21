@@ -6,9 +6,7 @@ interface Vehicle {
   id?: string;
   name: string;
   year: number;
-  transmission: string;
   plate: string;
-  type: string;
   rate: string;
   pricingCategory: string;
   status: string;
@@ -43,9 +41,7 @@ export const VehicleTableRow = ({
             <p className="text-sm font-bold text-slate-900 dark:text-white">
               {vehicle.name}
             </p>
-            <p className="text-xs text-slate-400">
-              {vehicle.year} • {vehicle.transmission}
-            </p>
+            <p className="text-xs text-slate-400">{vehicle.year}</p>
           </div>
         </div>
       </td>
@@ -53,9 +49,6 @@ export const VehicleTableRow = ({
         <span className="font-mono text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
           {vehicle.plate}
         </span>
-      </td>
-      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
-        {vehicle.type}
       </td>
       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
         {vehicle.vendorName || "-"}
