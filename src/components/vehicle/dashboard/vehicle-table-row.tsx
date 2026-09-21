@@ -13,6 +13,7 @@ interface Vehicle {
   image: string;
   imageAlt: string;
   vendorName: string;
+  deviceName: string;
 }
 
 interface VehicleTableRowProps {
@@ -46,12 +47,15 @@ export const VehicleTableRow = ({
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className="font-mono text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+        <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 px-2 py-1 rounded">
           {vehicle.plate}
         </span>
       </td>
       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
         {vehicle.vendorName || "-"}
+      </td>
+      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
+        {vehicle.deviceName || "-"}
       </td>
       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
         {vehicle.pricingCategory}
