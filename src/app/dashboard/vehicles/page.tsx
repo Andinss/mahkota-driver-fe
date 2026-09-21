@@ -19,9 +19,7 @@ interface VehicleDisplay {
   id?: string;
   name: string;
   year: number;
-  transmission: string;
   plate: string;
-  type: string;
   rate: string;
   pricingCategory: string;
   status: VehicleStatus;
@@ -81,9 +79,7 @@ export default function DashboardVehiclePage() {
           id: item.id,
           name,
           year,
-          transmission: "Automatic",
           plate: item.license_plate,
-          type: "Sedan",
           rate: `Rp ${Number(item.daily_rate || 0).toLocaleString("id-ID")}`,
           pricingCategory: item.pricing_category || "Reguler",
           status: item.status || "Available",

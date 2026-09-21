@@ -3,24 +3,20 @@ import { VehicleTableRow } from "./vehicle-table-row";
 import { ExportColumn, ModalExport } from "@/components/ui/export";
 
 const vehicleColumns: ExportColumn[] = [
-  { id: "name", label: "Car Name", defaultChecked: true},
-  { id: "year", label: "Year", defaultChecked: true},
-  { id: "transmission", label: "Transmission", defaultChecked: true},
-  { id: "licensePlate", label: "License Plate", defaultChecked: true},
-  { id: "type", label: "Type", defaultChecked: true},
-  { id: "vendor", label: "Vendor", defaultChecked: true},
-  { id: "dailyRate", label: "Daily Rate", defaultChecked: true},
-  { id: "pricingCategory", label: "Pricing Category", defaultChecked: true},
-  { id: "status", label: "Status", defaultChecked: true},
+  { id: "name", label: "Car Name", defaultChecked: true },
+  { id: "year", label: "Year", defaultChecked: true },
+  { id: "licensePlate", label: "License Plate", defaultChecked: true },
+  { id: "vendor", label: "Vendor", defaultChecked: true },
+  { id: "dailyRate", label: "Daily Rate", defaultChecked: true },
+  { id: "pricingCategory", label: "Pricing Category", defaultChecked: true },
+  { id: "status", label: "Status", defaultChecked: true },
 ];
 
 interface Vehicle {
   id?: string;
   name: string;
   year: number;
-  transmission: string;
   plate: string;
-  type: string;
   rate: string;
   pricingCategory: string;
   status: string;
@@ -73,7 +69,6 @@ export const VehicleTable = ({
             <tr>
               <th className="px-6 py-4 whitespace-nowrap">Kendaraan</th>
               <th className="px-6 py-4 whitespace-nowrap">Plat</th>
-              <th className="px-6 py-4 whitespace-nowrap">Tipe</th>
               <th className="px-6 py-4 whitespace-nowrap">Vendor</th>
               <th className="px-6 py-4 whitespace-nowrap">Kategori</th>
               <th className="px-6 py-4 whitespace-nowrap">Tarif/Hari</th>
@@ -94,7 +89,7 @@ export const VehicleTable = ({
           </tbody>
         </table>
       </div>
-      <ModalExport 
+      <ModalExport
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         onExport={(options) => {

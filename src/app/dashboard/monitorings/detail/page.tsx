@@ -17,12 +17,10 @@ interface TaskDetail {
   vehicle: {
     name: string;
     year: string;
-    transmission: string;
     plateNumber: string;
     imageUrl: string;
     odometerOut: number;
     fuelLevel: number;
-    type: string;
   };
   location: {
     address: string;
