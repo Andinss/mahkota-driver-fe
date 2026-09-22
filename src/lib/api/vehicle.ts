@@ -24,6 +24,9 @@ export const vehicleApi = {
   update: (id: string, payload: FormData) =>
     api.uploadPut<SuccessResponse<VehicleItem>>(`/vehicles/update/${id}`, payload),
 
+  updateStatus: (id: string, is_active: boolean) =>
+    api.put<SuccessResponse<VehicleItem>>(`/vehicles/status/${id}`,{ is_active },),
+
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/vehicles/delete/${id}`),
 

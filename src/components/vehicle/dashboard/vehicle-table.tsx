@@ -10,7 +10,8 @@ const vehicleColumns: ExportColumn[] = [
   { id: "device", label: "Device", defaultChecked: true },
   { id: "dailyRate", label: "Daily Rate", defaultChecked: true },
   { id: "pricingCategory", label: "Pricing Category", defaultChecked: true },
-  { id: "status", label: "Status", defaultChecked: true },
+  { id: "status", label: "Condition", defaultChecked: true },
+  { id: "is_active", label: "Status", defaultChecked: true },
 ];
 
 interface Vehicle {
@@ -21,6 +22,7 @@ interface Vehicle {
   rate: string;
   pricingCategory: string;
   status: string;
+  isActive?: boolean;
   image: string;
   imageAlt: string;
   vendorName: string;
@@ -31,6 +33,7 @@ interface VehicleTableProps {
   vehicles: Vehicle[];
   onEdit?: (vehicle: Vehicle) => void;
   onDelete?: (vehicle: Vehicle) => void;
+  onToggleStatus?: (vehicle: Vehicle) => void;
   onDetailsVehicle?: (vehicle: Vehicle) => void;
   onExport?: (options?: any) => void;
 }
@@ -39,6 +42,7 @@ export const VehicleTable = ({
   vehicles,
   onEdit,
   onDelete,
+  onToggleStatus,
   onDetailsVehicle,
   onExport,
 }: VehicleTableProps) => {
@@ -75,6 +79,7 @@ export const VehicleTable = ({
               <th className="px-6 py-4 whitespace-nowrap">Device</th>
               <th className="px-6 py-4 whitespace-nowrap">Kategori</th>
               <th className="px-6 py-4 whitespace-nowrap">Tarif/Hari</th>
+              <th className="px-6 py-4 whitespace-nowrap">Condition</th>
               <th className="px-6 py-4 whitespace-nowrap">Status</th>
               <th className="px-6 py-4 text-right whitespace-nowrap">Aksi</th>
             </tr>
@@ -86,6 +91,7 @@ export const VehicleTable = ({
                 vehicle={vehicle}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onToggleStatus={onToggleStatus}
                 onDetails={onDetailsVehicle}
               />
             ))}
