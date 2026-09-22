@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   DriverHeader,
@@ -12,12 +12,9 @@ import {
   TabValue,
 } from "@/components/drivers/detail/tab-navigation";
 import {
-  VehicleHistoryFilters,
-  VehicleHistoryFilters as FilterType,
-} from "@/components/drivers/detail/vehicle-history-filters";
-import { VehicleHistoryTable } from "@/components/drivers/detail/vehicle-history-table";
-import { VehicleHistoryPagination } from "@/components/drivers/detail/vehicle-history-pagination";
-import { VehicleHistory } from "@/components/drivers/detail/vehicle-history-table-row";
+  VehicleHistoryList,
+  type VehicleHistory,
+} from "@/components/drivers/detail/vehicle-history-list";
 import { DriverOverview } from "@/components/drivers/detail/overview";
 import { DepositHistoryList } from "@/components/drivers/detail/deposit-history-list";
 import { PermissionGuard } from "@/components/auth-guard-permission";
@@ -29,8 +26,7 @@ import type { DriverItem } from "@/lib/types/driver";
 import type { RentalTransaction } from "@/lib/types/rentals";
 import type { HistorySetoran } from "@/lib/types/history";
 import type { FinanceItem } from "@/lib/types/finances";
-import { toastError, toastInfo } from "@/components/ui/toast-provider";
-import type { ExportOptions } from "@/components/ui/export";
+import { toastError } from "@/components/ui/toast-provider";
 
 const mapFinanceToHistory = (f: FinanceItem): HistorySetoran => ({
   id: f.id,
@@ -149,70 +145,28 @@ const DetailDriverPage = () => {
   };
 
   const [activeTab, setActiveTab] = useState<TabValue>("overview");
-  const [filters, setFilters] = useState<FilterType>({
-    search: "",
-    status: "All Status",
-  });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
 
-  const vehicleHistoryList: VehicleHistory[] = driverRentals.map((r, index) => ({
-    name: r.vehicle ? `${r.vehicle.merk} ${r.vehicle.model}` : "-",
-    plateNumber: r.vehicle?.license_plate || "-",
-    imageUrl: "",
-    period: `${new Date(r.start_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })} - ${new Date(r.end_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })}`,
-    activeDuration: `${r.total_duration} days`,
-    totalDistance: "-",
-    fuelEfficiency: "-",
-    fuelEfficiencyLabel: "",
-    fuelEfficiencyColor: "text-slate-400",
-    maintenanceCount: 0,
-    maintenanceIcon: "build",
-    maintenanceColor: "text-slate-400",
-    status: index === 0 ? "Current" : "Previous",
-  }));
-
-  const filteredVehicles = vehicleHistoryList.filter((vehicle) => {
-    const matchesSearch = filters.search === "" || 
-      vehicle.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-      vehicle.plateNumber.toLowerCase().includes(filters.search.toLowerCase());
-    const matchesStatus = filters.status === "All Status" || 
-      vehicle.status.toLowerCase() === filters.status.toLowerCase();
-    return matchesSearch && matchesStatus;
-  });
-
-  const totalResults = filteredVehicles.length;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentVehicles = filteredVehicles.slice(startIndex, endIndex);
-
-  const handleFilterChange = (newFilters: FilterType) => {
-    setFilters(newFilters);
-    setCurrentPage(1);
-  };
-
-  const handleExport = async (options?: ExportOptions) => {
-    if (!options) return;
-    const params: Record<string, string | number | undefined> = {
-      format: options.format,
-      columns: options.columns.join(","),
-      type: options.type,
-    };
-    if (driverId) {
-      params.driver_id = driverId;
-    }
-    if (options.type === "filtered") {
-      if (options.dateRange?.start) params.start_date = options.dateRange.start;
-      if (options.dateRange?.end) params.end_date = options.dateRange.end;
-    }
-    try {
-      await rentalApi.exportData(params);
-      toastInfo(`Exporting vehicle history as ${options.format}`);
-    } catch (err) {
-      const msg = err instanceof HttpClientError ? err.message : "Failed to export vehicle history.";
-      toastError(msg);
-    }
-  };
+  /* Vehicle history list dari driverRentals — memoized */
+  const vehicleHistoryList: VehicleHistory[] = useMemo(
+    () =>
+      driverRentals.map((r) => ({
+        id: r.id,
+        vehicleId: r.vehicle_id || r.vehicle?.id || "",
+        name: r.vehicle ? `${r.vehicle.merk} ${r.vehicle.model}` : "-",
+        plateNumber: r.vehicle?.license_plate || "-",
+        rentalNumber: r.rental_number || "-",
+        period: `${new Date(r.start_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })} - ${new Date(r.end_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })}`,
+        totalDuration: r.total_duration || 0,
+        dailyRate: r.daily_rate || 0,
+        rentalDuration: r.rental_duration || "-",
+        rentalService: r.rental_service || "-",
+        vendorName: r.vehicle?.vendor?.name || "-",
+        createdAt: r.created_at || "",
+        documentContract: r.document_contract || undefined,
+        status: new Date(r.end_date) > new Date() ? ("Current" as const) : ("Previous" as const),
+      })),
+    [driverRentals],
+  );
 
   if (isLoading) {
     return (
@@ -280,19 +234,7 @@ const DetailDriverPage = () => {
       {activeTab === "overview" && <DriverOverview driver={driver} buildUrl={buildUrl} rental={currentRental} />}
 
       {activeTab === "vehicle-history" && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          <VehicleHistoryFilters
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onExport={handleExport}
-            totalRows={totalResults}
-          />
-          <VehicleHistoryTable vehicles={currentVehicles} />
-          <VehicleHistoryPagination
-            totalVehicles={totalResults}
-            currentPage={1}
-          />
-        </div>
+        <VehicleHistoryList vehicles={vehicleHistoryList} />
       )}
 
       {activeTab === "deposit-history" && (
