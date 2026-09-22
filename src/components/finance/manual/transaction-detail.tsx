@@ -19,21 +19,16 @@ interface FormErrors {
   paymentDate?: string;
   referenceNumber?: string;
   paymentMethod?: string;
-  totalAmount?: string;
   amount?: string;
-  depositAmount?: string;
 }
 
 interface TransactionDetailProps {
   paymentDate?: string;
   referenceNumber?: string;
   paymentMethod?: string;
-  totalAmount?: string;
   amount?: string;
-  depositAmount?: string;
   initialStatus?: "paid" | "unpaid" | "pending";
   notes?: string;
-  paymentTerms?: number;
   rentals?: RentalSelectOption[];
   selectedRentalId?: string;
   adminFeePreview?: number;
@@ -43,28 +38,21 @@ interface TransactionDetailProps {
   onReferenceNumberChange?: (value: string) => void;
   onPaymentMethodChange?: (value: string) => void;
   onPaymentDetailChange?: (detail: string) => void;
-  onTotalAmountChange?: (value: string) => void;
   onAmountChange?: (value: string) => void;
-  onDepositAmountChange?: (value: string) => void;
   onInitialStatusChange?: (value: "paid" | "unpaid" | "pending") => void;
   onNotesChange?: (value: string) => void;
-  onPaymentTermsChange?: (value: number) => void;
   onRentalSelectChange?: (value: string) => void;
   hasSubmitted?: boolean;
   serverErrors?: Record<string, string[]>;
-  totalAmountReadOnly?: boolean;
 }
 
 const TransactionDetail = ({
   paymentDate = "",
   referenceNumber = "",
   paymentMethod = "",
-  totalAmount = "",
   amount = "",
-  depositAmount = "",
   initialStatus = "paid",
   notes = "",
-  paymentTerms = 1,
   rentals = [],
   selectedRentalId = "",
   adminFeePreview = 0,
@@ -74,16 +62,12 @@ const TransactionDetail = ({
   onReferenceNumberChange,
   onPaymentMethodChange,
   onPaymentDetailChange,
-  onTotalAmountChange,
   onAmountChange,
-  onDepositAmountChange,
   onInitialStatusChange,
   onNotesChange,
-  onPaymentTermsChange,
   onRentalSelectChange,
   hasSubmitted = false,
   serverErrors = {},
-  totalAmountReadOnly = false,
 }: TransactionDetailProps) => {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showEwalletModal, setShowEwalletModal] = useState(false);
@@ -91,7 +75,6 @@ const TransactionDetail = ({
   const [statusNote, setStatusNote] = useState<"auto-paid" | "unpaid-warning" | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const baseTotal = parseFloat(totalAmount.replace(/[^\d.]/g, "")) || 0;
   const selectedRentalName =
     rentals.find((r) => r.id === selectedRentalId)?.label || "Kendaraan Terpilih";
   const formatIDR = (value: number) =>
@@ -124,22 +107,12 @@ const TransactionDetail = ({
         newErrors.paymentMethod = "Please select a payment method";
       }
 
-      if (!totalAmount) {
-        newErrors.totalAmount = "Total tagihan is required";
-      } else if (parseFloat(totalAmount) <= 0) {
-        newErrors.totalAmount = "Total tagihan must be greater than 0";
-      } else if (amount && parseFloat(amount) > parseFloat(totalAmount)) {
-        newErrors.amount = "Initial payment cannot exceed total tagihan";
-      }
-
       if (mode === "add") {
         if (!amount) {
           newErrors.amount = "Amount is required";
         } else if (parseFloat(amount) <= 0) {
           newErrors.amount = "Amount must be greater than 0";
         }
-      } else if (amount && parseFloat(amount) > parseFloat(totalAmount)) {
-        newErrors.amount = "Pembayaran tidak boleh melebihi total tagihan";
       }
 
       if (serverErrors["payment_date"]?.[0]) {
@@ -151,19 +124,13 @@ const TransactionDetail = ({
       if (serverErrors["payment_method"]?.[0]) {
         newErrors.paymentMethod = serverErrors["payment_method"][0];
       }
-      if (serverErrors["total_amount"]?.[0]) {
-        newErrors.totalAmount = serverErrors["total_amount"][0];
-      }
       if (serverErrors["amount_received"]?.[0]) {
         newErrors.amount = serverErrors["amount_received"][0];
-      }
-      if (serverErrors["deposit_amount"]?.[0]) {
-        newErrors.depositAmount = serverErrors["deposit_amount"][0];
       }
 
       setErrors(newErrors);
     }
-  }, [hasSubmitted, paymentDate, referenceNumber, paymentMethod, totalAmount, amount, depositAmount, serverErrors, mode]);
+  }, [hasSubmitted, paymentDate, referenceNumber, paymentMethod, amount, serverErrors, mode]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -186,22 +153,12 @@ const TransactionDetail = ({
       newErrors.paymentMethod = "Please select a payment method";
     }
 
-    if (!totalAmount) {
-      newErrors.totalAmount = "Total tagihan is required";
-    } else if (parseFloat(totalAmount) <= 0) {
-      newErrors.totalAmount = "Total tagihan must be greater than 0";
-    } else if (amount && parseFloat(amount) > parseFloat(totalAmount)) {
-      newErrors.amount = "Initial payment cannot exceed total tagihan";
-    }
-
     if (mode === "add") {
       if (!amount) {
         newErrors.amount = "Amount is required";
       } else if (parseFloat(amount) <= 0) {
         newErrors.amount = "Amount must be greater than 0";
       }
-    } else if (amount && parseFloat(amount) > parseFloat(totalAmount)) {
-      newErrors.amount = "Pembayaran tidak boleh melebihi total tagihan";
     }
 
     setErrors(newErrors);
@@ -219,20 +176,6 @@ const TransactionDetail = ({
       setStatusNote("auto-paid");
     } else if (num === 0 && statusNote === "auto-paid") {
       setStatusNote(null);
-    }
-  };
-
-  const handleTotalAmountChange = (value: string) => {
-    onTotalAmountChange?.(value);
-    if (errors.totalAmount && value) {
-      setErrors((prev) => ({ ...prev, totalAmount: undefined }));
-    }
-  };
-
-  const handleDepositAmountChange = (value: string) => {
-    onDepositAmountChange?.(value);
-    if (errors.depositAmount && value) {
-      setErrors((prev) => ({ ...prev, depositAmount: undefined }));
     }
   };
 
@@ -468,7 +411,7 @@ const TransactionDetail = ({
                       : "text-slate-900 dark:text-slate-200"
                   }`}
                 >
-                  Saldo Driver
+                  Koin Driver
                 </span>
               </div>
               {paymentMethod === "saldo" && (
@@ -504,26 +447,6 @@ const TransactionDetail = ({
         </div>
 
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-            <span className="material-symbols-outlined text-slate-400 text-base">receipt_long</span>
-            Total Tagihan <span className="text-red-500">*</span>
-          </label>
-          <CurrencyInput
-            placeholder="0"
-            value={totalAmount}
-            onChange={(value) => handleTotalAmountChange(value)}
-            error={errors.totalAmount}
-            readOnly={totalAmountReadOnly}
-          />
-          {totalAmountReadOnly && (
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 italic">
-              Dihitung otomatis dari durasi × tarif harian
-            </p>
-          )}
-          <p className="text-xs text-slate-400 italic">
-            Nominal tagihan sewa driver (belum termasuk admin fee). Admin fee ditambahkan
-            otomatis bila ini finance pertama driver.
-          </p>
           {adminFeeNote && (
             <div
               className={`flex items-start gap-2 rounded-lg px-3 py-2.5 text-xs font-medium ${
@@ -546,39 +469,8 @@ const TransactionDetail = ({
                   {formatIDR(adminFeePreview)}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-amber-700 dark:text-amber-300 font-medium">Nominal tagihan (belum termasuk fee)</span>
-                <span className="font-semibold text-amber-800 dark:text-amber-200">{formatIDR(baseTotal)}</span>
-              </div>
-              <div className="flex items-center justify-between pt-1.5 border-t border-amber-200/70 dark:border-amber-800 text-sm">
-                <span className="text-amber-800 dark:text-amber-200 font-semibold">Total yang dibayarkan driver</span>
-                <span className="font-bold text-amber-900 dark:text-amber-100">{formatIDR(baseTotal + adminFeePreview)}</span>
-              </div>
             </div>
           )}
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-            <span className="material-symbols-outlined text-slate-400 text-base">payments</span>
-            Opsi Pembayaran (Cicilan)
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            {[1, 2, 4].map((term) => (
-              <RadioCard
-                key={term}
-                icon={term === 1 ? "payments" : term === 2 ? "repeat" : "calendar_month"}
-                label={`${term} Kali`}
-                name="payment_terms"
-                value={String(term)}
-                checked={paymentTerms === term}
-                onChange={() => onPaymentTermsChange?.(term)}
-              />
-            ))}
-          </div>
-          <p className="text-xs text-slate-400 italic">
-            Jumlah angsuran atau cicilan tagihan. Cicilan pertama dibayarkan dari nominal pembayaran awal.
-          </p>
         </div>
 
         {mode === "add" && (
@@ -658,23 +550,6 @@ const TransactionDetail = ({
               sudah diisi. Pilih <strong>Paid</strong> jika ingin mencatatnya sebagai pembayaran.
             </p>
           )}
-        </div>
-
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
-            <span className="material-symbols-outlined text-slate-400 text-base">savings</span>
-            Jumlah Deposit <span className="text-xs font-normal text-slate-400">(Opsional)</span>
-          </label>
-          <CurrencyInput
-            placeholder="0"
-            value={depositAmount}
-            onChange={(value) => handleDepositAmountChange(value)}
-            error={errors.depositAmount}
-          />
-          <p className="text-xs text-slate-400 italic">
-            Nominal uang jaminan/DP yang dicatat terpisah dari cicilan. Hanya sebagai catatan,{" "}
-            <span className="font-semibold not-italic">tidak mengurangi sisa tagihan</span>.
-          </p>
         </div>
 
         <Textarea

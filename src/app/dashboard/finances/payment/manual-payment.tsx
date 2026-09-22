@@ -6,7 +6,7 @@ import { PermissionGuard } from "@/components/auth-guard-permission";
 import PayerInfo, { DriverRentalOption } from "@/components/finance/manual/payer-info";
 import TransactionDetail, { RentalSelectOption } from "@/components/finance/manual/transaction-detail";
 import { financeApi } from "@/lib/api/finances";
-import { saldoApi } from "@/lib/api/saldo";
+import { koinApi } from "@/lib/api/koin";
 import { HttpClientError } from "@/lib/api-http";
 import type { FinanceItem } from "@/lib/types/finances";
 import { confirmToast, toastError, toastWarning } from "@/components/ui/toast-provider";
@@ -29,12 +29,8 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
   const [referenceNumber, setReferenceNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [amount, setAmount] = useState("");
-  const [totalAmount, setTotalAmount] = useState("");
-  const [totalAmountReadOnly, setTotalAmountReadOnly] = useState(false);
   const [initialStatus, setInitialStatus] = useState<"paid" | "unpaid" | "pending">("paid");
-  const [depositAmount, setDepositAmount] = useState("");
   const [notes, setNotes] = useState("");
-  const [paymentTerms, setPaymentTerms] = useState(1);
   const [paymentDetail, setPaymentDetail] = useState("");
   const [selectedPayer, setSelectedPayer] = useState<{name: string; id: string; employeeId?: string} | null>(null);
   const [payerRentals, setPayerRentals] = useState<RentalSelectOption[]>([]);
@@ -46,7 +42,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
 
   const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
   const [generalError, setGeneralError] = useState<string>("");
-  const [driverSaldoBalance, setDriverSaldoBalance] = useState<number>(0);
+  const [driverKoinBalance, setDriverKoinBalance] = useState<number>(0);
 
   useEffect(() => {
     if (paymentIdParam) {
@@ -66,9 +62,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
           setPaymentMethod(item.payment_method);
           const fee = Number(item.fee_admin_join) || 0;
           setFeeAdminJoin(fee);
-           setTotalAmount(String(Math.max(0, (Number(item.total_amount) || 0) - fee)));
-           setTotalAmountReadOnly(false);
-           setSelectedRentalId(item.rentals?.[0]?.id || "");
+          setSelectedRentalId(item.rentals?.[0]?.id || "");
           setPayerRentals(
             (item.rentals || []).map((r) => ({
               id: r.id,
@@ -79,9 +73,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
             })),
           );
           setAmount("");
-          setDepositAmount(item.deposit_amount ? String(item.deposit_amount) : "");
           setNotes(item.notes || "");
-          setPaymentTerms(item.payment_terms ?? 1);
           setCurrentPaid(item.paid_amount ?? item.amount_received ?? 0);
           setCurrentRemaining(item.remaining_amount ?? 0);
         } catch (err) {
@@ -102,12 +94,8 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
       setPaymentMethod("");
       setPaymentDetail("");
       setAmount("");
-      setTotalAmount("");
-      setTotalAmountReadOnly(false);
       setInitialStatus("paid");
-      setDepositAmount("");
       setNotes("");
-      setPaymentTerms(1);
       setPayerRentals([]);
       setSelectedRentalId("");
       setRentalFinanceCount(null);
@@ -115,7 +103,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     }
   }, [paymentIdParam]);
 
-  const baseTotal = parseFloat(totalAmount.replace(/[^\d.]/g, "")) || 0;
+
   const selectedRental = payerRentals.find((r) => r.id === selectedRentalId) || null;
   const isThisRentalFirstFinanced = rentalFinanceCount === 0;
   const rentalCategory = (selectedRental?.category || "").toLowerCase();
@@ -197,7 +185,6 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
 
     setIsSubmitting(true);
 
-    const parsedTotal = parseFloat(totalAmount.replace(/[^\d.]/g, "")) || 0;
     const parsedInitial = parseFloat(amount.replace(/[^\d.]/g, "")) || 0;
 
     try {
@@ -205,11 +192,8 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
         payment_date: paymentDate,
         reference_number: referenceNumber,
         payment_method: paymentMethod as FinanceItem["payment_method"],
-        total_amount: parsedTotal > 0 ? parsedTotal : undefined,
         rental_ids: selectedRentalId ? [selectedRentalId] : undefined,
         amount_received: parsedInitial > 0 ? parsedInitial : undefined,
-        deposit_amount: parseFloat(depositAmount.replace(/[^\d.]/g, "")) || 0,
-        payment_terms: paymentTerms,
         notes,
         payer: selectedPayer?.name || "",
         driver_id: selectedPayer.id,
@@ -221,10 +205,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
           payment_date: paymentDate,
           reference_number: referenceNumber,
           payment_method: paymentMethod as FinanceItem["payment_method"],
-          total_amount: parsedTotal > 0 ? parsedTotal : undefined,
           rental_ids: selectedRentalId ? [selectedRentalId] : [],
-          deposit_amount: parseFloat(depositAmount.replace(/[^\d.]/g, "")) || 0,
-          payment_terms: paymentTerms,
           notes,
           payer: selectedPayer?.name || "",
           driver_id: selectedPayer.id,
@@ -276,10 +257,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     setPaymentMethod("");
     setPaymentDetail("");
     setAmount("");
-    setTotalAmount("");
-    setTotalAmountReadOnly(false);
     setInitialStatus("paid");
-    setDepositAmount("");
     setNotes("");
     setHasSubmitted(false);
     setServerErrors({});
@@ -328,34 +306,18 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     }
   }, [mode, selectedRentalId]);
 
-  useEffect(() => {
-    if (selectedRentalId) {
-      const selected = payerRentals.find((r) => r.id === selectedRentalId);
-      if (selected && selected.dailyRate && selected.totalDuration) {
-        const calculated = selected.dailyRate * selected.totalDuration;
-        setTotalAmount(calculated.toString());
-        setTotalAmountReadOnly(true);
-      } else {
-        setTotalAmount("");
-        setTotalAmountReadOnly(false);
-      }
-    } else {
-      setTotalAmount("");
-      setTotalAmountReadOnly(false);
-    }
-  }, [selectedRentalId, payerRentals]);
 
   useEffect(() => {
     if (selectedPayer?.id) {
-      saldoApi.getBalance(selectedPayer.id)
+      koinApi.getBalance(selectedPayer.id)
         .then((res: any) => {
-          setDriverSaldoBalance(res?.data?.balance ?? 0);
+          setDriverKoinBalance(res?.data?.balance ?? 0);
         })
         .catch(() => {
-          setDriverSaldoBalance(0);
+          setDriverKoinBalance(0);
         });
     } else {
-      setDriverSaldoBalance(0);
+      setDriverKoinBalance(0);
     }
   }, [selectedPayer?.id]);
 
@@ -364,7 +326,6 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
     if (!paymentDate) return false;
     if (!referenceNumber?.trim() || !/^[a-zA-Z0-9\/\-_]+$/.test(referenceNumber) || referenceNumber.length < 3) return false;
     if (!paymentMethod) return false;
-    if (!totalAmount || parseFloat(totalAmount) <= 0) return false;
     if (!amount || parseFloat(amount) <= 0) return false;
     return true;
   };
@@ -424,12 +385,9 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
             paymentDate={paymentDate}
             referenceNumber={referenceNumber}
             paymentMethod={paymentMethod}
-            totalAmount={totalAmount}
             amount={amount}
-            depositAmount={depositAmount}
             initialStatus={initialStatus}
             notes={notes}
-            paymentTerms={paymentTerms}
             rentals={payerRentals}
             selectedRentalId={selectedRentalId}
             onRentalSelectChange={setSelectedRentalId}
@@ -440,18 +398,14 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
             onReferenceNumberChange={setReferenceNumber}
             onPaymentMethodChange={setPaymentMethod}
             onPaymentDetailChange={handlePaymentDetailChange}
-             onTotalAmountChange={setTotalAmount}
             onAmountChange={setAmount}
-            onDepositAmountChange={setDepositAmount}
             onInitialStatusChange={setInitialStatus}
             onNotesChange={setNotes}
-            onPaymentTermsChange={setPaymentTerms}
             hasSubmitted={hasSubmitted}
             serverErrors={serverErrors}
-            totalAmountReadOnly={totalAmountReadOnly}
           />
 
-          {/* Saldo Info */}
+{/* Info Koin */}
           {selectedPayer?.id && (
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -460,9 +414,9 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                    Informasi Saldo Driver
+                    Informasi Koin Driver
                   </h3>
-                  <p className="text-xs text-slate-400">Saldo driver saat ini</p>
+                  <p className="text-xs text-slate-400">Koin driver saat ini</p>
                 </div>
               </div>
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 flex gap-3 items-start">
@@ -470,10 +424,10 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
                   info
                 </span>
                 <p className="text-sm text-blue-800 dark:text-blue-200 leading-normal">
-                  Saldo driver saat ini:{" "}
+                  Koin driver saat ini:{" "}
                   <span
                     className={`font-bold ${
-                      driverSaldoBalance < 0
+                      driverKoinBalance < 0
                         ? "text-red-600 dark:text-red-400"
                         : "text-green-600 dark:text-green-400"
                     }`}
@@ -483,9 +437,9 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
                       currency: "IDR",
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 0,
-                    }).format(driverSaldoBalance)}
+                    }).format(driverKoinBalance)}
                   </span>
-                  . Pembayaran tunai/transfer/e-wallet hanya mengurangi tagihan dan tidak mempengaruhi saldo driver. Metode Saldo Driver akan mengurangi saldo driver.
+                  . Pembayaran tunai/transfer/e-wallet hanya mengurangi tagihan dan tidak mempengaruhi koin driver. Metode Koin Driver akan mengurangi koin driver.
                 </p>
               </div>
             </div>
@@ -509,7 +463,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
                 <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total Tagihan</p>
                   <p className="font-bold text-slate-900 dark:text-white">
-                    {formatIDR(baseTotal + adminFeePreview || currentPaid + currentRemaining)}
+                    {formatIDR(currentPaid + currentRemaining)}
                   </p>
                 </div>
                 <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-4">
@@ -526,10 +480,6 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Cicilan:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{paymentTerms} Kali</span>
-                </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-500 dark:text-slate-400">Admin Fee (Join):</span>
                   <span className="font-bold text-slate-900 dark:text-white">

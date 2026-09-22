@@ -33,7 +33,7 @@ function formatActionLabel(name: string): string {
 
 function groupByModule(permissions: ApiPermission[]): ModuleGroup[] {
   const map = new Map<string, ApiPermission[]>();
-  const moduleOrder = ["driver", "vehicle", "monitoring", "vendor", "rental", "finance", "late_payment", "saldo", "driver_portal", "user", "role", "permission", "setting", "audit"];
+  const moduleOrder = ["driver", "vehicle", "monitoring", "vendor", "rental", "finance", "late_payment", "koin", "driver_portal", "user", "role", "permission", "setting", "audit"];
 
   permissions.forEach((perm) => {
     const list = map.get(perm.module) || [];
@@ -57,7 +57,7 @@ const moduleIcons: Record<string, string> = {
   rental: "contract",
   finance: "account_balance",
   late_payment: "payments",
-  saldo: "account_balance_wallet",
+  koin: "account_balance_wallet",
   driver_portal: "mobile_screen_share",
   user: "people",
   role: "shield",
@@ -74,7 +74,7 @@ const moduleLabels: Record<string, string> = {
   rental: "Rentals",
   finance: "Finance",
   late_payment: "Late Payment",
-  saldo: "Driver Saldo",
+  koin: "Driver Koin",
   driver_portal: "Driver Portal",
   user: "Users",
   role: "Roles",

@@ -38,24 +38,34 @@ export const SelectSearch = ({
   useEffect(() => {
     if (value) {
       const matchedOption = options.find(opt => opt.value === value);
-      if (matchedOption) {
-        setSelected(matchedOption);
-      }
+      setSelected(matchedOption ?? null);
     } else if (defaultValue && !selected) {
       const matchedOption = options.find(opt => opt.value === defaultValue);
       if (matchedOption) {
         setSelected(matchedOption);
       }
+    } else if (!value && !defaultValue) {
+      setSelected(null);
     }
   }, [value, defaultValue, options]);
 
 
-  const inputStyle =
-    "w-full rounded-lg border bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary";
+  const boxClass = `flex items-center w-full rounded-lg border-[3px] bg-white dark:bg-slate-800 transition-all h-11 ring-1 ring-inset ring-transparent ${
+    error
+      ? "border-red-500"
+      : open
+        ? "border-primary ring-2 ring-inset ring-primary"
+        : selected
+          ? "border-primary"
+          : "border-[#dbe0e6] dark:border-[#4b5563]"
+  }`;
 
-  const borderColor = error 
-    ? "border-red-500 ring-1 ring-red-500" 
-    : "border-[#dbe0e6] dark:border-[#4b5563]";
+  const getInitials = (label: string) => {
+    const words = (label || "").trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return "?";
+    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+    return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+  };
 
   const filtered =
     query.trim() !== ""
@@ -96,46 +106,69 @@ export const SelectSearch = ({
       )}
 
       {/* INPUT */}
-      <div key="input-group" className="relative">
-        {/* Avatar */}
-        {selected?.image && (
-          <img
-            key="selected-image"
-            src={selected.image}
-            className="absolute left-3 top-1/2 -translate-y-1/2 size-6 rounded-full object-cover"
-          />
-        )}
-
-        {/* Dropdown Icon */}
-        <span
-          key="expand-icon"
-          onClick={() => {
-            setOpen((prev) => !prev);
-            setQuery(""); // reset biar semua muncul
-          }}
-          className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400"
-        >
-          expand_more
-        </span>
+      <div key="input-group" className={boxClass}>
+        <div className="flex items-center justify-center pl-3.5 text-slate-400 dark:text-slate-500 shrink-0">
+          <span className="material-symbols-outlined text-xl">search</span>
+        </div>
 
         <input
           key="search-input"
-          className={`${inputStyle} ${borderColor} ${
-            selected?.image ? "pl-10" : "pl-3"
-          } pr-10`}
+          className="flex w-full flex-1 bg-transparent border-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 px-3 focus:ring-0 focus:outline-none h-full text-sm"
           placeholder={placeholder}
           value={open ? query : selected?.label || ""}
           onFocus={() => {
             setOpen(true);
-            setQuery(""); // reset saat buka
+            setQuery("");
           }}
           onChange={(e) => {
             const sanitized = e.target.value.replace(/[^a-zA-Z0-9\s'-]/g, "");
             setQuery(sanitized);
-            setSelected(null); // reset pilihan saat ngetik
             setOpen(true);
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && filtered.length > 0) {
+              handleSelect(filtered[0]);
+            } else if (e.key === "Escape") {
+              setOpen(false);
+              setQuery("");
+            }
+          }}
+          autoComplete="off"
         />
+
+        {(query || selected) && (
+          <button
+            type="button"
+            onClick={() => {
+              if (open && query) {
+                setQuery("");
+              } else {
+                setSelected(null);
+                setQuery("");
+                setOpen(false);
+                onChange?.("");
+              }
+            }}
+            className="flex items-center justify-center mr-1 size-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 transition-colors shrink-0"
+            title="Hapus pilihan"
+          >
+            <span className="material-symbols-outlined text-lg">close</span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => {
+            setOpen((prev) => !prev);
+            setQuery("");
+          }}
+          className="flex items-center justify-center mr-2 text-slate-400 shrink-0"
+          title="Buka daftar"
+        >
+          <span className={`material-symbols-outlined text-xl transition-transform ${open ? "rotate-180" : ""}`}>
+            expand_more
+          </span>
+        </button>
       </div>
       {error && (
         <p key="error" className="text-xs text-red-500 mt-1">{error}</p>

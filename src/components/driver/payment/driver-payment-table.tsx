@@ -99,7 +99,7 @@ const defaultTransactions: Transaction[] = [
     methodIcon: "savings",
     amount: "+Rp 150.000",
     amountColor: "text-emerald-500",
-    status: "Masuk Saldo",
+    status: "Masuk Koin",
     statusColor: "text-emerald-600 dark:text-emerald-400",
     statusBg: "bg-slate-100 dark:bg-slate-800",
     statusDotColor: "bg-emerald-500",

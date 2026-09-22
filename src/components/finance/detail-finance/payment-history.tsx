@@ -35,7 +35,7 @@ const methodLabel: Record<string, string> = {
   cash: "Cash",
   transfer: "Transfer",
   "e-wallet": "E-Wallet",
-  saldo: "Saldo",
+  saldo: "Koin",
 };
 
 const statusLabel: Record<string, string> = {
@@ -69,10 +69,7 @@ const PaymentHistory = ({ finance, onChanged }: PaymentHistoryProps) => {
 
   const canPay = finance.status !== "paid" && finance.status !== "cancelled";
   const remaining = finance.remaining_amount ?? 0;
-  const totalFinance = finance.total_amount ?? finance.amount_received ?? 0;
-  const terms = finance.payment_terms ?? 1;
-  const installmentAmount =
-    terms > 1 ? Math.ceil(totalFinance / terms) : totalFinance;
+  const totalFinance = finance.fee_admin_join ?? finance.amount_received ?? 0;
 
   const refresh = () => onChanged?.();
 
@@ -195,15 +192,6 @@ const PaymentHistory = ({ finance, onChanged }: PaymentHistoryProps) => {
                 onChange={setAmount}
               />
               <div className="flex flex-wrap gap-2">
-                {terms > 1 && installmentAmount <= remaining && (
-                  <button
-                    type="button"
-                    onClick={() => setAmount(String(installmentAmount))}
-                    className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-blue-200 dark:border-blue-700 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                  >
-                    Cicilan ({terms}×) {formatCurrency(installmentAmount)}
-                  </button>
-                )}
                 {remaining > 0 && (
                   <button
                     type="button"
@@ -237,7 +225,7 @@ const PaymentHistory = ({ finance, onChanged }: PaymentHistoryProps) => {
                 <option value="cash">Cash</option>
                 <option value="transfer">Transfer</option>
                 <option value="e-wallet">E-Wallet</option>
-                <option value="saldo">Saldo</option>
+                <option value="saldo">Koin</option>
               </select>
             </div>
             <div className="space-y-2">

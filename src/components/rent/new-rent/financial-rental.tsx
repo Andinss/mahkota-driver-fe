@@ -29,6 +29,8 @@ interface FinancialRentalProps {
   };
   error?: FormErrors;
   duration?: number;
+  isFirstRental?: boolean | null;
+  vehicleCategory?: string;
 }
 
 const parseCurrency = (val: string) => {
@@ -43,6 +45,8 @@ const FinancialRental = ({
   initialData,
   error,
   duration = 0,
+  isFirstRental,
+  vehicleCategory,
 }: FinancialRentalProps) => {
   const initRate = initialData?.dailyRate
     ? initialData.dailyRate.toString()
@@ -112,8 +116,8 @@ const FinancialRental = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <div className="space-y-2 md:col-span-3">
           <Select
             id="rentalDuration"
             name="rentalDuration"
@@ -128,7 +132,7 @@ const FinancialRental = ({
             <option value="tahunan">Tahunan</option>
           </Select>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2 md:col-span-4">
           <Select
             id="rentalService"
             name="rentalService"
@@ -141,7 +145,7 @@ const FinancialRental = ({
             <option value="pakai supir">Pakai Supir</option>
           </Select>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2 md:col-span-5">
           <CurrencyInput
             id="dailyRate"
             name="dailyRate"
@@ -190,6 +194,36 @@ const FinancialRental = ({
           </div>
         </div>
       </div>
+
+      {/* Admin Fee Info — hanya untuk rental pertama driver */}
+      {isFirstRental === true && vehicleCategory && (
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-amber-600 text-lg">info</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-200">
+                  Kena Admin Fee (Join) —{" "}
+                  <span className="font-black">
+                    {vehicleCategory === "Premium" ? "Rp 700.000" : "Rp 500.000"}
+                  </span>
+                  <span className="ml-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+                    ({vehicleCategory === "Premium" ? "Premium" : "Reguler"})
+                  </span>
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                  Rental pertama driver ini dikenakan admin fee satu kali dan ditambahkan ke total tagihan.
+                </p>
+              </div>
+              <span className="material-symbols-outlined text-amber-400 text-2xl hidden sm:block">
+                payments
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

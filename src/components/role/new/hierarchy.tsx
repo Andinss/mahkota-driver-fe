@@ -29,7 +29,7 @@ const moduleLabels: Record<string, string> = {
   rental: "Rental",
   late_payment: "Late Payment",
   monitoring: "Monitoring",
-  saldo: "Saldo",
+  koin: "Koin",
   driver_portal: "Driver Portal",
   setting: "Setting",
   audit: "Audit Log",

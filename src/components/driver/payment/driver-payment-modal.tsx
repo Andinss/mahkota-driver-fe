@@ -96,7 +96,7 @@ export function DriverPaymentModal({ finance, onClose, onSuccess }: DriverPaymen
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total Tagihan</p>
-                <p className="font-bold text-slate-900 dark:text-white">{formatIDR(finance.total_amount)}</p>
+                <p className="font-bold text-slate-900 dark:text-white">{formatIDR(finance.fee_admin_join)}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Sudah Dibayar</p>
@@ -121,7 +121,7 @@ export function DriverPaymentModal({ finance, onClose, onSuccess }: DriverPaymen
               <option value="transfer">Transfer Bank</option>
               <option value="cash">Tunai</option>
               <option value="e-wallet">E-Wallet</option>
-              <option value="saldo">Saldo Driver</option>
+              <option value="saldo">Koin Driver</option>
             </select>
           </div>
 

@@ -6,9 +6,9 @@ import { PaymentCard } from "@/components/finance/payment-list/card";
 import { useAuth } from "@/lib/auth-context";
 import { driverApi } from "@/lib/api/driver";
 import { financeApi } from "@/lib/api/finances";
-import { saldoApi } from "@/lib/api/saldo";
+import { koinApi } from "@/lib/api/koin";
 import type { DriverItem } from "@/lib/types/driver";
-import type { FinanceItem } from "@/lib/types/finances";
+import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -37,7 +37,6 @@ const PLACEHOLDER_IMG = "/images/placeholder-car.jpg";
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
   unpaid: { label: "Belum Dibayar", color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/20", dot: "bg-red-500" },
   pending: { label: "Menunggu Verifikasi", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20", dot: "bg-amber-500" },
-  partially_paid: { label: "Partially Paid", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/20", dot: "bg-blue-500" },
   paid: { label: "Lunas", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20", dot: "bg-emerald-500" },
   cancelled: { label: "Dibatalkan", color: "text-slate-500 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800", dot: "bg-slate-400" },
 };
@@ -45,8 +44,9 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
 export function DriverDashboardPage() {
   const { user } = useAuth();
   const [driver, setDriver] = useState<DriverItem | null>(null);
-  const [finances, setFinances] = useState<FinanceItem[]>([]);
-  const [saldoBalance, setSaldoBalance] = useState(0);
+  const [adminFee, setAdminFee] = useState<FinanceItem | null>(null);
+  const [dailyPayments, setDailyPayments] = useState<DailyPaymentItem[]>([]);
+  const [koinBalance, setKoinBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -57,25 +57,34 @@ export function DriverDashboardPage() {
 
     const fetchData = async () => {
       try {
-        const [driverRes, financesRes, saldoRes] = await Promise.allSettled([
+        const [driverRes, adminFeeRes, koinRes] = await Promise.allSettled([
           driverApi.getMe(),
-          financeApi.getMyFinances({ limit: 5 }),
-          saldoApi.getBalance(user.driver_id!),
+          financeApi.getMyAdminFee(),
+          koinApi.getBalance(user.driver_id!),
         ]);
 
         if (driverRes.status === "fulfilled") {
           const data = (driverRes.value as any)?.data ?? driverRes.value;
           setDriver(data);
         }
-        if (financesRes.status === "fulfilled") {
-          const res = financesRes.value as any;
-          const data = res?.data ?? res;
-          const items = Array.isArray(data) ? data : data?.data ?? [];
-          setFinances(items);
+        if (adminFeeRes.status === "fulfilled") {
+          const data = (adminFeeRes.value as any)?.data ?? adminFeeRes.value;
+          setAdminFee(data);
+
+          if (data?.status === "paid") {
+            try {
+              const dailyRes = await financeApi.getMyDailyPayments({ limit: 5 });
+              const dailyData = (dailyRes as any)?.data ?? dailyRes;
+              const items = Array.isArray(dailyData) ? dailyData : dailyData?.data ?? [];
+              setDailyPayments(items);
+            } catch {
+              setDailyPayments([]);
+            }
+          }
         }
-        if (saldoRes.status === "fulfilled") {
-          const data = (saldoRes.value as any)?.data ?? saldoRes.value;
-          setSaldoBalance(data?.balance ?? 0);
+        if (koinRes.status === "fulfilled") {
+          const data = (koinRes.value as any)?.data ?? koinRes.value;
+          setKoinBalance(data?.balance ?? 0);
         }
       } catch (err) {
         console.error("Failed to fetch driver data:", err);
@@ -91,8 +100,14 @@ export function DriverDashboardPage() {
     ? `${driver.first_name} ${driver.last_name}`.trim()
     : user?.username || "Driver";
   const activeRentals = driver?.rentals?.length ?? 0;
-  const openBills = finances.filter((f) => ["unpaid", "partially_paid"].includes(f.status));
-  const totalRemaining = finances.reduce((sum, f) => sum + (f.remaining_amount || 0), 0);
+
+  const adminFeePaid = adminFee?.status === "paid";
+  const hasAdminFee = !!adminFee;
+  const adminFeeUnpaid = hasAdminFee && !adminFeePaid;
+  const unpaidDailyCount = dailyPayments.filter((dp) => dp.status === "unpaid").length;
+  const totalRemaining = dailyPayments
+    .filter((dp) => dp.status === "unpaid")
+    .reduce((sum, dp) => sum + dp.amount, 0);
 
   return (
     <div className="m-8">
@@ -105,12 +120,12 @@ export function DriverDashboardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <PaymentCard
-              title="Saldo Koin Utama"
-              value={`${saldoBalance.toLocaleString("id-ID")} Koin`}
+              title="Koin Utama"
+              value={`${koinBalance.toLocaleString("id-ID")} Koin`}
               icon="toll"
               iconColor="text-primary"
               trend={{
-                value: `Setara ${formatIDR(saldoBalance)}`,
+                value: `Setara ${formatIDR(koinBalance)}`,
                 color: "text-primary",
                 icon: "account_balance_wallet",
               }}
@@ -162,10 +177,6 @@ export function DriverDashboardPage() {
                   slidesPerView={1}
                   navigation
                   pagination={{ clickable: true }}
-                  breakpoints={{
-                    640: { slidesPerView: driver.rentals.length > 1 ? 2 : 1 },
-                    1024: { slidesPerView: driver.rentals.length > 2 ? 3 : driver.rentals.length },
-                  }}
                   className="driver-vehicle-swiper"
                 >
                   {driver.rentals.map((rental) => {
@@ -242,7 +253,34 @@ export function DriverDashboardPage() {
             </div>
           )}
 
-          {openBills.length > 0 && (
+          {/* Admin Fee Unpaid — show banner */}
+          {adminFeeUnpaid && (
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-5">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-800/40 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-xl">warning</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-amber-800 dark:text-amber-200 text-sm">
+                    Admin Fee Belum Dibayar
+                  </h3>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                    Anda harus membayar Admin Fee sebesar {formatIDR(adminFee!.fee_admin_join || 0)} terlebih dahulu sebelum tagihan harian muncul.
+                  </p>
+                  <a
+                    href="/dashboard/driver/payment"
+                    className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:underline"
+                  >
+                    Bayar Sekarang
+                    <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Daily Payments — only show after admin fee is paid */}
+          {adminFeePaid && unpaidDailyCount > 0 && (
             <div className="bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -253,7 +291,7 @@ export function DriverDashboardPage() {
                     <h2 className="font-bold text-slate-800 dark:text-white text-base">
                       Tagihan Belum Dibayar
                     </h2>
-                    <p className="text-xs text-slate-400">{openBills.length} tagihan menunggu pembayaran</p>
+                    <p className="text-xs text-slate-400">{unpaidDailyCount} tagihan menunggu pembayaran</p>
                   </div>
                 </div>
                 <a
@@ -267,33 +305,27 @@ export function DriverDashboardPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
                     <tr>
-                      <th className="px-6 py-3">No. Referensi</th>
+                      <th className="px-6 py-3">Tanggal</th>
                       <th className="px-6 py-3">Kendaraan</th>
-                      <th className="px-6 py-3">Sisa Tagihan</th>
+                      <th className="px-6 py-3">Jumlah</th>
                       <th className="px-6 py-3">Status</th>
+                      <th className="px-6 py-3 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
-                    {openBills.slice(0, 5).map((finance) => {
-                      const st = statusConfig[finance.status] || statusConfig.unpaid;
-                      const vehicle = finance.vehicle || finance.rentals?.[0]?.vehicle;
-                      const vehicleName = vehicle
-                        ? `${vehicle.merk} ${vehicle.model}`
-                        : "-";
-
+                    {dailyPayments.filter((dp) => dp.status === "unpaid").slice(0, 5).map((dp) => {
+                      const st = statusConfig[dp.status] || statusConfig.unpaid;
                       return (
-                        <tr key={finance.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                          <td className="px-6 py-3">
-                            <span className="font-mono font-semibold text-sm text-primary">
-                              {finance.reference_number}
-                            </span>
+                        <tr key={dp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="px-6 py-3 font-medium text-slate-500 dark:text-slate-400">
+                            {formatDate(dp.payment_date)}
                           </td>
                           <td className="px-6 py-3">
-                            <span className="font-semibold text-slate-900 dark:text-white">{vehicleName}</span>
+                            <span className="font-semibold text-slate-900 dark:text-white">{dp.vehicle_name}</span>
                           </td>
                           <td className="px-6 py-3">
                             <span className="font-semibold text-orange-600 dark:text-orange-400">
-                              {formatIDR(finance.remaining_amount)}
+                              {formatIDR(dp.amount)}
                             </span>
                           </td>
                           <td className="px-6 py-3">
@@ -301,6 +333,15 @@ export function DriverDashboardPage() {
                               <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
                               {st.label}
                             </span>
+                          </td>
+                          <td className="px-6 py-3 text-right">
+                            <a
+                              href={`/dashboard/driver/payment/form?id=${dp.id}&type=daily`}
+                              title="Bayar Tagihan Harian"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">payments</span>
+                            </a>
                           </td>
                         </tr>
                       );

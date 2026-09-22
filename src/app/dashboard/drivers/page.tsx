@@ -84,7 +84,7 @@ export default function DriverPage() {
           employeeId: item.employee_id || "",
           phoneNumber: item.phone || "",
           email: item.email || "",
-          saldo: item.saldo ? Number(item.saldo.balance) : 0,
+          koin: item.koin ? Number(item.koin.balance) : 0,
         };
       });
       setDrivers(mapped);
@@ -226,10 +226,10 @@ export default function DriverPage() {
           }}
         />
         <DriverStatsCard
-          title="Saldo Overview"
+          title="Koin Overview"
           icon="account_balance_wallet"
           iconColor="text-blue-500"
-          value={drivers.reduce((sum, d) => sum + (d.saldo ?? 0), 0).toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 })}
+          value={drivers.reduce((sum, d) => sum + (d.koin ?? 0), 0).toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 })}
           trend={{
             icon: "wallet",
             text: `Across ${drivers.length} displayed drivers`,

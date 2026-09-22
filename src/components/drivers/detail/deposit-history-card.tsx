@@ -11,14 +11,13 @@ const methodConfig: Record<string, { label: string; icon: string; color: string;
   cash: { label: "Cash", icon: "payments", color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
   transfer: { label: "Transfer", icon: "account_balance", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
   "e-wallet": { label: "E-Wallet", icon: "smartphone", color: "text-violet-500", bg: "bg-violet-50 dark:bg-violet-900/20" },
-  saldo: { label: "Saldo", icon: "wallet", color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" },
+  koin: { label: "Koin", icon: "wallet", color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" },
 };
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; icon: string }> = {
   paid: { label: "Paid", color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20", icon: "check_circle" },
   unpaid: { label: "Unpaid", color: "text-red-500", bg: "bg-red-50 dark:bg-red-900/20", icon: "cancel" },
   pending: { label: "Pending", color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20", icon: "schedule" },
-  partially_paid: { label: "Partially Paid", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20", icon: "account_balance_wallet" },
   cancelled: { label: "Cancelled", color: "text-slate-500", bg: "bg-slate-100 dark:bg-slate-800", icon: "block" },
 };
 

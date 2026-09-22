@@ -22,11 +22,8 @@ const paymentColumns: ExportColumn[] = [
   { id: "payer", label: "Payer", defaultChecked: true },
   { id: "vehicle", label: "Mobil", defaultChecked: true },
   { id: "vendor", label: "Vendor", defaultChecked: true },
-  { id: "total_amount", label: "Total Tagihan", defaultChecked: true },
   { id: "amount_received", label: "Dibayar", defaultChecked: true },
   { id: "remaining_amount", label: "Sisa Tagihan", defaultChecked: true },
-  { id: "payment_terms", label: "Cicilan (Kali)", defaultChecked: true },
-  { id: "deposit_amount", label: "Deposit Amount", defaultChecked: true },
   { id: "rental_period", label: "Rental Period", defaultChecked: true },
   { id: "payment_date", label: "Payment Date", defaultChecked: true },
   { id: "created_at", label: "Tanggal Dibuat", defaultChecked: true },
@@ -82,11 +79,11 @@ export function PaymentTable({
             Late Payment
           </Link>
           <Link
-            href="/dashboard/finances/saldo"
+            href="/dashboard/finances/koin"
             className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm font-medium rounded-xl hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
           >
             <span className="material-symbols-outlined text-base">account_balance_wallet</span>
-            Saldo
+            Koin
           </Link>
           <button
             onClick={() => setIsExportModalOpen(true)}
@@ -108,7 +105,6 @@ export function PaymentTable({
               <th className="px-6 py-4">Total Tagihan</th>
               <th className="px-6 py-4">Dibayar</th>
               <th className="px-6 py-4">Sisa Tagihan</th>
-              <th className="px-6 py-4">Cicilan</th>
               <th className="px-6 py-4">Deposit</th>
               <th className="px-6 py-4">Rental Period</th>
               <th className="px-6 py-4">Payment Date</th>

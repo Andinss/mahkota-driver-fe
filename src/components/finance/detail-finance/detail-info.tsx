@@ -40,7 +40,6 @@ const formatShortDate = (dateStr: string) => {
 const statusLabel: Record<FinanceStatus, string> = {
   unpaid: "Unpaid",
   pending: "Pending",
-  partially_paid: "Partially Paid",
   paid: "Paid",
   cancelled: "Cancelled",
 };
@@ -128,9 +127,7 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-slate-500 dark:text-slate-400">Cicilan:</span>
-            <span className="text-sm font-bold text-slate-900 dark:text-white">
-              {(finance.payment_terms ?? 1) > 1 ? `${finance.payment_terms} Kali` : "Lunas (1 Kali)"}
-            </span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white">Lunas</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-slate-500 dark:text-slate-400">Admin Fee (Join):</span>
@@ -140,7 +137,7 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-slate-500 dark:text-slate-400">Total Tagihan:</span>
-            <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(finance.total_amount ?? finance.amount_received)}</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(finance.fee_admin_join ?? finance.amount_received)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-slate-500 dark:text-slate-400">Sudah Dibayar:</span>
@@ -150,10 +147,7 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
             <span className="text-sm text-slate-500 dark:text-slate-400">Sisa Tagihan:</span>
             <span className={`text-sm font-bold ${finance.remaining_amount > 0 ? "text-orange-500" : "text-slate-900 dark:text-white"}`}>{formatCurrency(finance.remaining_amount ?? 0)}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-slate-500 dark:text-slate-400">Deposit:</span>
-            <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(finance.deposit_amount)}</span>
-          </div>
+
           <div className="flex justify-between">
             <span className="text-sm text-slate-500 dark:text-slate-400">Metode:</span>
             <span className="text-sm font-bold text-slate-900 dark:text-white capitalize">{finance.payment_method}</span>

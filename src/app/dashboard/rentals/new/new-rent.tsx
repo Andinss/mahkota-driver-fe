@@ -47,6 +47,7 @@ interface SelectOption {
   value: string;
   image?: string;
   dailyRate?: number;
+  pricingCategory?: string;
 }
 
 const NewRentPage = () => {
@@ -81,6 +82,8 @@ const NewRentPage = () => {
 
   const [driverOptions, setDriverOptions] = useState<SelectOption[]>([]);
   const [vehicleOptions, setVehicleOptions] = useState<SelectOption[]>([]);
+  const [isFirstRental, setIsFirstRental] = useState<boolean | null>(null);
+  const [selectedVehicleCategory, setSelectedVehicleCategory] = useState<string>("");
 
   const { user } = useAuth();
   const isSupervisor = user?.role?.code === "SUPERVISOR";
@@ -116,6 +119,7 @@ const NewRentPage = () => {
             label: `${v.license_plate} - ${v.merk} ${v.model}`,
             value: v.id,
             dailyRate: Number(v.daily_rate) || 0,
+            pricingCategory: v.pricing_category || "Reguler",
           })),
       );
     }).catch(() => {});
@@ -230,11 +234,13 @@ const NewRentPage = () => {
     driverType?: string;
   }) => {
     let dailyRate = 0;
+    let vehicleCat = "";
     if (data.vehicleId) {
       const selectedVehicle = vehicleOptions.find((v) => v.value === data.vehicleId);
       if (selectedVehicle?.dailyRate) {
         dailyRate = selectedVehicle.dailyRate;
       }
+      vehicleCat = (selectedVehicle as any)?.pricingCategory || "Reguler";
     }
     setRentalData((prev) => ({
       ...prev,
@@ -249,6 +255,19 @@ const NewRentPage = () => {
       dailyRate,
       totalAmount: dailyRate * rentalData.duration,
     }));
+    setSelectedVehicleCategory(vehicleCat);
+
+    // Check if this is the driver's first rental
+    if (data.driverId) {
+      rentalApi.getDriverRentalCount(data.driverId).then((res: any) => {
+        const result = res?.data ?? res;
+        setIsFirstRental(!(result?.has_admin_fee ?? false));
+      }).catch(() => {
+        setIsFirstRental(null);
+      });
+    } else {
+      setIsFirstRental(null);
+    }
   }, [vehicleOptions, rentalData.duration]);
 
   const handlePeriodChange = useCallback((data: {
@@ -334,7 +353,6 @@ const NewRentPage = () => {
     try {
       const totalDuration = rentalData.duration;
       const dailyRate = rentalData.dailyRate;
-      const totalAmount = rentalData.totalAmount;
 
       const formData = new FormData();
       formData.append("driver_id", rentalData.driverId || "");
@@ -343,7 +361,6 @@ const NewRentPage = () => {
       formData.append("end_date", rentalData.endDate);
       formData.append("total_duration", String(totalDuration));
       formData.append("daily_rate", String(dailyRate));
-      formData.append("total_amount", String(totalAmount));
       formData.append("rental_duration", rentalData.rentalDuration || "harian");
       formData.append("rental_service", rentalData.rentalService || "lepas kunci");
 
@@ -459,6 +476,8 @@ const NewRentPage = () => {
             onRentalTypeChange={handleRentalTypeChange}
             duration={rentalData.duration}
             error={hasSubmitted ? errors : undefined}
+            isFirstRental={isFirstRental}
+            vehicleCategory={selectedVehicleCategory}
           />
 
           <DocumentsForm onDataChange={handleDocumentsChange} />

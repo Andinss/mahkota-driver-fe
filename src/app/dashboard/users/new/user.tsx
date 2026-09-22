@@ -25,7 +25,7 @@ export default function AddNewUserPage() {
   const [initialData, setInitialData] = useState<UserFormData | undefined>();
   const [isLoadingUser, setIsLoadingUser] = useState(!!userIdParam);
   const [roles, setRoles] = useState<RoleItem[]>([]);
-  const [availableDrivers, setAvailableDrivers] = useState<{ id: string; name: string; employeeId: string; email: string }[]>([]);
+  const [availableDrivers, setAvailableDrivers] = useState<{ id: string; name: string; employeeId: string; email: string; phone?: string }[]>([]);
   const [selectedDriverId, setSelectedDriverId] = useState<string>("");
 
   const isAdmin = user?.permissions?.includes("role.create") ?? false;
@@ -47,8 +47,11 @@ export default function AddNewUserPage() {
     ]).then(([driverRes, userRes]) => {
       const driverItems = Array.isArray(driverRes.data) ? driverRes.data : [];
       const userItems = Array.isArray(userRes.data) ? userRes.data : [];
+      // Exclude drivers yang sudah ter-link ke user LAIN, tapi tetap tampilkan
+      // driver milik user yang sedang diedit supaya bisa ter-pilih kembali.
       const linkedDriverIds = new Set(
         userItems
+          .filter((u: UserItem) => u.id !== userIdParam)
           .map((u: UserItem) => (u as any).driver_id)
           .filter(Boolean)
       );
@@ -59,10 +62,11 @@ export default function AddNewUserPage() {
           name: `${d.first_name} ${d.last_name}`.trim(),
           employeeId: d.employee_id,
           email: d.email,
+          phone: d.phone || "",
         }));
       setAvailableDrivers(driversWithoutUser);
     }).catch(() => {});
-  }, []);
+  }, [userIdParam]);
 
   useEffect(() => {
     if (userIdParam) {
@@ -80,6 +84,7 @@ export default function AddNewUserPage() {
               role: u.role_id || "",
               isActive: u.is_active !== undefined ? u.is_active : true,
               driver_id: u.driver_id || "",
+              phoneNumber: u.driver?.phone || "",
             });
             if (u.driver_id) {
               setSelectedDriverId(u.driver_id);
@@ -113,6 +118,7 @@ export default function AddNewUserPage() {
         if (mode === "edit" && userIdParam) {
           const payload: Partial<CreateUserPayload> = {
             username: data.username,
+            fullname: data.fullname,
             email: data.email,
             role_id: data.role,
             is_active: data.isActive,

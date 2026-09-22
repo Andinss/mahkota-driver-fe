@@ -21,7 +21,7 @@ function triggerDownload(blob: Blob, filename: string) {
 
 export const usersApi = {
   getList: (params?: UserListParams) =>
-    api.get<SuccessResponsePaginated<UserItem[]>>(
+    api.get<SuccessResponsePaginated<UserItem>>(
       "/users",
       params as Record<string, string | number | undefined>,
     ),

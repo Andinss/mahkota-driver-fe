@@ -33,6 +33,7 @@ interface DriverOption {
   name: string;
   employeeId: string;
   email: string;
+  phone?: string;
 }
 
 interface AddUserFormProps {
@@ -104,15 +105,27 @@ export function AddUserForm({
     if (isDriver && localDriverId) {
       const driver = drivers.find((d) => d.id === localDriverId);
       if (driver) {
-        setFormValues((prev) => ({
-          ...prev,
-          username: driver.employeeId,
-          fullname: driver.name,
-          email: driver.email,
-        }));
+        setFormValues((prev) => {
+          if (mode === "add") {
+            return {
+              ...prev,
+              username: driver.employeeId,
+              fullname: driver.name,
+              email: driver.email,
+              phoneNumber: driver.phone || prev.phoneNumber || "",
+            };
+          }
+          // Saat edit: ambil dari kolom users, jangan override
+          // fullname/email/username dengan data driver. Telepon hanya
+          // diisi kalau masih kosong (users tidak punya kolom phone).
+          return {
+            ...prev,
+            phoneNumber: prev.phoneNumber || driver.phone || "",
+          };
+        });
       }
     }
-  }, [localDriverId, isDriver, drivers]);
+  }, [localDriverId, isDriver, drivers, mode]);
 
   useEffect(() => {
     if (!isDriver && mode === "add") {
