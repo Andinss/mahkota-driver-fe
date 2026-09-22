@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Pagination } from "@/components/ui/pagination";
 import type { DailyPaymentItem } from "@/lib/types/finances";
 
 interface DailyPaymentTableProps {
@@ -43,11 +44,15 @@ export const DailyPaymentTable = ({ payments }: DailyPaymentTableProps) => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const totalResults = payments.length;
-  const totalPages = Math.ceil(totalResults / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(totalResults / itemsPerPage));
   const startEntry = totalResults === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endEntry = Math.min(currentPage * itemsPerPage, totalResults);
 
   const paginatedPayments = payments.slice(startEntry - 1, endEntry);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [payments]);
 
   const goToPage = (page: number) => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
@@ -132,50 +137,15 @@ export const DailyPaymentTable = ({ payments }: DailyPaymentTableProps) => {
           </tbody>
         </table>
       </div>
-      <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <p className="text-sm text-slate-500 dark:text-slate-400">Tampilkan</p>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-            className="px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-          </select>
-          <p className="text-sm text-slate-500 dark:text-slate-400">data</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400 ml-2">
-            Menampilkan <span className="font-bold text-slate-900 dark:text-white">{startEntry}</span> - <span className="font-bold text-slate-900 dark:text-white">{endEntry}</span> dari <span className="font-bold text-slate-900 dark:text-white">{totalResults}</span> data
-          </p>
-        </div>
-        {totalPages > 1 && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-all ${
-                currentPage === 1
-                  ? "text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-not-allowed"
-                  : "text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer"
-              }`}
-            >
-              Sebelumnya
-            </button>
-            <button
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-all ${
-                currentPage === totalPages
-                  ? "text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-not-allowed"
-                  : "text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer"
-              }`}
-            >
-              Berikutnya
-            </button>
-          </div>
-        )}
+      <div className="border-t border-slate-200 dark:border-slate-800">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalResults={totalResults}
+          resultsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onPageSizeChange={handleItemsPerPageChange}
+        />
       </div>
     </>
   );

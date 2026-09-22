@@ -3,6 +3,7 @@ export interface DriverStatsCardProps {
   value: string;
   icon: string;
   iconColor: string;
+  valueClassName?: string;
   trend?: {
     icon: string;
     text: string;
@@ -14,6 +15,7 @@ const colorToBg: Record<string, string> = {
   "text-primary": "bg-primary/10 dark:bg-primary/20",
   "text-blue-500": "bg-blue-50 dark:bg-blue-900/20",
   "text-emerald-500": "bg-emerald-50 dark:bg-emerald-900/20",
+  "text-red-500": "bg-red-50 dark:bg-red-900/20",
   "text-slate-400": "bg-slate-100 dark:bg-slate-800",
 };
 
@@ -22,6 +24,7 @@ export function DriverStatsCard({
   value,
   icon,
   iconColor,
+  valueClassName = "text-2xl",
   trend,
 }: DriverStatsCardProps) {
   const bgClass = colorToBg[iconColor] || "bg-slate-100 dark:bg-slate-800";
@@ -33,7 +36,7 @@ export function DriverStatsCard({
           <span className={`material-symbols-outlined text-2xl ${iconColor}`}>{icon}</span>
         </div>
         <div className="min-w-0">
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
+          <p className={`${valueClassName} font-bold text-slate-900 dark:text-white truncate`}>{value}</p>
           <p className="text-xs text-slate-400 font-medium truncate">{title}</p>
         </div>
       </div>

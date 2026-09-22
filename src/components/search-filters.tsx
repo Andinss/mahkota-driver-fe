@@ -20,7 +20,6 @@ export const SearchFilters = () => {
             <option value="rented">Rented</option>
             <option value="Reserved">Reserved</option>
             <option value="Maintenance">Maintenance</option>
-            <option value="Service">Service</option>
             <option value="retrieved">Retrieved</option>
           </Select>
           <Select

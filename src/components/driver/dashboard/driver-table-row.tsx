@@ -9,6 +9,7 @@ export interface Driver {
   phoneNumber: string;
   email: string;
   koin?: number;
+  isActive?: boolean;
 }
 
 interface DriverTableRowProps {

@@ -94,6 +94,7 @@ export function DriverTable({
               <th className="px-6 py-4">Telepon</th>
               <th className="px-6 py-4">Email</th>
               <th className="px-6 py-4">Koin</th>
+              <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>

@@ -1,4 +1,4 @@
-export type VehicleStatus = "Available" | "Maintenance" | "Service" | "Reserved" | "rented" | "retrieved";
+export type VehicleStatus = "Available" | "Maintenance" | "Reserved" | "rented" | "retrieved";
 export type PricingCategory = "Reguler" | "Premium";
 
 export interface VehicleItem {
@@ -27,7 +27,6 @@ export interface VehicleSummary {
   rented: number;
   available: number;
   maintenance: number;
-  service: number;
   reserved: number;
   retrieved: number;
   status_breakdown: Record<string, number>;
