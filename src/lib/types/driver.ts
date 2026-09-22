@@ -34,6 +34,7 @@ export interface DriverItem {
   house_type: string;
   ready_sign_contract: boolean;
   willing_to_be_survey: boolean;
+  is_active: boolean;
   national_id_card?: string;
   sim_card?: string;
   garage_photo?: string;
@@ -58,6 +59,8 @@ export interface DriverItem {
 
 export interface DriverSummary {
   total_drivers: number;
+  active_drivers: number;
+  inactive_drivers: number;
   gender_breakdown: Record<string, number>;
 }
 

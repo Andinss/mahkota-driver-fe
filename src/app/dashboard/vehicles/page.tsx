@@ -23,6 +23,7 @@ interface VehicleDisplay {
   rate: string;
   pricingCategory: string;
   status: VehicleStatus;
+  isActive?: boolean;
   image: string;
   imageAlt: string;
   vendorName: string;
@@ -84,6 +85,7 @@ export default function DashboardVehiclePage() {
           rate: `Rp ${Number(item.daily_rate || 0).toLocaleString("id-ID")}`,
           pricingCategory: item.pricing_category || "Reguler",
           status: item.status || "Available",
+          isActive: item.is_active !== false,
           image,
           imageAlt: `${name} side view`,
           vendorName: item.vendor?.name || "-",
@@ -145,6 +147,41 @@ export default function DashboardVehiclePage() {
         console.error("Failed to delete vehicle:", err);
         toastError("Failed to delete vehicle. Please try again.");
       }
+    }
+  };
+
+  const handleToggleStatus = async (vehicle: any) => {
+    const isActive = vehicle.isActive !== false;
+    const newStatus = !isActive;
+    const action = isActive ? "deactivate" : "activate";
+
+    const confirmed = await confirmToast({
+      title: isActive ? "Mark as Inactive" : "Mark as Active",
+      message: `Are you sure you want to ${action} ${vehicle.name} (${vehicle.plate})? ${
+        isActive
+          ? "This vehicle will not be available for rental."
+          : "This vehicle will be available for rental again."
+      }`,
+      confirmText: `Yes, ${isActive ? "Deactivate" : "Activate"}`,
+      cancelText: "Cancel",
+      variant: isActive ? "danger" : "info",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      const id = vehicle.id || vehicles.find((v) => v.plate === vehicle.plate)?.id;
+      if (!id) throw new Error("Vehicle ID not found");
+
+      await vehicleApi.updateStatus(id, newStatus);
+      toastSuccess(
+        `Vehicle ${vehicle.name} (${vehicle.plate}) has been ${action}d successfully.`,
+      );
+      fetchVehicles();
+      fetchSummary();
+    } catch (err: any) {
+      console.error("Failed to update vehicle status:", err);
+      toastError(err?.message || "Failed to update vehicle status.");
     }
   };
 
@@ -241,7 +278,8 @@ export default function DashboardVehiclePage() {
             {/* Vehicle Table */}
             <VehicleTable 
             vehicles={vehicles}
-            onDelete={handleDeleteClick} 
+            onDelete={handleDeleteClick}
+            onToggleStatus={handleToggleStatus} 
             onExport={handleExport}
             />
             <Pagination

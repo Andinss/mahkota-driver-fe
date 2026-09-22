@@ -38,6 +38,9 @@ export const driverApi = {
   update: (id: string, payload: FormData) =>
     api.uploadPut<SuccessResponse<DriverItem>>(`/drivers/update/${id}`, payload),
 
+  updateStatus: (employeeId: string, is_active: boolean) =>
+    api.put<SuccessResponse<DriverItem>>(`/drivers/status/${employeeId}`,{ is_active },),
+
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/drivers/delete/${id}`),
 

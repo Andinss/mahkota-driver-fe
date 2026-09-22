@@ -14,6 +14,7 @@ export interface VehicleItem {
   daily_rate: number;
   pricing_category: PricingCategory;
   status: VehicleStatus;
+  is_active: boolean;
   vehicle_photo?: string | string[];
   vendor_id?: string;
   vendor?: { id: string; name: string; owner_name: string } | null;

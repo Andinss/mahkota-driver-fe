@@ -31,6 +31,7 @@ interface ModalExportProps {
   description?: string;
   columns?: ExportColumn[];
   defaultSelectedColumns?: string[];
+  hideDateRange?: boolean;
 }
 
 const defaultRentalColumns: ExportColumn[] = [
@@ -71,6 +72,7 @@ export function ModalExport({
   description = "Generate reports.",
   columns = defaultRentalColumns,
   defaultSelectedColumns,
+  hideDateRange = false, 
 }: ModalExportProps) {
   const getDefaultSelected = () => {
     if (defaultSelectedColumns) return defaultSelectedColumns;
@@ -149,7 +151,7 @@ export function ModalExport({
         exportType === "all" ? columns.map((c) => c.id) : selectedColumns,
       format: selectedFormat,
       dateRange:
-        exportType === "filtered" && dateRangeSelected
+        !hideDateRange && exportType === "filtered" && dateRangeSelected
           ? {
               start: formatDateISO(startDate),
               end: formatDateISO(endDate),
@@ -413,6 +415,7 @@ export function ModalExport({
           {exportType === "filtered" ? (
             <div className="space-y-6">
               {/* Date Range Picker */}
+              {!hideDateRange && (
               <div className="space-y-3">
                 <label className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
                   Date Range
@@ -441,6 +444,7 @@ export function ModalExport({
                   {isCalendarOpen && <CalendarPicker />}
                 </div>
               </div>
+              )}
 
               {/* Select Columns */}
               <div className="space-y-3">

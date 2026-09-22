@@ -10,6 +10,7 @@ interface Vehicle {
   rate: string;
   pricingCategory: string;
   status: string;
+  isActive?: boolean;
   image: string;
   imageAlt: string;
   vendorName: string;
@@ -20,6 +21,7 @@ interface VehicleTableRowProps {
   vehicle: Vehicle;
   onEdit?: (vehicle: Vehicle) => void;
   onDelete?: (vehicle: Vehicle) => void;
+  onToggleStatus?: (vehicle: Vehicle) => void;
   onDetails?: (vehicle: Vehicle) => void;
 }
 
@@ -27,8 +29,11 @@ export const VehicleTableRow = ({
   vehicle,
   onEdit,
   onDelete,
+  onToggleStatus,
   onDetails,
 }: VehicleTableRowProps) => {
+  const isActive = vehicle.isActive !== false;
+
   return (
     <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-4 whitespace-nowrap">
@@ -47,7 +52,7 @@ export const VehicleTableRow = ({
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 px-2 py-1 rounded">
+        <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
           {vehicle.plate}
         </span>
       </td>
@@ -66,6 +71,19 @@ export const VehicleTableRow = ({
       <td className="px-6 py-4 whitespace-nowrap">
         <StatusBadge status={vehicle.status} />
       </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        {isActive ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Active
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            Inactive
+          </span>
+        )}
+      </td>
       <td className="px-6 py-4 text-right whitespace-nowrap">
         <Dropdown
           trigger={
@@ -79,8 +97,14 @@ export const VehicleTableRow = ({
           <Link href={`/dashboard/vehicles/register?plate=${vehicle.plate}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
-          <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(vehicle)}>
+          {/* <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(vehicle)}>
             Delete
+          </DropdownMenuItem> */}
+          <DropdownMenuItem
+            icon={isActive ? "block" : "check_circle"}
+            onClick={() => onToggleStatus?.(vehicle)}
+          >
+            {isActive ? "Mark as Inactive" : "Mark as Active"}
           </DropdownMenuItem>
           <Link href={`/dashboard/vehicles/detail?id=${vehicle.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
