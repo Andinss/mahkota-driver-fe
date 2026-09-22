@@ -123,6 +123,7 @@ export function DriverTable({
         title="Export Driver Data"
         description="Generate driver reports and performance data."
         columns={driverColumns}
+        hideDateRange={true}
       />
     </>
   );
