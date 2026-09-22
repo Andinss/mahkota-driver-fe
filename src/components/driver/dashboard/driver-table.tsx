@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { DriverTableRow, Driver } from "./driver-table-row";
-import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
+import { toastSuccess } from "@/components/ui/toast-provider";
 import { useSearchParams } from "next/navigation";
 import { ExportColumn, ModalExport } from "@/components/ui/export";
 
@@ -9,6 +9,7 @@ const driverColumns: ExportColumn[] = [
   { id: "employee_id", label: "Employee ID", defaultChecked: true },
   { id: "phone", label: "Phone Number", defaultChecked: true },
   { id: "email", label: "Email", defaultChecked: true },
+  { id: "is_active", label: "Status", defaultChecked: true },
   { id: "saldo", label: "Saldo", defaultChecked: true },
   { id: "gender", label: "Gender", defaultChecked: false },
   { id: "date_of_birth", label: "Date of Birth", defaultChecked: false },
@@ -23,11 +24,18 @@ const driverColumns: ExportColumn[] = [
 interface DriverTableProps {
   drivers: Driver[];
   onDeleteDriver?: (driverId: string) => Promise<void>;
+  onToggleStatus?: (driver: Driver) => void;
   onExport?: (options?: any) => void;
   onDetailsDriver?: (driver: Driver) => void;
 }
 
-export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver }: DriverTableProps) {
+export function DriverTable({
+  drivers,
+  onDeleteDriver,
+  onToggleStatus,
+  onExport,
+  onDetailsDriver,
+}: DriverTableProps) {
   const searchParams = useSearchParams();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const toastShownRef = useRef(false);
@@ -38,23 +46,23 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
 
     if (success && driver && !toastShownRef.current) {
       toastShownRef.current = true;
-      const action = success === "updated" ? "Update" : "Registration";
+      // const action = success === "updated" ? "Update" : "Registration";
       toastSuccess(`Driver ${decodeURIComponent(driver)} has been ${success} successfully.`);
       window.history.replaceState({}, "", "/dashboard/drivers");
     }
   }, [searchParams]);
 
-  const handleDeleteConfirm = async (driver: Driver) => {
-    if (onDeleteDriver) {
-      try {
-        await onDeleteDriver(driver.employeeId);
-        toastSuccess(`Driver ${driver.name} (${driver.employeeId}) has been deleted successfully`);
-      } catch (err: any) {
-        const msg = err?.message || `Failed to delete driver ${driver.name}. They may have active transactions.`;
-        toastError(msg);
-      }
-    }
-  };
+  // const handleDeleteConfirm = async (driver: Driver) => {
+  //   if (onDeleteDriver) {
+  //     try {
+  //       await onDeleteDriver(driver.employeeId);
+  //       toastSuccess(`Driver ${driver.name} (${driver.employeeId}) has been deleted successfully`);
+  //     } catch (err: any) {
+  //       const msg = err?.message || `Failed to delete driver ${driver.name}. They may have active transactions.`;
+  //       toastError(msg);
+  //     }
+  //   }
+  // };
 
   return (
     <>
@@ -87,6 +95,7 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
               <th className="px-6 py-4">Telepon</th>
               <th className="px-6 py-4">Email</th>
               <th className="px-6 py-4">Saldo</th>
+              <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
@@ -95,19 +104,9 @@ export function DriverTable({ drivers, onDeleteDriver, onExport, onDetailsDriver
               <DriverTableRow
                 key={driver.employeeId}
                 driver={driver}
-                onDeleteClick={async (driver: Driver) => {
-                  const confirmed = await confirmToast({
-                    title: "Hapus Driver",
-                    message: `Apakah Anda yakin ingin menghapus ${driver.name}? Tindakan ini tidak dapat dibatalkan.`,
-                    confirmText: "Ya, Hapus",
-                    cancelText: "Batal",
-                    variant: "danger",
-                  });
-                  if (confirmed) {
-                    await handleDeleteConfirm(driver);
-                  }
-                }}
+                onToggleStatus={onToggleStatus}
                 onDetailsClick={onDetailsDriver}
+                // onDeleteClick={...}
               />
             ))}
           </tbody>

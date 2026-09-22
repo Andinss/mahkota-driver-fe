@@ -17,7 +17,7 @@ const variantStyles = {
 export const QuickAction = ({ icon, title, description, variant, onClick, className = "" }: QuickActionProps) => {
   return (
     <button
-      className={`flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group text-left ${className}`}
+      className={`flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group text-left cursor-pointer ${className}`}
       onClick={onClick}
     >
       <div className={`size-10 rounded-lg ${variantStyles[variant]} flex items-center justify-center shrink-0 transition-colors`}>
