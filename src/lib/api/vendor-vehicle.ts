@@ -45,6 +45,12 @@ export const vendorApi = {
       payload,
     ),
 
+  updateStatus: (id: string, status: "active" | "inactive") =>
+    api.put<SuccessResponse<VendorVehicle>>(
+      `/vendor-vehicles/status/${id}`,
+      { status },
+    ),
+
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/vendor-vehicles/delete/${id}`),
 

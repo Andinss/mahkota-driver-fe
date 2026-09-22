@@ -156,6 +156,38 @@ export default function VendorVehiclePage() {
     }
   };
 
+  const handleToggleStatus = async (vendor: VendorVehicle) => {
+    const isActive = vendor.status === "active";
+    const newStatus: "active" | "inactive" = isActive ? "inactive" : "active";
+    const action = isActive ? "deactivate" : "activate";
+
+    const confirmed = await confirmToast({
+      title: isActive ? "Mark as Inactive" : "Mark as Active",
+      message: `Are you sure you want to ${action} ${vendor.name}? ${
+        isActive
+          ? "This vendor will be marked as inactive."
+          : "This vendor will be marked as active again."
+      }`,
+      confirmText: `Yes, ${isActive ? "Deactivate" : "Activate"}`,
+      cancelText: "Cancel",
+      variant: isActive ? "danger" : "info",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await vendorApi.updateStatus(vendor.id, newStatus);
+      toastSuccess(
+        `Vendor ${vendor.name} has been ${action}d successfully.`,
+      );
+      fetchVendors();
+      fetchSummary();
+    } catch (err: any) {
+      console.error("Failed to update vendor status:", err);
+      toastError(err?.message || "Failed to update vendor status.");
+    }
+  };
+
   const handleDetails = (vendor: VendorVehicle) => {
     router.push(`/dashboard/vendor-vehicles/detail?id=${vendor.id}`);
   };
@@ -281,6 +313,7 @@ export default function VendorVehiclePage() {
               vendors={displayVendors}
               totalResults={totalResults}
               onDelete={handleDelete}
+              onToggleStatus={handleToggleStatus}
               onDetails={handleDetails}
               onEdit={handleEdit}
               onExport={handleExport}
