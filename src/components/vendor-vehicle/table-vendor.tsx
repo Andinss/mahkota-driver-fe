@@ -11,6 +11,7 @@ interface VendorTableProps {
   totalResults?: number;
   onEdit?: (vendor: VendorVehicle) => void;
   onDelete?: (vendor: VendorVehicle) => void;
+  onToggleStatus?: (vendor: VendorVehicle) => void;
   onDetails?: (vendor: VendorVehicle) => void;
   onExport?: (options: ExportOptions) => void;
 }
@@ -29,6 +30,7 @@ export const VendorTable = ({
   totalResults,
   onEdit,
   onDelete,
+  onToggleStatus,
   onDetails,
   onExport,
 }: VendorTableProps) => {
@@ -67,6 +69,7 @@ export const VendorTable = ({
               <th className="px-6 py-4">Nama Vendor</th>
               <th className="px-6 py-4">Nama Pemilik</th>
               <th className="px-6 py-4">Pendapatan</th>
+              <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
@@ -77,6 +80,7 @@ export const VendorTable = ({
                 vendor={vendor}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onToggleStatus={onToggleStatus}
                 onDetails={onDetails}
               />
             ))}

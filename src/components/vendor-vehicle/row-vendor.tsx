@@ -9,6 +9,7 @@ interface VendorTableRowProps {
   vendor: VendorVehicle;
   onEdit?: (vendor: VendorVehicle) => void;
   onDelete?: (vendor: VendorVehicle) => void;
+  onToggleStatus?: (vendor: VendorVehicle) => void;
   onDetails?: (vendor: VendorVehicle) => void;
 }
 
@@ -27,9 +28,11 @@ export const VendorTableRow = ({
   vendor,
   onEdit,
   onDelete,
+  onToggleStatus,
   onDetails,
 }: VendorTableRowProps) => {
   const logoUrl = buildLogoUrl(vendor.logo);
+  const isActive = vendor.status === "active";
 
   return (
     <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors group">
@@ -58,12 +61,22 @@ export const VendorTableRow = ({
       </td>
       <td className="px-6 py-4">
         <p className="text-slate-900 dark:text-white">{vendor.owner_name}</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          {vendor.status === "active" ? "Aktif" : "Nonaktif"}
-        </p>
       </td>
       <td className="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400">
         {formatRupiah(Number(vendor.pendapatan) || 0)}
+      </td>
+      <td className="px-6 py-4">
+        {isActive ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Active
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            Inactive
+          </span>
+        )}
       </td>
       <td className="px-6 py-4 text-right">
         <Dropdown
@@ -78,12 +91,18 @@ export const VendorTableRow = ({
           <Link href={`/dashboard/vendor-vehicles/new?id=${vendor.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
-          <DropdownMenuItem
+          {/* <DropdownMenuItem
             icon="delete"
             danger
             onClick={() => onDelete?.(vendor)}
           >
             Delete
+          </DropdownMenuItem> */}
+          <DropdownMenuItem
+            icon={isActive ? "block" : "check_circle"}
+            onClick={() => onToggleStatus?.(vendor)}
+          >
+            {isActive ? "Mark as Inactive" : "Mark as Active"}
           </DropdownMenuItem>
           <Link href={`/dashboard/vendor-vehicles/detail?id=${vendor.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
