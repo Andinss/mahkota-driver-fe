@@ -11,8 +11,8 @@ interface StatusSelectProps {
 
 const statusOptions: Array<{ value: VehicleStatus; label: string }> = [
   { value: "Available", label: "Available for Rent" },
+  { value: "rented", label: "Rented" },
   { value: "Maintenance", label: "In Maintenance" },
-  { value: "Service", label: "Out of Service" },
   { value: "Reserved", label: "Reserved" },
 ];
 

@@ -28,7 +28,6 @@ const statusMap: Record<string, string> = {
   Reserved: "ACTIVE",
   rented: "RENTED",
   Maintenance: "MAINTENANCE",
-  Service: "SERVICE",
   retrieved: "RETRIEVED",
 };
 

@@ -265,7 +265,7 @@ export default function DashboardVehiclePage() {
             icon="settings"
             iconColor="text-orange-500"
             trend={{
-              value: `Service: ${summary?.service ?? 0}`,
+              value: "Units under repair",
               color: "text-orange-500",
               icon: "build",
             }}

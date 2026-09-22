@@ -1,4 +1,4 @@
-type StatusType = "available" | "rented" | "maintenance" | "reserved" | "service" | "retrieved";
+type StatusType = "available" | "rented" | "maintenance" | "reserved" | "retrieved";
 
 interface StatusBadgeProps {
   status: StatusType | string;
@@ -24,11 +24,6 @@ const statusConfig: Record<string, { label: string; className: string; dotColor:
     label: "Reserved",
     className: "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
     dotColor: "bg-purple-500",
-  },
-  service: {
-    label: "Service",
-    className: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
-    dotColor: "bg-amber-500",
   },
   retrieved: {
     label: "Retrieved",

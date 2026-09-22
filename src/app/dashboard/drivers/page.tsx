@@ -85,6 +85,7 @@ export default function DriverPage() {
           phoneNumber: item.phone || "",
           email: item.email || "",
           koin: item.koin ? Number(item.koin.balance) : 0,
+          isActive: item.is_active !== false,
         };
       });
       setDrivers(mapped);
@@ -258,9 +259,32 @@ export default function DriverPage() {
           }}
         />
         <DriverStatsCard
+          title="Active Drivers"
+          icon="check_circle"
+          iconColor="text-emerald-500"
+          value={(summary?.active_drivers ?? 0).toString()}
+          trend={{
+            icon: "bolt",
+            text: "Drivers currently active and able to take activities",
+            textColor: "text-emerald-500",
+          }}
+        />
+        <DriverStatsCard
+          title="Inactive Drivers"
+          icon="cancel"
+          iconColor="text-red-500"
+          value={(summary?.inactive_drivers ?? 0).toString()}
+          trend={{
+            icon: "schedule",
+            text: "Drivers currently inactive / suspended",
+            textColor: "text-red-500",
+          }}
+        />
+        <DriverStatsCard
           title="Koin Overview"
           icon="account_balance_wallet"
           iconColor="text-blue-500"
+          valueClassName="text-lg"
           value={drivers.reduce((sum, d) => sum + (d.koin ?? 0), 0).toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 })}
           trend={{
             icon: "wallet",

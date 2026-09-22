@@ -35,14 +35,32 @@ const calculateDuration = (start: string, end: string) => {
   return null;
 };
 
+const toLocalDateStr = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 const Period = ({ onDataChange, initialData, error }: PeriodProps) => {
   const [startDate, setStartDate] = useState<string>(initialData?.startDate || "");
   const [endDate, setEndDate] = useState<string>(initialData?.endDate || "");
   const initDuration = calculateDuration(initialData?.startDate || "", initialData?.endDate || "");
   const [duration, setDuration] = useState<number | null>(initDuration);
 
+  // Tanggal mulai hanya boleh hari ini atau besok
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+  const minStartDate = toLocalDateStr(today);
+  const maxStartDate = toLocalDateStr(tomorrow);
+
   const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newStart = e.target.value;
+    let newStart = e.target.value;
+    if (newStart) {
+      if (newStart < minStartDate) newStart = minStartDate;
+      if (newStart > maxStartDate) newStart = maxStartDate;
+    }
     setStartDate(newStart);
     const newDuration = calculateDuration(newStart, endDate);
     setDuration(newDuration);
@@ -83,9 +101,14 @@ const Period = ({ onDataChange, initialData, error }: PeriodProps) => {
             label="Tanggal Mulai"
             required
             value={startDate}
+            min={minStartDate}
+            max={maxStartDate}
             onChange={handleStartChange}
             error={error?.startDate}
           />
+          <p className="text-[10px] text-slate-400 italic">
+            *Hanya bisa hari ini atau besok
+          </p>
         </div>
         <div className="space-y-2">
           <DateInput
