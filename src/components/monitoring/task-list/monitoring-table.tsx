@@ -132,7 +132,7 @@ export function MonitoringTable({ vehicles, loading, onRefresh }: MonitoringTabl
               <th className="px-4 py-4 whitespace-nowrap">Lokasi</th>
               <th className="px-4 py-4 whitespace-nowrap">Status</th>
               <th className="px-4 py-4 whitespace-nowrap">Kecepatan</th>
-              <th className="px-4 py-4 whitespace-nowrap">Bahan Bakar</th>
+              {/* <th className="px-4 py-4 whitespace-nowrap">Bahan Bakar</th> */}
               <th className="px-4 py-4 whitespace-nowrap">Mesin</th>
               <th className="px-4 py-4 whitespace-nowrap">Terakhir Diperbarui</th>
             </tr>
@@ -174,6 +174,7 @@ export function MonitoringTable({ vehicles, loading, onRefresh }: MonitoringTabl
                 <td className="px-4 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
                   {v.speed} km/h
                 </td>
+                {/* 
                 <td className="px-4 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -193,6 +194,7 @@ export function MonitoringTable({ vehicles, loading, onRefresh }: MonitoringTabl
                     </span>
                   </div>
                 </td>
+                */}
                 <td className="px-4 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-2">
                     <EngineSwitch
