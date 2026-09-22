@@ -20,7 +20,7 @@ import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { HttpClientError } from "@/lib/api-http";
-import { toastError } from "@/components/ui/toast-provider";
+import { confirmToast, toastError, toastSuccess } from "@/components/ui/toast-provider";
 
 export default function DriverPage() {
   const { user } = useAuth();
@@ -85,6 +85,7 @@ export default function DriverPage() {
           phoneNumber: item.phone || "",
           email: item.email || "",
           saldo: item.saldo ? Number(item.saldo.balance) : 0,
+          isActive: item.is_active !== false,
         };
       });
       setDrivers(mapped);
@@ -175,6 +176,38 @@ export default function DriverPage() {
     await fetchCount();
   };
 
+  const handleToggleStatus = async (driver: Driver) => {
+    const isActive = driver.isActive !== false;
+    const newStatus = !isActive;
+    const action = isActive ? "deactivate" : "activate";
+
+    const confirmed = await confirmToast({
+      title: isActive ? "Mark as Inactive" : "Mark as Active",
+      message: `Are you sure you want to ${action} ${driver.name}? ${
+        isActive
+          ? "They will not be able to perform any activities."
+          : "They will be able to perform activities again."
+      }`,
+      confirmText: `Yes, ${isActive ? "Deactivate" : "Activate"}`,
+      cancelText: "Cancel",
+      variant: isActive ? "danger" : "info",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await driverApi.updateStatus(driver.employeeId, newStatus);
+      toastSuccess(
+        `Driver ${driver.name} has been ${isActive ? "deactivated" : "activated"} successfully.`,
+      );
+      fetchDrivers();
+      fetchSummary();
+    } catch (err: any) {
+      const msg = err instanceof HttpClientError ? err.message : "Failed to update driver status.";
+      toastError(msg);
+    }
+  };
+
   return (
     <>
     <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
@@ -213,7 +246,7 @@ export default function DriverPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-5 mb-8">
         <DriverStatsCard
           title={!hasReadAll && hasReadOwn ? "My Drivers" : "Total Drivers"}
           value={(summary?.total_drivers ?? totalResults).toString()}
@@ -223,6 +256,28 @@ export default function DriverPage() {
             icon: "trending_up",
             text: summary ? `Male: ${summary.gender_breakdown?.Male ?? 0} | Female: ${summary.gender_breakdown?.Female ?? 0}` : (hasReadOwn ? "Drivers under your supervision" : "All registered drivers"),
             textColor: "text-emerald-500",
+          }}
+        />
+        <DriverStatsCard
+          title="Active Drivers"
+          value={(summary?.active_drivers ?? 0).toString()}
+          icon="check_circle"
+          iconColor="text-emerald-500"
+          trend={{
+            icon: "trending_up",
+            text: "Currently working",
+            textColor: "text-emerald-500",
+          }}
+        />
+        <DriverStatsCard
+          title="Inactive Drivers"
+          value={(summary?.inactive_drivers ?? 0).toString()}
+          icon="person_off"
+          iconColor="text-slate-400"
+          trend={{
+            icon: "trending_down",
+            text: "No longer active",
+            textColor: "text-slate-400",
           }}
         />
         <DriverStatsCard
@@ -260,6 +315,7 @@ export default function DriverPage() {
             <DriverTable
               drivers={drivers}
               onDeleteDriver={handleDeleteDriver}
+              onToggleStatus={handleToggleStatus}
               onExport={handleExport}
               onDetailsDriver={handleDetails}
             />
