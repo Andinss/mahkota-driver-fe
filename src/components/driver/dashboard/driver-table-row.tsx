@@ -8,8 +8,7 @@ export interface Driver {
   employeeId: string;
   phoneNumber: string;
   email: string;
-  saldo?: number;
-  isActive?: boolean;
+  koin?: number;
 }
 
 interface DriverTableRowProps {
@@ -65,15 +64,13 @@ export function DriverTableRow({
       <td className="px-6 py-4 text-sm">
         <span
           className={`inline-flex items-center gap-1 font-semibold ${
-            (driver.saldo ?? 0) > 0
+            (driver.koin ?? 0) > 0
               ? "text-green-600 dark:text-green-400"
               : "text-slate-400 dark:text-slate-500"
           }`}
         >
-          <span className="material-symbols-outlined text-base">
-            account_balance_wallet
-          </span>
-          Rp {Number(driver.saldo ?? 0).toLocaleString("id-ID")}
+          <span className="material-symbols-outlined text-base">account_balance_wallet</span>
+          Rp {Number(driver.koin ?? 0).toLocaleString("id-ID")}
         </span>
       </td>
       <td className="px-6 py-4">

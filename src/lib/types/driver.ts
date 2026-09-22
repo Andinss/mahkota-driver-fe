@@ -41,7 +41,7 @@ export interface DriverItem {
   npwp_photo?: string;
   created_by_id?: string;
   created_by?: { id: string; username: string; email: string };
-  saldo?: { id: string; balance: number };
+  koin?: { id: string; balance: number };
   province?: string;
   province_name?: string;
   city?: string;

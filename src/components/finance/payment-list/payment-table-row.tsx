@@ -59,7 +59,6 @@ const statusLabel: Record<string, string> = {
   paid: "Paid",
   unpaid: "Unpaid",
   pending: "Pending",
-  partially_paid: "Partially Paid",
   cancelled: "Cancelled",
 };
 
@@ -70,7 +69,6 @@ const statusVariant: Record<
   paid: "success",
   unpaid: "neutral",
   pending: "warning",
-  partially_paid: "info",
   cancelled: "neutral",
 };
 
@@ -78,7 +76,7 @@ const methodLabel: Record<string, string> = {
   cash: "Cash",
   transfer: "Transfer",
   "e-wallet": "E-Wallet",
-  saldo: "Saldo",
+  saldo: "Koin",
 };
 
 export const PaymentTableRow = ({
@@ -164,7 +162,7 @@ export const PaymentTableRow = ({
         {vendorInfo?.name || "-"}
       </td>
       <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
-        {formatCurrency(payment.total_amount ?? payment.amount_received ?? 0)}
+        {formatCurrency(payment.fee_admin_join || 0)}
       </td>
       <td className="px-6 py-4 font-semibold text-emerald-600 dark:text-emerald-400">
         {formatCurrency(payment.paid_amount ?? payment.amount_received ?? 0)}
@@ -177,13 +175,7 @@ export const PaymentTableRow = ({
           <span className="font-bold text-slate-900 dark:text-white">
             {payment.payments_count ?? payment.payments?.length ?? 0}
           </span>
-          <span className="text-xs text-slate-400">
-            / {payment.payment_terms ?? 1} kali
-          </span>
         </div>
-      </td>
-      <td className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">
-        {payment.deposit_amount ? formatCurrency(payment.deposit_amount) : "-"}
       </td>
       <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
         {payment.rentals?.[0]?.start_date && payment.rentals?.[0]?.end_date
@@ -214,7 +206,7 @@ export const PaymentTableRow = ({
             </button>
           }
         >
-          <Link href={`/dashboard/finances/payment?id=${payment.id}`}>
+          {/* <Link href={`/dashboard/finances/payment?id=${payment.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
           <DropdownMenuItem
@@ -223,7 +215,7 @@ export const PaymentTableRow = ({
             onClick={() => onDelete?.(payment)}
           >
             Delete
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           <DropdownMenuItem
             icon="visibility"
             onClick={() => onDetails?.(payment)}

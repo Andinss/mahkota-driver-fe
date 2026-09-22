@@ -128,7 +128,7 @@ const Summary = ({
               info
             </span>
             <p className="text-xs text-blue-800 dark:text-blue-200 leading-normal">
-              Saldo driver saat ini:{" "}
+              Koin driver saat ini:{" "}
               <span
                 className={`font-bold ${
                   currentBalance < 0
@@ -140,11 +140,11 @@ const Summary = ({
               </span>
               {paymentMethod === "saldo" ? (
                 <>
-                  . Metode Saldo Driver akan mengurangi saldo driver.
+                  . Metode Koin Driver akan mengurangi koin driver.
                 </>
               ) : (
                 <>
-                  . Pembayaran ini tidak mempengaruhi saldo driver.
+                  . Pembayaran ini tidak mempengaruhi koin driver.
                 </>
               )}
             </p>

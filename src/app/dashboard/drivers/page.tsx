@@ -84,8 +84,7 @@ export default function DriverPage() {
           employeeId: item.employee_id || "",
           phoneNumber: item.phone || "",
           email: item.email || "",
-          saldo: item.saldo ? Number(item.saldo.balance) : 0,
-          isActive: item.is_active !== false,
+          koin: item.koin ? Number(item.koin.balance) : 0,
         };
       });
       setDrivers(mapped);
@@ -259,32 +258,10 @@ export default function DriverPage() {
           }}
         />
         <DriverStatsCard
-          title="Active Drivers"
-          value={(summary?.active_drivers ?? 0).toString()}
-          icon="check_circle"
-          iconColor="text-emerald-500"
-          trend={{
-            icon: "trending_up",
-            text: "Currently working",
-            textColor: "text-emerald-500",
-          }}
-        />
-        <DriverStatsCard
-          title="Inactive Drivers"
-          value={(summary?.inactive_drivers ?? 0).toString()}
-          icon="person_off"
-          iconColor="text-slate-400"
-          trend={{
-            icon: "trending_down",
-            text: "No longer active",
-            textColor: "text-slate-400",
-          }}
-        />
-        <DriverStatsCard
-          title="Saldo Overview"
+          title="Koin Overview"
           icon="account_balance_wallet"
           iconColor="text-blue-500"
-          value={drivers.reduce((sum, d) => sum + (d.saldo ?? 0), 0).toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 })}
+          value={drivers.reduce((sum, d) => sum + (d.koin ?? 0), 0).toLocaleString("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 })}
           trend={{
             icon: "wallet",
             text: `Across ${drivers.length} displayed drivers`,

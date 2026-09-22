@@ -36,7 +36,6 @@ export interface RentalBrief {
 export type FinanceStatus =
   | "unpaid"
   | "pending"
-  | "partially_paid"
   | "paid"
   | "cancelled";
 
@@ -62,13 +61,10 @@ export interface FinanceItem {
   reference_number: string;
   payment_method: "cash" | "transfer" | "e-wallet" | "saldo";
   amount_received: number;
-  deposit_amount: number;
-  total_amount: number;
+  fee_admin_join: number;
   paid_amount: number;
   remaining_amount: number;
   payments_count?: number;
-  payment_terms?: number;
-  fee_admin_join?: number;
   notes: string;
   payer: string;
   driver_id: string;
@@ -150,7 +146,7 @@ export interface DriverFinanceSummary {
     id: string;
     reference_number: string;
     payment_date: string;
-    total_amount: number;
+    fee_admin_join: number;
     paid_amount: number;
     pending_amount: number;
     remaining_amount: number;
@@ -163,9 +159,6 @@ export interface CreateFinancePayload {
   reference_number: string;
   payment_method: string;
   amount_received?: number;
-  deposit_amount?: number;
-  total_amount?: number;
-  payment_terms?: number;
   fee_admin_join?: number;
   notes: string;
   payer: string;
@@ -186,6 +179,8 @@ export interface CreateFinancePaymentPayload {
   status?: "paid" | "pending";
 }
 
+export type PayDailyPaymentPayload = CreateFinancePaymentPayload;
+
 export interface UpdateFinancePaymentPayload {
   status: "paid" | "cancelled";
 }
@@ -199,4 +194,23 @@ export interface MonthlyFinanceItem {
 export interface FinanceMonthlySummary {
   year: number;
   months: MonthlyFinanceItem[];
+}
+
+export interface DailyPaymentItem {
+  id: string;
+  rental_id: string;
+  rental_number: string;
+  driver_id: string;
+  driver_name: string;
+  vehicle_id: string;
+  vehicle_name: string;
+  license_plate: string;
+  vendor_name: string;
+  payment_date: string;
+  amount: number;
+  status: string;
+  reference_number: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
 }

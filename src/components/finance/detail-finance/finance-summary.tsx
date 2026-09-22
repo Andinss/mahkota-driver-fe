@@ -24,13 +24,12 @@ const methodLabel: Record<string, string> = {
   cash: "Cash",
   transfer: "Transfer",
   "e-wallet": "E-Wallet",
-  saldo: "Saldo",
+  saldo: "Koin",
 };
 
 const statusLabel: Record<FinanceStatus, string> = {
   unpaid: "Unpaid",
   pending: "Pending",
-  partially_paid: "Partially Paid",
   paid: "Paid",
   cancelled: "Cancelled",
 };
@@ -38,7 +37,6 @@ const statusLabel: Record<FinanceStatus, string> = {
 const statusStyle: Record<FinanceStatus, string> = {
   unpaid: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
   pending: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
-  partially_paid: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
   paid: "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400",
   cancelled: "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400",
 };
@@ -46,7 +44,6 @@ const statusStyle: Record<FinanceStatus, string> = {
 const statusDot: Record<FinanceStatus, string> = {
   unpaid: "bg-slate-400",
   pending: "bg-amber-500",
-  partially_paid: "bg-blue-500",
   paid: "bg-green-500",
   cancelled: "bg-red-500",
 };
@@ -106,7 +103,7 @@ const FinanceSummary = ({ finance }: FinanceSummaryProps) => {
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-semibold text-slate-400">Rp</span>
             <span className="text-4xl lg:text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
-              {formatCurrency(finance.total_amount ?? finance.amount_received).replace("Rp", "").trim()}
+              {formatCurrency(finance.fee_admin_join ?? finance.amount_received).replace("Rp", "").trim()}
             </span>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { PaymentCard } from "@/components/finance/payment-list/card";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth-context";
 import { driverApi } from "@/lib/api/driver";
+import { koinApi } from "@/lib/api/koin";
 import type { DriverItem } from "@/lib/types/driver";
 
 const formatIDR = (value: number) =>
@@ -19,6 +20,7 @@ const formatIDR = (value: number) =>
 export default function ProfilDriver() {
   const { user } = useAuth();
   const [driver, setDriver] = useState<DriverItem | null>(null);
+  const [koinBalance, setKoinBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +33,9 @@ export default function ProfilDriver() {
       .then((res: any) => {
         const data = res?.data ?? res;
         setDriver(data);
+        if (data?.koin?.balance !== undefined) {
+          setKoinBalance(Number(data.koin.balance) || 0);
+        }
       })
       .catch((err) => {
         console.error("Failed to fetch driver profile:", err);
@@ -38,13 +43,20 @@ export default function ProfilDriver() {
       .finally(() => {
         setIsLoading(false);
       });
+
+    koinApi
+      .getBalance(user.driver_id)
+      .then((res: any) => {
+        const data = res?.data ?? res;
+        setKoinBalance(Number(data?.balance) || 0);
+      })
+      .catch(() => {});
   }, [user?.driver_id]);
 
   const fullName = driver
     ? `${driver.first_name} ${driver.last_name}`.trim()
     : user?.username || "-";
   const employeeId = driver?.employee_id || "-";
-  const saldo = driver?.saldo?.balance ?? 0;
   const activeRentals = driver?.rentals?.length ?? 0;
 
   return (
@@ -80,16 +92,16 @@ export default function ProfilDriver() {
               }}
             />
             <PaymentCard
-              title="Saldo Koin"
-              value={`${saldo.toLocaleString("id-ID")} Koin`}
-              icon="toll"
-              iconColor="text-blue-500"
-              trend={{
-                value: saldo > 0 ? "Tersedia" : "Belum ada transaksi",
-                color: saldo > 0 ? "text-blue-500" : "text-blue-500",
-                icon: "account_balance_wallet",
-              }}
-            />
+            title="Koin"
+            value={`${koinBalance.toLocaleString("id-ID")} Koin`}
+            icon="toll"
+            iconColor="text-blue-500"
+            trend={{
+              value: koinBalance > 0 ? `Setara ${formatIDR(koinBalance)}` : "Belum ada transaksi",
+              color: koinBalance > 0 ? "text-blue-500" : "text-blue-500",
+              icon: "account_balance_wallet",
+            }}
+          />
             <PaymentCard
               title="Unit Operasional"
               value={`${activeRentals} Unit`}

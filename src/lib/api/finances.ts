@@ -13,6 +13,8 @@ import type {
   FinancePaymentItem,
   CreateFinancePaymentPayload,
   UpdateFinancePaymentPayload,
+  DailyPaymentItem,
+  PayDailyPaymentPayload,
 } from "../types/finances.ts";
 
 export const financeApi = {
@@ -36,6 +38,41 @@ export const financeApi = {
 
   getSummary: () =>
     api.get<SuccessResponse<FinanceSummary>>("/finances/summary"),
+
+  getAdminFees: (params?: Record<string, string | number | undefined>) =>
+    api.get<SuccessResponsePaginated<FinanceItem>>(
+      "/finances/admin-fees",
+      params,
+    ),
+
+  getDailyPayments: (params?: Record<string, string | number | undefined>) =>
+    api.get<SuccessResponsePaginated<DailyPaymentItem>>(
+      "/daily-payments",
+      params,
+    ),
+
+  getMyDailyPayments: (params?: Record<string, string | number | undefined>) =>
+    api.get<SuccessResponsePaginated<DailyPaymentItem>>(
+      "/daily-payments/my-daily-payments",
+      params,
+    ),
+
+  getMyDailyPaymentById: (id: string) =>
+    api.get<SuccessResponse<DailyPaymentItem>>(`/daily-payments/${id}`),
+
+  payMyDailyPayment: (id: string, payload: PayDailyPaymentPayload) =>
+    api.post<SuccessResponse<DailyPaymentItem>>(
+      `/daily-payments/${id}/pay`,
+      payload,
+    ),
+
+  getMyAdminFee: () =>
+    api.get<SuccessResponse<FinanceItem>>("/finances/my-admin-fee"),
+
+  updateDailyPaymentStatus: (id: string, status: string) =>
+    api.patch<SuccessResponse<DailyPaymentItem>>(
+      `/daily-payments/${id}/status?status=${status}`,
+    ),
 
   getMonthlySummary: (year?: number) =>
     api.get<SuccessResponse<FinanceMonthlySummary>>(

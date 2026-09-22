@@ -29,6 +29,11 @@ export const rentalApi = {
   getDetail: (id: string) =>
     api.get<SuccessResponse<RentalTransaction>>(`/rentals/detail/${id}`),
 
+  getDriverRentalCount: (driverId: string) =>
+    api.get<SuccessResponse<{ driver_id: string; rental_count: number; is_first_rental: boolean }>>(
+      `/rentals/driver/${driverId}/rental-count`,
+    ),
+
   create: (formData: FormData) =>
     api.upload<SuccessResponse<RentalTransaction>>("/rentals/create", formData),
 

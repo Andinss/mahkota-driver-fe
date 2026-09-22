@@ -9,11 +9,11 @@ const FlowFinance = ({ status = "unpaid" }: FlowFinanceProps) => {
     { label: "Tagihan Dibuat", done: status !== "cancelled" },
     {
       label: "Pembayaran Diterima",
-      done: ["partially_paid", "paid"].includes(status),
+      done: status === "paid" || status === "pending",
     },
     {
       label: "Pembayaran Diverifikasi",
-      done: ["partially_paid", "paid"].includes(status),
+      done: status === "paid",
     },
     {
       label: "Lunas / Selesai",

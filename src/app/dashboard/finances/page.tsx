@@ -10,43 +10,62 @@ import {
 import { PaymentCard } from "@/components/finance/payment-list/card";
 import { Pagination } from "@/components/ui/pagination";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
+import { DailyPaymentTable } from "@/components/finance/payment-list/daily-payment-table";
+import { AdminPaymentTable } from "@/components/finance/payment-list/admin-payment-table";
 import { PageHeader } from "@/components/page-header";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
 import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
 import { financeApi } from "@/lib/api/finances";
+import { koinApi } from "@/lib/api/koin";
 import { HttpClientError } from "@/lib/api-http";
 import type {
   FinanceItem,
   FinanceListParams,
   FinanceSummary,
+  DailyPaymentItem,
 } from "@/lib/types/finances";
+import type { KoinSummary, KoinTransaction } from "@/lib/types/koin";
+import { KoinTable } from "@/components/finance/koin-table";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
+import { Button } from "@/components/ui/button";
+
+type FinanceTab = "daily" | "admin-koin" | "koin";
+
+const tabConfig: { key: FinanceTab; label: string }[] = [
+  { key: "daily", label: "Daily Payment" },
+  { key: "admin-koin", label: "Admin Payment" },
+  { key: "koin", label: "Koin" },
+];
 
 export default function PaymentList() {
   const router = useRouter();
   const { user } = useAuth();
   const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<FinanceTab>("daily");
 
   const [finances, setFinances] = useState<FinanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [meta, setMeta] = useState({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-  });
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
+
+  const [dailyPayments, setDailyPayments] = useState<DailyPaymentItem[]>([]);
+  const [dailyMeta, setDailyMeta] = useState({ total: 0, page: 1, limit: 50, totalPages: 1 });
+
+  const [adminFees, setAdminFees] = useState<FinanceItem[]>([]);
+  const [adminFeeMeta, setAdminFeeMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+
+  const [koinTransactions, setKoinTransactions] = useState<KoinTransaction[]>([]);
+  const [koinMeta, setKoinMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+  const [koinSummary, setKoinSummary] = useState<KoinSummary | null>(null);
 
   const [searchValue, setSearchValue] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-
   const [isDeleting, setIsDeleting] = useState(false);
-
   const toastShownRef = useRef(false);
 
   const fetchSummary = useCallback(async () => {
@@ -58,44 +77,94 @@ export default function PaymentList() {
     }
   }, []);
 
-  const fetchFinances = useCallback(async () => {
+  const fetchDailyPayments = useCallback(async () => {
     if (!canAccess(user?.permissions, "finance.read")) {
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
     try {
-      const params: FinanceListParams = {
-        page: currentPage,
-        limit: itemsPerPage,
+      const response = await financeApi.getDailyPayments({
+        page: 1,
+        limit: 100,
         search: searchValue || undefined,
-        payment_method: paymentMethod || undefined,
-      };
-      const response = await financeApi.getList(params);
+      });
       const items = Array.isArray(response.data) ? response.data : [];
-      setFinances(items);
-      if (response.meta) {
-        setMeta(response.meta);
-      }
+      setDailyPayments(items);
+      if (response.meta) setDailyMeta(response.meta);
     } catch {
-      toastError("Failed to load finance data");
+      toastError("Failed to load daily payments");
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, itemsPerPage, searchValue, paymentMethod, user]);
+  }, [searchValue, user]);
+
+  const fetchAdminFees = useCallback(async () => {
+    if (!canAccess(user?.permissions, "finance.read")) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await financeApi.getAdminFees({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: searchValue || undefined,
+      });
+      const items = Array.isArray(response.data) ? response.data : [];
+      setAdminFees(items);
+      if (response.meta) setAdminFeeMeta(response.meta);
+    } catch {
+      toastError("Failed to load admin fees");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, itemsPerPage, searchValue, user]);
+
+  const fetchKoinTransactions = useCallback(async () => {
+    if (!canAccess(user?.permissions, "finance.read")) {
+      return;
+    }
+    try {
+      const response = await koinApi.getAllTransactions({
+        page: 1,
+        limit: 50,
+      });
+      const items = Array.isArray(response.data) ? response.data : [];
+      setKoinTransactions(items);
+      if (response.meta) setKoinMeta(response.meta);
+    } catch {
+      toastError("Failed to load koin transactions");
+    }
+  }, [user]);
+
+  const fetchKoinSummary = useCallback(async () => {
+    try {
+      const res = await koinApi.getSummary();
+      if ((res as any)?.success) {
+        setKoinSummary((res as any).data);
+      }
+    } catch {
+      // koin summary non-critical
+    }
+  }, []);
+
+  useEffect(() => { fetchSummary(); }, [fetchSummary]);
 
   useEffect(() => {
-    fetchFinances();
-  }, [fetchFinances]);
-
-  useEffect(() => {
-    fetchSummary();
-  }, [fetchSummary]);
+    if (activeTab === "daily") {
+      fetchDailyPayments();
+    } else if (activeTab === "admin-koin") {
+      fetchAdminFees();
+    } else if (activeTab === "koin") {
+      fetchKoinTransactions();
+      fetchKoinSummary();
+    }
+  }, [activeTab, fetchDailyPayments, fetchAdminFees, fetchKoinTransactions, fetchKoinSummary]);
 
   useEffect(() => {
     const success = searchParams.get("success");
     const ref = searchParams.get("ref");
-
     if (success && ref && !toastShownRef.current) {
       toastShownRef.current = true;
       const action = success === "updated" ? "Update" : "Registration";
@@ -106,23 +175,10 @@ export default function PaymentList() {
     }
   }, [searchParams]);
 
-  const totalAmount =
-    summary?.total_amount_received ??
-    finances.reduce((sum, f) => {
-      return sum + (Number(f.amount_received) || 0);
-    }, 0);
-
-  const activeCount =
-    summary?.total_active ?? finances.filter((f) => f.is_active).length;
-  const inactiveCount =
-    summary?.total_inactive ?? finances.filter((f) => !f.is_active).length;
-
   const handleExport = async (options?: ExportOptions) => {
     if (!options) return;
     const params: Record<string, string | number | undefined> = {
-      format: options.format,
-      columns: options.columns.join(","),
-      type: options.type,
+      format: options.format, columns: options.columns.join(","), type: options.type,
     };
     if (options.type === "filtered") {
       if (searchValue) params.search = searchValue;
@@ -135,35 +191,21 @@ export default function PaymentList() {
 
   const handleDelete = async (finance: FinanceItem) => {
     const base = `Are you sure you want to delete ${finance.reference_number}?`;
-    const message =
-      finance.payment_method === "saldo"
-        ? base
-        : `${base}\n\nDeleting this finance will not affect the driver's saldo.`;
-
+    const message = finance.payment_method === "saldo"
+      ? base
+      : `${base}\n\nDeleting this finance will not affect the driver's koin.`;
     const confirmed = await confirmToast({
-      title: "Delete Payment",
-      message,
-      confirmText: "Yes, Delete",
-      cancelText: "Cancel",
-      variant: "danger",
+      title: "Delete Payment", message, confirmText: "Yes, Delete",
+      cancelText: "Cancel", variant: "danger",
     });
-
     if (!confirmed) return;
-
     setIsDeleting(true);
     try {
       await financeApi.delete(finance.id);
-      toastSuccess(
-        `Finance ${finance.reference_number} has been deleted successfully`,
-      );
-      fetchFinances();
-      fetchSummary();
+      toastSuccess(`Finance ${finance.reference_number} has been deleted successfully`);
+      fetchAdminFees(); fetchSummary();
     } catch (err) {
-      toastError(
-        err instanceof HttpClientError
-          ? err.message
-          : "Failed to delete finance record",
-      );
+      toastError(err instanceof HttpClientError ? err.message : "Failed to delete finance record");
     } finally {
       setIsDeleting(false);
     }
@@ -174,20 +216,64 @@ export default function PaymentList() {
   };
 
   const handleSearchChange = (value: string) => {
-    setSearchValue(value);
-    setCurrentPage(1);
+    setSearchValue(value); setCurrentPage(1);
   };
-
   const handlePaymentMethodChange = (value: string) => {
-    setPaymentMethod(value);
-    setCurrentPage(1);
+    setPaymentMethod(value); setCurrentPage(1);
+  };
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= adminFeeMeta.totalPages) setCurrentPage(page);
   };
 
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= meta.totalPages) {
-      setCurrentPage(page);
-    }
-  };
+  const totalDailyAmount = dailyPayments.reduce((sum, dp) => sum + (Number(dp.amount) || 0), 0);
+  const unpaidDailyCount = dailyPayments.filter((dp) => dp.status === "unpaid").length;
+  const paidDailyCount = dailyPayments.filter((dp) => dp.status === "paid").length;
+
+  const renderDailyCards = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <PaymentCard title="Total Tagihan Hari Ini" value={`Rp ${totalDailyAmount.toLocaleString("id-ID")}`} icon="payments" iconColor="text-primary"
+        trend={{ value: `${dailyPayments.length} tagihan`, color: "text-primary", icon: "trending_up" }} />
+      <PaymentCard title="Sudah Dibayar" value={`Rp ${dailyPayments.filter((dp) => dp.status === "paid").reduce((s, dp) => s + Number(dp.amount), 0).toLocaleString("id-ID")}`} icon="check_circle" iconColor="text-emerald-500"
+        trend={{ value: `${paidDailyCount} dibayar`, color: "text-emerald-500", icon: "trending_up" }} />
+      <PaymentCard title="Belum Dibayar" value={`Rp ${dailyPayments.filter((dp) => dp.status === "unpaid").reduce((s, dp) => s + Number(dp.amount), 0).toLocaleString("id-ID")}`} icon="schedule" iconColor="text-amber-500"
+        trend={{ value: `${unpaidDailyCount} belum dibayar`, color: "text-amber-500", icon: "info" }} />
+      <PaymentCard title="Hari Ini" value={new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "short" })} icon="today" iconColor="text-blue-500"
+        trend={{ value: `${dailyPayments.length} total tagihan aktif`, color: "text-blue-500", icon: "info" }} />
+    </div>
+  );
+
+  const totalAdminFeeAmount = adminFees.reduce((sum, f) => sum + (Number(f.fee_admin_join) || 0), 0);
+  const paidAdminFeeCount = adminFees.filter((f) => f.status === "paid").length;
+
+  const renderAdminFeeCards = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <PaymentCard title="Total Admin Fee" value={`Rp ${totalAdminFeeAmount.toLocaleString("id-ID")}`} icon="admin_panel_settings" iconColor="text-amber-500"
+        trend={{ value: `${adminFees.length} total`, color: "text-amber-500", icon: "trending_up" }} />
+      <PaymentCard title="Sudah Dibayar" value={`Rp ${adminFees.filter((f) => f.status === "paid").reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0).toLocaleString("id-ID")}`} icon="check_circle" iconColor="text-emerald-500"
+        trend={{ value: `${paidAdminFeeCount} dibayar`, color: "text-emerald-500", icon: "trending_up" }} />
+      <PaymentCard title="Belum Dibayar" value={`Rp ${adminFees.filter((f) => f.status !== "paid").reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0).toLocaleString("id-ID")}`} icon="schedule" iconColor="text-red-500"
+        trend={{ value: `${adminFees.length - paidAdminFeeCount} belum dibayar`, color: "text-red-500", icon: "info" }} />
+      <PaymentCard title="Premium (Rp 700K)" value={String(adminFees.filter((f) => (Number(f.fee_admin_join) || 0) >= 700000).length)} icon="star" iconColor="text-violet-500"
+        trend={{ value: `Reguler: ${adminFees.filter((f) => (Number(f.fee_admin_join) || 0) > 0 && (Number(f.fee_admin_join) || 0) < 700000).length}`, color: "text-violet-500", icon: "info" }} />
+    </div>
+  );
+
+  const totalKoinTopUp = koinTransactions
+    .filter((tx) => tx.type === "top_up")
+    .reduce((sum, tx) => sum + Number(tx.amount), 0);
+
+  const renderKoinCards = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <PaymentCard title="Total Koin" value={koinSummary ? `Rp ${Number(koinSummary.total_balance).toLocaleString("id-ID")}` : "Rp 0"} icon="account_balance_wallet" iconColor="text-primary"
+        trend={{ value: `${koinSummary?.total_drivers_with_koin ?? 0} driver`, color: "text-primary", icon: "trending_up" }} />
+      <PaymentCard title="Total Top Up Koin" value={`Rp ${totalKoinTopUp.toLocaleString("id-ID")}`} icon="add_circle" iconColor="text-green-500"
+        trend={{ value: `${koinTransactions.filter((tx) => tx.type === "top_up").length} transaksi`, color: "text-green-500", icon: "trending_up" }} />
+      <PaymentCard title="Total Refund" value={`Rp ${koinSummary ? Number(koinSummary.total_refunds).toLocaleString("id-ID") : "Rp 0"}`} icon="replay" iconColor="text-orange-500"
+        trend={{ value: `${koinTransactions.filter((tx) => tx.type === "refund").length} refund`, color: "text-orange-500", icon: "trending_up" }} />
+      <PaymentCard title="Koin Masuk" value={`${koinTransactions.filter((tx) => tx.type === "top_up" || tx.type === "refund").length}`} icon="check_circle" iconColor="text-emerald-500"
+        trend={{ value: `Total transaksi: ${koinTransactions.length}`, color: "text-emerald-500", icon: "info" }} />
+    </div>
+  );
 
   return (
     <PermissionGuard permission="finance.read">
@@ -196,104 +282,100 @@ export default function PaymentList() {
           <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 pb-10">
             <PageHeader
               title="Finance List Overview"
-              description={`Total Records: ${summary?.total_records ?? meta.total}`}
-              buttonText={
-                canAccess(user?.permissions, "finance.create")
-                  ? "Manual Entry"
-                  : undefined
-              }
-              buttonHref={
-                canAccess(user?.permissions, "finance.create")
-                  ? "/dashboard/finances/payment"
-                  : undefined
-              }
+              description={`Total Records: ${summary?.total_records ?? 0}`}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <PaymentCard
-                title="Total Finance"
-                value={`Rp ${totalAmount.toLocaleString("id-ID")}`}
-                icon="payments"
-                iconColor="text-primary"
-                trend={{
-                  value: `${summary?.total_records ?? finances.length} transactions`,
-                  color: "text-primary",
-                  icon: "trending_up",
-                }}
-              />
-              <PaymentCard
-                title="This Month"
-                value={`Rp ${(summary?.total_this_month ?? 0).toLocaleString("id-ID")}`}
-                icon="calendar_month"
-                iconColor="text-emerald-500"
-                trend={{
-                  value: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
-                  color: "text-emerald-500",
-                  icon: "trending_up",
-                }}
-              />
-              <PaymentCard
-                title="Today"
-                value={`Rp ${(summary?.total_today ?? 0).toLocaleString("id-ID")}`}
-                icon="today"
-                iconColor="text-amber-500"
-                trend={{
-                  value: new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "short" }),
-                  color: "text-amber-500",
-                  icon: "schedule",
-                }}
-              />
-              <PaymentCard
-                title="Total Transactions"
-                value={`${summary?.total_records ?? meta.total}`}
-                icon="receipt_long"
-                iconColor="text-blue-500"
-                trend={{
-                  value: `${summary?.total_active ?? 0} active • ${summary?.total_inactive ?? 0} inactive`,
-                  color: "text-blue-500",
-                  icon: "info",
-                }}
-              />
+            {/* Tab Navigation */}
+            <div className="flex gap-1 border-b border-[#dbe0e6] dark:border-gray-700">
+              {tabConfig.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`px-6 py-3 text-sm font-semibold transition-colors border-b-2 ${
+                    activeTab === tab.key
+                      ? "border-primary text-primary bg-primary/5"
+                      : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            <PaymentFilters
-              searchValue={searchValue}
-              paymentMethod={paymentMethod}
-              onSearchChange={handleSearchChange}
-              onPaymentMethodChange={handlePaymentMethodChange}
-            />
-            <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-              {isLoading ? (
-                <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-                  Loading...
-                </div>
-              ) : (
-                <>
-                  <PaymentTable
-                    payment={finances}
-                    onDetails={handleDetails}
-                    onEdit={(f) => {
-                      router.push(`/dashboard/finances/payment?id=${f.id}`);
-                    }}
-                    onDelete={handleDelete}
-                    onExport={handleExport}
-                  />
-                  <div className="border-t border-[#dbe0e6] dark:border-gray-700">
-                    <Pagination
-                      currentPage={meta.page}
-                      totalPages={meta.totalPages}
-                      totalResults={meta.total}
-                      resultsPerPage={itemsPerPage}
-                      onPageChange={handlePageChange}
-                      onPageSizeChange={(size) => {
-                        setItemsPerPage(size);
-                        setCurrentPage(1);
-                      }}
-                    />
+            {/* Tab Content */}
+            {activeTab === "daily" && !isLoading && (
+              <>
+                {renderDailyCards()}
+                <div className="rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] bg-white dark:bg-[#1a2632] p-4 shadow-sm">
+                  <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-blue-500 text-xl">today</span>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                          Tagihan Hari Berjalan + Unpaid
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Menampilkan tagihan hari ini dan tagihan sebelumnya yang belum dibayar
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </>
-              )}
-            </div>
+                </div>
+                <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">
+                  <DailyPaymentTable payments={dailyPayments} />
+                </div>
+              </>
+            )}
+            {activeTab === "daily" && isLoading && (
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">Loading...</div>
+            )}
+
+            {activeTab === "admin-koin" && !isLoading && (
+              <>
+                {renderAdminFeeCards()}
+                <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+                  <AdminPaymentTable payments={adminFees} />
+                  <div className="border-t border-[#dbe0e6] dark:border-gray-700">
+                    <Pagination currentPage={adminFeeMeta.page} totalPages={adminFeeMeta.totalPages} totalResults={adminFeeMeta.total} resultsPerPage={itemsPerPage} onPageChange={handlePageChange} onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }} />
+                  </div>
+                </div>
+              </>
+            )}
+            {activeTab === "admin-koin" && isLoading && (
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">Loading...</div>
+            )}
+
+            {activeTab === "koin" && !isLoading && (
+              <>
+                {renderKoinCards()}
+                <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-green-500 text-xl">account_balance_wallet</span>
+                      </div>
+                      <div>
+                        <h2 className="font-bold text-slate-800 dark:text-white text-base">
+                          Koin Transactions
+                        </h2>
+                        <p className="text-xs text-slate-400">{koinTransactions.length} transaksi koin tercatat</p>
+                      </div>
+                    </div>
+                    <Link href="/dashboard/finances/koin">
+                      <Button icon="add" variant="success">
+                        Buat Top Up
+                      </Button>
+                    </Link>
+                  </div>
+                  <KoinTable transactions={koinTransactions} />
+                </div>
+              </>
+            )}
+            {activeTab === "koin" && isLoading && (
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">Loading...</div>
+            )}
           </div>
         </div>
       </div>

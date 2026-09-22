@@ -193,21 +193,29 @@
 }
 .driver-vehicle-swiper .swiper-button-next,
 .driver-vehicle-swiper .swiper-button-prev {
-  color: #137fec !important;
-  width: 32px !important;
-  height: 32px !important;
-  background: white;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  width: 28px !important;
+  height: 28px !important;
+  margin-top: -14px !important;
+  background: #004ac6 !important;
+  border-radius: 50% !important;
+  color: #fff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.driver-vehicle-swiper .swiper-button-next svg,
+.driver-vehicle-swiper .swiper-button-prev svg {
+  width: 10px !important;
+  height: 10px !important;
 }
 .driver-vehicle-swiper .swiper-button-next::after,
 .driver-vehicle-swiper .swiper-button-prev::after {
-  font-size: 16px !important;
+  font-size: 10px !important;
 }
 .dark .driver-vehicle-swiper .swiper-button-next,
 .dark .driver-vehicle-swiper .swiper-button-prev {
-  background: #1e293b;
-  color: #137fec !important;
+  background: #004ac6 !important;
+  color: #fff !important;
 }
 .driver-vehicle-swiper .swiper-pagination-bullet {
   background: #cbd5e1;

@@ -4,10 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { financeApi } from "@/lib/api/finances";
+import { koinApi } from "@/lib/api/koin";
 import { useAuth } from "@/lib/auth-context";
 import { HttpClientError } from "@/lib/api-http";
 import { toastSuccess, toastError } from "@/components/ui/toast-provider";
-import type { FinanceItem } from "@/lib/types/finances";
+import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
 
 const formatIDR = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -20,10 +21,12 @@ const formatIDR = (value: number) =>
 export default function DriverPaymentFormPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const financeId = searchParams.get("id");
+  const billId = searchParams.get("id");
+  const isDaily = searchParams.get("type") === "daily";
   const { user } = useAuth();
 
   const [finance, setFinance] = useState<FinanceItem | null>(null);
+  const [daily, setDaily] = useState<DailyPaymentItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -34,32 +37,69 @@ export default function DriverPaymentFormPage() {
   const [referenceNumber, setReferenceNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentDetail, setPaymentDetail] = useState("");
+  const [koinBalance, setKoinBalance] = useState<number | null>(null);
 
-  const fetchFinance = useCallback(async () => {
-    if (!financeId) {
+  const fetchBill = useCallback(async () => {
+    if (!billId) {
       setIsLoading(false);
       return;
     }
     try {
       setIsLoading(true);
-      const response = await financeApi.getById(financeId);
-      const data = (response as any)?.data ?? response;
-      setFinance(data);
+      if (isDaily) {
+        const response = await financeApi.getMyDailyPaymentById(billId);
+        const data = (response as any)?.data ?? response;
+        setDaily(data);
+        setFinance(null);
+      } else {
+        const response = await financeApi.getById(billId);
+        const data = (response as any)?.data ?? response;
+        setFinance(data);
+        setDaily(null);
+      }
     } catch (err) {
-      console.error("Failed to fetch finance:", err);
+      console.error("Failed to fetch bill:", err);
       toastError("Gagal memuat data tagihan");
     } finally {
       setIsLoading(false);
     }
-  }, [financeId]);
+  }, [billId, isDaily]);
 
   useEffect(() => {
-    fetchFinance();
-  }, [fetchFinance]);
+    fetchBill();
+  }, [fetchBill]);
 
-  const remaining = finance?.remaining_amount || 0;
+  useEffect(() => {
+    if (paymentMethod === "saldo" && user?.driver_id && koinBalance === null) {
+      koinApi.getBalance(user.driver_id).then((res: any) => {
+        const data = (res as any)?.data ?? res;
+        setKoinBalance(data?.balance ?? 0);
+      }).catch(() => setKoinBalance(0));
+    }
+  }, [paymentMethod, user?.driver_id, koinBalance]);
+
+  const isAdminFee = !isDaily
+    ? (finance ? (finance.fee_admin_join ?? 0) > 0 && finance.status !== "paid" : false)
+    : false;
+  const displayTotal = isDaily
+    ? (daily?.amount || 0)
+    : isAdminFee
+      ? (finance!.fee_admin_join || 0)
+      : (finance?.fee_admin_join || 0);
+  const remaining = isDaily
+    ? (daily?.amount || 0)
+    : isAdminFee
+      ? Math.max(0, (finance!.fee_admin_join || 0) - (finance!.paid_amount || 0))
+      : (finance?.remaining_amount || 0);
   const parsedAmount = parseFloat(amount.replace(/[^\d]/g, "")) || 0;
-  const isValid = parsedAmount > 0 && parsedAmount <= remaining && paymentDate && paymentMethod;
+  const koinInsufficient = paymentMethod === "saldo" && koinBalance !== null && koinBalance < remaining;
+  const isValid = parsedAmount > 0 && parsedAmount <= remaining && paymentDate && paymentMethod && !koinInsufficient;
+
+  useEffect(() => {
+    if (finance || daily) {
+      setAmount(remaining.toLocaleString("id-ID"));
+    }
+  }, [finance, daily]);
 
   const handlePaymentDetailChange = (detail: string) => {
     setPaymentDetail(detail);
@@ -76,21 +116,32 @@ export default function DriverPaymentFormPage() {
   };
 
   const handleSubmit = async () => {
-    if (!isValid || !financeId) return;
+    if (!isValid || !billId) return;
 
     setIsSubmitting(true);
     setServerError("");
 
     try {
-      await financeApi.createMyPayment(financeId, {
-        amount: parsedAmount,
-        payment_method: paymentMethod,
-        payment_date: paymentDate,
-        reference_number: referenceNumber || undefined,
-        notes: notes || undefined,
-        status: "paid",
-      });
-      toastSuccess("Pembayaran berhasil dicatat!");
+      if (isDaily) {
+        await financeApi.payMyDailyPayment(billId, {
+          amount: parsedAmount,
+          payment_method: paymentMethod,
+          payment_date: paymentDate,
+          reference_number: referenceNumber || undefined,
+          notes: notes || undefined,
+        });
+        toastSuccess("Tagihan harian berhasil dibayar!");
+      } else {
+        await financeApi.createMyPayment(billId, {
+          amount: parsedAmount,
+          payment_method: paymentMethod,
+          payment_date: paymentDate,
+          reference_number: referenceNumber || undefined,
+          notes: notes || undefined,
+          status: "paid",
+        });
+        toastSuccess("Pembayaran berhasil dicatat!");
+      }
       router.push("/dashboard/driver/payment");
     } catch (err) {
       if (err instanceof HttpClientError) {
@@ -115,7 +166,7 @@ export default function DriverPaymentFormPage() {
     );
   }
 
-  if (!finance) {
+  if (!finance && !daily) {
     return (
       <div className="m-8 flex flex-col items-center justify-center min-h-[400px] gap-4">
         <span className="material-symbols-outlined text-5xl text-slate-300">error</span>
@@ -130,9 +181,13 @@ export default function DriverPaymentFormPage() {
     );
   }
 
-  const vehicle = finance.vehicle || finance.rentals?.[0]?.vehicle;
-  const vehicleName = vehicle ? `${vehicle.merk} ${vehicle.model}` : "-";
-  const plate = vehicle?.license_plate || "";
+  const vehicle = finance?.vehicle || finance?.rentals?.[0]?.vehicle;
+  const vehicleName = daily
+    ? daily.vehicle_name
+    : vehicle
+      ? `${vehicle.merk} ${vehicle.model}`
+      : "-";
+  const plate = daily ? daily.license_plate : (vehicle?.license_plate || "");
 
   return (
     <div className="m-8">
@@ -169,13 +224,23 @@ export default function DriverPaymentFormPage() {
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-blue-500 text-xl">receipt_long</span>
+                  <span className="material-symbols-outlined text-blue-500 text-xl">{isDaily ? "receipt_long" : isAdminFee ? "admin_panel_settings" : "receipt_long"}</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 dark:text-white text-base">Info Tagihan</h3>
-                  <p className="text-xs text-slate-400">{finance.reference_number}</p>
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                    {isDaily ? "Info Tagihan Harian" : isAdminFee ? "Admin Fee" : "Info Tagihan"}
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    {isDaily ? daily?.reference_number : finance?.reference_number}
+                  </p>
                 </div>
               </div>
+              {isDaily && daily?.vendor_name && daily.vendor_name !== "-" && (
+                <div className="flex items-center gap-2 mb-3 px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-500 dark:text-slate-400">
+                  <span className="material-symbols-outlined text-[14px]">storefront</span>
+                  {daily.vendor_name}
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Kendaraan</p>
@@ -185,23 +250,35 @@ export default function DriverPaymentFormPage() {
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Tanggal Tagihan</p>
                   <p className="font-bold text-slate-900 dark:text-white">
-                    {finance.payment_date ? new Date(finance.payment_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-"}
+                    {(isDaily ? daily?.payment_date : finance?.payment_date) ? new Date((isDaily ? daily!.payment_date : finance!.payment_date) as string).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-"}
                   </p>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total Tagihan</p>
-                  <p className="font-bold text-lg text-slate-900 dark:text-white">{formatIDR(finance.total_amount)}</p>
-                </div>
-                <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-4">
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Sudah Dibayar</p>
-                  <p className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{formatIDR(finance.paid_amount)}</p>
-                </div>
-                <div className="bg-orange-50 dark:bg-orange-900/10 rounded-xl p-4">
-                  <p className="text-xs text-orange-600 dark:text-orange-400 mb-1">Sisa Tagihan</p>
-                  <p className="font-bold text-lg text-orange-600 dark:text-orange-400">{formatIDR(remaining)}</p>
-                </div>
+                  {isDaily && (
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total Tagihan Harian</p>
+                      <p className="font-bold text-lg text-slate-900 dark:text-white">{formatIDR(displayTotal)}</p>
+                    </div>
+                  )}
+                  {isAdminFee && (
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Admin Fee</p>
+                      <p className="font-bold text-lg text-slate-900 dark:text-white">{formatIDR(displayTotal)}</p>
+                    </div>
+                  )}
+                  {!isDaily && !isAdminFee && (
+                    <>
+                      <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total Tagihan</p>
+                        <p className="font-bold text-lg text-slate-900 dark:text-white">{formatIDR(displayTotal)}</p>
+                      </div>
+                      <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-4">
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Sudah Dibayar</p>
+                        <p className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{formatIDR(finance?.paid_amount || 0)}</p>
+                      </div>
+                    </>
+                  )}
               </div>
             </div>
 
@@ -231,9 +308,26 @@ export default function DriverPaymentFormPage() {
                     <option value="transfer">Transfer Bank</option>
                     <option value="cash">Tunai</option>
                     <option value="e-wallet">E-Wallet</option>
-                    <option value="saldo">Saldo Driver</option>
+                    <option value="saldo">Koin Driver</option>
                   </select>
                 </div>
+
+                {paymentMethod === "saldo" && (
+                  <div className={`flex items-center gap-3 p-4 rounded-xl ${koinBalance !== null && koinBalance >= remaining ? "bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800" : "bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800"}`}>
+                    <span className={`material-symbols-outlined text-xl ${koinBalance !== null && koinBalance >= remaining ? "text-emerald-500" : "text-red-500"}`}>
+                      {koinBalance !== null && koinBalance >= remaining ? "check_circle" : "error"}
+                    </span>
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Koin Tersedia</p>
+                      <p className={`font-bold ${koinBalance !== null && koinBalance >= remaining ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                        {koinBalance !== null ? formatIDR(koinBalance) : "Memuat..."}
+                      </p>
+                      {koinBalance !== null && koinBalance < remaining && (
+                        <p className="text-xs text-red-500 dark:text-red-400 mt-0.5">Koin tidak mencukupi untuk membayar tagihan ini</p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Detail Bank/E-Wallet */}
                 {paymentMethod === "transfer" && (
@@ -275,24 +369,10 @@ export default function DriverPaymentFormPage() {
                     <input
                       type="text"
                       value={amount}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, "");
-                        setAmount(raw ? Number(raw).toLocaleString("id-ID") : "");
-                      }}
-                      placeholder="0"
-                      className="w-full pl-12 pr-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      readOnly
+                      className="w-full pl-12 pr-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white cursor-not-allowed opacity-70"
                     />
                   </div>
-                  {parsedAmount > remaining && (
-                    <p className="text-xs text-red-500 mt-1">Nominal melebihi sisa tagihan</p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setAmount(remaining.toLocaleString("id-ID"))}
-                    className="mt-2 text-xs text-primary hover:text-primary/80 font-medium"
-                  >
-                    Bayar Sisa Penuh ({formatIDR(remaining)})
-                  </button>
                 </div>
 
                 {/* Tanggal Pembayaran */}

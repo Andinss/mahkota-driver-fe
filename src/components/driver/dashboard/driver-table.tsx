@@ -9,8 +9,7 @@ const driverColumns: ExportColumn[] = [
   { id: "employee_id", label: "Employee ID", defaultChecked: true },
   { id: "phone", label: "Phone Number", defaultChecked: true },
   { id: "email", label: "Email", defaultChecked: true },
-  { id: "is_active", label: "Status", defaultChecked: true },
-  { id: "saldo", label: "Saldo", defaultChecked: true },
+  { id: "koin", label: "Koin", defaultChecked: true },
   { id: "gender", label: "Gender", defaultChecked: false },
   { id: "date_of_birth", label: "Date of Birth", defaultChecked: false },
   { id: "citizenship", label: "Citizenship", defaultChecked: false },
@@ -94,8 +93,7 @@ export function DriverTable({
               <th className="px-6 py-4">ID Karyawan</th>
               <th className="px-6 py-4">Telepon</th>
               <th className="px-6 py-4">Email</th>
-              <th className="px-6 py-4">Saldo</th>
-              <th className="px-6 py-4">Status</th>
+              <th className="px-6 py-4">Koin</th>
               <th className="px-6 py-4 text-right">Aksi</th>
             </tr>
           </thead>
