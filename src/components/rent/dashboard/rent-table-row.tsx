@@ -31,6 +31,7 @@ interface RentalTableRowProps {
   onDelete?: (rental: Rental) => void;
   onDetails?: (rental: Rental) => void;
   onEndRental?: (rental: Rental) => void;
+  onEngineChanged?: (vehicleId: string, engineStatus: "on" | "off") => void;
 }
 
 export const RentalTableRow = ({
@@ -39,6 +40,7 @@ export const RentalTableRow = ({
   onDelete,
   onDetails,
   onEndRental,
+  onEngineChanged,
 }: RentalTableRowProps) => {
   return (
     <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
@@ -108,8 +110,12 @@ export const RentalTableRow = ({
         {rental.vehicleId ? (
           <div className="flex items-center gap-2">
             <EngineSwitch
+              key={`${rental.vehicleId}-${rental.vehicleEngineStatus}`}
               vehicleId={rental.vehicleId}
               engineStatus={rental.vehicleEngineStatus}
+              onChanged={(next) =>
+                onEngineChanged?.(rental.vehicleId!, next)
+              }
             />
             <span className={`text-xs font-bold ${
               rental.vehicleEngineStatus === "on"

@@ -6,7 +6,6 @@ import { notificationApi } from "@/lib/api/notification";
 import type { NotificationItem } from "@/lib/types/notification";
 
 const typeToIcon: Record<string, { icon: string; color: string }> = {
-  geofence_violation: { icon: "warning", color: "red" },
   emergency: { icon: "warning", color: "red" },
   payment_overdue: { icon: "payments", color: "orange" },
   late_payment: { icon: "payments", color: "orange" },

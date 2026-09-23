@@ -1,4 +1,4 @@
-import { ExportColumn, ModalExport } from "@/components/ui/export";
+import { ExportColumn, ExportOptions, ModalExport } from "@/components/ui/export";
 import { useState } from "react";
 import { RentalTableRow } from "./rent-table-row";
 
@@ -35,7 +35,8 @@ interface RentalTableProps {
   onDelete?: (rental: Rental) => void;
   onDetails?: (rental: Rental) => void;
   onEndRental?: (rental: Rental) => void;
-  onExport?: (options?: any) => void;
+  onExport?: (options?: ExportOptions) => void;
+  onEngineChanged?: (vehicleId: string, engineStatus: "on" | "off") => void;
 }
 
 const rentalColumns: ExportColumn[] = [
@@ -62,6 +63,7 @@ export const RentalTable = ({
   onDetails,
   onEndRental,
   onExport,
+  onEngineChanged,
 }: RentalTableProps) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
@@ -110,6 +112,7 @@ export const RentalTable = ({
                 onDelete={onDelete}
                 onDetails={onDetails}
                 onEndRental={onEndRental}
+                onEngineChanged={onEngineChanged}
               />
             ))}
           </tbody>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Select } from "@/components/ui/select";
+import { vehicleApi } from "@/lib/api/vehicle";
 
 export interface VehicleFormData {
   make: string;
@@ -15,6 +16,7 @@ export interface VehicleFormData {
   engineNumber: string;
   dailyRate: string;
   pricingCategory: string;
+  imei: string;
   deviceName: string;
 }
 
@@ -30,7 +32,13 @@ interface FormErrors {
   engineNumber?: string;
   dailyRate?: string;
   pricingCategory?: string;
+  imei?: string;
   deviceName?: string;
+}
+
+interface GpsidDevice {
+  imei: string;
+  device_name: string;
 }
 
 interface VehicleSpecificationsFormProps {
@@ -39,18 +47,9 @@ interface VehicleSpecificationsFormProps {
   onSubmit?: (data: VehicleFormData) => void;
 }
 
-const deviceNameOptions = [
-  "GPS-001",
-  "GPS-002",
-  "GPS-003",
-  "GPS-004",
-  "GPS-005",
-  "GPS-006",
-  "GPS-007",
-  "GPS-008",
-  "GPS-009",
-  "GPS-010",
-];
+const apiBase = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+).replace(/\/$/, "");
 
 export function VehicleSpecificationsForm({
   mode = "add",
@@ -58,7 +57,67 @@ export function VehicleSpecificationsForm({
   onSubmit,
 }: VehicleSpecificationsFormProps) {
   const [errors, setErrors] = useState<FormErrors>({});
+  const [devices, setDevices] = useState<GpsidDevice[]>([]);
+  const [usedImeis, setUsedImeis] = useState<Set<string>>(new Set());
+  const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const selectedDevice = initialValues?.imei && initialValues?.deviceName
+    ? `${initialValues.imei}#${initialValues.deviceName}`
+    : "";
+
+  useEffect(() => {
+    let mounted = true;
+    vehicleApi
+      .getList({ limit: 1000 })
+      .then((res) => {
+        if (!mounted) return;
+        const items = Array.isArray(res.data) ? res.data : [];
+        const used = new Set<string>();
+        items.forEach((item: any) => {
+          if (item.imei) used.add(String(item.imei));
+        });
+        setUsedImeis(used);
+      })
+      .catch((err) => {
+        console.error("Failed to load assigned devices:", err);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const availableDevices = devices.filter(
+    (d) => !usedImeis.has(d.imei) || d.imei === initialValues?.imei,
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    setIsLoadingDevices(true);
+    fetch(`${apiBase}/gpsid/vehicles`)
+      .then((res) => res.json())
+      .then((res: any) => {
+        if (!mounted) return;
+        const items = Array.isArray(res?.message?.data)
+          ? res.message.data
+          : [];
+        setDevices(
+          items.map((item: any) => ({
+            imei: String(item.imei || ""),
+            device_name: String(item.device_name || ""),
+          })),
+        );
+      })
+      .catch((err) => {
+        console.error("Failed to load GPSID devices:", err);
+      })
+      .finally(() => {
+        if (mounted) setIsLoadingDevices(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const sanitizeInput = (
     e: React.FormEvent<HTMLInputElement>,
@@ -84,7 +143,7 @@ export function VehicleSpecificationsForm({
     const engineNumber = formData.get("engineNumber") as string;
     const dailyRate = formData.get("dailyRate") as string;
     const pricingCategory = formData.get("pricingCategory") as string;
-    const deviceName = formData.get("deviceName") as string;
+    const device = formData.get("device") as string;
 
     if (!make?.trim()) {
       newErrors.make = "Make is required";
@@ -150,8 +209,8 @@ export function VehicleSpecificationsForm({
       newErrors.pricingCategory = "Pricing category is required";
     }
 
-    // Validasi Device Name
-    if (!deviceName?.trim()) {
+    // Validasi Device
+    if (!device?.trim()) {
       newErrors.deviceName = "Device name is required";
     }
 
@@ -167,6 +226,8 @@ export function VehicleSpecificationsForm({
     }
 
     const formData = new FormData(e.currentTarget);
+    const device = String(formData.get("device") || "");
+    const [imei, deviceName] = device.split("#");
     const data: VehicleFormData = {
       make: formData.get("make") as string,
       model: formData.get("model") as string,
@@ -177,7 +238,8 @@ export function VehicleSpecificationsForm({
       engineNumber: formData.get("engineNumber") as string,
       dailyRate: formData.get("dailyRate") as string,
       pricingCategory: formData.get("pricingCategory") as string,
-      deviceName: formData.get("deviceName") as string,
+      imei: imei || "",
+      deviceName: deviceName || "",
     };
     onSubmit?.(data);
   };
@@ -324,22 +386,22 @@ export function VehicleSpecificationsForm({
         <div className="flex flex-col gap-2">
           <label
             className="text-sm font-medium text-[#111418] dark:text-white"
-            htmlFor="deviceName"
+            htmlFor="device"
           >
-            Device Name <span className="text-red-500">*</span>
+            Device <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <Select
-              id="deviceName"
-              name="deviceName"
-              defaultValue={initialValues?.deviceName}
+              id="device"
+              name="device"
+              defaultValue={selectedDevice || ""}
               required
               className="appearance-none pr-10 w-full"
             >
-              <option value="">Select device...</option>
-              {deviceNameOptions.map((device) => (
-                <option key={device} value={device}>
-                  {device}
+              <option value="">{isLoadingDevices ? "Loading devices..." : "Select device..."}</option>
+              {availableDevices.map((device) => (
+                <option key={device.imei} value={`${device.imei}#${device.device_name}`}>
+                  {device.device_name}
                 </option>
               ))}
             </Select>

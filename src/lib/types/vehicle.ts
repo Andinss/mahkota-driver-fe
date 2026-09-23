@@ -17,6 +17,8 @@ export interface VehicleItem {
   is_active: boolean;
   vehicle_photo?: string | string[];
   vendor_id?: string;
+  imei?: string;
+  device_name?: string;
   vendor?: { id: string; name: string; owner_name: string } | null;
   created_at?: string;
   updated_at?: string;

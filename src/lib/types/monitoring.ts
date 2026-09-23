@@ -6,7 +6,7 @@ export interface FleetLocation {
   latitude: number;
   longitude: number;
   speed: number;
-  fuel_level: number | null;
+  fuel_level?: number | null;
   status: "emergency" | "moving" | "idle";
   engine_status: "on" | "off";
   last_updated: string;
