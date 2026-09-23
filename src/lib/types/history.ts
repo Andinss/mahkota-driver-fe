@@ -7,4 +7,5 @@ export interface HistorySetoran {
   finance_type: "paid" | "unpaid" | "pending" | "cancelled";
   notes?: string;
   rental_number?: string;
+  rental_id?: string;
 }

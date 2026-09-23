@@ -17,6 +17,7 @@ import {
 } from "@/components/drivers/detail/vehicle-history-list";
 import { DriverOverview } from "@/components/drivers/detail/overview";
 import { DepositHistoryList } from "@/components/drivers/detail/deposit-history-list";
+import { KoinHistoryList } from "@/components/drivers/detail/koin-history-list";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { driverApi } from "@/lib/api/driver";
 import { rentalApi } from "@/lib/api/rentals";
@@ -146,7 +147,6 @@ const DetailDriverPage = () => {
 
   const [activeTab, setActiveTab] = useState<TabValue>("overview");
 
-  /* Vehicle history list dari driverRentals — memoized */
   const vehicleHistoryList: VehicleHistory[] = useMemo(
     () =>
       driverRentals.map((r) => ({
@@ -241,12 +241,16 @@ const DetailDriverPage = () => {
         <div>
           {isLoadingHistory ? (
             <div className="py-20 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-              Loading deposit history...
+              Loading daily payment history...
             </div>
           ) : (
             <DepositHistoryList history={depositHistory} />
           )}
         </div>
+      )}
+
+      {activeTab === "koin-history" && driverId && (
+        <KoinHistoryList driverId={driverId} />
       )}
     </div>
     </PermissionGuard>
