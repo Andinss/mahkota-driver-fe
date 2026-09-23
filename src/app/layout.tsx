@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
+import { PaletteProvider } from "@/lib/palette-context";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import "./globals.css";
 
@@ -54,6 +55,8 @@ export default function RootLayout({
                       }
                     }
                   });
+                  var palette = localStorage.getItem('colorPalette');
+                  document.documentElement.setAttribute('data-palette', palette === 'gold' ? 'gold' : 'blue');
                 } catch(e) {}
               })();
             `,
@@ -64,8 +67,10 @@ export default function RootLayout({
         className={`${inter.variable} bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 antialiased overflow-hidden`}
       >
         <AuthProvider>
-          <div className="flex h-screen w-full overflow-hidden">{children}</div>
-          <ToastProvider />
+          <PaletteProvider>
+            <div className="flex h-screen w-full overflow-hidden">{children}</div>
+            <ToastProvider />
+          </PaletteProvider>
         </AuthProvider>
       </body>
     </html>

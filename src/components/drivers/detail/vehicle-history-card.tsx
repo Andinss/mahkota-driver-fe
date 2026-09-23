@@ -38,7 +38,7 @@ export function VehicleHistoryCard({ vehicle }: VehicleHistoryCardProps) {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow">
       {/* Hero Header — Gradient */}
-      <div className="px-5 py-4 bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 text-white relative overflow-hidden">
+      <div className="vehicle-history-header px-5 py-4 text-white relative overflow-hidden">
         {/* Decorative circle */}
         <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-white/10" />
         <div className="absolute -bottom-10 -left-10 w-20 h-20 rounded-full bg-white/5" />

@@ -20,6 +20,40 @@
   --color-slate-850: #17202b;
 }
 
+/* ===================================================================
+ * SITE BRANDING – GOLD PALETTE
+ * Override semua warna primary & blue saat data-palette="gold"
+ * =================================================================== */
+
+html[data-palette="gold"] {
+  /* -- primary -- */
+  --color-primary: #a9822e;
+  --color-primary-50: #fbf7ef;
+  --color-primary-100: #f5ecda;
+  --color-primary-200: #ead9b0;
+  --color-primary-300: #dec48a;
+  --color-primary-400: #cda968;
+  --color-primary-500: #b8934f;
+  --color-primary-600: #a9822e;
+  --color-primary-700: #8a6530;
+  --color-primary-800: #6e4f26;
+  --color-primary-900: #52391b;
+  --color-primary-950: #2e1f0f;
+
+  /* -- override skala blue bawaan Tailwind -- */
+  --color-blue-50: #fbf7ef;
+  --color-blue-100: #f5ecda;
+  --color-blue-200: #ead9b0;
+  --color-blue-300: #dec48a;
+  --color-blue-400: #cda968;
+  --color-blue-500: #b8934f;
+  --color-blue-600: #a9822e;
+  --color-blue-700: #8a6530;
+  --color-blue-800: #6e4f26;
+  --color-blue-900: #52391b;
+  --color-blue-950: #2e1f0f;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -61,9 +95,16 @@
   fill: #137fec;
   transition: height 0.3s;
 }
+html[data-palette="gold"] .trend-bar {
+  fill: #a9822e;
+}
 .tab-active {
   border-bottom: 2px solid #1d76e2;
   color: #1d76e2;
+}
+html[data-palette="gold"] .tab-active {
+  border-bottom-color: #a9822e;
+  color: #a9822e;
 }
 
 .stepper-line {
@@ -84,18 +125,20 @@
 .stepper-segment-active {
   background-color: #2563eb;
 }
-.material-symbols-outlined {
-  font-variation-settings:
-    "FILL" 0,
-    "wght" 400,
-    "GRAD" 0,
-    "opsz" 24;
+html[data-palette="gold"] .stepper-segment-active {
+  background-color: #a9822e;
 }
 .editorial-gradient {
   background: linear-gradient(135deg, #004ac6 0%, #2563eb 100%);
 }
 .dark .editorial-gradient {
   background: linear-gradient(135deg, #1a56db 0%, #3b82f6 100%);
+}
+html[data-palette="gold"] .editorial-gradient {
+  background: linear-gradient(135deg, #6e4f26 0%, #a9822e 100%);
+}
+html[data-palette="gold"].dark .editorial-gradient {
+  background: linear-gradient(135deg, #8a6530 0%, #cda968 100%);
 }
 .frosted-glass {
   backdrop-filter: blur(20px);
@@ -140,7 +183,9 @@
   animation: modalPop 0.4s ease-out;
 }
 
-/* Swiper Vehicle Photo - Smaller Navigation & Pagination */
+/* ===================================================================
+ * Swiper Vehicle Photo
+ * =================================================================== */
 .vehicle-photo-swiper .swiper-button-next,
 .vehicle-photo-swiper .swiper-button-prev {
   width: 28px !important;
@@ -152,6 +197,10 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+}
+html[data-palette="gold"] .vehicle-photo-swiper .swiper-button-next,
+html[data-palette="gold"] .vehicle-photo-swiper .swiper-button-prev {
+  background: #a9822e !important;
 }
 .vehicle-photo-swiper .swiper-button-next svg,
 .vehicle-photo-swiper .swiper-button-prev svg {
@@ -173,21 +222,9 @@
   bottom: 8px !important;
 }
 
-/* Toastify progress bar color overrides */
-.Toastify__progress-bar--success {
-  background: #2563eb !important;
-}
-.Toastify__progress-bar--error {
-  background: #dc2626 !important;
-}
-.Toastify__progress-bar--warning {
-  background: #f59e0b !important;
-}
-.Toastify__progress-bar--info {
-  background: #3b82f6 !important;
-}
-
-/* Driver Vehicle Swiper */
+/* ===================================================================
+ * Driver Vehicle Swiper
+ * =================================================================== */
 .driver-vehicle-swiper {
   padding-bottom: 40px !important;
 }
@@ -203,6 +240,10 @@
   align-items: center !important;
   justify-content: center !important;
 }
+html[data-palette="gold"] .driver-vehicle-swiper .swiper-button-next,
+html[data-palette="gold"] .driver-vehicle-swiper .swiper-button-prev {
+  background: #a9822e !important;
+}
 .driver-vehicle-swiper .swiper-button-next svg,
 .driver-vehicle-swiper .swiper-button-prev svg {
   width: 10px !important;
@@ -217,10 +258,24 @@
   background: #004ac6 !important;
   color: #fff !important;
 }
+html[data-palette="gold"].dark .driver-vehicle-swiper .swiper-button-next,
+html[data-palette="gold"].dark .driver-vehicle-swiper .swiper-button-prev {
+  background: #a9822e !important;
+}
 .driver-vehicle-swiper .swiper-pagination-bullet {
   background: #cbd5e1;
   opacity: 1;
 }
 .driver-vehicle-swiper .swiper-pagination-bullet-active {
   background: #137fec;
+}
+html[data-palette="gold"] .driver-vehicle-swiper .swiper-pagination-bullet-active {
+  background: #a9822e;
+}
+
+.vehicle-history-header {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e3a8a 100%);
+}
+html[data-palette="gold"] .vehicle-history-header {
+  background: linear-gradient(135deg, #cda968 0%, #a9822e 50%, #6e4f26 100%);
 }
