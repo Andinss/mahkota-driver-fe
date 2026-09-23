@@ -63,7 +63,9 @@ export const KoinTable = ({ transactions, onBuatTopUp }: KoinTableProps) => {
   if (totalResults === 0) {
     return (
       <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-        <span className="material-symbols-outlined text-4xl mb-2 block">account_balance_wallet</span>
+        <span className="material-symbols-outlined text-4xl mb-2 block">
+          account_balance_wallet
+        </span>
         <p>Belum ada transaksi Koin</p>
       </div>
     );
@@ -75,11 +77,11 @@ export const KoinTable = ({ transactions, onBuatTopUp }: KoinTableProps) => {
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-6 py-4">No. Referensi</th>
-              <th className="px-6 py-4">Driver</th>
-              <th className="px-6 py-4">Tipe</th>
-              <th className="px-6 py-4 text-right">Jumlah</th>
-              <th className="px-6 py-4">Tanggal</th>
+              <th className="px-6 py-4 w-[220px]">No. Referensi</th>
+              <th className="px-6 py-4 w-[180px]">Driver</th>
+              <th className="px-6 py-4 text-center w-[200px]">Tipe</th>
+              <th className="px-6 py-4 text-right w-[180px]">Jumlah</th>
+              <th className="px-6 py-4 w-[140px]">Tanggal</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
@@ -88,17 +90,19 @@ export const KoinTable = ({ transactions, onBuatTopUp }: KoinTableProps) => {
                 key={item.id}
                 className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors"
               >
-                <td className="px-6 py-4 font-mono text-xs text-slate-400">
-                  {item.reference_number || "-"}
+                <td className="px-6 py-4">
+                  <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    {item.reference_number || "-"}
+                  </span>
                 </td>
                 <td className="px-6 py-4">
                   <p className="font-semibold text-slate-900 dark:text-white">
                     {item.driver_name || "-"}
                   </p>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   <span
-                    className={`px-2 py-1 rounded text-xs font-bold ${
+                    className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold ${
                       item.type === "top_up"
                         ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                         : item.type === "rental_payment"
@@ -112,15 +116,16 @@ export const KoinTable = ({ transactions, onBuatTopUp }: KoinTableProps) => {
                   </span>
                 </td>
                 <td
-                  className={`px-6 py-4 text-right font-medium ${
+                  className={`px-6 py-4 text-right font-bold ${
                     item.type === "top_up" || item.type === "refund"
                       ? "text-green-600 dark:text-green-400"
                       : "text-red-600 dark:text-red-400"
                   }`}
                 >
-                  {item.type === "top_up" || item.type === "refund" ? "+" : "-"} Rp {Number(item.amount).toLocaleString("id-ID")}
+                  {item.type === "top_up" || item.type === "refund" ? "+" : "-"} Rp{" "}
+                  {Number(item.amount).toLocaleString("id-ID")}
                 </td>
-                <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
+                <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
                   {formatDate(item.created_at)}
                 </td>
               </tr>

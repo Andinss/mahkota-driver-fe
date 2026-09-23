@@ -17,6 +17,7 @@ import {
 } from "@/components/drivers/detail/vehicle-history-list";
 import { DriverOverview } from "@/components/drivers/detail/overview";
 import { DepositHistoryList } from "@/components/drivers/detail/deposit-history-list";
+import { KoinHistoryList } from "@/components/drivers/detail/koin-history-list";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { driverApi } from "@/lib/api/driver";
 import { rentalApi } from "@/lib/api/rentals";
@@ -37,7 +38,6 @@ const mapFinanceToHistory = (f: FinanceItem): HistorySetoran => ({
   finance_type: f.finance_type ?? f.status ?? "pending",
   notes: f.notes || undefined,
   rental_number: f.rentals?.[0]?.rental_number,
-  rental_id: f.rentals?.[0]?.id,
 });
 
 const DetailDriverPage = () => {
@@ -116,7 +116,7 @@ const DetailDriverPage = () => {
         const res = await financeApi.getList({ driver_id: driverId, limit: 1000 });
         setDepositHistory(res.data.map(mapFinanceToHistory));
       } catch (err) {
-        console.error("Failed to load daily payment history:", err instanceof Error ? err.message : err);
+        console.error("Failed to load deposit history:", err instanceof Error ? err.message : err);
         setDepositHistory([]);
       } finally {
         setIsLoadingHistory(false);
@@ -147,7 +147,6 @@ const DetailDriverPage = () => {
 
   const [activeTab, setActiveTab] = useState<TabValue>("overview");
 
-  /* Vehicle history list dari driverRentals — memoized */
   const vehicleHistoryList: VehicleHistory[] = useMemo(
     () =>
       driverRentals.map((r) => ({
@@ -248,6 +247,10 @@ const DetailDriverPage = () => {
             <DepositHistoryList history={depositHistory} />
           )}
         </div>
+      )}
+
+      {activeTab === "koin-history" && driverId && (
+        <KoinHistoryList driverId={driverId} />
       )}
     </div>
     </PermissionGuard>
