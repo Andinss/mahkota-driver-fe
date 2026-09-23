@@ -55,6 +55,8 @@ export default function VehicleRegisterPage() {
             engineNumber: vehicle.engine_number,
             dailyRate: String(vehicle.daily_rate),
             pricingCategory: vehicle.pricing_category,
+            imei: vehicle.imei,
+            deviceName: vehicle.device_name,
           });
           const imageBase = (
             process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
@@ -109,6 +111,8 @@ export default function VehicleRegisterPage() {
         formData.append("daily_rate", data.dailyRate.replace(/\./g, ""));
         formData.append("pricing_category", data.pricingCategory);
         formData.append("status", status);
+        formData.append("imei", data.imei);
+        formData.append("device_name", data.deviceName);
         if (vendorId) formData.append("vendor_id", vendorId);
 
         imageFiles.forEach((file) => {

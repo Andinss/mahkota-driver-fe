@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { monitoringApi } from "@/lib/api/monitoring";
@@ -17,15 +17,6 @@ interface FleetVehicle {
   speed?: number;
   fuelLevel?: number;
   lastUpdated?: string;
-}
-
-interface GeofenceArea {
-  id: string;
-  name: string;
-  center_lat: number;
-  center_lng: number;
-  radius: number;
-  is_active: boolean;
 }
 
 interface MonitoringMapProps {
@@ -59,93 +50,31 @@ const vehicleIcons: Record<string, L.DivIcon> = {
 
 export default function MonitoringMap({
   vehicles = [],
-  center = [-6.2088, 106.8456],
-  zoom = 12,
+  center,
+  zoom,
   onVehicleClick,
   selectedVehicle,
 }: MonitoringMapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.Marker[]>([]);
-  const geofenceCirclesRef = useRef<L.Circle[]>([]);
-  const [geofences, setGeofences] = useState<GeofenceArea[]>([]);
 
   useEffect(() => {
-    const fetchGeofences = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/geofences/active`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-            },
-          }
-        );
-        const data = await res.json();
-        if (data.success && data.data) {
-          setGeofences(data.data);
-        }
-      } catch {
-        // silent fail
-      }
-    };
+    if (!mapContainerRef.current || mapRef.current) return;
 
-    fetchGeofences();
-  }, []);
-
-  useEffect(() => {
-    if (mapContainerRef.current && !mapRef.current) {
-      const map = L.map(mapContainerRef.current, {
-        center,
-        zoom,
-        zoomControl: true,
-      });
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map);
-
-      mapRef.current = map;
-    }
-
-    return () => {
-      markersRef.current.forEach((m) => m.remove());
-      markersRef.current = [];
-      geofenceCirclesRef.current.forEach((c) => c.remove());
-      geofenceCirclesRef.current = [];
-      mapRef.current?.remove();
-      mapRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!mapRef.current) return;
-
-    // Clear existing geofence circles
-    geofenceCirclesRef.current.forEach((c) => c.remove());
-    geofenceCirclesRef.current = [];
-
-    // Add geofence circles
-    geofences.forEach((gf) => {
-      const circle = L.circle([gf.center_lat, gf.center_lng], {
-        radius: gf.radius,
-        color: "#3b82f6",
-        fillColor: "#3b82f6",
-        fillOpacity: 0.08,
-        weight: 2,
-        dashArray: "8 4",
-      }).addTo(mapRef.current!);
-
-      circle.bindTooltip(gf.name, {
-        permanent: false,
-        direction: "center",
-        className: "geofence-tooltip",
-      });
-
-      geofenceCirclesRef.current.push(circle);
+    const map = L.map(mapContainerRef.current, {
+      center: center || [-6.2088, 106.8456],
+      zoom: zoom || 12,
+      zoomControl: true,
     });
-  }, [geofences]);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(map);
+
+    mapRef.current = map;
+  }, [center, zoom]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -158,7 +87,7 @@ export default function MonitoringMap({
       const popupContent = `
         <div style="font-family: system-ui, sans-serif; min-width: 200px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-            <span style="font-weight:700;font-size:16px;">${vehicle.plate}</span>
+            <span style="font-weight:700;font-size:14px;">${vehicle.plate}</span>
             <span style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;text-transform:uppercase;background:${
               vehicle.status === "emergency" ? "#fee2e2" : vehicle.status === "moving" ? "#dbeafe" : "#f3f4f6"
             };color:${
@@ -166,16 +95,13 @@ export default function MonitoringMap({
             }">${vehicle.status}</span>
             <span style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;text-transform:uppercase;background:${
               vehicle.engineStatus === "on" ? "#dcfce7" : "#f3f4f6"
-            };color:${
-              vehicle.engineStatus === "on" ? "#16a34a" : "#6b7280"
-            }">Engine ${vehicle.engineStatus === "on" ? "ON" : "OFF"}</span>
+            };color:${vehicle.engineStatus === "on" ? "#16a34a" : "#6b7280"}">Engine ${vehicle.engineStatus === "on" ? "ON" : "OFF"}</span>
           </div>
           <div style="font-size:13px;color:#374151;">
             <div><strong>Driver:</strong> ${vehicle.driverName}</div>
             ${vehicle.driverPhone ? `<div><strong>Phone:</strong> ${vehicle.driverPhone}</div>` : ""}
             ${vehicle.speed !== undefined ? `<div><strong>Speed:</strong> ${vehicle.speed} km/h</div>` : ""}
             ${vehicle.fuelLevel !== undefined ? `<div><strong>Fuel:</strong> ${vehicle.fuelLevel}%</div>` : ""}
-            ${vehicle.status === "emergency" ? `<div style="color:#dc2626;margin-top:4px;"><strong>⚠ Outside operational area</strong></div>` : ""}
           </div>
         </div>
       `;

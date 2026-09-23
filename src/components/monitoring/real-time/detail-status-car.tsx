@@ -187,7 +187,7 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
         {vehicle.status === "emergency" && (
           <div className="bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-100 dark:border-red-900/30 flex items-center gap-1">
             <span className="material-symbols-outlined text-red-500 text-[10px]">warning</span>
-            <p className="text-[9px] font-bold text-red-600 dark:text-red-400">Geofence Violation</p>
+            <p className="text-[9px] font-bold text-red-600 dark:text-red-400">Violation</p>
           </div>
         )}
 

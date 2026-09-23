@@ -10,14 +10,13 @@ interface ListNotificationProps {
 }
 
 const typeFilterMap: Record<string, string> = {
-  emergency: "geofence_violation",
+  emergency: "emergency",
   payment: "payment_overdue",
   security: "security_alert",
   system: "system",
 };
 
 const typeToCardType: Record<string, "emergency" | "payment" | "security" | "system" | "received"> = {
-  geofence_violation: "emergency",
   emergency: "emergency",
   payment_overdue: "payment",
   late_payment: "payment",

@@ -322,6 +322,15 @@ export default function RentalManagementPage() {
                 rentals={rentals}
                 onExport={handleExport}
                 onDelete={handleDeleteClick}
+                onEngineChanged={(vehicleId, engineStatus) => {
+                  setRentals((prev) =>
+                    prev.map((r) =>
+                      r.vehicleId === vehicleId
+                        ? { ...r, vehicleEngineStatus: engineStatus }
+                        : r,
+                    ),
+                  );
+                }}
               />
               <div className="border-t border-slate-200 dark:border-slate-800">
                 <Pagination

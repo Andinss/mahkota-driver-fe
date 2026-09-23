@@ -142,7 +142,7 @@ const SideStatus = ({ vehicles = [], onVehicleClick, selectedVehicleId, isOpen, 
                         {vehicle.status === "emergency" ? "near_me" : vehicle.status === "moving" ? "speed" : "history"}
                       </span>
                       {vehicle.status === "emergency"
-                        ? "Geofence Violation"
+                        ? "Violation"
                         : vehicle.status === "moving"
                           ? `${vehicle.speed} km/h`
                           : vehicle.lastUpdated || "Idle"}

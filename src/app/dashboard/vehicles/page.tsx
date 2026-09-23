@@ -67,7 +67,7 @@ export default function DashboardVehiclePage() {
     try {
       const res = await vehicleApi.getList({ page: currentPage, limit: itemsPerPage });
       const items = Array.isArray(res.data) ? res.data : [];
-      const mapped: VehicleDisplay[] = items.map((item: VehicleItem, index: number) => {
+      const mapped: VehicleDisplay[] = items.map((item: VehicleItem) => {
         const name = `${item.merk || ""} ${item.model || ""}`.trim() || "Unknown";
         const rawPhoto = item.vehicle_photo;
         const photoUrl = Array.isArray(rawPhoto) ? rawPhoto[0] : rawPhoto;
@@ -89,7 +89,7 @@ export default function DashboardVehiclePage() {
           image,
           imageAlt: `${name} side view`,
           vendorName: item.vendor?.name || "-",
-          deviceName: `GPS-${String(((currentPage - 1) * itemsPerPage) + index + 1).padStart(3, "0")}`,
+          deviceName: item.device_name || (item.imei ? item.imei : "-"),
         };
       });
       setVehicles(mapped);

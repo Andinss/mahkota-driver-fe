@@ -1,64 +1,77 @@
-import { api } from "../api-http";
+﻿import { api } from "../api-http";
 import type { SuccessResponse } from "../types/api";
-import type { FleetLocation, LocationHistory, GpsUpdatePayload } from "../types/monitoring";
+import type { FleetLocation } from "../types/monitoring";
 
-export interface MonitoringTask {
+export interface GpsTrackingRecord {
   id: string;
-  priority: "High" | "Normal";
-  vehicle_name: string;
-  plate: string;
-  location: string;
-  time_window: string;
-  status: "Pending" | "Scheduled" | "In Progress" | "Completed";
+  id_imei: string;
+  VehicleId: string;
+  VehicleNumber: string;
+  DatetimeUTC: string;
+  GpsLocation: string;
+  Lon: string;
+  Lat: string;
+  Speed: string;
+  Direction: string;
+  Engine: string;
+  Odometer: string;
+  Car_Status: string;
+  VehicleType: string;
+  Alarm: string;
 }
 
-export interface MonitoringTaskDetail {
-  id: string;
-  vehicle: {
-    name: string;
-    year: string;
-    plateNumber: string;
-    imageUrl: string;
-    odometerOut: number;
-    fuelLevel: number;
-  };
-  location: {
-    address: string;
-    mapUrl: string;
-    reportedIssue: string;
-  };
-  customer: {
-    name: string;
-    initials: string;
-    contractNumber: string;
-    phoneNumber: string;
+const toNumber = (v: string | null | undefined): number | undefined => {
+  if (v == null || v === "") return undefined;
+  const n = Number(v);
+  return Number.isNaN(n) ? undefined : n;
+};
+
+function mapTrackingToFleetLocation(rec: GpsTrackingRecord): FleetLocation {
+  const status =
+    rec.Car_Status === "moving" || rec.Car_Status === "emergency"
+      ? rec.Car_Status
+      : (rec.Engine === "on" ? "moving" : "idle");
+
+  return {
+    id: rec.id,
+    vehicle_id: rec.VehicleId,
+    plate: rec.VehicleNumber,
+    vehicle_name: rec.VehicleType,
+    latitude: toNumber(rec.Lat) ?? 0,
+    longitude: toNumber(rec.Lon) ?? 0,
+    speed: toNumber(rec.Speed) ?? 0,
+    status: status as FleetLocation["status"],
+    engine_status: rec.Engine === "on" ? "on" : "off",
+    last_updated: rec.DatetimeUTC,
   };
 }
 
 export const monitoringApi = {
-  getFleetLocations: (params?: { status?: string; vehicle_id?: string }) =>
-    api.get<SuccessResponse<FleetLocation[]>>("/monitoring/locations", params),
+  getList: async (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    id_imei?: string;
+  }) => {
+    return api.get<SuccessResponse<GpsTrackingRecord[]>>("/monitoring", params);
+  },
 
-  getVehicleLocation: (vehicleId: string) =>
-    api.get<SuccessResponse<FleetLocation>>(`/monitoring/locations/${vehicleId}`),
-
-  getLocationHistory: (vehicleId: string, limit?: number) =>
-    api.get<SuccessResponse<LocationHistory[]>>(
-      `/monitoring/locations/${vehicleId}/history`,
-      { limit },
-    ),
-
-  updateLocation: (payload: GpsUpdatePayload) =>
-    api.post<SuccessResponse<FleetLocation>>("/monitoring/locations", payload),
-
-  getTasks: () =>
-    api.get<SuccessResponse<MonitoringTask[]>>("/monitoring/tasks"),
-
-  getTaskById: (id: string) =>
-    api.get<SuccessResponse<MonitoringTaskDetail>>(`/monitoring/tasks/${id}`),
+  getFleetLocations: async (params?: { status?: string; vehicle_id?: string }) => {
+    const res = await api.get<SuccessResponse<GpsTrackingRecord[]>>("/monitoring", params);
+    if (!res.success) {
+      return { ...res, data: [] as FleetLocation[] };
+    }
+    return {
+      ...res,
+      data: (res.data || []).map(mapTrackingToFleetLocation),
+    } as SuccessResponse<FleetLocation[]>;
+  },
 
   updateVehicleStatus: (vehicleId: string, status: string) =>
-    api.put<SuccessResponse<any>>(`/monitoring/vehicles/${vehicleId}/status`, { status }),
+    api.put<SuccessResponse<{ vehicle_id: string; status: string }>>(
+      `/monitoring/vehicles/${vehicleId}/status`,
+      { status },
+    ),
 
   updateVehicleEngine: (vehicleId: string, engine_status: "on" | "off") =>
     api.put<SuccessResponse<{ vehicle_id: string; engine_status: "on" | "off" }>>(
