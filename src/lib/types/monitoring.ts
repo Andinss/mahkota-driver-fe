@@ -3,6 +3,8 @@ export interface FleetLocation {
   vehicle_id: string;
   plate: string;
   vehicle_name: string;
+  driver_name?: string;
+  driver_phone?: string;
   latitude: number;
   longitude: number;
   speed: number;

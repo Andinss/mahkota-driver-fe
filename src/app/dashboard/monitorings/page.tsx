@@ -6,13 +6,15 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { toastError } from "@/components/ui/toast-provider";
-import { monitoringApi, type GpsTrackingRecord } from "@/lib/api/monitoring";
+import {
+  monitoringApi,
+  type GpsTrackingRecord,
+  getDriverName,
+  getVendorName,
+} from "@/lib/api/monitoring";
 import { Pagination } from "@/components/ui/pagination";
 import { MonitoringFilters } from "@/components/monitoring/dashboard/filters-search";
-import {
-  MonitoringTable,
-  resolveVehicleDisplay,
-} from "@/components/monitoring/dashboard/monitoring-table";
+import { MonitoringTable } from "@/components/monitoring/dashboard/monitoring-table";
 
 export default function MonitoringPage() {
   const router = useRouter();
@@ -72,8 +74,8 @@ export default function MonitoringPage() {
         (r.GpsLocation || "").toLowerCase().includes(q) ||
         (r.VehicleId || "").toLowerCase().includes(q) ||
         (r.VehicleType || "").toLowerCase().includes(q) ||
-        resolveVehicleDisplay(r).vehicle_name.toLowerCase().includes(q) ||
-        resolveVehicleDisplay(r).vendor.toLowerCase().includes(q);
+        getDriverName(r).toLowerCase().includes(q) ||
+        getVendorName(r).toLowerCase().includes(q);
       return matchesStatus && matchesSearch;
     });
   }, [records, search, statusFilter]);
@@ -82,7 +84,11 @@ export default function MonitoringPage() {
     (vehicleId: string, engineStatus: "on" | "off") => {
       setRecords((prev) =>
         prev.map((r) =>
-          r.VehicleId === vehicleId ? { ...r, Engine: engineStatus } : r,
+          r.vehicle?.id === vehicleId ||
+          r.VehicleId === vehicleId ||
+          r.id === vehicleId
+            ? { ...r, Engine: engineStatus }
+            : r,
         ),
       );
     },

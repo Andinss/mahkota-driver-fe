@@ -3,38 +3,23 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ExportColumn, ExportOptions, ModalExport } from "@/components/ui/export";
 import { MonitoringTableRow, VehicleDisplay } from "./monitoring-table-row";
-import type { GpsTrackingRecord } from "@/lib/api/monitoring";
-
-// Dummy display data (FE only) — diganti join BE nanti
-const DUMMY_VEHICLES: Record<
-  string,
-  { vehicle_name: string; vendor: string }
-> = {
-  "veh-001": { vehicle_name: "Toyota Avanza 1.3 G", vendor: "Nusantara Rental" },
-  "veh-002": { vehicle_name: "Honda Brio Satya", vendor: "Mitra Jaya Trans" },
-  "veh-003": { vehicle_name: "Suzuki Ertiga GX", vendor: "Bali Fleet Service" },
-  "veh-004": { vehicle_name: "Mitsubishi Xpander", vendor: "Nusantara Rental" },
-  "veh-005": { vehicle_name: "Daihatsu Xenia", vendor: "Sinar Motor" },
-  "veh-006": { vehicle_name: "Toyota Innova Zenix", vendor: "Mitra Jaya Trans" },
-};
-
-const FALLBACK_VEHICLE: VehicleDisplay = {
-  vehicle_name: "Kendaraan Armada",
-  vendor: "Vendor Umum",
-};
+import {
+  type GpsTrackingRecord,
+  getDriverName,
+  getVendorName,
+} from "@/lib/api/monitoring";
 
 export const resolveVehicleDisplay = (
   r: GpsTrackingRecord,
 ): VehicleDisplay => {
-  const byId = DUMMY_VEHICLES[r.VehicleId];
-  if (byId) return byId;
-  const byPlate = DUMMY_VEHICLES[r.VehicleNumber];
-  if (byPlate) return byPlate;
-  return FALLBACK_VEHICLE;
+  return {
+    driver_name: getDriverName(r),
+    vendor: getVendorName(r),
+  };
 };
 
 const monitoringColumns: ExportColumn[] = [
-  { id: "vehicleName", label: "Nama Mobil", defaultChecked: true },
+  { id: "driverName", label: "Driver", defaultChecked: true },
   { id: "plate", label: "Plat", defaultChecked: true },
   { id: "vendor", label: "Vendor", defaultChecked: true },
   { id: "location", label: "Lokasi", defaultChecked: true },
@@ -95,7 +80,7 @@ export const MonitoringTable = ({
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-4 py-4 whitespace-nowrap">Nama Mobil</th>
+              <th className="px-4 py-4 whitespace-nowrap">Driver</th>
               <th className="px-4 py-4 whitespace-nowrap">Plat</th>
               <th className="px-4 py-4 whitespace-nowrap">Vendor</th>
               <th className="px-4 py-4 whitespace-nowrap">Lokasi</th>
