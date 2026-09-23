@@ -2,7 +2,6 @@
 
 import { ToastContainer, toast, type ToastOptions } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useCallback, useRef } from "react";
 
 let toastCounter = 0;
 
@@ -46,9 +45,8 @@ export function toastSuccess(msg: string) {
     ...baseOpts,
     toastId: id,
     autoClose: 5000,
-    style: { borderLeft: "4px solid #2563eb" },
-    progressStyle: { background: "#2563eb" },
-  } as any);
+    style: { borderLeft: "4px solid var(--toast-success-accent, #2563eb)" },
+  } as ToastOptions);
 }
 
 export function toastError(msg: string) {
@@ -58,8 +56,7 @@ export function toastError(msg: string) {
     ...baseOpts,
     toastId: id,
     style: { borderLeft: "4px solid #dc2626" },
-    progressStyle: { background: "#dc2626" },
-  } as any);
+  } as ToastOptions);
 }
 
 export function toastWarning(msg: string) {
@@ -69,8 +66,7 @@ export function toastWarning(msg: string) {
     ...baseOpts,
     toastId: id,
     style: { borderLeft: "4px solid #f59e0b" },
-    progressStyle: { background: "#f59e0b" },
-  } as any);
+  } as ToastOptions);
 }
 
 export function toastInfo(msg: string) {
@@ -80,8 +76,7 @@ export function toastInfo(msg: string) {
     ...baseOpts,
     toastId: id,
     style: { borderLeft: "4px solid #3b82f6" },
-    progressStyle: { background: "#3b82f6" },
-  } as any);
+  } as ToastOptions);
 }
 
 /* ========== Confirm Toast ========== */
