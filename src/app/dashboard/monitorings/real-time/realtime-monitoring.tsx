@@ -6,6 +6,7 @@ import type { FleetVehicle } from "@/components/monitoring/real-time/monitoring-
 import DetailStatusCard from "@/components/monitoring/real-time/detail-status-car";
 import SideStatus from "@/components/monitoring/real-time/side-status";
 import { PermissionGuard } from "@/components/auth-guard-permission";
+import type { FleetLocation } from "@/lib/types/monitoring";
 import { monitoringApi } from "@/lib/api/monitoring";
 
 const MonitoringMap = dynamic(
@@ -15,9 +16,9 @@ const MonitoringMap = dynamic(
 
 const POLL_INTERVAL = 10000;
 
-function mapFleetLocationToVehicle(loc: any): FleetVehicle {
+function mapFleetLocationToVehicle(loc: FleetLocation): FleetVehicle {
   return {
-    id: loc.vehicle_id,
+    id: loc.vehicle_id || loc.plate,
     plate: loc.plate,
     driverName: loc.driver_name || loc.vehicle_name || loc.plate,
     driverPhone: loc.driver_phone || undefined,
@@ -26,7 +27,6 @@ function mapFleetLocationToVehicle(loc: any): FleetVehicle {
     status: loc.status,
     engineStatus: loc.engine_status || "off",
     speed: Number(loc.speed) || 0,
-    fuelLevel: loc.fuel_level !== null ? Number(loc.fuel_level) : undefined,
     lastUpdated: loc.last_updated
       ? new Date(loc.last_updated).toLocaleTimeString()
       : undefined,

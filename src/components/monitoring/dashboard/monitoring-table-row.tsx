@@ -2,7 +2,7 @@ import { EngineSwitch } from "@/components/ui/engine-switch";
 import type { GpsTrackingRecord } from "@/lib/api/monitoring";
 
 export interface VehicleDisplay {
-  vehicle_name: string;
+  driver_name: string;
   vendor: string;
 }
 
@@ -39,9 +39,16 @@ export const MonitoringTableRow = ({
   return (
     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-4 py-4 whitespace-nowrap">
-        <p className="font-medium text-slate-900 dark:text-white">
-          {display.vehicle_name}
-        </p>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-blue-500 text-sm">
+              person
+            </span>
+          </div>
+          <p className="font-medium text-slate-900 dark:text-white">
+            {display.driver_name}
+          </p>
+        </div>
       </td>
       <td className="px-4 py-4 whitespace-nowrap">
         <span className="font-mono text-xs font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
@@ -99,10 +106,15 @@ export const MonitoringTableRow = ({
       <td className="px-4 py-4 whitespace-nowrap">
         <div className="flex items-center gap-2">
           <EngineSwitch
-            key={`${record.VehicleId}-${record.Engine}`}
-            vehicleId={record.VehicleId}
+            key={`${record.vehicle?.id || record.VehicleId}-${record.Engine}`}
+            vehicleId={record.vehicle?.id || record.VehicleId || record.id}
             engineStatus={engineOn ? "on" : "off"}
-            onChanged={(next) => onEngineChanged?.(record.VehicleId, next)}
+            onChanged={(next) =>
+              onEngineChanged?.(
+                record.vehicle?.id || record.VehicleId || record.id,
+                next,
+              )
+            }
           />
           <span
             className={`text-xs font-bold ${

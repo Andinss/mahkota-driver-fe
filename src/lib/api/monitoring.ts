@@ -1,11 +1,30 @@
 ﻿import { api } from "../api-http";
 import type { SuccessResponse } from "../types/api";
 import type { FleetLocation } from "../types/monitoring";
+import type { DriverBrief, VendorBrief } from "../types/rentals";
+
+export interface MonitoringRental {
+  id: string;
+  rental_number?: string;
+  start_date?: string;
+  end_date?: string;
+  driver?: DriverBrief | null;
+}
+
+export interface MonitoringVehicle {
+  id?: string;
+  merk?: string;
+  model?: string;
+  license_plate?: string;
+  status?: string;
+  imei?: string | null;
+  vendor?: VendorBrief | null;
+  rentals?: MonitoringRental[];
+}
 
 export interface GpsTrackingRecord {
   id: string;
-  id_imei: string;
-  VehicleId: string;
+  VehicleId: string | null;
   VehicleNumber: string;
   DatetimeUTC: string;
   GpsLocation: string;
@@ -18,6 +37,18 @@ export interface GpsTrackingRecord {
   Car_Status: string;
   VehicleType: string;
   Alarm: string;
+  vehicle?: MonitoringVehicle | null;
+}
+
+export function getDriverName(r: GpsTrackingRecord): string {
+  const driver = r.vehicle?.rentals?.[0]?.driver;
+  if (!driver) return "-";
+  const name = `${driver.first_name || ""} ${driver.last_name || ""}`.trim();
+  return name || "-";
+}
+
+export function getVendorName(r: GpsTrackingRecord): string {
+  return r.vehicle?.vendor?.name || "-";
 }
 
 const toNumber = (v: string | null | undefined): number | undefined => {
@@ -32,11 +63,21 @@ function mapTrackingToFleetLocation(rec: GpsTrackingRecord): FleetLocation {
       ? rec.Car_Status
       : (rec.Engine === "on" ? "moving" : "idle");
 
+  const driver = rec.vehicle?.rentals?.[0]?.driver;
+  const driverName = driver
+    ? `${driver.first_name || ""} ${driver.last_name || ""}`.trim()
+    : "";
+  const vehicleName = [rec.vehicle?.merk, rec.vehicle?.model]
+    .filter(Boolean)
+    .join(" ");
+
   return {
     id: rec.id,
-    vehicle_id: rec.VehicleId,
+    vehicle_id: rec.VehicleId ?? "",
     plate: rec.VehicleNumber,
-    vehicle_name: rec.VehicleType,
+    vehicle_name: vehicleName || rec.VehicleType,
+    driver_name: driverName || undefined,
+    driver_phone: driver?.phone || undefined,
     latitude: toNumber(rec.Lat) ?? 0,
     longitude: toNumber(rec.Lon) ?? 0,
     speed: toNumber(rec.Speed) ?? 0,
@@ -51,7 +92,7 @@ export const monitoringApi = {
     page?: number;
     limit?: number;
     search?: string;
-    id_imei?: string;
+    VehicleId?: string;
   }) => {
     return api.get<SuccessResponse<GpsTrackingRecord[]>>("/monitoring", params);
   },
