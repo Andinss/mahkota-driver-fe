@@ -56,15 +56,18 @@ export function VehicleSpecificationsForm({
   initialValues,
   onSubmit,
 }: VehicleSpecificationsFormProps) {
+  void mode;
   const [errors, setErrors] = useState<FormErrors>({});
   const [devices, setDevices] = useState<GpsidDevice[]>([]);
   const [usedImeis, setUsedImeis] = useState<Set<string>>(new Set());
-  const [isLoadingDevices, setIsLoadingDevices] = useState(false);
+  const [isLoadingDevices, setIsLoadingDevices] = useState(true);
+  const [pickedDevice, setPickedDevice] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const selectedDevice = initialValues?.imei && initialValues?.deviceName
-    ? `${initialValues.imei}#${initialValues.deviceName}`
-    : "";
+  const selectedDevice =
+    initialValues?.imei && initialValues?.deviceName
+      ? `${initialValues.imei}#${initialValues.deviceName}`
+      : "";
 
   useEffect(() => {
     let mounted = true;
@@ -74,7 +77,7 @@ export function VehicleSpecificationsForm({
         if (!mounted) return;
         const items = Array.isArray(res.data) ? res.data : [];
         const used = new Set<string>();
-        items.forEach((item: any) => {
+        items.forEach((item: { imei?: string | null }) => {
           if (item.imei) used.add(String(item.imei));
         });
         setUsedImeis(used);
@@ -87,22 +90,17 @@ export function VehicleSpecificationsForm({
     };
   }, []);
 
-  const availableDevices = devices.filter(
-    (d) => !usedImeis.has(d.imei) || d.imei === initialValues?.imei,
-  );
-
   useEffect(() => {
     let mounted = true;
-    setIsLoadingDevices(true);
     fetch(`${apiBase}/gpsid/vehicles`)
       .then((res) => res.json())
-      .then((res: any) => {
+      .then((res: { message?: { data?: unknown } }) => {
         if (!mounted) return;
         const items = Array.isArray(res?.message?.data)
           ? res.message.data
           : [];
         setDevices(
-          items.map((item: any) => ({
+          items.map((item: { imei?: unknown; device_name?: unknown }) => ({
             imei: String(item.imei || ""),
             device_name: String(item.device_name || ""),
           })),
@@ -118,6 +116,26 @@ export function VehicleSpecificationsForm({
       mounted = false;
     };
   }, []);
+
+  const availableDevices = devices.filter(
+    (d) => !usedImeis.has(d.imei) || d.imei === initialValues?.imei,
+  );
+
+  const deviceValue = (() => {
+    const base = pickedDevice ?? selectedDevice;
+    if (!base || availableDevices.length === 0) return base;
+
+    const exact = availableDevices.some(
+      (d) => `${d.imei}#${d.device_name}` === base,
+    );
+    if (exact) return base;
+
+    const byImei = availableDevices.find(
+      (d) => d.imei === base.split("#")[0],
+    );
+    if (byImei) return `${byImei.imei}#${byImei.device_name}`;
+    return base;
+  })();
 
   const sanitizeInput = (
     e: React.FormEvent<HTMLInputElement>,
@@ -394,16 +412,30 @@ export function VehicleSpecificationsForm({
             <Select
               id="device"
               name="device"
-              defaultValue={selectedDevice || ""}
+              value={deviceValue}
+              onChange={(e) => setPickedDevice(e.target.value)}
               required
               className="appearance-none pr-10 w-full"
             >
-              <option value="">{isLoadingDevices ? "Loading devices..." : "Select device..."}</option>
-              {availableDevices.map((device) => (
-                <option key={device.imei} value={`${device.imei}#${device.device_name}`}>
-                  {device.device_name}
-                </option>
-              ))}
+              <option value="">
+                {isLoadingDevices ? "Loading devices..." : "Select device..."}
+              </option>
+              {availableDevices.map((device) => {
+                const value = `${device.imei}#${device.device_name}`;
+                return (
+                  <option key={device.imei} value={value}>
+                    {device.device_name}
+                  </option>
+                );
+              })}
+              {deviceValue &&
+                !availableDevices.some(
+                  (d) => `${d.imei}#${d.device_name}` === deviceValue,
+                ) && (
+                  <option value={deviceValue}>
+                    {deviceValue.split("#")[1] || deviceValue}
+                  </option>
+                )}
             </Select>
             <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#617589] dark:text-slate-400">
               expand_more
