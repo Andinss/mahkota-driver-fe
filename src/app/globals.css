@@ -20,6 +20,17 @@
   --color-slate-850: #17202b;
 }
 
+/* Toastify: success accent (progress bar + border kiri) */
+:root {
+  --toast-success-accent: #2563eb;
+  --toastify-color-progress-success: #2563eb !important;
+}
+
+html[data-palette="gold"] {
+  --toast-success-accent: #a9822e;
+  --toastify-color-progress-success: #a9822e !important;
+}
+
 /* ===================================================================
  * SITE BRANDING – GOLD PALETTE
  * Override semua warna primary & blue saat data-palette="gold"
