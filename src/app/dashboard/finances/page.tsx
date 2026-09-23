@@ -52,6 +52,7 @@ export default function PaymentList() {
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
 
   const [dailyPayments, setDailyPayments] = useState<DailyPaymentItem[]>([]);
+  const [dailyTablePayments, setDailyTablePayments] = useState<DailyPaymentItem[] | null>(null);
   const [dailyMeta, setDailyMeta] = useState({ total: 0, page: 1, limit: 50, totalPages: 1 });
 
   const [adminFees, setAdminFees] = useState<FinanceItem[]>([]);
@@ -119,6 +120,29 @@ export default function PaymentList() {
       setIsLoading(false);
     }
   }, [debouncedSearch, user]);
+
+  const fetchFilteredDailyPayments = useCallback(async () => {
+    if (!dailyStatusFilter) {
+      setDailyTablePayments(null);
+      return;
+    }
+    try {
+      const response = await financeApi.getDailyPayments({
+        page: 1,
+        limit: 100,
+        search: debouncedSearch || undefined,
+        status: dailyStatusFilter || undefined,
+      });
+      const items = Array.isArray(response.data) ? response.data : [];
+      setDailyTablePayments(items);
+    } catch {
+      toastError("Failed to load daily payments");
+    }
+  }, [dailyStatusFilter, debouncedSearch, user]);
+
+  useEffect(() => {
+    fetchFilteredDailyPayments();
+  }, [fetchFilteredDailyPayments]);
 
   const fetchAdminFees = useCallback(async () => {
     if (!canAccess(user?.permissions, "finance.read")) {
@@ -262,7 +286,9 @@ export default function PaymentList() {
     );
   };
 
-  const filteredDailyPayments = dailyPayments.filter((dp) => {
+  const dailyBasePayments = dailyTablePayments ?? dailyPayments;
+
+  const filteredDailyPayments = dailyBasePayments.filter((dp) => {
     if (dailyDateFilter === "today" && !isToday(dp.payment_date) && !isToday(dp.created_at)) {
       return false;
     }

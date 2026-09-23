@@ -46,6 +46,9 @@ const RealtimeMonitoring = () => {
       if (mountedRef.current && res.success) {
         const mapped = (res.data || []).map(mapFleetLocationToVehicle);
         setVehicles(mapped);
+        setSelectedVehicle((prev) =>
+          prev ? mapped.find((v) => v.id === prev.id) ?? prev : null,
+        );
       }
     } catch {
       // silent fail — keep last known positions
@@ -78,48 +81,50 @@ const RealtimeMonitoring = () => {
 
   return (
     <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
-      <div className="flex flex-1 bg-white dark:bg-slate-950 mx-2 my-2 md:mx-4 md:my-4 lg:m-8">
-        {/* Sidebar */}
-        <SideStatus
-          vehicles={vehicles}
-          onVehicleClick={handleVehicleClick}
-          selectedVehicleId={selectedVehicle?.id}
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
+      <div className="h-full p-2 md:p-4 lg:p-8">
+        <div className="flex h-full bg-white dark:bg-slate-950">
+          {/* Sidebar */}
+          <SideStatus
+            vehicles={vehicles}
+            onVehicleClick={handleVehicleClick}
+            selectedVehicleId={selectedVehicle?.id}
+            isOpen={isSidebarOpen}
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          />
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0 relative">
-          {/* Toolbar */}
-          <div className="h-10 border-b border-slate-200 dark:border-slate-700 flex items-center px-3 shrink-0">
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Real-time Fleet Monitoring
-              </h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full uppercase tracking-wider">
-                Live
-              </span>
-            </div>
-          </div>
-
-          {/* Map Area */}
-          <div className="flex-1 relative">
-            {loading ? (
-              <div className="w-full h-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-                <div className="text-slate-400 text-sm">Loading fleet locations...</div>
+          {/* Main Content */}
+          <div className="flex-1 flex flex-col min-w-0 min-h-0 relative">
+            {/* Toolbar */}
+            <div className="h-10 border-b border-slate-200 dark:border-slate-700 flex items-center px-3 shrink-0">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Real-time Fleet Monitoring
+                </h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full uppercase tracking-wider">
+                  Live
+                </span>
               </div>
-            ) : (
-              <MonitoringMap
-                vehicles={vehicles}
-                center={[-6.2088, 106.8456]}
-                zoom={12}
-                onVehicleClick={handleVehicleClick}
-                selectedVehicle={selectedVehicle}
-              />
-            )}
-            {selectedVehicle && (
-              <DetailStatusCard onClose={handleCloseDetail} vehicle={selectedVehicle} onStatusChanged={fetchLocations} />
-            )}
+            </div>
+
+            {/* Map Area */}
+            <div className="flex-1 relative min-h-0">
+              {loading ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+                  <div className="text-slate-400 text-sm">Loading fleet locations...</div>
+                </div>
+              ) : (
+                <MonitoringMap
+                  vehicles={vehicles}
+                  center={[-6.2088, 106.8456]}
+                  zoom={12}
+                  onVehicleClick={handleVehicleClick}
+                  selectedVehicle={selectedVehicle}
+                />
+              )}
+              {selectedVehicle && (
+                <DetailStatusCard onClose={handleCloseDetail} vehicle={selectedVehicle} onStatusChanged={fetchLocations} />
+              )}
+            </div>
           </div>
         </div>
       </div>

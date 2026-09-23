@@ -33,13 +33,25 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
   const handleShutdown = async () => {
     setIsShuttingDown(true);
     try {
-      await monitoringApi.updateVehicleStatus(vehicle.id, "Maintenance");
+      await monitoringApi.updateVehicleEngine(vehicle.id, "off");
       setShowConfirm(false);
       onStatusChanged?.();
     } catch (err) {
       console.error("Failed to shutdown vehicle:", err);
     } finally {
       setIsShuttingDown(false);
+    }
+  };
+
+  const handleTurnOn = async () => {
+    setIsSendingAction(true);
+    try {
+      await monitoringApi.updateVehicleEngine(vehicle.id, "on");
+      onStatusChanged?.();
+    } catch (err) {
+      console.error("Failed to turn on vehicle engine:", err);
+    } finally {
+      setIsSendingAction(false);
     }
   };
 
@@ -260,9 +272,13 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
 
         {!showConfirm && (
           <div className="flex gap-1">
-            <button className="flex-1 flex items-center justify-center gap-0.5 px-2 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded text-[10px] font-semibold text-slate-700 dark:text-slate-200 transition-colors">
-              <span className="material-symbols-outlined text-[9px]">history</span>
-              History
+            <button
+              onClick={handleTurnOn}
+              disabled={isSendingAction}
+              className="flex-1 flex items-center justify-center gap-0.5 px-2 py-1 bg-emerald-600 hover:bg-emerald-700 rounded text-[10px] font-semibold text-white transition-colors disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-[9px]">power_settings_new</span>
+              On
             </button>
             <button
               onClick={() => setShowConfirm(true)}

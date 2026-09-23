@@ -73,7 +73,20 @@ export default function MonitoringMap({
       maxZoom: 19,
     }).addTo(map);
 
+    const invalidate = () => map.invalidateSize();
+    const raf = requestAnimationFrame(() => invalidate());
+    const timeout = window.setTimeout(() => invalidate(), 300);
+    window.addEventListener("resize", invalidate);
+
     mapRef.current = map;
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timeout);
+      window.removeEventListener("resize", invalidate);
+      map.remove();
+      mapRef.current = null;
+    };
   }, [center, zoom]);
 
   useEffect(() => {
@@ -146,7 +159,7 @@ export default function MonitoringMap({
     }
   }, [selectedVehicle]);
 
-  return <div ref={mapContainerRef} className="w-full h-full" />;
+  return <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />;
 }
 
 export type { FleetVehicle };

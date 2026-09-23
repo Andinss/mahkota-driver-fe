@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { financeApi } from "@/lib/api/finances";
 import { useAuth } from "@/lib/auth-context";
 import { toastError } from "@/components/ui/toast-provider";
+import { Pagination } from "@/components/ui/pagination";
 import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
 
 const formatIDR = (value: number) =>
@@ -15,13 +16,16 @@ const formatIDR = (value: number) =>
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
-
-const formatDate = (date?: string) => {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("id-ID", {
+const formatDateTime = (dateStr: string) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleString("id-ID", {
     day: "numeric",
     month: "short",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
@@ -37,8 +41,37 @@ export function DriverPaymentPage() {
   const { user } = useAuth();
   const [adminFee, setAdminFee] = useState<FinanceItem | null>(null);
   const [dailyPayments, setDailyPayments] = useState<DailyPaymentItem[]>([]);
+  const [dailyMeta, setDailyMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  });
+  const [dailyPage, setDailyPage] = useState(1);
+  const [dailyPageSize, setDailyPageSize] = useState(10);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingDaily, setIsLoadingDaily] = useState(false);
+
+  const fetchDailyPayments = useCallback(async () => {
+    if (!user?.driver_id) return;
+    setIsLoadingDaily(true);
+    try {
+      const dailyRes = await financeApi.getMyDailyPayments({
+        page: dailyPage,
+        limit: dailyPageSize,
+      });
+      const dailyData = (dailyRes as any)?.data ?? dailyRes;
+      const items = Array.isArray(dailyData) ? dailyData : dailyData?.data ?? [];
+      setDailyPayments(items);
+      if ((dailyRes as any)?.meta) {
+        setDailyMeta((dailyRes as any).meta);
+      }
+    } catch {
+      setDailyPayments([]);
+    } finally {
+      setIsLoadingDaily(false);
+    }
+  }, [user?.driver_id, dailyPage, dailyPageSize]);
 
   const fetchData = useCallback(async () => {
     if (!user?.driver_id) {
@@ -50,20 +83,6 @@ export function DriverPaymentPage() {
       const adminFeeRes = await financeApi.getMyAdminFee();
       const adminFeeData = (adminFeeRes as any)?.data ?? adminFeeRes;
       setAdminFee(adminFeeData);
-
-      if (adminFeeData?.status === "paid") {
-        setIsLoadingDaily(true);
-        try {
-          const dailyRes = await financeApi.getMyDailyPayments({ limit: 50 });
-          const dailyData = (dailyRes as any)?.data ?? dailyRes;
-          const items = Array.isArray(dailyData) ? dailyData : dailyData?.data ?? [];
-          setDailyPayments(items);
-        } catch {
-          setDailyPayments([]);
-        } finally {
-          setIsLoadingDaily(false);
-        }
-      }
     } catch (err) {
       console.error("Failed to fetch payment data:", err);
       toastError("Gagal memuat data tagihan");
@@ -75,6 +94,12 @@ export function DriverPaymentPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    if (adminFee?.status === "paid") {
+      fetchDailyPayments();
+    }
+  }, [adminFee?.status, dailyPage, dailyPageSize, fetchDailyPayments]);
 
   const handlePayAdminFee = () => {
     if (adminFee?.id) {
@@ -123,7 +148,7 @@ export function DriverPaymentPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col gap-1">
                         <span className="font-mono font-semibold text-sm text-primary">{adminFee.reference_number}</span>
-                        <span className="text-xs text-slate-400">{formatDate(adminFee.payment_date)}</span>
+                        <span className="text-xs text-slate-400">{formatDateTime(adminFee.payment_date)}</span>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-xl text-slate-900 dark:text-white">{formatIDR(adminFee.fee_admin_join || 0)}</p>
@@ -188,16 +213,17 @@ export function DriverPaymentPage() {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-sm">
+                      <table className="w-full min-w-[900px] text-left text-sm whitespace-nowrap">
                         <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
                           <tr>
-                            <th className="px-6 py-4">Tanggal</th>
                             <th className="px-6 py-4">Kendaraan</th>
                             <th className="px-6 py-4">Plat Nomor</th>
                             <th className="px-6 py-4">Vendor</th>
                             <th className="px-6 py-4">Jumlah</th>
                             <th className="px-6 py-4">Status</th>
                             <th className="px-6 py-4 text-right">Aksi</th>
+                            <th className="px-6 py-4">Tanggal Dibuat</th>
+                            <th className="px-6 py-4">Tanggal Bayar</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
@@ -205,9 +231,7 @@ export function DriverPaymentPage() {
                             const st = statusConfig[dp.status] || statusConfig.unpaid;
                             return (
                               <tr key={dp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                                <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                                  {formatDate(dp.payment_date)}
-                                </td>
+                           
                                 <td className="px-6 py-4">
                                   <span className="font-semibold text-slate-900 dark:text-white">{dp.vehicle_name}</span>
                                 </td>
@@ -233,12 +257,31 @@ export function DriverPaymentPage() {
                                     <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-xl">check_circle</span>
                                   )}
                                 </td>
+                                     <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                  {formatDateTime(dp.payment_date)}
+                                </td>
+                                     <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
+                                {dp.status === "paid" && dp.payment_date ? formatDateTime(dp.payment_date) : "-"}
+                                </td>
                               </tr>
                             );
                           })}
                         </tbody>
                       </table>
                     </div>
+                  )}
+                  {dailyPayments.length > 0 && (
+                    <Pagination
+                      currentPage={dailyMeta.page}
+                      totalPages={dailyMeta.totalPages}
+                      totalResults={dailyMeta.total}
+                      resultsPerPage={dailyPageSize}
+                      onPageChange={setDailyPage}
+                      onPageSizeChange={(size) => {
+                        setDailyPageSize(size);
+                        setDailyPage(1);
+                      }}
+                    />
                   )}
                 </div>
               )}
