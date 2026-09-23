@@ -13,9 +13,7 @@ import { authApi } from "./api/auth";
 import { HttpClientError } from "./api-http";
 import { toastWarning } from "@/components/ui/toast-provider";
 
-const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
-const IDLE_WARNING_MS = 2 * 60 * 1000;
-const IDLE_TOAST_ID = "idle-session-warning";
+const IDLE_TIMEOUT_MS = 24 * 60 * 60 * 1000;
 
 interface AuthContextType {
   user: User | null;
@@ -43,7 +41,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isAuthenticatedRef = useRef(false);
 
   const clearIdleTimers = useCallback(() => {
@@ -51,18 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(idleTimerRef.current);
       idleTimerRef.current = null;
     }
-    if (warningTimerRef.current) {
-      clearTimeout(warningTimerRef.current);
-      warningTimerRef.current = null;
-    }
   }, []);
 
   const startIdleTimer = useCallback(() => {
     clearIdleTimers();
-
-    warningTimerRef.current = setTimeout(() => {
-      toastWarning("Sesi Anda akan berakhir dalam 2 menit karena tidak ada aktivitas.", IDLE_TOAST_ID);
-    }, IDLE_TIMEOUT_MS - IDLE_WARNING_MS);
 
     idleTimerRef.current = setTimeout(() => {
       setLogoutToast("idle");
