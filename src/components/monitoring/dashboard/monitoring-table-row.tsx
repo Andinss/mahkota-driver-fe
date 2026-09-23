@@ -75,17 +75,23 @@ export const MonitoringTableRow = ({
         {record.DatetimeUTC || "-"}
       </td>
       <td className="px-4 py-4 whitespace-nowrap">
-        <span
-          className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-            statusClass[status] || statusClass.idle
-          }`}
-        >
-          {statusLabel[status] || record.Car_Status || "-"}
-        </span>
+        
+      <span
+  className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+    statusClass[status] || statusClass.idle
+  }`}
+>
+  {statusLabel[status] || record.Car_Status || "-"}
+</span>
+{" "}
+| <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
+  {record.Speed ? record.Speed : "0"}
+  <span className="text-xs font-medium text-slate-400 dark:text-slate-500 ml-1">
+    km/h
+  </span>
+</span>
       </td>
-      <td className="px-4 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
-        {record.Speed ? `${record.Speed} km/h` : "-"}
-      </td>
+     
       {/* <td className="px-4 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
         {record.Direction ? `${record.Direction}°` : "-"}
       </td> */}
