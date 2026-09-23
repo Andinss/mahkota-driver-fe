@@ -39,7 +39,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           }`}
           onClick={() => onTabChange("deposit-history")}
         >
-          Deposit History
+          Daily Payment History
         </button>
       </div>
     </div>

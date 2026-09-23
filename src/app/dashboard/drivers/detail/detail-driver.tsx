@@ -37,6 +37,7 @@ const mapFinanceToHistory = (f: FinanceItem): HistorySetoran => ({
   finance_type: f.finance_type ?? f.status ?? "pending",
   notes: f.notes || undefined,
   rental_number: f.rentals?.[0]?.rental_number,
+  rental_id: f.rentals?.[0]?.id,
 });
 
 const DetailDriverPage = () => {
@@ -115,7 +116,7 @@ const DetailDriverPage = () => {
         const res = await financeApi.getList({ driver_id: driverId, limit: 1000 });
         setDepositHistory(res.data.map(mapFinanceToHistory));
       } catch (err) {
-        console.error("Failed to load deposit history:", err instanceof Error ? err.message : err);
+        console.error("Failed to load daily payment history:", err instanceof Error ? err.message : err);
         setDepositHistory([]);
       } finally {
         setIsLoadingHistory(false);
@@ -241,7 +242,7 @@ const DetailDriverPage = () => {
         <div>
           {isLoadingHistory ? (
             <div className="py-20 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-              Loading deposit history...
+              Loading daily payment history...
             </div>
           ) : (
             <DepositHistoryList history={depositHistory} />
