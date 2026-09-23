@@ -1,7 +1,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ExportColumn, ExportOptions, ModalExport } from "@/components/ui/export";
+import {
+  ExportColumn,
+  ExportOptions,
+  ModalExport,
+} from "@/components/ui/export";
 import { MonitoringTableRow, VehicleDisplay } from "./monitoring-table-row";
 import {
   type GpsTrackingRecord,
@@ -9,9 +13,7 @@ import {
   getVendorName,
 } from "@/lib/api/monitoring";
 
-export const resolveVehicleDisplay = (
-  r: GpsTrackingRecord,
-): VehicleDisplay => {
+export const resolveVehicleDisplay = (r: GpsTrackingRecord): VehicleDisplay => {
   return {
     driver_name: getDriverName(r),
     vendor: getVendorName(r),
@@ -54,13 +56,17 @@ export const MonitoringTable = ({
       <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-blue-500 text-xl">satellite_alt</span>
+            <span className="material-symbols-outlined text-blue-500 text-xl">
+              satellite_alt
+            </span>
           </div>
           <div>
             <h2 className="font-bold text-slate-800 dark:text-white text-base">
               Lokasi Armada
             </h2>
-            <p className="text-xs text-slate-400">{records.length} kendaraan tercatat</p>
+            <p className="text-xs text-slate-400">
+              {records.length} kendaraan tercatat
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -71,7 +77,9 @@ export const MonitoringTable = ({
             onClick={() => setIsExportModalOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
           >
-            <span className="material-symbols-outlined text-base">download</span>
+            <span className="material-symbols-outlined text-base">
+              download
+            </span>
             Export
           </button>
         </div>
@@ -80,17 +88,13 @@ export const MonitoringTable = ({
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-4 py-4 whitespace-nowrap">Driver</th>
-              <th className="px-4 py-4 whitespace-nowrap">Plat</th>
+              <th className="px-4 py-4 whitespace-nowrap">Pengemudi / Unit</th>
               <th className="px-4 py-4 whitespace-nowrap">Vendor</th>
               <th className="px-4 py-4 whitespace-nowrap">Lokasi</th>
-              <th className="px-4 py-4 whitespace-nowrap">Koordinat</th>
               <th className="px-4 py-4 whitespace-nowrap">Waktu (UTC)</th>
               <th className="px-4 py-4 whitespace-nowrap">Status</th>
               <th className="px-4 py-4 whitespace-nowrap">Kecepatan</th>
-              <th className="px-4 py-4 whitespace-nowrap">Arah</th>
               <th className="px-4 py-4 whitespace-nowrap">Odometer</th>
-              <th className="px-4 py-4 whitespace-nowrap">Tipe</th>
               <th className="px-4 py-4 whitespace-nowrap">Alarm</th>
               <th className="px-4 py-4 whitespace-nowrap">Mesin</th>
             </tr>

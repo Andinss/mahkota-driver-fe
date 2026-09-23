@@ -15,7 +15,7 @@ import { AdminPaymentTable } from "@/components/finance/payment-list/admin-payme
 import { PageHeader } from "@/components/page-header";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
-import { PaymentFilters } from "@/components/finance/payment-list/payment-filters";
+import { FinanceTabFilters } from "@/components/finance/payment-list/finance-tab-filters";
 import { financeApi } from "@/lib/api/finances";
 import { koinApi } from "@/lib/api/koin";
 import { HttpClientError } from "@/lib/api-http";
@@ -62,11 +62,32 @@ export default function PaymentList() {
   const [koinSummary, setKoinSummary] = useState<KoinSummary | null>(null);
 
   const [searchValue, setSearchValue] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [dailyDateFilter, setDailyDateFilter] = useState(""); // "" | "today"
+  const [dailyStatusFilter, setDailyStatusFilter] = useState(""); // "" | "paid" | "unpaid"
+  const [adminStatusFilter, setAdminStatusFilter] = useState(""); // "" | "paid" | "unpaid"
+  const [koinTypeFilter, setKoinTypeFilter] = useState(""); // "" | "top_up" | "refund"
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isDeleting, setIsDeleting] = useState(false);
   const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchValue), 400);
+    return () => clearTimeout(timer);
+  }, [searchValue]);
+
+  useEffect(() => {
+    setSearchValue("");
+    setDebouncedSearch("");
+    setPaymentMethod("");
+    setDailyDateFilter("");
+    setDailyStatusFilter("");
+    setAdminStatusFilter("");
+    setKoinTypeFilter("");
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const fetchSummary = useCallback(async () => {
     try {
@@ -87,7 +108,7 @@ export default function PaymentList() {
       const response = await financeApi.getDailyPayments({
         page: 1,
         limit: 100,
-        search: searchValue || undefined,
+        search: debouncedSearch || undefined,
       });
       const items = Array.isArray(response.data) ? response.data : [];
       setDailyPayments(items);
@@ -97,7 +118,7 @@ export default function PaymentList() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchValue, user]);
+  }, [debouncedSearch, user]);
 
   const fetchAdminFees = useCallback(async () => {
     if (!canAccess(user?.permissions, "finance.read")) {
@@ -109,7 +130,7 @@ export default function PaymentList() {
       const response = await financeApi.getAdminFees({
         page: currentPage,
         limit: itemsPerPage,
-        search: searchValue || undefined,
+        search: debouncedSearch || undefined,
       });
       const items = Array.isArray(response.data) ? response.data : [];
       setAdminFees(items);
@@ -119,7 +140,7 @@ export default function PaymentList() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, itemsPerPage, searchValue, user]);
+  }, [currentPage, itemsPerPage, debouncedSearch, user]);
 
   const fetchKoinTransactions = useCallback(async () => {
     if (!canAccess(user?.permissions, "finance.read")) {
@@ -128,7 +149,8 @@ export default function PaymentList() {
     try {
       const response = await koinApi.getAllTransactions({
         page: 1,
-        limit: 50,
+        limit: 100,
+        type: koinTypeFilter || undefined,
       });
       const items = Array.isArray(response.data) ? response.data : [];
       setKoinTransactions(items);
@@ -136,7 +158,7 @@ export default function PaymentList() {
     } catch {
       toastError("Failed to load koin transactions");
     }
-  }, [user]);
+  }, [user, koinTypeFilter]);
 
   const fetchKoinSummary = useCallback(async () => {
     try {
@@ -183,6 +205,9 @@ export default function PaymentList() {
     if (options.type === "filtered") {
       if (searchValue) params.search = searchValue;
       if (paymentMethod) params.payment_method = paymentMethod;
+      if (dailyStatusFilter || adminStatusFilter) {
+        params.status = dailyStatusFilter || adminStatusFilter;
+      }
       if (options.dateRange?.start) params.start_date = options.dateRange.start;
       if (options.dateRange?.end) params.end_date = options.dateRange.end;
     }
@@ -224,6 +249,41 @@ export default function PaymentList() {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= adminFeeMeta.totalPages) setCurrentPage(page);
   };
+
+  const isToday = (dateStr?: string) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return false;
+    const now = new Date();
+    return (
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate()
+    );
+  };
+
+  const filteredDailyPayments = dailyPayments.filter((dp) => {
+    if (dailyDateFilter === "today" && !isToday(dp.payment_date) && !isToday(dp.created_at)) {
+      return false;
+    }
+    if (dailyStatusFilter && dp.status !== dailyStatusFilter) return false;
+    return true;
+  });
+
+  const filteredAdminFees = adminFees.filter((f) => {
+    if (adminStatusFilter && f.status !== adminStatusFilter) return false;
+    return true;
+  });
+
+  const filteredKoinTransactions = koinTransactions.filter((tx) => {
+    if (koinTypeFilter && tx.type !== koinTypeFilter) return false;
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
+      const hay = `${tx.driver_name || ""} ${tx.reference_number || ""} ${tx.notes || ""}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
 
   const totalDailyAmount = dailyPayments.reduce((sum, dp) => sum + (Number(dp.amount) || 0), 0);
   const unpaidDailyCount = dailyPayments.filter((dp) => dp.status === "unpaid").length;
@@ -306,6 +366,32 @@ export default function PaymentList() {
             {activeTab === "daily" && !isLoading && (
               <>
                 {renderDailyCards()}
+                <FinanceTabFilters
+                  searchValue={searchValue}
+                  onSearchChange={handleSearchChange}
+                  searchPlaceholder="Search reference number, driver, or plate..."
+                  selects={[
+                    {
+                      id: "filter-daily-date",
+                      value: dailyDateFilter,
+                      onChange: setDailyDateFilter,
+                      options: [
+                        { value: "", label: "Semua Tanggal" },
+                        { value: "today", label: "Hari Ini" },
+                      ],
+                    },
+                    {
+                      id: "filter-daily-status",
+                      value: dailyStatusFilter,
+                      onChange: setDailyStatusFilter,
+                      options: [
+                        { value: "", label: "All Status" },
+                        { value: "paid", label: "Paid" },
+                        { value: "unpaid", label: "Unpaid" },
+                      ],
+                    },
+                  ]}
+                />
                 <div className="rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] bg-white dark:bg-[#1a2632] p-4 shadow-sm">
                   <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -324,7 +410,7 @@ export default function PaymentList() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">
-                  <DailyPaymentTable payments={dailyPayments} />
+                  <DailyPaymentTable payments={filteredDailyPayments} />
                 </div>
               </>
             )}
@@ -335,8 +421,25 @@ export default function PaymentList() {
             {activeTab === "admin-koin" && !isLoading && (
               <>
                 {renderAdminFeeCards()}
+                <FinanceTabFilters
+                  searchValue={searchValue}
+                  onSearchChange={handleSearchChange}
+                  searchPlaceholder="Search reference number or payer..."
+                  selects={[
+                    {
+                      id: "filter-admin-status",
+                      value: adminStatusFilter,
+                      onChange: setAdminStatusFilter,
+                      options: [
+                        { value: "", label: "All Status" },
+                        { value: "paid", label: "Paid" },
+                        { value: "unpaid", label: "Unpaid" },
+                      ],
+                    },
+                  ]}
+                />
                 <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-                  <AdminPaymentTable payments={adminFees} />
+                  <AdminPaymentTable payments={filteredAdminFees} />
                   <div className="border-t border-[#dbe0e6] dark:border-gray-700">
                     <Pagination currentPage={adminFeeMeta.page} totalPages={adminFeeMeta.totalPages} totalResults={adminFeeMeta.total} resultsPerPage={itemsPerPage} onPageChange={handlePageChange} onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }} />
                   </div>
@@ -350,6 +453,23 @@ export default function PaymentList() {
             {activeTab === "koin" && !isLoading && (
               <>
                 {renderKoinCards()}
+                <FinanceTabFilters
+                  searchValue={searchValue}
+                  onSearchChange={handleSearchChange}
+                  searchPlaceholder="Search driver, reference, or notes..."
+                  selects={[
+                    {
+                      id: "filter-koin-type",
+                      value: koinTypeFilter,
+                      onChange: setKoinTypeFilter,
+                      options: [
+                        { value: "", label: "All Types" },
+                        { value: "top_up", label: "Top Up" },
+                        { value: "refund", label: "Refund" },
+                      ],
+                    },
+                  ]}
+                />
                 <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
                   <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -360,7 +480,7 @@ export default function PaymentList() {
                         <h2 className="font-bold text-slate-800 dark:text-white text-base">
                           Koin Transactions
                         </h2>
-                        <p className="text-xs text-slate-400">{koinTransactions.length} transaksi koin tercatat</p>
+                        <p className="text-xs text-slate-400">{filteredKoinTransactions.length} transaksi koin tercatat</p>
                       </div>
                     </div>
                     <Link href="/dashboard/finances/koin">
@@ -369,7 +489,7 @@ export default function PaymentList() {
                       </Button>
                     </Link>
                   </div>
-                  <KoinTable transactions={koinTransactions} />
+                  <KoinTable transactions={filteredKoinTransactions} />
                 </div>
               </>
             )}
