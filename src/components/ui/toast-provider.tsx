@@ -59,12 +59,13 @@ export function toastError(msg: string) {
   } as ToastOptions);
 }
 
-export function toastWarning(msg: string) {
-  const id = makeToastId(msg);
+export function toastWarning(msg: string, toastId?: string) {
+  const id = toastId ?? makeToastId(msg);
   toast.dismiss(id);
   toast.warning(msg, {
     ...baseOpts,
     toastId: id,
+    autoClose: toastId ? 8000 : 3000,
     style: { borderLeft: "4px solid #f59e0b" },
   } as ToastOptions);
 }

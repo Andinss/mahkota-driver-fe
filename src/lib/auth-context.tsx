@@ -2,37 +2,70 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import type { User } from "./types/auth";
-import { getAccessToken, clearTokens, getStoredUser } from "./token";
+import {
+  getAccessToken,
+  clearTokens,
+  getStoredUser,
+  setLogoutToast,
+  migrateLegacySession,
+} from "./token";
 import { authApi } from "./api/auth";
+import { HttpClientError } from "./api-http";
+import { toastWarning } from "@/components/ui/toast-provider";
 
-const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+const IDLE_WARNING_MS = 2 * 60 * 1000;
+const IDLE_TOAST_ID = "idle-session-warning";
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string, turnstileToken?: string) => Promise<User | null>;
+  login: (email: string, password: string, turnstileToken?: string, remember?: boolean) => Promise<User | null>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const normalizeUser = (raw: Record<string, unknown>): User => {
+  const permissions =
+    Array.isArray(raw.permissions) && raw.permissions.length
+      ? (raw.permissions as string[])
+      : Array.isArray((raw.role as { permissions?: { name?: string }[] } | null)?.permissions)
+        ? ((raw.role as { permissions: { name?: string }[] }).permissions
+            .map((p) => p.name)
+            .filter(Boolean) as string[])
+        : [];
+  return { ...raw, permissions } as User;
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isAuthenticatedRef = useRef(false);
 
-  const clearIdleTimer = useCallback(() => {
+  const clearIdleTimers = useCallback(() => {
     if (idleTimerRef.current) {
       clearTimeout(idleTimerRef.current);
       idleTimerRef.current = null;
     }
+    if (warningTimerRef.current) {
+      clearTimeout(warningTimerRef.current);
+      warningTimerRef.current = null;
+    }
   }, []);
 
   const startIdleTimer = useCallback(() => {
-    clearIdleTimer();
+    clearIdleTimers();
+
+    warningTimerRef.current = setTimeout(() => {
+      toastWarning("Sesi Anda akan berakhir dalam 2 menit karena tidak ada aktivitas.", IDLE_TOAST_ID);
+    }, IDLE_TIMEOUT_MS - IDLE_WARNING_MS);
+
     idleTimerRef.current = setTimeout(() => {
+      setLogoutToast("idle");
       clearTokens();
       setUser(null);
       isAuthenticatedRef.current = false;
@@ -40,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.location.href = "/auth/login";
       }
     }, IDLE_TIMEOUT_MS);
-  }, [clearIdleTimer]);
+  }, [clearIdleTimers]);
 
   const resetIdleTimer = useCallback(() => {
     if (isAuthenticatedRef.current) {
@@ -49,38 +82,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [startIdleTimer]);
 
   useEffect(() => {
+    migrateLegacySession();
+
     const token = getAccessToken();
     if (!token) {
-      setIsLoading(false);
+      queueMicrotask(() => setIsLoading(false));
       return;
     }
 
-    const stored = getStoredUser<Record<string, any>>();
+    const stored = getStoredUser<Record<string, unknown>>();
     if (stored) {
-      const permissions = stored.permissions?.length
-        ? stored.permissions
-        : stored.role?.permissions?.map((p: any) => p.name) || [];
-      setUser({ ...stored, permissions } as User);
+      const initialUser = normalizeUser(stored);
       isAuthenticatedRef.current = true;
       startIdleTimer();
-      setIsLoading(false);
+      queueMicrotask(() => {
+        setUser(initialUser);
+        setIsLoading(false);
+      });
     }
 
-    authApi.getMe()
-      .then((freshUser: any) => {
-        const permissions = freshUser?.permissions?.length
-          ? freshUser.permissions
-          : freshUser?.role?.permissions?.map((p: any) => p.name) || [];
-        setUser({ ...freshUser, permissions } as User);
+    authApi
+      .getMe()
+      .then((freshUser) => {
+        const permissions =
+          freshUser.permissions?.length
+            ? freshUser.permissions
+            : (freshUser.role as unknown as { permissions?: { name?: string }[] })?.permissions
+                ?.map((p) => p.name)
+                .filter(Boolean) || [];
+        const nextUser = { ...freshUser, permissions } as User;
+        setUser(nextUser);
         isAuthenticatedRef.current = true;
         startIdleTimer();
         setIsLoading(false);
       })
-      .catch(() => {
-        isAuthenticatedRef.current = false;
+      .catch((error: unknown) => {
+        if (error instanceof HttpClientError && error.statusCode === 401) {
+          clearTokens();
+          setUser(null);
+          isAuthenticatedRef.current = false;
+          clearIdleTimers();
+          setIsLoading(false);
+          return;
+        }
+
+        const stillHasToken = !!getAccessToken();
+        if (stillHasToken && stored) {
+          setUser(normalizeUser(stored));
+          isAuthenticatedRef.current = true;
+          startIdleTimer();
+          setIsLoading(false);
+          toastWarning("Gagal sinkronisasi profil. Data lokal tetap digunakan.");
+          return;
+        }
+
+        if (stillHasToken && !stored) {
+          setIsLoading(false);
+          return;
+        }
+
         clearTokens();
         setUser(null);
-        clearIdleTimer();
+        isAuthenticatedRef.current = false;
+        clearIdleTimers();
         setIsLoading(false);
       });
 
@@ -89,31 +153,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     events.forEach((event) => window.addEventListener(event, handleActivity));
 
     return () => {
-      clearIdleTimer();
+      clearIdleTimers();
       events.forEach((event) => window.removeEventListener(event, handleActivity));
     };
-  }, [startIdleTimer, clearIdleTimer, resetIdleTimer]);
+  }, [startIdleTimer, clearIdleTimers, resetIdleTimer]);
 
-  const login = useCallback(async (email: string, password: string, turnstileToken?: string): Promise<User | null> => {
-    const result = await authApi.login({ email, password, turnstile_token: turnstileToken });
-    const raw = result.user as any;
-    const permissions = raw.permissions?.length
-      ? raw.permissions
-      : raw.role?.permissions?.map((p: any) => p.name) || [];
-    const userData = { ...result.user, permissions } as User;
-    setUser(userData);
-    isAuthenticatedRef.current = true;
-    startIdleTimer();
-    return userData;
-  }, [startIdleTimer]);
+  const login = useCallback(
+    async (
+      email: string,
+      password: string,
+      turnstileToken?: string,
+      remember?: boolean,
+    ): Promise<User | null> => {
+      const result = await authApi.login(
+        { email, password, turnstile_token: turnstileToken },
+        remember ?? true,
+      );
+      const raw = result.user as unknown as Record<string, unknown>;
+      const permissions =
+        Array.isArray(raw.permissions) && raw.permissions.length
+          ? (raw.permissions as string[])
+          : ((raw.role as { permissions?: { name?: string }[] } | null)?.permissions
+              ?.map((p) => p.name)
+              .filter(Boolean) as string[]) || [];
+      const userData = { ...result.user, permissions } as User;
+      setUser(userData);
+      isAuthenticatedRef.current = true;
+      startIdleTimer();
+      return userData;
+    },
+    [startIdleTimer],
+  );
 
   const logout = useCallback(() => {
-    sessionStorage.setItem("intentional_logout", "true");
+    setLogoutToast("intentional");
     clearTokens();
     setUser(null);
     isAuthenticatedRef.current = false;
-    clearIdleTimer();
-  }, [clearIdleTimer]);
+    clearIdleTimers();
+  }, [clearIdleTimers]);
 
   return (
     <AuthContext.Provider

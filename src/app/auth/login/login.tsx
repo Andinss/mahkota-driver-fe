@@ -5,10 +5,10 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
-import { toastSuccess, toastError } from "@/components/ui/toast-provider";
+import { toastSuccess, toastError, toastWarning } from "@/components/ui/toast-provider";
 import { useAuth } from "@/lib/auth-context";
 import { HttpClientError } from "@/lib/api-http";
-import { sanitizeEmailInput, sanitizeInput, containsInvalidEmailChars, containsSymbols } from "@/lib/utils/validation";
+import { sanitizeEmailInput, containsInvalidEmailChars } from "@/lib/utils/validation";
 
 interface FormErrors {
   email?: string;
@@ -19,7 +19,7 @@ const LoginPage = () => {
   const router = useRouter();
   const { login } = useAuth();
   const turnstileRef = useRef<TurnstileInstance>(null);
-  const [checked, setChecked] = useState(false);
+  const [checked, setChecked] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
@@ -29,11 +29,18 @@ const LoginPage = () => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const handleInputChange = (field: string, value: string) => {
-    const sanitized = field === "email" ? sanitizeEmailInput(value) : sanitizeInput(value);
-    setFormValues((prev) => ({ ...prev, [field]: sanitized }));
-    if (hasSubmitted && errors[field as keyof FormErrors]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
+  const handleEmailChange = (value: string) => {
+    const sanitized = sanitizeEmailInput(value);
+    setFormValues((prev) => ({ ...prev, email: sanitized }));
+    if (hasSubmitted && errors.email) {
+      setErrors((prev) => ({ ...prev, email: undefined }));
+    }
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setFormValues((prev) => ({ ...prev, password: value }));
+    if (hasSubmitted && errors.password) {
+      setErrors((prev) => ({ ...prev, password: undefined }));
     }
   };
 
@@ -58,9 +65,6 @@ const LoginPage = () => {
     if (!passwordValue) {
       newErrors.password = "Password is required";
       isValid = false;
-    } else if (containsSymbols(passwordValue)) {
-      newErrors.password = "Password cannot contain symbols";
-      isValid = false;
     } else if (passwordValue.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
       isValid = false;
@@ -79,14 +83,20 @@ const LoginPage = () => {
     }
 
     if (!turnstileToken) {
-      toastError("Please complete the security verification.");
+      toastWarning("Please complete the security verification.");
+      turnstileRef.current?.reset();
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const userData = await login(formValues.email.trim(), formValues.password, turnstileToken);
+      const userData = await login(
+        formValues.email.trim(),
+        formValues.password,
+        turnstileToken,
+        checked,
+      );
       toastSuccess("Welcome back! You are being redirected to the dashboard.");
       const isDriver = userData?.role?.code === "DRIVER";
       setTimeout(() => router.push(isDriver ? "/dashboard/driver" : "/dashboard"), 500);
@@ -94,9 +104,20 @@ const LoginPage = () => {
       turnstileRef.current?.reset();
       setTurnstileToken("");
       if (error instanceof HttpClientError) {
-        toastError(error.message);
+        const msg = (error.message || "").toLowerCase();
+        if (msg.includes("turnstile") || msg.includes("security")) {
+          toastError(error.message);
+        } else if (error.statusCode === 401) {
+          toastError(error.message && error.message !== "Unauthorized"
+            ? error.message
+            : "Email atau password salah.");
+        } else if (error.statusCode === 0) {
+          toastError("Tidak bisa terhubung ke server. Periksa koneksi Anda.");
+        } else {
+          toastError(error.message || "Login gagal. Coba lagi.");
+        }
       } else {
-        toastError("Please check your credentials and try again.");
+        toastError("Tidak bisa terhubung ke server. Periksa koneksi Anda.");
       }
     } finally {
       setIsSubmitting(false);
@@ -121,7 +142,7 @@ const LoginPage = () => {
           label="Email"
           placeholder="Masukkan email Anda"
           value={formValues.email}
-          onChange={(e) => handleInputChange("email", e.target.value)}
+          onChange={(e) => handleEmailChange(e.target.value)}
           error={hasSubmitted ? errors.email : undefined}
         />
 
@@ -131,7 +152,7 @@ const LoginPage = () => {
           label="Password"
           placeholder="Masukkan password Anda"
           value={formValues.password}
-          onChange={(e) => handleInputChange("password", e.target.value)}
+          onChange={(e) => handlePasswordChange(e.target.value)}
           error={hasSubmitted ? errors.password : undefined}
         />
 
@@ -158,15 +179,21 @@ const LoginPage = () => {
             ref={turnstileRef}
             siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
             onSuccess={(token) => setTurnstileToken(token)}
-            onError={() => setTurnstileToken("")}
-            onExpire={() => setTurnstileToken("")}
+            onError={() => {
+              setTurnstileToken("");
+              toastWarning("Security check gagal. Silakan coba muat ulang halaman.");
+            }}
+            onExpire={() => {
+              setTurnstileToken("");
+              toastWarning("Security check expired — silakan selesaikan ulang.");
+            }}
           />
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center justify-center gap-2 text-sm"
+          className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center justify-center gap-2 text-sm"
         >
           <span className="material-symbols-outlined text-xl">
             {isSubmitting ? "hourglass_empty" : "login"}

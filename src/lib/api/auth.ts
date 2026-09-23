@@ -8,11 +8,11 @@ function unwrap<T>(response: SuccessResponse<T> | T): T {
 }
 
 export const authApi = {
-  login: async (payload: LoginRequest) => {
+  login: async (payload: LoginRequest, remember = true) => {
     const res = await api.post<SuccessResponse<LoginResponse> | LoginResponse>("/auth/login", payload);
     const data = unwrap(res);
-    setAccessToken(data.access_token);
-    setUser(data.user);
+    setAccessToken(data.access_token, remember);
+    setUser(data.user, remember);
     return data;
   },
 
