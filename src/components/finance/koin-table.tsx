@@ -18,14 +18,16 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const formatDate = (dateStr: string) => {
+const formatDateTime = (dateStr: string) => {
   if (!dateStr) return "-";
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString("id-ID", {
+  return date.toLocaleString("id-ID", {
     day: "numeric",
     month: "short",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
@@ -121,7 +123,7 @@ export const KoinTable = ({ transactions, onBuatTopUp }: KoinTableProps) => {
                   {item.type === "top_up" || item.type === "refund" ? "+" : "-"} Rp {Number(item.amount).toLocaleString("id-ID")}
                 </td>
                 <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                  {formatDate(item.created_at)}
+                 {formatDateTime(item.created_at)}
                 </td>
               </tr>
             ))}

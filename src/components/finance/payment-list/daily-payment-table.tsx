@@ -28,6 +28,19 @@ const formatDate = (dateStr: string) => {
   });
 };
 
+const formatDateTime = (dateStr: string) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const statusColor: Record<string, string> = {
   paid: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   unpaid: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
@@ -127,10 +140,10 @@ export const DailyPaymentTable = ({ payments }: DailyPaymentTableProps) => {
                   </span>
                 </td>
                 <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                  {formatDate(item.created_at)}
+                  {formatDateTime(item.created_at)}
                 </td>
               <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                {item.status === "paid" && item.payment_date ? formatDate(item.payment_date) : "-"}
+                {item.status === "paid" && item.payment_date ? formatDateTime(item.payment_date) : "-"}
               </td>
               </tr>
             ))}
