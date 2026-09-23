@@ -250,7 +250,7 @@ export default function DashboardVehiclePage() {
           />
           <VehicleStatsCard
             title="Reserved"
-            value={((summary as any)?.reserved ?? (summary?.status_breakdown as any)?.Reserved ?? 0).toString()}
+            value={(summary?.reserved ?? summary?.status_breakdown?.Reserved ?? 0).toString()}
             icon="bookmark"
             iconColor="text-purple-500"
             trend={{
