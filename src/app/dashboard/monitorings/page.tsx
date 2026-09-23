@@ -1,59 +1,18 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { toastError } from "@/components/ui/toast-provider";
 import { monitoringApi, type GpsTrackingRecord } from "@/lib/api/monitoring";
 import { Pagination } from "@/components/ui/pagination";
-import { EngineSwitch } from "@/components/ui/engine-switch";
 import { MonitoringFilters } from "@/components/monitoring/dashboard/filters-search";
-
-const statusLabel: Record<string, string> = {
-  emergency: "Darurat",
-  moving: "Bergerak",
-  idle: "Idle",
-  stopped: "Berhenti",
-  parking: "Parkir",
-};
-
-const statusClass: Record<string, string> = {
-  emergency: "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400",
-  moving: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
-  idle: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
-  stopped: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
-  parking: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
-};
-
-// Dummy display data (FE only) — diganti join BE nanti
-const DUMMY_VEHICLES: Record<
-  string,
-  { vehicle_name: string; vendor: string }
-> = {
-  "veh-001": { vehicle_name: "Toyota Avanza 1.3 G", vendor: "Nusantara Rental" },
-  "veh-002": { vehicle_name: "Honda Brio Satya", vendor: "Mitra Jaya Trans" },
-  "veh-003": { vehicle_name: "Suzuki Ertiga GX", vendor: "Bali Fleet Service" },
-  "veh-004": { vehicle_name: "Mitsubishi Xpander", vendor: "Nusantara Rental" },
-  "veh-005": { vehicle_name: "Daihatsu Xenia", vendor: "Sinar Motor" },
-  "veh-006": { vehicle_name: "Toyota Innova Zenix", vendor: "Mitra Jaya Trans" },
-};
-
-const FALLBACK_VEHICLE = {
-  vehicle_name: "Kendaraan Armada",
-  vendor: "Vendor Umum",
-};
-
-const resolveVehicleDisplay = (r: GpsTrackingRecord) => {
-  const byId = DUMMY_VEHICLES[r.VehicleId];
-  if (byId) return byId;
-  const byPlate = DUMMY_VEHICLES[r.VehicleNumber];
-  if (byPlate) return byPlate;
-  return FALLBACK_VEHICLE;
-};
+import {
+  MonitoringTable,
+  resolveVehicleDisplay,
+} from "@/components/monitoring/dashboard/monitoring-table";
 
 export default function MonitoringPage() {
   const router = useRouter();
@@ -202,150 +161,11 @@ export default function MonitoringPage() {
           />
 
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-blue-500 text-xl">satellite_alt</span>
-                </div>
-                <div>
-                  <h2 className="font-bold text-slate-800 dark:text-white text-base">
-                    Lokasi Armada
-                  </h2>
-                  <p className="text-xs text-slate-400">{filtered.length} kendaraan tercatat</p>
-                </div>
-              </div>
-              <Link href="/dashboard/monitorings/real-time">
-                <Button icon="map">
-                  Lihat Peta
-                </Button>
-              </Link>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
-                  <tr>
-                    <th className="px-4 py-4 whitespace-nowrap">Nama Mobil</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Plat</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Vendor</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Lokasi</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Koordinat</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Waktu (UTC)</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Status</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Kecepatan</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Arah</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Odometer</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Tipe</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Alarm</th>
-                    <th className="px-4 py-4 whitespace-nowrap">Mesin</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
-                  {paged.map((r) => {
-                    const status = (r.Car_Status || "").toLowerCase();
-                    const engineOn = r.Engine === "on";
-                    const display = resolveVehicleDisplay(r);
-                    return (
-                      <tr
-                        key={r.id}
-                        className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-                      >
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <p className="font-medium text-slate-900 dark:text-white">
-                            {display.vehicle_name}
-                          </p>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <span className="font-mono text-xs font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
-                            {r.VehicleNumber || "-"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400">
-                            <span className="material-symbols-outlined text-sm">
-                              business
-                            </span>
-                            {display.vendor}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-slate-400 text-lg">
-                              location_on
-                            </span>
-                            <span className="text-slate-600 dark:text-slate-400 truncate max-w-[180px]">
-                              {r.GpsLocation || "-"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-xs text-slate-500 dark:text-slate-400 font-mono">
-                          {r.Lat && r.Lon ? `${r.Lat}, ${r.Lon}` : "-"}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
-                          {r.DatetimeUTC || "-"}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-                              statusClass[status] || statusClass.idle
-                            }`}
-                          >
-                            {statusLabel[status] || r.Car_Status || "-"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
-                          {r.Speed ? `${r.Speed} km/h` : "-"}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
-                          {r.Direction ? `${r.Direction}°` : "-"}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-slate-600 dark:text-slate-300">
-                          {r.Odometer || "-"}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 capitalize">
-                            {r.VehicleType || "-"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
-                          {r.Alarm && r.Alarm !== "none" ? r.Alarm : "-"}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            <EngineSwitch
-                              key={`${r.VehicleId}-${r.Engine}`}
-                              vehicleId={r.VehicleId}
-                              engineStatus={engineOn ? "on" : "off"}
-                              onChanged={(next) =>
-                                handleEngineChanged(r.VehicleId, next)
-                              }
-                            />
-                            <span
-                              className={`text-xs font-bold ${
-                                engineOn
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-slate-400 dark:text-slate-500"
-                              }`}
-                            >
-                              {engineOn ? "ON" : "OFF"}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              {paged.length === 0 && (
-                <div className="p-12 text-center">
-                  <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 mb-3 block">
-                    location_off
-                  </span>
-                  <p className="text-slate-400 text-sm font-medium">
-                    Tidak ada data ditemukan
-                  </p>
-                </div>
-              )}
-            </div>
+            <MonitoringTable
+              records={paged}
+              totalResults={filtered.length}
+              onEngineChanged={handleEngineChanged}
+            />
 
             {filtered.length > 0 && (
               <Pagination
