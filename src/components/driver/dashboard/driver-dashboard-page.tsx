@@ -9,6 +9,7 @@ import { financeApi } from "@/lib/api/finances";
 import { koinApi } from "@/lib/api/koin";
 import type { DriverItem } from "@/lib/types/driver";
 import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
+import { formatDateOnly } from "@/lib/utils/format";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -23,14 +24,7 @@ const formatIDR = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-const formatDate = (date?: string) => {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-};
+const formatDate = formatDateOnly;
 
 const PLACEHOLDER_IMG = "/images/placeholder-car.jpg";
 

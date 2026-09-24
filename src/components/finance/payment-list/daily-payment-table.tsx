@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Pagination } from "@/components/ui/pagination";
 import type { DailyPaymentItem } from "@/lib/types/finances";
+import { formatDateTime } from "@/lib/utils/format";
 
 interface DailyPaymentTableProps {
   payments: DailyPaymentItem[];
@@ -15,30 +16,6 @@ const formatCurrency = (value: number) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
-};
-
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-};
-
-const formatDateTime = (dateStr: string) => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 };
 
 const statusColor: Record<string, string> = {
@@ -143,7 +120,9 @@ export const DailyPaymentTable = ({ payments }: DailyPaymentTableProps) => {
                   {formatDateTime(item.created_at)}
                 </td>
               <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                {item.status === "paid" && item.payment_date ? formatDateTime(item.payment_date) : "-"}
+                {item.status === "paid"
+                  ? formatDateTime(item.updated_at)
+                  : "-"}
               </td>
               </tr>
             ))}

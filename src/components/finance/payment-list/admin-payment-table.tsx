@@ -1,6 +1,7 @@
 "use client";
 
 import type { FinanceItem } from "@/lib/types/finances";
+import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
 
 interface AdminPaymentTableProps {
   payments: FinanceItem[];
@@ -13,30 +14,6 @@ const formatCurrency = (value: number) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
-};
-
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-};
-
-const formatDateTime = (dateStr: string) => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 };
 
 const statusColor: Record<string, string> = {
@@ -102,7 +79,11 @@ export const AdminPaymentTable = ({ payments }: AdminPaymentTableProps) => {
                 {formatDateTime(item.created_at || "")}
               </td>
               <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                {item.status === "paid" && item.payment_date ? formatDateTime(item.payment_date) : "-"}
+                {item.status === "paid" && item.payment_date
+                  ? item.paid_at
+                    ? formatDateTime(item.paid_at)
+                    : formatDateOnly(item.payment_date)
+                  : "-"}
               </td>
               <td className="px-6 py-4">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor[item.status] || "bg-slate-100 text-slate-700"}`}>
