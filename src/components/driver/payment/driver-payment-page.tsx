@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { toastError } from "@/components/ui/toast-provider";
 import { Pagination } from "@/components/ui/pagination";
 import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
+import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
 
 const formatIDR = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -16,18 +17,6 @@ const formatIDR = (value: number) =>
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
-const formatDateTime = (dateStr: string) => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
   unpaid: { label: "Belum Dibayar", color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/20", dot: "bg-red-500" },
@@ -148,7 +137,9 @@ export function DriverPaymentPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col gap-1">
                         <span className="font-mono font-semibold text-sm text-primary">{adminFee.reference_number}</span>
-                        <span className="text-xs text-slate-400">{formatDateTime(adminFee.payment_date)}</span>
+                        <span className="text-xs text-slate-400">
+                          {adminFee.paid_at ? formatDateTime(adminFee.paid_at) : formatDateOnly(adminFee.payment_date)}
+                        </span>
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-xl text-slate-900 dark:text-white">{formatIDR(adminFee.fee_admin_join || 0)}</p>
@@ -258,10 +249,12 @@ export function DriverPaymentPage() {
                                   )}
                                 </td>
                                      <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
-                                  {formatDateTime(dp.payment_date)}
+                                  {formatDateTime(dp.created_at)}
                                 </td>
                                      <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
-                                {dp.status === "paid" && dp.payment_date ? formatDateTime(dp.payment_date) : "-"}
+                                {dp.status === "paid"
+                                  ? formatDateTime(dp.updated_at)
+                                  : "-"}
                                 </td>
                               </tr>
                             );

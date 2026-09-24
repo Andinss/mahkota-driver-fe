@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 import Link from "next/link";
 import type { FinanceItem } from "@/lib/types/finances";
+import { formatDateOnly } from "@/lib/utils/format";
 
 const imageBase = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
@@ -34,16 +35,7 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-};
+const formatDate = formatDateOnly;
 
 const formatShortDate = (dateStr: string) => {
   if (!dateStr) return "-";
