@@ -29,7 +29,7 @@ export const Dropdown = ({ trigger, children, align = "right" }: DropdownProps) 
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
+      <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">{trigger}</div>
       {isOpen && (
         <div
           className={`absolute ${align === "right" ? "right-0" : "left-0"} mt-2 w-48 bg-white dark:bg-[#1a2632] rounded-lg border border-[#e5e7eb] dark:border-[#2a3845] shadow-lg py-1 z-50`}

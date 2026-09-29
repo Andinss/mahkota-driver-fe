@@ -450,7 +450,7 @@ export function VehicleMediaUpload({
       {/* Lightbox Modal */}
       {lightboxIndex !== null && images[lightboxIndex] && (
         <div
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center cursor-zoom-out"
           onClick={closeLightbox}
         >
           {/* Close button */}
