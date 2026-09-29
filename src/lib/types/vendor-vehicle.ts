@@ -15,6 +15,8 @@ export interface VendorVehicle {
   owner_name: string;
   logo?: string;
   pendapatan: number;
+  harga_pokok?: number;
+  harga_jual?: number;
   total_kendaraan: number;
   status: VendorStatus;
   vehicles?: VendorVehicleItem[];

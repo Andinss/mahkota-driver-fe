@@ -101,6 +101,9 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
   const logoUrl = buildLogoUrl(vendor.logo);
   const statusActive = vendor.status === "active";
 
+  const hargaPokok = Number(vendor.harga_pokok) || 0;
+  const hargaJual = Number(vendor.harga_jual) || 0;
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -255,6 +258,14 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
               <div className="flex items-center justify-between px-6 py-4">
                 <span className="text-slate-500 dark:text-slate-400">Nama Pemilik</span>
                 <span className="font-semibold text-slate-900 dark:text-white">{vendor.owner_name}</span>
+              </div>
+              <div className="flex items-center justify-between px-6 py-4">
+                <span className="text-slate-500 dark:text-slate-400">Harga Pokok</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{formatRupiah(hargaPokok)}</span>
+              </div>
+              <div className="flex items-center justify-between px-6 py-4">
+                <span className="text-slate-500 dark:text-slate-400">Harga Jual</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{formatRupiah(hargaJual)}</span>
               </div>
               <div className="flex items-center justify-between px-6 py-4">
                 <span className="text-slate-500 dark:text-slate-400">Pendapatan</span>

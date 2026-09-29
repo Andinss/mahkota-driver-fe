@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { vendorApi } from "@/lib/api/vendor-vehicle";
 import { renameFile } from "@/lib/utils/file";
 import { HttpClientError } from "@/lib/api-http";
@@ -16,6 +17,8 @@ interface FormErrors {
   name?: string;
   ownerName?: string;
   logo?: string;
+  hargaPokok?: string;
+  hargaJual?: string;
 }
 
 const imageBase = (
@@ -150,6 +153,8 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [name, setName] = useState("");
   const [ownerName, setOwnerName] = useState("");
+  const [hargaPokok, setHargaPokok] = useState("");
+  const [hargaJual, setHargaJual] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [initialLogoUrl, setInitialLogoUrl] = useState<string | undefined>(undefined);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -166,6 +171,16 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
           const vendor = res.data;
           setName(vendor.name || "");
           setOwnerName(vendor.owner_name || "");
+          setHargaPokok(
+            vendor.harga_pokok !== undefined && vendor.harga_pokok !== null
+              ? String(vendor.harga_pokok)
+              : "",
+          );
+          setHargaJual(
+            vendor.harga_jual !== undefined && vendor.harga_jual !== null
+              ? String(vendor.harga_jual)
+              : "",
+          );
           const rawLogo = vendor.logo || "";
           setInitialLogoUrl(
             rawLogo
@@ -204,6 +219,14 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
       newErrors.logo = "Logo vendor wajib diunggah";
       isValid = false;
     }
+    if (hargaPokok && !hargaJual) {
+      newErrors.hargaJual = "Harga jual wajib diisi jika harga pokok diisi";
+      isValid = false;
+    }
+    if (hargaJual && !hargaPokok) {
+      newErrors.hargaPokok = "Harga pokok wajib diisi jika harga jual diisi";
+      isValid = false;
+    }
 
     setErrors(newErrors);
     return isValid;
@@ -233,6 +256,8 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
       const fd = new FormData();
       fd.append("name", name.trim());
       fd.append("owner_name", ownerName.trim());
+      if (hargaPokok) fd.append("harga_pokok", hargaPokok.replace(/\./g, ""));
+      if (hargaJual) fd.append("harga_jual", hargaJual.replace(/\./g, ""));
       if (logoFile) fd.append("logo", renameFile(logoFile, "vendor_logo"));
 
       if (mode === "edit" && id) {
@@ -255,6 +280,8 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
   const handleReset = () => {
     setName("");
     setOwnerName("");
+    setHargaPokok("");
+    setHargaJual("");
     setLogoFile(null);
     setInitialLogoUrl(undefined);
     setHasSubmitted(false);
@@ -332,6 +359,42 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
                   if (hasSubmitted && errors.ownerName) setErrors((prev) => ({ ...prev, ownerName: undefined }));
                 }}
                 error={hasSubmitted ? errors.ownerName : undefined}
+              />
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-amber-500 text-xl">payments</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 dark:text-white text-base">Harga Vendor</h3>
+                <p className="text-xs text-slate-400">Tentukan harga pokok dan harga jual vendor</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CurrencyInput
+                label="Harga Pokok"
+                placeholder="0"
+                id="vendor-harga-pokok"
+                value={hargaPokok}
+                onChange={(value) => {
+                  setHargaPokok(value);
+                  if (hasSubmitted && errors.hargaPokok) setErrors((prev) => ({ ...prev, hargaPokok: undefined }));
+                }}
+                error={hasSubmitted ? errors.hargaPokok : undefined}
+              />
+              <CurrencyInput
+                label="Harga Jual"
+                placeholder="0"
+                id="vendor-harga-jual"
+                value={hargaJual}
+                onChange={(value) => {
+                  setHargaJual(value);
+                  if (hasSubmitted && errors.hargaJual) setErrors((prev) => ({ ...prev, hargaJual: undefined }));
+                }}
+                error={hasSubmitted ? errors.hargaJual : undefined}
               />
             </div>
           </div>
