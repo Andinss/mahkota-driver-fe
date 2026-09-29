@@ -65,6 +65,24 @@ html[data-palette="gold"] {
   --color-blue-950: #2e1f0f;
 }
 
+/* ===================================================================
+ * CURSOR POINTER UNTUK ELEMEN INTERAKTIF
+ * Di dalam @layer base supaya utility Tailwind (mis. cursor-not-allowed)
+ * tetap bisa menimpa.
+ * ================================================================ */
+@layer base {
+  button:not(:disabled),
+  a[href],
+  label:has(input, select, textarea) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  a:not([href]) {
+    cursor: not-allowed;
+  }
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
