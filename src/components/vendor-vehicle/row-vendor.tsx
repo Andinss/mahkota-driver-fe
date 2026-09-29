@@ -34,6 +34,9 @@ export const VendorTableRow = ({
   const logoUrl = buildLogoUrl(vendor.logo);
   const isActive = vendor.status === "active";
 
+  const hargaPokok = Number(vendor.harga_pokok) || 0;
+  const hargaJual = Number(vendor.harga_jual) || 0;
+
   return (
     <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors group">
       <td className="px-6 py-4">
@@ -61,6 +64,12 @@ export const VendorTableRow = ({
       </td>
       <td className="px-6 py-4">
         <p className="text-slate-900 dark:text-white">{vendor.owner_name}</p>
+      </td>
+      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
+        {formatRupiah(hargaPokok)}
+      </td>
+      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
+        {formatRupiah(hargaJual)}
       </td>
       <td className="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400">
         {formatRupiah(Number(vendor.pendapatan) || 0)}

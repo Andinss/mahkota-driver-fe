@@ -76,8 +76,15 @@ const menuStructure: SidebarItem[] = [
         icon: "account_balance",
         permission: "finance.read",
       },
+      {
+        path: "/dashboard/memberships",
+        label: "Memberships",
+        icon: "card_membership",
+        permission: "",
+      },
     ],
   },
+
   {
     type: "group",
     label: "System",

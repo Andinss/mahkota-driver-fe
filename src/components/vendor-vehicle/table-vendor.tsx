@@ -19,6 +19,8 @@ interface VendorTableProps {
 const vendorColumns: ExportColumn[] = [
   { id: "name", label: "Nama Vendor", defaultChecked: true },
   { id: "ownerName", label: "Nama Pemilik", defaultChecked: true },
+  { id: "hargaPokok", label: "Harga Pokok", defaultChecked: true },
+  { id: "hargaJual", label: "Harga Jual", defaultChecked: true },
   { id: "pendapatan", label: "Pendapatan", defaultChecked: true },
   { id: "totalKendaraan", label: "Total Kendaraan", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
@@ -68,6 +70,8 @@ export const VendorTable = ({
             <tr>
               <th className="px-6 py-4">Nama Vendor</th>
               <th className="px-6 py-4">Nama Pemilik</th>
+              <th className="px-6 py-4">Harga Pokok</th>
+              <th className="px-6 py-4">Harga Jual</th>
               <th className="px-6 py-4">Pendapatan</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4 text-right">Aksi</th>
