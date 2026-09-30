@@ -67,6 +67,7 @@ export default function DriverRegisterPage() {
               citizenship: driver.citizenship || "Indonesian (WNI)",
               phoneNumber: driver.phone || "",
               email: driver.email || "",
+              membershipId: driver.membership_id || "",
             },
             contact: {
               emergencyContactName: driver.emergency_contact || "",
@@ -88,6 +89,8 @@ export default function DriverRegisterPage() {
             documentsUrl: {
               sim: buildUrl(driver.sim_card || ""),
               ktp: buildUrl(driver.national_id_card || ""),
+              kk: buildUrl(driver.kartu_keluarga || ""),
+              skck: buildUrl(driver.skck || ""),
               npwp: buildUrl(driver.npwp_photo || ""),
               house: buildUrl(driver.garage_photo || ""),
             },
@@ -106,6 +109,19 @@ export default function DriverRegisterPage() {
 
   const handlePersonalNext = (data: PersonalDetailsData) => {
     setFormData({ ...formData, personal: data });
+
+    if (data.profilePhoto) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({
+          ...prev,
+          personal: data,
+          photo: reader.result as string,
+        }));
+      };
+      reader.readAsDataURL(data.profilePhoto);
+    }
+
     setCurrentStep(2);
   };
 
@@ -154,11 +170,17 @@ export default function DriverRegisterPage() {
     fd.append("subdistrict", contact.subdistrict || "");
     fd.append("subdistrict_name", contact.subdistrict_name || "");
     fd.append("permanent_address", contact.fullAddress || "");
+    
+    if (personal.membershipId) {
+      fd.append("membership_id", personal.membershipId);
+    }
 
     const namePrefix = `${personal.firstName}_${personal.lastName}`.toLowerCase().replace(/\s+/g, "_");
 
     if (docs?.ktpFront) fd.append("images", renameFile(docs.ktpFront, `${namePrefix}_ktp`));
     if (docs?.simFront) fd.append("images", renameFile(docs.simFront, `${namePrefix}_sim`));
+    if (docs?.kartuKeluarga) fd.append("images", renameFile(docs.kartuKeluarga, `${namePrefix}_kk`));
+    if (docs?.skck) fd.append("images", renameFile(docs.skck, `${namePrefix}_skck`));
     if (docs?.npwpFront) fd.append("images", renameFile(docs.npwpFront, `${namePrefix}_npwp`));
     if (docs?.houseGaragePhoto) fd.append("images", renameFile(docs.houseGaragePhoto, `${namePrefix}_rumah`));
     if (personal.profilePhoto) fd.append("images", renameFile(personal.profilePhoto, `${namePrefix}_profil`));
@@ -213,7 +235,7 @@ export default function DriverRegisterPage() {
   const stepTitles: Record<number, { title: string; subtitle: string }> = {
     1: { title: "Informasi Personal", subtitle: "Lengkapi data diri driver yang akan didaftarkan" },
     2: { title: "Informasi Kontak", subtitle: "Masukkan data kontak dan alamat driver" },
-    3: { title: "Upload Dokumen", subtitle: "Unggah dokumen penting driver (SIM, KTP, NPWP)" },
+    3: { title: "Upload Dokumen", subtitle: "Unggah dokumen penting driver (SIM, KTP, KK, SKCK, NPWP, Garage Photo)" },
     4: { title: "Review & Konfirmasi", subtitle: "Periksa kembali semua data sebelum disimpan" },
   };
 

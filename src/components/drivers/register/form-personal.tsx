@@ -7,6 +7,8 @@ import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { sanitizeNameInput, containsNameSymbols, sanitizeEmailInput } from "@/lib/utils/validation";
+import { membershipApi } from "@/lib/api/membership";
+import type { Membership } from "@/lib/types/membership";
 
 export interface PersonalFormData {
   firstName: string;
@@ -17,6 +19,8 @@ export interface PersonalFormData {
   citizenship: string;
   phoneNumber: string;
   email: string;
+  membershipId?: string; 
+  membership?: { id: string; name: string; fee: number } | null;
 }
 
 type FormMode = "add" | "edit";
@@ -30,6 +34,7 @@ interface FormErrors {
   citizenship?: string;
   phoneNumber?: string;
   email?: string;
+  membershipId?: string; 
 }
 
 interface PersonalDetailsFormProps {
@@ -52,6 +57,24 @@ export function PersonalDetailsForm({
   const [firstName, setFirstName] = useState(sanitizeNameInput(initialValues?.firstName || ""));
   const [lastName, setLastName] = useState(sanitizeNameInput(initialValues?.lastName || ""));
   const [employeeId, setEmployeeId] = useState(initialValues?.employeeId || "");
+  const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [loadingMemberships, setLoadingMemberships] = useState(false);
+
+  /* Fetch list membership aktif */
+  useEffect(() => {
+    setLoadingMemberships(true);
+    membershipApi
+      .getList()
+      .then((res: any) => {
+        const list = Array.isArray(res?.data) ? res.data : [];
+        setMemberships(list.filter((m: Membership) => m.is_active));
+      })
+      .catch((err: any) => {
+        console.error("Failed to load memberships:", err);
+        setMemberships([]);
+      })
+      .finally(() => setLoadingMemberships(false));
+  }, []);
 
   useEffect(() => {
     if (initialValues) {
@@ -127,15 +150,22 @@ export function PersonalDetailsForm({
     }
 
     const formData = new FormData(e.currentTarget);
+    const membershipId = formData.get("membershipId") as string;
+    const selectedMembership = memberships.find((m) => m.id === membershipId) || null;
+
     const data: PersonalFormData = {
       firstName,
       lastName,
       dateOfBirth: formData.get("dateOfBirth") as string,
       gender: formData.get("gender") as string,
-employeeId: employeeId === "DRV-" ? "" : employeeId,
+      employeeId: employeeId === "DRV-" ? "" : employeeId,
       citizenship: formData.get("citizenship") as string,
       phoneNumber: formData.get("phoneNumber") as string,
       email: formData.get("email") as string,
+      membershipId: membershipId || undefined,
+      membership: selectedMembership
+        ? { id: selectedMembership.id, name: selectedMembership.name, fee: selectedMembership.fee }
+        : null,
     };
     onSubmit?.(data);
   };
@@ -186,9 +216,9 @@ employeeId: employeeId === "DRV-" ? "" : employeeId,
         />
 
         <Select id="gender" name="gender" label="Gender"
-         defaultValue={initialValues?.gender} error={errors.gender}
-         key={"gender-" + (initialValues?.gender || "")}required>
-          <option value="">Select Gender</option> 
+          defaultValue={initialValues?.gender} error={errors.gender}
+          key={"gender-" + (initialValues?.gender || "")} required>
+          <option value="">Select Gender</option>
           <option value="Male">Male</option>
           <option value="Female">Female</option>
           <option value="Other">Other</option>
@@ -217,8 +247,8 @@ employeeId: employeeId === "DRV-" ? "" : employeeId,
         </div>
 
         <Select id="citizenship" name="citizenship" label="Citizenship"
-        defaultValue={initialValues?.citizenship} error={errors.citizenship}
-        key={"citizenship-" + (initialValues?.citizenship || "")}required>
+          defaultValue={initialValues?.citizenship} error={errors.citizenship}
+          key={"citizenship-" + (initialValues?.citizenship || "")} required>
           <option value="">Select Citizenship</option>
           <option value="Indonesian (WNI)">Indonesian (WNI)</option>
           <option value="Foreigner (WNA)">Foreigner (WNA)</option>
@@ -255,6 +285,25 @@ employeeId: employeeId === "DRV-" ? "" : employeeId,
           required
           error={errors.email}
         />
+
+        {/* Membership — NEW */}
+        <Select
+          id="membershipId"
+          name="membershipId"
+          label="Membership"
+          defaultValue={initialValues?.membershipId || ""}
+          error={errors.membershipId}
+          key={"membership-" + (initialValues?.membershipId || "")}
+        >
+          <option value="">
+            {loadingMemberships ? "Loading..." : "Select Membership (Optional)"}
+          </option>
+          {memberships.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name} — Rp {Number(m.fee).toLocaleString("id-ID")}
+            </option>
+          ))}
+        </Select>
       </form>
     </div>
   );

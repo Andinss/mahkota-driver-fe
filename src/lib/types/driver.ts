@@ -1,3 +1,5 @@
+import type { Membership } from "./membership";
+
 export interface DriverRentalVehicle {
   merk: string;
   model: string;
@@ -39,6 +41,10 @@ export interface DriverItem {
   sim_card?: string;
   garage_photo?: string;
   npwp_photo?: string;
+  kartu_keluarga?: string;
+  skck?: string;
+  membership_id?: string;
+  membership?: Membership | null;
   created_by_id?: string;
   created_by?: { id: string; username: string; email: string };
   koin?: { id: string; balance: number };
