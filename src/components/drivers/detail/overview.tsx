@@ -54,6 +54,11 @@ export function DriverOverview({ driver, buildUrl, rental }: DriverOverviewProps
             <InfoField icon="public" label="Citizenship">
               {driver.citizenship || "-"}
             </InfoField>
+            <InfoField icon="workspace_premium" label="Membership">
+            {driver.membership
+              ? `${driver.membership.name} — Rp ${Number(driver.membership.fee).toLocaleString("id-ID")}`
+              : "-"}
+            </InfoField>
             <InfoField icon="call" label="Phone Number">
               {driver.phone || "-"}
             </InfoField>
