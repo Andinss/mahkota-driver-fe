@@ -368,7 +368,7 @@ export default function PaymentList() {
           <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 pb-10">
             <PageHeader
               title="Finance List Overview"
-              description={`Total Records: ${summary?.total_records ?? 0}`}
+              description="Manage your finances, track payments, and monitor transactions."
             />
 
             {/* Tab Navigation */}

@@ -132,6 +132,15 @@ export function ReviewStep({
                           {data.contact.email}
                         </p>
                       </div>
+                      {data.personal.membership && (
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Membership</p>
+                          <p className="font-semibold text-slate-800 dark:text-white">
+                            {data.personal.membership.name} — Rp{" "}
+                            {Number(data.personal.membership.fee).toLocaleString("id-ID")}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -247,6 +256,7 @@ export function ReviewStep({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* SIM */}
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
                   <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                     <span className="material-symbols-outlined text-slate-400 text-2xl">
@@ -263,6 +273,7 @@ export function ReviewStep({
                   </div>
                 </div>
 
+                {/* KTP */}
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
                   <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                     <span className="material-symbols-outlined text-slate-400 text-2xl">
@@ -279,6 +290,41 @@ export function ReviewStep({
                   </div>
                 </div>
 
+                {/* KK */}
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                  <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-slate-400 text-2xl">
+                      family_restroom
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400">
+                      Kartu Keluarga (KK)
+                    </p>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                      {data.documents.kartuKeluarga?.name || fileNameFromUrl(data.documentsUrl?.kk) || "Not uploaded"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* SKCK */}
+                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+                  <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-slate-400 text-2xl">
+                      verified_user
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400">
+                      SKCK
+                    </p>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                      {data.documents.skck?.name || fileNameFromUrl(data.documentsUrl?.skck) || "Not uploaded"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* NPWP */}
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
                   <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                     <span className="material-symbols-outlined text-slate-400 text-2xl">
@@ -293,6 +339,7 @@ export function ReviewStep({
                   </div>
                 </div>
 
+                {/* House & Garage */}
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
                   <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                     <span className="material-symbols-outlined text-slate-400 text-2xl">

@@ -16,11 +16,19 @@ interface DriverOverviewProps {
 
 export function DriverOverview({ driver, buildUrl, rental }: DriverOverviewProps) {
   const documents: OverviewDocument[] = [];
-  if (driver.national_id_card) documents.push({ name: "National ID Card (KTP)", icon: "badge", iconColor: "text-red-500", url: buildUrl(driver.national_id_card) });
-  if (driver.sim_card) documents.push({ name: "Driver License (SIM)", icon: "credit_card", iconColor: "text-blue-500", url: buildUrl(driver.sim_card) });
-  if (driver.garage_photo) documents.push({ name: "Garage Photo", icon: "garage", iconColor: "text-green-500", url: buildUrl(driver.garage_photo) });
-  if (driver.npwp_photo) documents.push({ name: "NPWP Photo", icon: "description", iconColor: "text-amber-500", url: buildUrl(driver.npwp_photo) });
-
+  if (driver.national_id_card)
+    documents.push({ name: "National ID Card (KTP)", icon: "badge", iconColor: "text-red-500", url: buildUrl(driver.national_id_card) });
+  if (driver.sim_card)
+    documents.push({ name: "Driver License (SIM)", icon: "credit_card", iconColor: "text-blue-500", url: buildUrl(driver.sim_card) });
+  if (driver.kartu_keluarga)
+    documents.push({ name: "Kartu Keluarga (KK)", icon: "family_restroom", iconColor: "text-violet-500", url: buildUrl(driver.kartu_keluarga) });
+  if (driver.skck)
+    documents.push({ name: "SKCK", icon: "verified_user", iconColor: "text-cyan-500", url: buildUrl(driver.skck) });
+  if (driver.garage_photo)
+    documents.push({ name: "Garage Photo", icon: "garage", iconColor: "text-green-500", url: buildUrl(driver.garage_photo) });
+  if (driver.npwp_photo)
+    documents.push({ name: "NPWP Photo", icon: "description", iconColor: "text-amber-500", url: buildUrl(driver.npwp_photo) });
+  
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Left Column - 2/3 width */}
@@ -45,6 +53,11 @@ export function DriverOverview({ driver, buildUrl, rental }: DriverOverviewProps
             </InfoField>
             <InfoField icon="public" label="Citizenship">
               {driver.citizenship || "-"}
+            </InfoField>
+            <InfoField icon="workspace_premium" label="Membership">
+            {driver.membership
+              ? `${driver.membership.name} — Rp ${Number(driver.membership.fee).toLocaleString("id-ID")}`
+              : "-"}
             </InfoField>
             <InfoField icon="call" label="Phone Number">
               {driver.phone || "-"}
