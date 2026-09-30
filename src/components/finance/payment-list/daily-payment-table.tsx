@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Pagination } from "@/components/ui/pagination";
 import type { DailyPaymentItem } from "@/lib/types/finances";
-import { formatDateTime } from "@/lib/utils/format";
 
 interface DailyPaymentTableProps {
   payments: DailyPaymentItem[];
@@ -16,6 +15,20 @@ const formatCurrency = (value: number) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
+};
+
+const formatDateOnly = (value?: string) => {
+  if (!value) return "-";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "-";
+  return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+};
+
+const formatTimeOnly = (value?: string) => {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 };
 
 const statusColor: Record<string, string> = {
@@ -65,19 +78,16 @@ export const DailyPaymentTable = ({ payments }: DailyPaymentTableProps) => {
   return (
     <>
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm whitespace-nowrap">
+        <table className="w-full text-left text-sm">
           <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-6 py-4">No. Referensi</th>
-              <th className="px-6 py-4">Driver</th>
-              <th className="px-6 py-4">Kendaraan</th>
-              <th className="px-6 py-4">Plat Nomor</th>
-              <th className="px-6 py-4">Vendor</th>
-              <th className="px-6 py-4">Rental</th>
-              <th className="px-6 py-4">Jumlah</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Tanggal Dibuat</th>
-              <th className="px-6 py-4">Tanggal Bayar</th>
+              <th className="px-4 py-3">Driver / Plat</th>
+              <th className="px-4 py-3">Kendaraan / Vendor</th>
+              <th className="px-4 py-3">Status / Ref</th>
+              <th className="px-4 py-3">Rental</th>
+              <th className="px-4 py-3">Jumlah</th>
+              <th className="px-4 py-3">Dibuat</th>
+              <th className="px-4 py-3">Dibayar</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
@@ -86,44 +96,71 @@ export const DailyPaymentTable = ({ payments }: DailyPaymentTableProps) => {
                 key={item.id}
                 className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors"
               >
-                <td className="px-6 py-4 font-mono text-xs text-slate-400">
-                  {item.reference_number}
-                </td>
-                <td className="px-6 py-4">
-                  <p className="font-semibold text-slate-900 dark:text-white">
+                {/* Driver + Plat */}
+                <td className="px-4 py-3">
+                  <p className="font-semibold text-slate-900 dark:text-white truncate max-w-[180px]">
                     {item.driver_name}
                   </p>
-                </td>
-                <td className="px-6 py-4">
-                  <p className="font-medium text-slate-900 dark:text-white">
-                    {item.vehicle_name}
+                  <p className="font-mono text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate max-w-[180px]">
+                    {item.license_plate}
                   </p>
                 </td>
-                <td className="px-6 py-4 font-mono text-xs text-slate-400">
-                  {item.license_plate}
+
+                {/* Kendaraan + Vendor */}
+                <td className="px-4 py-3">
+                  <p className="font-medium text-slate-900 dark:text-white truncate max-w-[180px]">
+                    {item.vehicle_name}
+                  </p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate max-w-[180px]">
+                    {item.vendor_name || "-"}
+                  </p>
                 </td>
-                <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
-                  {item.vendor_name || "-"}
-                </td>
-                <td className="px-6 py-4 font-mono text-xs text-slate-400">
-                  {item.rental_number}
-                </td>
-                <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
-                  {formatCurrency(item.amount)}
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor[item.status] || "bg-slate-100 text-slate-700"}`}>
+
+                {/* Status + Reference */}
+                <td className="px-4 py-3">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[item.status] || "bg-slate-100 text-slate-700"}`}>
                     {statusLabel[item.status] || item.status}
                   </span>
+                  <p className="font-mono text-xs text-slate-500 dark:text-slate-400 mt-1 truncate max-w-[140px]">
+                    {item.reference_number}
+                  </p>
                 </td>
-                <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                  {formatDateTime(item.created_at)}
+
+                {/* Rental */}
+                <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400 truncate max-w-[120px]">
+                  {item.rental_number}
                 </td>
-              <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                {item.status === "paid"
-                  ? formatDateTime(item.updated_at)
-                  : "-"}
-              </td>
+
+                {/* Jumlah */}
+                <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
+                  {formatCurrency(item.amount)}
+                </td>
+
+                {/* Tanggal Dibuat — 2 baris */}
+                <td className="px-4 py-3">
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    {formatDateOnly(item.created_at)}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    {formatTimeOnly(item.created_at)}
+                  </p>
+                </td>
+
+                {/* Tanggal Bayar — 2 baris */}
+                <td className="px-4 py-3">
+                  {item.status === "paid" ? (
+                    <>
+                      <p className="text-xs text-slate-600 dark:text-slate-300">
+                        {formatDateOnly(item.updated_at)}
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        {formatTimeOnly(item.updated_at)}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-xs text-slate-400">-</p>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
