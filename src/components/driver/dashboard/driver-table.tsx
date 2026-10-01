@@ -46,7 +46,6 @@ export function DriverTable({
 
     if (success && driver && !toastShownRef.current) {
       toastShownRef.current = true;
-      // const action = success === "updated" ? "Update" : "Registration";
       toastSuccess(`Driver ${decodeURIComponent(driver)} has been ${success} successfully.`);
       window.history.replaceState({}, "", "/dashboard/drivers");
     }
@@ -66,7 +65,7 @@ export function DriverTable({
 
   return (
     <>
-      <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+      <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
             <span className="material-symbols-outlined text-blue-500 text-xl">person</span>
@@ -86,18 +85,16 @@ export function DriverTable({
           Export
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">
+      <div>
+        <table className="w-full text-left text-sm">
           <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-6 py-4">Profil</th>
-              <th className="px-6 py-4">ID Karyawan</th>
-              <th className="px-6 py-4">Telepon</th>
-              <th className="px-6 py-4">Email</th>
-              <th className="px-6 py-4">Membership</th>
-              <th className="px-6 py-4">Koin</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4 text-right">Aksi</th>
+              <th className="px-4 py-3">Driver</th>
+              <th className="px-4 py-3">Kontak</th>
+              <th className="px-4 py-3">Membership</th>
+              <th className="px-4 py-3">Koin</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
