@@ -43,7 +43,6 @@ export const VendorTableRow = ({
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
             {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 alt={vendor.name}
                 src={logoUrl}

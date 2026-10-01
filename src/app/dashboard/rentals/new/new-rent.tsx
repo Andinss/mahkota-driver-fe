@@ -118,17 +118,24 @@ const NewRentPage = () => {
   }, [allDrivers]);
 
   const vehicleOptions = useMemo<SelectOption[]>(() => {
-    // Kendaraan hanya tampil setelah driver dipilih, mengikuti tipe membership driver
+    // Kendaraan hanya tampil setelah driver dipilih.
+    // Akses berdasar level membership (1 = terendah): kendaraan tampil bila
+    // minimal satu membership-nya berlevel <= level driver (driver level
+    // lebih tinggi mengakses semua kendaraan di bawahnya).
+    // Badge hanya menampilkan tier yang berlevel <= level driver,
+    // sehingga driver Regular tidak "membaca" tier Premium/atasnya.
     const driver = allDrivers.find((d) => d.id === rentalData.driverId);
-    const membershipId = driver?.membership?.id || driver?.membership_id;
-    if (!rentalData.driverId || !membershipId) return [];
+    const driverLevel = driver?.membership?.level;
+    if (!rentalData.driverId || !driverLevel) return [];
     return allVehicles
-      .filter((v) => (v.memberships ?? []).some((m) => m.id === membershipId))
+      .filter((v) => (v.memberships ?? []).some((m) => m.level <= driverLevel))
       .map((v) => ({
         label: `${v.license_plate} - ${v.merk} ${v.model}`,
         value: v.id,
         dailyRate: Number(v.daily_rate) || 0,
-        badges: (v.memberships ?? []).map((m) => m.name),
+        badges: (v.memberships ?? [])
+          .filter((m) => m.level <= driverLevel)
+          .map((m) => m.name),
       }));
   }, [allDrivers, allVehicles, rentalData.driverId]);
 
