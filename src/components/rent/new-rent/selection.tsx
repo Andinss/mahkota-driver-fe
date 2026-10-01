@@ -18,6 +18,7 @@ interface SelectOption {
   value: string;
   image?: string;
   dailyRate?: number;
+  badges?: string[];
 }
 
 interface SelectionFormProps {
@@ -56,7 +57,10 @@ const SelectionForm = ({
 
   const handleDriverChange = (value: string) => {
     setSelectedDriver(value);
-    onDataChange?.({ driverId: value, vehicleId: selectedVehicle });
+    // Kendaraan di-reset saat ganti driver karena daftar mobil
+    // difilter mengikuti membership driver terpilih
+    setSelectedVehicle(undefined);
+    onDataChange?.({ driverId: value, vehicleId: "" });
   };
 
   const handleVehicleChange = (value: string) => {
@@ -100,7 +104,11 @@ const SelectionForm = ({
           </label>
           <SelectSearch
             options={effectiveVehicleOptions}
-            placeholder="Cari kendaraan..."
+            placeholder={
+              selectedDriver
+                ? "Cari kendaraan..."
+                : "Pilih driver terlebih dahulu..."
+            }
             value={selectedVehicle}
             onChange={handleVehicleChange}
             error={error?.serverVehicleId || error?.vehicleId}

@@ -70,8 +70,7 @@ export const VendorTable = ({
             <tr>
               <th className="px-6 py-4">Nama Vendor</th>
               <th className="px-6 py-4">Nama Pemilik</th>
-              <th className="px-6 py-4">Harga Pokok</th>
-              <th className="px-6 py-4">Harga Jual</th>
+              
               <th className="px-6 py-4">Pendapatan</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4 text-right">Aksi</th>
