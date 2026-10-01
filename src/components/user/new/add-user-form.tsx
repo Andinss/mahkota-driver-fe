@@ -130,6 +130,14 @@ export function AddUserForm({
   useEffect(() => {
     if (!isDriver && mode === "add") {
       setLocalDriverId("");
+      // Reset field yang ter-fill dari driver
+      setFormValues((prev) => ({
+        ...prev,
+        username: "",
+        fullname: "",
+        email: "",
+        phoneNumber: "",
+      }));
     }
   }, [isDriver, mode]);
 
@@ -143,7 +151,7 @@ export function AddUserForm({
 
     if (!formValues.username?.trim()) {
       newErrors.username = "Username is required";
-    } else if (containsSymbols(formValues.username.trim())) {
+    } else if (!isDriver && containsSymbols(formValues.username.trim())) {
       newErrors.username = "Username can only contain letters and numbers";
     } else if (formValues.username.trim().length < 2) {
       newErrors.username = "Username must be at least 2 characters";
@@ -262,39 +270,7 @@ export function AddUserForm({
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Input
-            id="username"
-            name="username"
-            label="Username"
-            placeholder="Enter username"
-            required
-            value={formValues.username}
-            onChange={(e) => handleInputChange("username", e.target.value)}
-            error={errors.username}
-          />
-          <Input
-            id="fullname"
-            name="fullname"
-            label="Full Name"
-            placeholder="Enter full name"
-            required
-            value={formValues.fullname}
-            onChange={(e) => handleInputChange("fullname", e.target.value)}
-            error={errors.fullname}
-          />
-
-          <Input
-            id="email"
-            name="email"
-            label="Email Address"
-            placeholder="Enter email address"
-            type="email"
-            required
-            value={formValues.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
-            error={errors.email}
-          />
-
+          {/* Role */}
           <Select
             id="role"
             name="role"
@@ -312,6 +288,7 @@ export function AddUserForm({
             ))}
           </Select>
 
+          {/* Driver Select — kalau role driver */}
           {isDriver && (
             <div className="space-y-2">
               <Select
@@ -334,30 +311,61 @@ export function AddUserForm({
                   Semua driver sudah memiliki akun
                 </p>
               )}
-              <p className="text-xs text-slate-500 italic">
-                Data driver akan otomatis mengisi field di bawah
-              </p>
             </div>
           )}
 
-          {isDriver && (
-            <div className="md:col-span-2">
-              <Input
-                id="phoneNumber"
-                name="phoneNumber"
-                label="Phone Number"
-                placeholder="Enter phone number"
-                type="tel"
-                required
-                value={formValues.phoneNumber}
-                onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
-                error={errors.phoneNumber}
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                Phone number is required for driver role
-              </p>
-            </div>
-          )}
+          {/* Username */}
+          <Input
+            id="username"
+            name="username"
+            label="Username"
+            placeholder="Enter username"
+            required
+            value={formValues.username}
+            onChange={(e) => handleInputChange("username", e.target.value)}
+            error={errors.username}
+            disabled={isDriver}
+          />
+
+          {/* Full Name */}
+          <Input
+            id="fullname"
+            name="fullname"
+            label="Full Name"
+            placeholder="Enter full name"
+            required
+            value={formValues.fullname}
+            onChange={(e) => handleInputChange("fullname", e.target.value)}
+            error={errors.fullname}
+            disabled={isDriver}
+          />
+
+          {/* Email */}
+          <Input
+            id="email"
+            name="email"
+            label="Email Address"
+            placeholder="Enter email address"
+            type="email"
+            required
+            value={formValues.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            error={errors.email}
+            disabled={isDriver}
+          />
+
+          {/* Phone Number */}
+          <Input
+            id="phoneNumber"
+            name="phoneNumber"
+            label="Phone Number"
+            placeholder="Enter phone number"
+            type="tel"
+            value={formValues.phoneNumber}
+            onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+            error={errors.phoneNumber}
+            disabled={isDriver}
+          />
         </div>
 
         <hr className="border-slate-100 dark:border-slate-800 my-6" />
