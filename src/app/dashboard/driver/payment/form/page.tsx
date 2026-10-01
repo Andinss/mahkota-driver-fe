@@ -92,7 +92,7 @@ export default function DriverPaymentFormPage() {
       ? Math.max(0, (finance!.fee_admin_join || 0) - (finance!.paid_amount || 0))
       : (finance?.remaining_amount || 0);
   const parsedAmount = parseFloat(amount.replace(/[^\d]/g, "")) || 0;
-  const koinInsufficient = paymentMethod === "saldo" && koinBalance !== null && koinBalance < remaining;
+  const koinInsufficient = paymentMethod === "saldo" && koinBalance !== null && koinBalance < parsedAmount;
   const isValid = parsedAmount > 0 && parsedAmount <= remaining && paymentDate && paymentMethod && !koinInsufficient;
 
   useEffect(() => {
@@ -100,6 +100,11 @@ export default function DriverPaymentFormPage() {
       setAmount(remaining.toLocaleString("id-ID"));
     }
   }, [finance, daily]);
+
+  const handleAmountChange = (value: string) => {
+    const digits = value.replace(/[^\d]/g, "");
+    setAmount(digits ? Number(digits).toLocaleString("id-ID") : "");
+  };
 
   const handlePaymentDetailChange = (detail: string) => {
     setPaymentDetail(detail);
@@ -266,12 +271,22 @@ export default function DriverPaymentFormPage() {
                     </div>
                   )}
                   {isAdminFee && (
-                    <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                        Fee Membership
-                      </p>
-                      <p className="font-bold text-lg text-slate-900 dark:text-white">{formatIDR(displayTotal)}</p>
-                    </div>
+                    <>
+                      <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                          Fee Membership
+                        </p>
+                        <p className="font-bold text-lg text-slate-900 dark:text-white">{formatIDR(displayTotal)}</p>
+                      </div>
+                      <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-4">
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Sudah Dibayar</p>
+                        <p className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{formatIDR(finance?.paid_amount || 0)}</p>
+                      </div>
+                      <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-4">
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mb-1">Sisa Tagihan</p>
+                        <p className="font-bold text-lg text-amber-600 dark:text-amber-400">{formatIDR(remaining)}</p>
+                      </div>
+                    </>
                   )}
                   {!isDaily && !isAdminFee && (
                     <>
@@ -374,11 +389,25 @@ export default function DriverPaymentFormPage() {
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Rp</span>
                     <input
                       type="text"
+                      inputMode="numeric"
                       value={amount}
-                      readOnly
-                      className="w-full pl-12 pr-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white cursor-not-allowed opacity-70"
+                      readOnly={isDaily}
+                      onChange={(e) => handleAmountChange(e.target.value)}
+                      className={`w-full pl-12 pr-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                        isDaily
+                          ? "bg-slate-50 dark:bg-slate-800 cursor-not-allowed opacity-70"
+                          : "bg-white dark:bg-slate-900"
+                      }`}
                     />
                   </div>
+                  {!isDaily && (
+                    <p className="text-xs text-slate-400 mt-1.5">
+                      Pembayaran dapat dicicil — nominal boleh diubah, maksimal sisa tagihan {formatIDR(remaining)}.
+                    </p>
+                  )}
+                  {!isDaily && parsedAmount > remaining && (
+                    <p className="text-xs text-red-500 mt-1">Nominal melebihi sisa tagihan.</p>
+                  )}
                 </div>
 
                 {/* Tanggal Pembayaran */}

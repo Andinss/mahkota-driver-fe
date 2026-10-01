@@ -38,7 +38,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
 export function DriverDashboardPage() {
   const { user } = useAuth();
   const [driver, setDriver] = useState<DriverItem | null>(null);
-  const [adminFee, setAdminFee] = useState<FinanceItem | null>(null);
+  const [feeBills, setFeeBills] = useState<FinanceItem[]>([]);
   const [dailyPayments, setDailyPayments] = useState<DailyPaymentItem[]>([]);
   const [koinBalance, setKoinBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,9 +51,9 @@ export function DriverDashboardPage() {
 
     const fetchData = async () => {
       try {
-        const [driverRes, adminFeeRes, koinRes] = await Promise.allSettled([
+        const [driverRes, feeRes, koinRes] = await Promise.allSettled([
           driverApi.getMe(),
-          financeApi.getMyAdminFee(),
+          financeApi.getMyFinances({ limit: 10 }),
           koinApi.getBalance(user.driver_id!),
         ]);
 
@@ -61,20 +61,19 @@ export function DriverDashboardPage() {
           const data = (driverRes.value as any)?.data ?? driverRes.value;
           setDriver(data);
         }
-        if (adminFeeRes.status === "fulfilled") {
-          const data = (adminFeeRes.value as any)?.data ?? adminFeeRes.value;
-          setAdminFee(data);
+        if (feeRes.status === "fulfilled") {
+          const env = feeRes.value;
+          const items = Array.isArray(env?.data) ? env.data : [];
+          setFeeBills(items);
+        }
 
-          if (data?.status === "paid") {
-            try {
-              const dailyRes = await financeApi.getMyDailyPayments({ limit: 5 });
-              const dailyData = (dailyRes as any)?.data ?? dailyRes;
-              const items = Array.isArray(dailyData) ? dailyData : dailyData?.data ?? [];
-              setDailyPayments(items);
-            } catch {
-              setDailyPayments([]);
-            }
-          }
+        try {
+          const dailyRes = await financeApi.getMyDailyPayments({ limit: 10 });
+          const dailyData = (dailyRes as any)?.data ?? dailyRes;
+          const items = Array.isArray(dailyData) ? dailyData : dailyData?.data ?? [];
+          setDailyPayments(items);
+        } catch {
+          setDailyPayments([]);
         }
         if (koinRes.status === "fulfilled") {
           const data = (koinRes.value as any)?.data ?? koinRes.value;
@@ -95,13 +94,26 @@ export function DriverDashboardPage() {
     : user?.username || "Driver";
   const activeRentals = driver?.rentals?.length ?? 0;
 
-  const adminFeePaid = adminFee?.status === "paid";
-  const hasAdminFee = !!adminFee;
-  const adminFeeUnpaid = hasAdminFee && !adminFeePaid;
-  const unpaidDailyCount = dailyPayments.filter((dp) => dp.status === "unpaid").length;
-  const totalRemaining = dailyPayments
-    .filter((dp) => dp.status === "unpaid")
-    .reduce((sum, dp) => sum + dp.amount, 0);
+  const billRows = [
+    ...feeBills.map((f) => ({
+      id: `fee-${f.id}`,
+      date: f.payment_date || f.created_at || "",
+      vehicleName: "-",
+      amount: Number(f.fee_admin_join) || 0,
+      status: f.status,
+      href: `/dashboard/driver/payment/form?id=${f.id}`,
+    })),
+    ...dailyPayments.map((dp) => ({
+      id: `daily-${dp.id}`,
+      date: dp.payment_date,
+      vehicleName: dp.vehicle_name,
+      amount: dp.amount,
+      status: dp.status,
+      href: `/dashboard/driver/payment/form?id=${dp.id}&type=daily`,
+    })),
+  ]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 10);
 
   return (
     <div className="m-8">
@@ -247,34 +259,8 @@ export function DriverDashboardPage() {
             </div>
           )}
 
-          {/* Admin Fee Unpaid — show banner */}
-          {adminFeeUnpaid && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-800/40 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-xl">warning</span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-amber-800 dark:text-amber-200 text-sm">
-                    Fee Membership Belum Dibayar
-                  </h3>
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                    Anda harus membayar Fee Membership sebesar {formatIDR(adminFee!.fee_admin_join || 0)} terlebih dahulu sebelum tagihan harian muncul.
-                  </p>
-                  <a
-                    href="/dashboard/driver/payment"
-                    className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-amber-700 dark:text-amber-300 hover:underline"
-                  >
-                    Bayar Sekarang
-                    <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Daily Payments — only show after admin fee is paid */}
-          {adminFeePaid && unpaidDailyCount > 0 && (
+          {/* Tagihan — data general (fee membership + daily payment), tanpa tab, kolom tetap */}
+          {billRows.length > 0 && (
             <div className="bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -283,9 +269,9 @@ export function DriverDashboardPage() {
                   </div>
                   <div>
                     <h2 className="font-bold text-slate-800 dark:text-white text-base">
-                      Tagihan Belum Dibayar
+                      Tagihan Saya
                     </h2>
-                    <p className="text-xs text-slate-400">{unpaidDailyCount} tagihan menunggu pembayaran</p>
+                    <p className="text-xs text-slate-400">{billRows.length} tagihan tercatat</p>
                   </div>
                 </div>
                 <a
@@ -307,19 +293,19 @@ export function DriverDashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
-                    {dailyPayments.filter((dp) => dp.status === "unpaid").slice(0, 5).map((dp) => {
-                      const st = statusConfig[dp.status] || statusConfig.unpaid;
+                    {billRows.map((row) => {
+                      const st = statusConfig[row.status] || statusConfig.unpaid;
                       return (
-                        <tr key={dp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                           <td className="px-6 py-3 font-medium text-slate-500 dark:text-slate-400">
-                            {formatDate(dp.payment_date)}
+                            {formatDate(row.date)}
                           </td>
                           <td className="px-6 py-3">
-                            <span className="font-semibold text-slate-900 dark:text-white">{dp.vehicle_name}</span>
+                            <span className="font-semibold text-slate-900 dark:text-white">{row.vehicleName}</span>
                           </td>
                           <td className="px-6 py-3">
                             <span className="font-semibold text-orange-600 dark:text-orange-400">
-                              {formatIDR(dp.amount)}
+                              {formatIDR(row.amount)}
                             </span>
                           </td>
                           <td className="px-6 py-3">
@@ -329,13 +315,17 @@ export function DriverDashboardPage() {
                             </span>
                           </td>
                           <td className="px-6 py-3 text-right">
-                            <a
-                              href={`/dashboard/driver/payment/form?id=${dp.id}&type=daily`}
-                              title="Bayar Tagihan Harian"
-                              className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">payments</span>
-                            </a>
+                            {row.status === "unpaid" ? (
+                              <a
+                                href={row.href}
+                                title="Bayar Tagihan"
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">payments</span>
+                              </a>
+                            ) : (
+                              <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-xl">check_circle</span>
+                            )}
                           </td>
                         </tr>
                       );

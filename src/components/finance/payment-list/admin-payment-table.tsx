@@ -5,6 +5,7 @@ import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
 
 interface AdminPaymentTableProps {
   payments: FinanceItem[];
+  onSelect?: (item: FinanceItem) => void;
 }
 
 const formatCurrency = (value: number) => {
@@ -26,7 +27,7 @@ const statusLabel: Record<string, string> = {
   unpaid: "Unpaid",
 };
 
-export const AdminPaymentTable = ({ payments }: AdminPaymentTableProps) => {
+export const AdminPaymentTable = ({ payments, onSelect }: AdminPaymentTableProps) => {
   if (payments.length === 0) {
     return (
       <div className="p-8 text-center text-slate-500 dark:text-slate-400">
@@ -45,16 +46,19 @@ export const AdminPaymentTable = ({ payments }: AdminPaymentTableProps) => {
             <th className="px-6 py-4">Driver</th>
             <th className="px-6 py-4">Kendaraan</th>
             <th className="px-6 py-4">Fee Membership</th>
+            <th className="px-6 py-4">Sisa Tagihan</th>
             <th className="px-6 py-4">Tanggal Dibuat</th>
             <th className="px-6 py-4">Tanggal Bayar</th>
             <th className="px-6 py-4">Status</th>
+            <th className="px-6 py-4 text-right">Aksi</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
           {payments.map((item) => (
             <tr
               key={item.id}
-              className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors"
+              onClick={() => onSelect?.(item)}
+              className={`hover:bg-white dark:hover:bg-slate-800/30 transition-colors ${onSelect ? "cursor-pointer" : ""}`}
             >
               <td className="px-6 py-4 font-mono text-xs text-slate-400">
                 {item.reference_number}
@@ -75,6 +79,9 @@ export const AdminPaymentTable = ({ payments }: AdminPaymentTableProps) => {
               <td className="px-6 py-4 font-bold text-amber-600 dark:text-amber-400">
                 {formatCurrency(item.fee_admin_join || 0)}
               </td>
+              <td className={`px-6 py-4 font-bold ${Number(item.remaining_amount) > 0 ? "text-amber-600 dark:text-amber-400" : "text-slate-400 dark:text-slate-500"}`}>
+                {formatCurrency(Number(item.remaining_amount) || 0)}
+              </td>
               <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
                 {formatDateTime(item.created_at || "")}
               </td>
@@ -89,6 +96,18 @@ export const AdminPaymentTable = ({ payments }: AdminPaymentTableProps) => {
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor[item.status] || "bg-slate-100 text-slate-700"}`}>
                   {statusLabel[item.status] || item.status}
                 </span>
+              </td>
+              <td className="px-6 py-4 text-right">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect?.(item);
+                  }}
+                  title="Detail Pembayaran"
+                  className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-white transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">visibility</span>
+                </button>
               </td>
             </tr>
           ))}

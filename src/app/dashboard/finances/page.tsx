@@ -12,6 +12,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
 import { DailyPaymentTable } from "@/components/finance/payment-list/daily-payment-table";
 import { AdminPaymentTable } from "@/components/finance/payment-list/admin-payment-table";
+import { FeeBillDetailModal } from "@/components/finance/fee-bill-detail-modal";
 import { PageHeader } from "@/components/page-header";
 import { useSearchParams, useRouter } from "next/navigation";
 import type { ExportOptions } from "@/components/ui/export";
@@ -57,6 +58,7 @@ export default function PaymentList() {
 
   const [adminFees, setAdminFees] = useState<FinanceItem[]>([]);
   const [adminFeeMeta, setAdminFeeMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+  const [adminFeeDetailId, setAdminFeeDetailId] = useState<string | null>(null);
 
   const [koinTransactions, setKoinTransactions] = useState<KoinTransaction[]>([]);
   const [koinMeta, setKoinMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
@@ -465,7 +467,10 @@ export default function PaymentList() {
                   ]}
                 />
                 <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-                  <AdminPaymentTable payments={filteredAdminFees} />
+                  <AdminPaymentTable
+                    payments={filteredAdminFees}
+                    onSelect={(item) => setAdminFeeDetailId(item.id)}
+                  />
                   <div className="border-t border-[#dbe0e6] dark:border-gray-700">
                     <Pagination currentPage={adminFeeMeta.page} totalPages={adminFeeMeta.totalPages} totalResults={adminFeeMeta.total} resultsPerPage={itemsPerPage} onPageChange={handlePageChange} onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }} />
                   </div>
@@ -523,6 +528,12 @@ export default function PaymentList() {
               <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">Loading...</div>
             )}
           </div>
+
+          {/* Detail pembayaran fee membership / admin fee */}
+          <FeeBillDetailModal
+            financeId={adminFeeDetailId}
+            onClose={() => setAdminFeeDetailId(null)}
+          />
         </div>
       </div>
     </PermissionGuard>
