@@ -14,6 +14,7 @@ export interface VehicleFormData {
   color: string;
   vin: string;
   engineNumber: string;
+  costPrice: string;
   dailyRate: string;
   imei: string;
   deviceName: string;
@@ -29,6 +30,7 @@ interface FormErrors {
   color?: string;
   vin?: string;
   engineNumber?: string;
+  costPrice?: string;
   dailyRate?: string;
   imei?: string;
   deviceName?: string;
@@ -157,6 +159,7 @@ export function VehicleSpecificationsForm({
     const color = formData.get("color") as string;
     const vin = formData.get("vin") as string;
     const engineNumber = formData.get("engineNumber") as string;
+    const costPrice = formData.get("costPrice") as string;
     const dailyRate = formData.get("dailyRate") as string;
     const device = formData.get("device") as string;
 
@@ -214,6 +217,12 @@ export function VehicleSpecificationsForm({
         "Engine number can only contain letters, numbers, and hyphens";
     }
 
+    if (!costPrice) {
+      newErrors.costPrice = "Cost price is required";
+    } else if (parseFloat(costPrice) <= 0) {
+      newErrors.costPrice = "Cost price must be greater than 0";
+    }
+
     if (!dailyRate) {
       newErrors.dailyRate = "Daily rate is required";
     } else if (parseFloat(dailyRate) <= 0) {
@@ -246,6 +255,7 @@ export function VehicleSpecificationsForm({
       color: formData.get("color") as string,
       vin: formData.get("vin") as string,
       engineNumber: formData.get("engineNumber") as string,
+      costPrice: formData.get("costPrice") as string,
       dailyRate: formData.get("dailyRate") as string,
       imei: imei || "",
       deviceName: deviceName || "",
@@ -354,6 +364,16 @@ export function VehicleSpecificationsForm({
           required
           error={errors.engineNumber}
           onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9-]/g)}
+        />
+
+        <CurrencyInput
+          id="costPrice"
+          name="costPrice"
+          label="Cost Price"
+          placeholder="0"
+          value={initialValues?.costPrice}
+          required
+          error={errors.costPrice}
         />
 
         <CurrencyInput

@@ -8,6 +8,7 @@ const vehicleColumns: ExportColumn[] = [
   { id: "licensePlate", label: "License Plate", defaultChecked: true },
   { id: "vendor", label: "Vendor", defaultChecked: true },
   { id: "device", label: "Device", defaultChecked: true },
+  { id: "costPrice", label: "Cost Price", defaultChecked: true },
   { id: "dailyRate", label: "Daily Rate", defaultChecked: true },
   { id: "membership", label: "Kategori Membership", defaultChecked: true },
   { id: "status", label: "Condition", defaultChecked: true },
@@ -20,6 +21,7 @@ interface Vehicle {
   year: number;
   plate: string;
   rate: string;
+  costPrice: string;
   membership: string;
   status: string;
   isActive?: boolean;
@@ -77,6 +79,7 @@ export const VehicleTable = ({
               <th className="px-5 py-4 whitespace-nowrap">Vendor</th>
               <th className="px-5 py-4 whitespace-nowrap">Device</th>
               <th className="px-5 py-4 whitespace-nowrap">Kategori</th>
+              <th className="px-5 py-4 whitespace-nowrap">Harga Pokok</th>
               <th className="px-5 py-4 whitespace-nowrap">Tarif/Hari</th>
               <th className="px-5 py-4 whitespace-nowrap">Condition</th>
               <th className="px-5 py-4 whitespace-nowrap">Status</th>
