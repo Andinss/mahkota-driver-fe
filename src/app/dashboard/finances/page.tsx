@@ -370,7 +370,7 @@ export default function PaymentList() {
           <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 pb-10">
             <PageHeader
               title="Finance List Overview"
-              description="Manage your finances, track payments, and monitor transactions."
+              description="Kelola keuangan, lacak pembayaran, dan monitor transaksi."
             />
 
             {/* Tab Navigation */}
@@ -504,8 +504,10 @@ export default function PaymentList() {
                 <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
                   <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-green-500 text-xl">account_balance_wallet</span>
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-blue-500 text-xl">
+                          account_balance_wallet
+                        </span>
                       </div>
                       <div>
                         <h2 className="font-bold text-slate-800 dark:text-white text-base">
@@ -515,7 +517,7 @@ export default function PaymentList() {
                       </div>
                     </div>
                     <Link href="/dashboard/finances/koin">
-                      <Button icon="add" variant="success">
+                      <Button icon="add" variant="primary">
                         Buat Top Up
                       </Button>
                     </Link>
