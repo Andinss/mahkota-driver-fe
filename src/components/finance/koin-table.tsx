@@ -9,15 +9,6 @@ interface KoinTableProps {
   onBuatTopUp?: () => void;
 }
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
-
 const formatDateTime = (dateStr: string) => {
   if (!dateStr) return "-";
   const date = new Date(dateStr);
@@ -36,6 +27,18 @@ const typeLabel: Record<string, string> = {
   rental_payment: "Pembayaran Rental",
   refund: "Refund",
   withdrawal: "Penarikan",
+};
+
+/* Warna badge per tipe */
+const typeColor: Record<string, string> = {
+  top_up: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+  rental_payment: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+  refund: "bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400",
+  withdrawal: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+};
+
+const getTypeColor = (type: string): string => {
+  return typeColor[type] || typeColor.withdrawal;
 };
 
 export const KoinTable = ({ transactions, onBuatTopUp }: KoinTableProps) => {
@@ -76,14 +79,14 @@ export const KoinTable = ({ transactions, onBuatTopUp }: KoinTableProps) => {
   return (
     <>
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm whitespace-nowrap">
+        <table className="w-full text-left text-sm">
           <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-6 py-4 w-[220px]">No. Referensi</th>
-              <th className="px-6 py-4 w-[180px]">Driver</th>
-              <th className="px-6 py-4 text-center w-[200px]">Tipe</th>
-              <th className="px-6 py-4 text-right w-[180px]">Jumlah</th>
-              <th className="px-6 py-4 w-[140px]">Tanggal</th>
+              <th className="px-4 py-3">No. Referensi</th>
+              <th className="px-4 py-3">Driver</th>
+              <th className="px-4 py-3">Tipe</th>
+              <th className="px-4 py-3 text-right">Jumlah</th>
+              <th className="px-4 py-3">Tanggal</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
@@ -92,43 +95,37 @@ export const KoinTable = ({ transactions, onBuatTopUp }: KoinTableProps) => {
                 key={item.id}
                 className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors"
               >
-                <td className="px-6 py-4">
-                  <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <td className="px-4 py-3">
+                  <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[140px] block">
                     {item.reference_number || "-"}
                   </span>
                 </td>
-                <td className="px-6 py-4">
-                  <p className="font-semibold text-slate-900 dark:text-white">
+                <td className="px-4 py-3">
+                  <p className="font-semibold text-slate-900 dark:text-white truncate max-w-[140px]">
                     {item.driver_name || "-"}
                   </p>
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-4 py-3 whitespace-nowrap">
                   <span
-                    className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold ${
-                      item.type === "top_up"
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : item.type === "rental_payment"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          : item.type === "refund"
-                            ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                            : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
-                    }`}
+                    className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${getTypeColor(
+                      item.type,
+                    )}`}
                   >
                     {typeLabel[item.type] || item.type}
                   </span>
                 </td>
                 <td
-                  className={`px-6 py-4 text-right font-bold ${
+                  className={`px-4 py-3 text-right font-bold whitespace-nowrap ${
                     item.type === "top_up" || item.type === "refund"
-                      ? "text-green-600 dark:text-green-400"
+                      ? "text-emerald-600 dark:text-emerald-400"
                       : "text-red-600 dark:text-red-400"
                   }`}
                 >
                   {item.type === "top_up" || item.type === "refund" ? "+" : "-"} Rp{" "}
                   {Number(item.amount).toLocaleString("id-ID")}
                 </td>
-                <td className="px-6 py-4 font-medium text-slate-500 dark:text-slate-400">
-                 {formatDateTime(item.created_at)}
+                <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                  {formatDateTime(item.created_at)}
                 </td>
               </tr>
             ))}

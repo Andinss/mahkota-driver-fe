@@ -212,7 +212,7 @@ export default function DashboardVehiclePage() {
       <div className="max-w-[1200px] mx-auto flex flex-col gap-6">
         <PageHeader
           title="Vehicle List Overview"
-          description="Manage your fleet, add new vehicles, and track their status."
+          description="Kelola armada, tambah kendaraan baru, dan lacak statusnya."
           buttonText={canAccess(user?.permissions, "vehicle.create") ? "Add New Vehicle" : undefined}
           buttonHref={canAccess(user?.permissions, "vehicle.create") ? "/dashboard/vehicles/register" : undefined}
         />

@@ -221,7 +221,7 @@ export default function RentalManagementPage() {
       <div className="p-8 space-y-8">
         <PageHeader
           title="Rentals List Overview"
-          description="Monitor active rentals, handle pending and late payments, and review daily completed transactions."
+          description="Pantau sewa aktif, kelola pembayaran pending & terlambat, dan tinjau transaksi harian yang selesai."
           buttonText={
             canAccess(user?.permissions, "rental.create")
               ? "Add New Rentals"

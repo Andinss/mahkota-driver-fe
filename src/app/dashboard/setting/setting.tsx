@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import CardBrandUpload from "@/components/settings/card-brand";
-import GeneralParamaters from "@/components/settings/general-parameters";
+// import GeneralParamaters from "@/components/settings/general-parameters";
 import SecurityCard from "@/components/settings/system-security";
 import { Button } from "@/components/ui/button";
 import { confirmToast, toastSuccess } from "@/components/ui/toast-provider";
@@ -22,7 +22,7 @@ const SettingPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-5">
             <div className="lg:col-span-7 space-y-8">
               <CardBrandUpload />
-              <GeneralParamaters />
+              {/* <GeneralParamaters /> */}
             </div>
 
             <div className="lg:col-span-5 space-y-8">

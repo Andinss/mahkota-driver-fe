@@ -106,9 +106,6 @@ const Period = ({ onDataChange, initialData, error }: PeriodProps) => {
             onChange={handleStartChange}
             error={error?.startDate}
           />
-          <p className="text-[10px] text-slate-400 italic">
-            *Hanya bisa hari ini atau besok
-          </p>
         </div>
         <div className="space-y-2">
           <DateInput
