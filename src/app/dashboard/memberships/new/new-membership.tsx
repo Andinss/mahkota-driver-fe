@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,6 @@ interface NewMembershipFormProps {
 
 interface FormErrors {
   name?: string;
-  level?: string;
   fee?: string;
 }
 
@@ -28,7 +27,6 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
   const [isLoadingExisting, setIsLoadingExisting] = useState(mode === "edit");
   const [existing, setExisting] = useState<Membership | null>(null);
   const [name, setName] = useState("");
-  const [level, setLevel] = useState("1");
   const [fee, setFee] = useState("");
   const [description, setDescription] = useState("");
   const [benefits, setBenefits] = useState("");
@@ -48,7 +46,6 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
         const data = res.data;
         setExisting(data);
         setName(data.name);
-        setLevel(String(data.level));
         setFee(String(data.fee));
         setDescription(data.description ?? "");
         setBenefits((data.benefits ?? []).join("\n"));
@@ -67,25 +64,12 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
 
   const notFound = mode === "edit" && !isLoadingExisting && !existing;
 
-  const selectedLevelLabel = useMemo(() => {
-    if (level === "1") return "Regular";
-    if (level === "2") return "Premium";
-    return "Custom";
-  }, [level]);
-
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
     let isValid = true;
 
     if (!name.trim()) {
       newErrors.name = "Nama membership wajib diisi";
-      isValid = false;
-    }
-    if (!level.trim()) {
-      newErrors.level = "Level wajib diisi";
-      isValid = false;
-    } else if (!/^\d+$/.test(level.trim()) || Number(level) < 1) {
-      newErrors.level = "Level harus berupa angka bulat lebih dari 0";
       isValid = false;
     }
     if (!fee || Number(fee) <= 0) {
@@ -105,7 +89,7 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
       title: mode === "add" ? "Confirm Registration" : "Confirm Update",
       message:
         mode === "add"
-          ? `Are you sure you want to add ${name} membership (Level ${level}, Fee ${formatRupiah(Number(fee))})?`
+          ? `Are you sure you want to add ${name} membership (Fee ${formatRupiah(Number(fee))})?`
           : `Are you sure you want to update ${name} membership?`,
       confirmText: mode === "add" ? "Yes, Add Membership" : "Yes, Update Membership",
       cancelText: "Review Again",
@@ -118,7 +102,6 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
     try {
       const payload = {
         name: name.trim(),
-        level: Number(level),
         fee: Number(fee),
         description: description.trim(),
         benefits: benefits
@@ -150,7 +133,6 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
 
   const handleReset = () => {
     setName("");
-    setLevel("1");
     setFee("");
     setDescription("");
     setBenefits("");
@@ -240,7 +222,7 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
                   Informasi Membership
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Level 1 Regular - Level 2 Premium (level unik, urut menaik)
+                  Atur nama, fee, dan status tipe membership
                 </p>
               </div>
             </div>
@@ -258,22 +240,6 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
                     setErrors((prev) => ({ ...prev, name: undefined }));
                 }}
                 error={hasSubmitted ? errors.name : undefined}
-              />
-              <Input
-                label="Level"
-                required
-                id="membership-level"
-                type="number"
-                min={1}
-                step={1}
-                placeholder="Contoh: 1"
-                value={level}
-                onChange={(e) => {
-                  setLevel(e.target.value);
-                  if (hasSubmitted && errors.level)
-                    setErrors((prev) => ({ ...prev, level: undefined }));
-                }}
-                error={hasSubmitted ? errors.level : undefined}
               />
 
               <CurrencyInput
@@ -303,11 +269,11 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
             {fee && Number(fee) > 0 && (
               <div className="mt-4 rounded-xl border border-purple-100 dark:border-purple-900/50 bg-purple-50 dark:bg-purple-900/10 p-4 flex items-start gap-3">
                 <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-xl">
-                  {Number(level) > 1 ? "workspace_premium" : "military_tech"}
+                  workspace_premium
                 </span>
                 <div>
                   <p className="text-sm font-bold text-purple-700 dark:text-purple-300">
-                    Level {level} - {selectedLevelLabel} · {formatRupiah(Number(fee))}
+                    {formatRupiah(Number(fee))}
                   </p>
                   <p className="text-xs text-purple-600/80 dark:text-purple-300/80 mt-0.5">
                     Fee ini akan dipakai untuk tipe membership {name.trim() || "baru"}.

@@ -15,7 +15,7 @@ export function MembershipSelect({
   onChange,
   loading = false,
 }: MembershipSelectProps) {
-  const sorted = [...memberships].sort((a, b) => a.level - b.level);
+  const sorted = [...memberships].sort((a, b) => b.level - a.level);
 
   const toggle = (id: string) => {
     const target = memberships.find((m) => m.id === id);
@@ -26,12 +26,12 @@ export function MembershipSelect({
     if (isChecked) {
       const next = selectedIds.filter((x) => {
         const m = memberships.find((mm) => mm.id === x);
-        return m ? m.level < target.level : true;
+        return m ? m.level > target.level : true;
       });
       onChange(next);
     } else {
       const toAdd = memberships
-        .filter((m) => m.level <= target.level)
+        .filter((m) => m.level >= target.level)
         .map((m) => m.id);
       onChange(Array.from(new Set([...selectedIds, ...toAdd])));
     }

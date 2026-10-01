@@ -48,6 +48,7 @@ interface SelectOption {
   image?: string;
   dailyRate?: number;
   badges?: string[];
+  search?: string;
 }
 
 const NewRentPage = () => {
@@ -136,6 +137,7 @@ const NewRentPage = () => {
         badges: (v.memberships ?? [])
           .filter((m) => m.level <= driverLevel)
           .map((m) => m.name),
+        search: (v.memberships ?? []).map((m) => m.name).join(" "),
       }));
   }, [allDrivers, allVehicles, rentalData.driverId]);
 

@@ -16,7 +16,6 @@ interface MembershipTableProps {
 }
 
 const membershipColumns: ExportColumn[] = [
-  { id: "level", label: "Level", defaultChecked: true },
   { id: "name", label: "Nama Membership", defaultChecked: true },
   { id: "fee", label: "Fee", defaultChecked: true },
   { id: "benefit", label: "Benefit", defaultChecked: true },
@@ -64,7 +63,6 @@ export const MembershipTable = ({
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-6 py-4">Level</th>
               <th className="px-6 py-4">Nama Membership</th>
               <th className="px-6 py-4">Fee</th>
               <th className="px-6 py-4">Benefit</th>
@@ -84,7 +82,7 @@ export const MembershipTable = ({
             {memberships.length === 0 && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={5}
                   className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
                 >
                   {isLoading

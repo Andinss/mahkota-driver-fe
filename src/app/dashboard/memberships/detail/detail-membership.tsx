@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LevelBadge, MembershipStatusBadge } from "@/components/memberships/badges";
+import { MembershipStatusBadge } from "@/components/memberships/badges";
 import { membershipApi } from "@/lib/api/membership";
 import { formatDateOnly, formatRupiah } from "@/lib/utils/format";
 import type { Membership } from "@/lib/types/membership";
@@ -106,7 +106,7 @@ const MembershipDetail = ({ id }: MembershipDetailProps) => {
       bg: "bg-blue-50 dark:bg-blue-900/20",
       title: "Membership dibuat",
       date: formatDateOnly(membership.created_at),
-      description: `Tipe membership ${membership.name} level ${membership.level} ditambahkan ke sistem.`,
+      description: `Tipe membership ${membership.name} ditambahkan ke sistem.`,
     },
     {
       icon: "payments",
@@ -183,11 +183,6 @@ const MembershipDetail = ({ id }: MembershipDetailProps) => {
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                     {membership.name}
                   </h2>
-                  <LevelBadge
-                    level={membership.level}
-                    name={`Level ${membership.level}`}
-                    size="sm"
-                  />
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
                   {membership.description || "Tidak ada deskripsi"}
@@ -196,13 +191,7 @@ const MembershipDetail = ({ id }: MembershipDetailProps) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Level</p>
-              <p className="text-lg font-bold text-slate-900 dark:text-white">
-                Level {membership.level} - {membership.name}
-              </p>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 p-5">
               <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Fee</p>
               <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
@@ -241,14 +230,6 @@ const MembershipDetail = ({ id }: MembershipDetailProps) => {
                 <span className="font-semibold text-slate-900 dark:text-white">
                   {membership.name}
                 </span>
-              </div>
-              <div className="flex items-center justify-between px-6 py-4 gap-4">
-                <span className="text-slate-500 dark:text-slate-400">Level</span>
-                <LevelBadge
-                  level={membership.level}
-                  name={`Level ${membership.level} - ${membership.name}`}
-                  size="sm"
-                />
               </div>
               <div className="flex items-center justify-between px-6 py-4 gap-4">
                 <span className="text-slate-500 dark:text-slate-400">Fee</span>

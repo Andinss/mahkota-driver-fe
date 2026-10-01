@@ -127,6 +127,30 @@ const parseJsonOrThrow = async (response: Response): Promise<unknown> => {
   return response.json();
 };
 
+const fetchWith429Retry = async (
+  url: string,
+  init: RequestInit,
+  maxAttempts = 3,
+): Promise<Response> => {
+  for (let attempt = 1; ; attempt++) {
+    let response: Response;
+    try {
+      response = await fetch(url, init);
+    } catch {
+      throw new HttpClientError(
+        "Tidak bisa terhubung ke server. Periksa koneksi Anda.",
+        0,
+      );
+    }
+    if (response.status !== 429 || attempt >= maxAttempts) return response;
+    const retryAfterSec = Number(response.headers.get("Retry-After"));
+    const waitMs =
+      (Number.isFinite(retryAfterSec) && retryAfterSec > 0 ? retryAfterSec : 1) *
+      1000;
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+  }
+};
+
 const request = async <T>(
   endpoint: string,
   options: RequestInit = {},
@@ -150,11 +174,7 @@ const request = async <T>(
   }
 
   let response: Response;
-  try {
-    response = await fetch(url, { ...options, headers });
-  } catch {
-    throw new HttpClientError("Tidak bisa terhubung ke server. Periksa koneksi Anda.", 0);
-  }
+  response = await fetchWith429Retry(url, { ...options, headers });
 
   if (response.status === 401) {
     return handle401(response, hadToken, async () => {
@@ -165,7 +185,7 @@ const request = async <T>(
       } else {
         delete retryHeaders["Authorization"];
       }
-      return fetch(url, { ...options, headers: retryHeaders });
+      return fetchWith429Retry(url, { ...options, headers: retryHeaders });
     }) as Promise<T>;
   }
 

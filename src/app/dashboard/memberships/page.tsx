@@ -92,10 +92,11 @@ const MembershipList = () => {
   );
 
   const stats = useMemo(() => {
-    const regular = memberships.find((item) => item.level === 1);
-    const premium = memberships.find((item) => item.level === 2);
+    const sorted = [...memberships].sort((a, b) => a.level - b.level);
+    const lowest = sorted[0];
+    const highest = sorted[sorted.length - 1];
     const active = memberships.filter((item) => item.is_active).length;
-    return { premium, regular, active };
+    return { lowest, highest, active };
   }, [memberships]);
 
   const handleFilterChange = (next: MembershipFilters) => {
@@ -168,23 +169,23 @@ const MembershipList = () => {
           }}
         />
         <MembershipCard
-          title="Fee Level 1 - Regular"
-          value={formatRupiah(stats.regular?.fee ?? 0)}
+          title="Fee Terendah"
+          value={formatRupiah(stats.lowest?.fee ?? 0)}
           icon="military_tech"
           iconColor="text-blue-600"
           trend={{
-            value: stats.regular?.name || "Belum ada data",
+            value: stats.lowest?.name || "Belum ada data",
             color: "text-blue-600",
             icon: "info",
           }}
         />
         <MembershipCard
-          title="Fee Level 2 - Premium"
-          value={formatRupiah(stats.premium?.fee ?? 0)}
+          title="Fee Tertinggi"
+          value={formatRupiah(stats.highest?.fee ?? 0)}
           icon="workspace_premium"
           iconColor="text-purple-600"
           trend={{
-            value: stats.premium?.name || "Belum ada data",
+            value: stats.highest?.name || "Belum ada data",
             color: "text-purple-600",
             icon: "info",
           }}
