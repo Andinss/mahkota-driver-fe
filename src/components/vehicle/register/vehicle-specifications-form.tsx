@@ -366,27 +366,8 @@ export function VehicleSpecificationsForm({
           onInput={(e) => sanitizeInput(e, /[^A-Za-z0-9-]/g)}
         />
 
-        <CurrencyInput
-          id="costPrice"
-          name="costPrice"
-          label="Cost Price"
-          placeholder="0"
-          value={initialValues?.costPrice}
-          required
-          error={errors.costPrice}
-        />
-
-        <CurrencyInput
-          id="dailyRate"
-          name="dailyRate"
-          label="Daily Rate"
-          placeholder="0"
-          value={initialValues?.dailyRate}
-          required
-          error={errors.dailyRate}
-        />
-
-        <div className="flex flex-col gap-2 md:col-span-2">
+        {/* Device */}
+        <div className="flex flex-col gap-2">
           <label
             className="text-sm font-medium text-[#111418] dark:text-white"
             htmlFor="device"
@@ -430,6 +411,26 @@ export function VehicleSpecificationsForm({
             <p className="text-xs text-red-500">{errors.deviceName}</p>
           )}
         </div>
+
+        <CurrencyInput
+          id="costPrice"
+          name="costPrice"
+          label="Cost Price"
+          placeholder="0"
+          value={initialValues?.costPrice}
+          required
+          error={errors.costPrice}
+        />
+
+        <CurrencyInput
+          id="dailyRate"
+          name="dailyRate"
+          label="Daily Rate"
+          placeholder="0"
+          value={initialValues?.dailyRate}
+          required
+          error={errors.dailyRate}
+        />
       </form>
     </div>
   );

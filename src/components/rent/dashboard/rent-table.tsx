@@ -93,14 +93,14 @@ export const RentalTable = ({
         <table className="w-full text-left">
           <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-6 py-4">Transaction ID</th>
-              <th className="px-6 py-4">Driver Details</th>
-              <th className="px-6 py-4">Vehicle Info</th>
-              <th className="px-6 py-4">Rental Period</th>
-              <th className="px-6 py-4">Tipe Durasi</th>
-              <th className="px-6 py-4">Jenis Layanan</th>
-              <th className="px-6 py-4">Engine</th>
-              <th className="px-6 py-4 text-right">Aksi</th>
+              <th className="px-4 py-3">Transaction ID</th>
+              <th className="px-4 py-3">Driver</th>
+              <th className="px-4 py-3">Vehicle</th>
+              <th className="px-4 py-3">Period</th>
+              <th className="px-4 py-3">Durasi</th>
+              <th className="px-4 py-3">Layanan</th>
+              <th className="px-4 py-3">Engine</th>
+              <th className="px-4 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">

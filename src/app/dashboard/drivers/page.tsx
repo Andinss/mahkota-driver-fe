@@ -220,7 +220,7 @@ export default function DriverPage() {
     <div className="m-8">
       <PageHeader
         title={!hasReadAll && hasReadOwn ? "My Drivers" : "Driver List Overview"}
-        description={!hasReadAll && hasReadOwn ? "Manage your assigned drivers" : "Manage your drivers, track their performance, and monitor their status."}
+        description={!hasReadAll && hasReadOwn ? "Manage your assigned drivers" : "Kelola driver, pantau performa, dan monitor status mereka."}
         buttonText={canAccess(user?.permissions, "driver.create") ? "Add New Driver" : undefined}
         buttonHref={canAccess(user?.permissions, "driver.create") ? "/dashboard/drivers/register" : undefined}
       />

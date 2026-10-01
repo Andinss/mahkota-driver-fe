@@ -44,13 +44,16 @@ export const RentalTableRow = ({
 }: RentalTableRowProps) => {
   return (
     <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
-      <td className="px-6 py-4">
-        <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
+      {/* Transaction ID */}
+      <td className="px-4 py-3">
+        <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
           {rental.transactionId}
         </span>
       </td>
-      <td className="px-6 py-4">
-        <div className="flex items-center gap-3">
+
+      {/* Driver Details */}
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0">
             {rental.driver.avatar ? (
               <img
@@ -64,39 +67,49 @@ export const RentalTableRow = ({
               </div>
             )}
           </div>
-          <div>
-            <p className="font-semibold text-slate-900 dark:text-white">
+          <div className="min-w-0">
+            <p className="font-semibold text-slate-900 dark:text-white text-sm truncate max-w-[140px]">
               {rental.driver.name}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[140px]">
               {rental.driver.id}
             </p>
           </div>
         </div>
       </td>
-      <td className="px-6 py-4">
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          {rental.vehicle.id}
-        </p>
-        <p className="font-medium text-slate-900 dark:text-white">
-          {rental.vehicle.name}
-        </p>
+
+      {/* Vehicle Info */}
+      <td className="px-4 py-3">
+        <div className="min-w-0">
+          <p className="font-medium text-slate-900 dark:text-white text-sm truncate max-w-[140px]">
+            {rental.vehicle.name}
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-mono truncate max-w-[140px]">
+            {rental.vehicle.id}
+          </p>
+        </div>
       </td>
-      <td className="px-6 py-4">
-        <p className="text-slate-900 dark:text-white">
+
+      {/* Rental Period */}
+      <td className="px-4 py-3">
+        <p className="text-sm text-slate-900 dark:text-white whitespace-nowrap">
           {rental.rentalPeriod.start} - {rental.rentalPeriod.end}
-        </p>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          {rental.rentalPeriod.duration} Hari
+          <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">
+            ({rental.rentalPeriod.duration}h)
+          </span>
         </p>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 capitalize">
+
+      {/* Tipe Durasi */}
+      <td className="px-4 py-3 whitespace-nowrap">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 capitalize">
           {rental.rentalDuration || "-"}
         </span>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold capitalize ${
+
+      {/* Jenis Layanan */}
+      <td className="px-4 py-3 whitespace-nowrap">
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold capitalize ${
           rental.rentalService === "lepas kunci"
             ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
             : rental.rentalService === "pakai supir"
@@ -106,7 +119,9 @@ export const RentalTableRow = ({
           {rental.rentalService || "-"}
         </span>
       </td>
-      <td className="px-6 py-4">
+
+      {/* Engine */}
+      <td className="px-4 py-3 whitespace-nowrap">
         {rental.vehicleId ? (
           <div className="flex items-center gap-2">
             <EngineSwitch
@@ -129,7 +144,9 @@ export const RentalTableRow = ({
           <span className="text-sm text-slate-400 dark:text-slate-500">-</span>
         )}
       </td>
-      <td className="px-6 py-4 text-right">
+
+      {/* Aksi */}
+      <td className="px-4 py-3 text-right">
         <Dropdown
           trigger={
             <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
