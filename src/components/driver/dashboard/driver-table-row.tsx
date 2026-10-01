@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
+import { ActiveBadge } from "@/components/ui/active-badge";
 
 export interface Driver {
   id: string;
@@ -20,6 +21,24 @@ interface DriverTableRowProps {
   onDetailsClick?: (driver: Driver) => void;
 }
 
+/* Warna badge berdasarkan level membership */
+const membershipColorByLevel: Record<number, string> = {
+  1: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+  2: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400",
+  3: "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400",
+  4: "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400",
+  5: "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400",
+  6: "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400",
+  7: "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400",
+};
+
+const getMembershipColor = (level: number): string => {
+  return (
+    membershipColorByLevel[level] ||
+    "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+  );
+};
+
 export function DriverTableRow({
   driver,
   onDeleteClick,
@@ -30,7 +49,8 @@ export function DriverTableRow({
 
   return (
     <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
-      <td className="px-6 py-4">
+      {/* Driver: foto + nama + employee ID */}
+      <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 shrink-0 overflow-hidden">
             {driver.profilePhoto ? (
@@ -45,35 +65,40 @@ export function DriverTableRow({
               </div>
             )}
           </div>
-          <div>
-            <p className="font-bold text-slate-900 dark:text-white text-sm">
+          <div className="min-w-0">
+            <p className="font-bold text-slate-900 dark:text-white text-sm truncate max-w-[180px]">
               {driver.name}
+            </p>
+            <p className="text-xs text-slate-400 font-mono truncate max-w-[180px]">
+              {driver.employeeId}
             </p>
           </div>
         </div>
       </td>
-      <td className="px-6 py-4">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-          {driver.employeeId}
-        </span>
+
+      {/* Kontak: telepon + email */}
+      <td className="px-4 py-3">
+        <p className="text-sm text-slate-600 dark:text-slate-300 truncate max-w-[200px]">
+          {driver.phoneNumber || "-"}
+        </p>
+        <p className="text-xs text-slate-400 truncate max-w-[200px]">
+          {driver.email || "-"}
+        </p>
       </td>
-      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-        {driver.phoneNumber}
-      </td>
-      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-        {driver.email}
-      </td>
-      <td className="px-6 py-4">
+
+      {/* Membership */}
+      <td className="px-4 py-3">
         {driver.membership ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
-            <span className="material-symbols-outlined text-sm">card_membership</span>
-            {driver.membership.name} (Level {driver.membership.level})
+          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${getMembershipColor(driver.membership.level)}`}>
+            {driver.membership.name}
           </span>
         ) : (
           <span className="text-xs text-slate-400 dark:text-slate-500">-</span>
         )}
       </td>
-      <td className="px-6 py-4 text-sm">
+
+      {/* Koin */}
+      <td className="px-4 py-3 text-sm">
         <span
           className={`inline-flex items-center gap-1 font-semibold ${
             (driver.koin ?? 0) > 0
@@ -85,20 +110,14 @@ export function DriverTableRow({
           Rp {Number(driver.koin ?? 0).toLocaleString("id-ID")}
         </span>
       </td>
-      <td className="px-6 py-4">
-        {isActive ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            Active
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            Inactive
-          </span>
-        )}
+
+      {/* Status */}
+      <td className="px-5 py-4">
+        <ActiveBadge isActive={isActive} />
       </td>
-      <td className="px-6 py-4 text-right">
+
+      {/* Aksi */}
+      <td className="px-4 py-3 text-right">
         <Dropdown
           trigger={
             <button className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
