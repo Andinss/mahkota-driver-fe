@@ -59,6 +59,9 @@ export function PersonalDetailsForm({
   const [employeeId, setEmployeeId] = useState(initialValues?.employeeId || "");
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loadingMemberships, setLoadingMemberships] = useState(false);
+  const [membershipId, setMembershipId] = useState(
+    initialValues?.membershipId || "",
+  );
 
   /* Fetch list membership aktif */
   useEffect(() => {
@@ -81,8 +84,22 @@ export function PersonalDetailsForm({
       setFirstName(sanitizeNameInput(initialValues.firstName || ""));
       setLastName(sanitizeNameInput(initialValues.lastName || ""));
       setEmployeeId(initialValues.employeeId || "");
+      setMembershipId(initialValues.membershipId || "");
     }
-  }, [initialValues?.firstName, initialValues?.lastName, initialValues?.employeeId]);
+  }, [
+    initialValues?.firstName,
+    initialValues?.lastName,
+    initialValues?.employeeId,
+    initialValues?.membershipId,
+  ]);
+
+  const currentMembership =
+    memberships.find((m) => m.id === initialValues?.membershipId) || null;
+  const selectedMembership =
+    memberships.find((m) => m.id === membershipId) || null;
+
+  const rupiah = (value: number) =>
+    `Rp ${Number(value || 0).toLocaleString("id-ID")}`;
 
   const validateForm = (): boolean => {
     const formData = new FormData(formRef.current || undefined);
@@ -287,23 +304,99 @@ export function PersonalDetailsForm({
         />
 
         {/* Membership — NEW */}
-        <Select
-          id="membershipId"
-          name="membershipId"
-          label="Membership"
-          defaultValue={initialValues?.membershipId || ""}
-          error={errors.membershipId}
-          key={"membership-" + (initialValues?.membershipId || "")}
-        >
-          <option value="">
-            {loadingMemberships ? "Loading..." : "Select Membership (Optional)"}
-          </option>
-          {memberships.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name} — Rp {Number(m.fee).toLocaleString("id-ID")}
+        <div>
+          <Select
+            id="membershipId"
+            name="membershipId"
+            label="Membership"
+            value={membershipId}
+            onChange={(e) => setMembershipId(e.target.value)}
+            error={errors.membershipId}
+            key={"membership-" + (initialValues?.membershipId || "")}
+          >
+            <option value="">
+              {loadingMemberships ? "Loading..." : "Select Membership (Optional)"}
             </option>
-          ))}
-        </Select>
+            {memberships.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name} — Rp {Number(m.fee).toLocaleString("id-ID")}
+              </option>
+            ))}
+          </Select>
+
+          {selectedMembership &&
+            selectedMembership.id !== currentMembership?.id && (
+              <div
+                className={`mt-2 rounded-xl border p-3 flex items-start gap-2 ${
+                  !currentMembership
+                    ? "border-purple-100 dark:border-purple-900/50 bg-purple-50 dark:bg-purple-900/10"
+                    : selectedMembership.level > currentMembership.level
+                      ? "border-amber-100 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/10"
+                      : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
+                }`}
+              >
+                <span
+                  className={`material-symbols-outlined text-lg ${
+                    !currentMembership
+                      ? "text-purple-600 dark:text-purple-400"
+                      : selectedMembership.level > currentMembership.level
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-slate-500 dark:text-slate-400"
+                  }`}
+                >
+                  {!currentMembership
+                    ? "card_membership"
+                    : selectedMembership.level > currentMembership.level
+                      ? "upgrade"
+                      : "south"
+                }
+                </span>
+                <div>
+                  {!currentMembership ? (
+                    <>
+                      <p className="text-sm font-bold text-purple-700 dark:text-purple-300">
+                        Biaya membership: {rupiah(selectedMembership.fee)}
+                      </p>
+                      <p className="text-xs text-purple-600/80 dark:text-purple-300/80 mt-0.5">
+                        Fee penuh {selectedMembership.name} (Level{" "}
+                        {selectedMembership.level}) — driver belum punya
+                        membership.
+                      </p>
+                    </>
+                  ) : selectedMembership.level > currentMembership.level ? (
+                    <>
+                      <p className="text-sm font-bold text-amber-700 dark:text-amber-300">
+                        Biaya upgrade:{" "}
+                        {rupiah(
+                          Math.max(
+                            0,
+                            Number(selectedMembership.fee) -
+                              Number(currentMembership.fee),
+                          ),
+                        )}
+                      </p>
+                      <p className="text-xs text-amber-600/80 dark:text-amber-300/80 mt-0.5">
+                        {currentMembership.name} (Level {currentMembership.level}){" "}
+                        → {selectedMembership.name} (Level{" "}
+                        {selectedMembership.level}) — selisih fee membership.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                        Downgrade ke {selectedMembership.name} — tanpa biaya
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Level turun dari {currentMembership.name} (Level{" "}
+                        {currentMembership.level}) ke {selectedMembership.name}{" "}
+                        (Level {selectedMembership.level}) — tidak ada refund.
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+        </div>
       </form>
     </div>
   );

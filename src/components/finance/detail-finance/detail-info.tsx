@@ -130,7 +130,9 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
             <span className="text-sm font-bold text-slate-900 dark:text-white">Lunas</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-sm text-slate-500 dark:text-slate-400">Admin Fee (Join):</span>
+            <span className="text-sm text-slate-500 dark:text-slate-400">
+              {"Fee Membership:"}
+            </span>
             <span className={`text-sm font-bold ${(finance.fee_admin_join ?? 0) > 0 ? "text-slate-900 dark:text-white" : "text-slate-400"}`}>
               {formatCurrency(finance.fee_admin_join ?? 0)}
             </span>

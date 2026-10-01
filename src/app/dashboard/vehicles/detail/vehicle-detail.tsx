@@ -119,12 +119,15 @@ const VehicleDetail = () => {
     imageAlt: "",
   };
 
+  const membershipNames =
+    (vehicle?.memberships || []).map((m) => m.name).join(", ") || "-";
+
   const technicalSpecs = vehicle ? [
     { label: "Merk", value: vehicle.merk },
     { label: "Model", value: vehicle.model },
     { label: "Color", value: vehicle.color },
     { label: "Launching Year", value: vehicle.launching_year ? new Date(vehicle.launching_year).getFullYear().toString() : "-" },
-    { label: "Pricing Category", value: vehicle.pricing_category || "-" },
+    { label: "Kategori Membership", value: membershipNames },
   ] : [];
 
   const registrationDetails = vehicle ? [
@@ -139,7 +142,7 @@ const VehicleDetail = () => {
     baseRate: `Rp ${Number(vehicle.daily_rate || 0).toLocaleString("id-ID")}`,
     features: [
       { text: `Status: ${vehicle.status}` },
-      { text: `Category: ${vehicle.pricing_category || "-"}` },
+      { text: `Membership: ${membershipNames}` },
     ],
   } : { baseRate: "-", features: [] };
 

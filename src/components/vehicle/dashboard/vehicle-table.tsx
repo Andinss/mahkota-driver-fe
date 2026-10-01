@@ -9,7 +9,7 @@ const vehicleColumns: ExportColumn[] = [
   { id: "vendor", label: "Vendor", defaultChecked: true },
   { id: "device", label: "Device", defaultChecked: true },
   { id: "dailyRate", label: "Daily Rate", defaultChecked: true },
-  { id: "pricingCategory", label: "Pricing Category", defaultChecked: true },
+  { id: "membership", label: "Kategori Membership", defaultChecked: true },
   { id: "status", label: "Condition", defaultChecked: true },
   { id: "is_active", label: "Status", defaultChecked: true },
 ];
@@ -20,7 +20,7 @@ interface Vehicle {
   year: number;
   plate: string;
   rate: string;
-  pricingCategory: string;
+  membership: string;
   status: string;
   isActive?: boolean;
   image: string;

@@ -29,7 +29,7 @@ const paymentColumns: ExportColumn[] = [
   { id: "created_at", label: "Tanggal Dibuat", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
   { id: "payment_method", label: "Payment Method", defaultChecked: true },
-  { id: "fee_admin_join", label: "Admin Fee Join", defaultChecked: true },
+  { id: "fee_admin_join", label: "Fee Membership", defaultChecked: true },
 ];
 
 export function PaymentTable({

@@ -228,7 +228,11 @@ export default function DriverPaymentFormPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                    {isDaily ? "Info Tagihan Harian" : isAdminFee ? "Admin Fee" : "Info Tagihan"}
+                    {isDaily
+                      ? "Info Tagihan Harian"
+                      : isAdminFee
+                        ? "Fee Membership"
+                        : "Info Tagihan"}
                   </h3>
                   <p className="text-xs text-slate-400">
                     {isDaily ? daily?.reference_number : finance?.reference_number}
@@ -263,7 +267,9 @@ export default function DriverPaymentFormPage() {
                   )}
                   {isAdminFee && (
                     <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Admin Fee</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                        Fee Membership
+                      </p>
                       <p className="font-bold text-lg text-slate-900 dark:text-white">{formatIDR(displayTotal)}</p>
                     </div>
                   )}

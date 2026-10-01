@@ -333,14 +333,14 @@ export default function PaymentList() {
 
   const renderAdminFeeCards = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <PaymentCard title="Total Admin Fee" value={`Rp ${totalAdminFeeAmount.toLocaleString("id-ID")}`} icon="admin_panel_settings" iconColor="text-amber-500"
+      <PaymentCard title="Total Fee Membership" value={`Rp ${totalAdminFeeAmount.toLocaleString("id-ID")}`} icon="admin_panel_settings" iconColor="text-amber-500"
         trend={{ value: `${adminFees.length} total`, color: "text-amber-500", icon: "trending_up" }} />
       <PaymentCard title="Sudah Dibayar" value={`Rp ${adminFees.filter((f) => f.status === "paid").reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0).toLocaleString("id-ID")}`} icon="check_circle" iconColor="text-emerald-500"
         trend={{ value: `${paidAdminFeeCount} dibayar`, color: "text-emerald-500", icon: "trending_up" }} />
       <PaymentCard title="Belum Dibayar" value={`Rp ${adminFees.filter((f) => f.status !== "paid").reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0).toLocaleString("id-ID")}`} icon="schedule" iconColor="text-red-500"
         trend={{ value: `${adminFees.length - paidAdminFeeCount} belum dibayar`, color: "text-red-500", icon: "info" }} />
-      <PaymentCard title="Premium (Rp 700K)" value={String(adminFees.filter((f) => (Number(f.fee_admin_join) || 0) >= 700000).length)} icon="star" iconColor="text-violet-500"
-        trend={{ value: `Reguler: ${adminFees.filter((f) => (Number(f.fee_admin_join) || 0) > 0 && (Number(f.fee_admin_join) || 0) < 700000).length}`, color: "text-violet-500", icon: "info" }} />
+      <PaymentCard title="Premium (Rp 700K)" value={String(adminFees.filter((f) => f.fee_kind !== "membership_fee" && (Number(f.fee_admin_join) || 0) >= 700000).length)} icon="star" iconColor="text-violet-500"
+        trend={{ value: `Reguler: ${adminFees.filter((f) => f.fee_kind !== "membership_fee" && (Number(f.fee_admin_join) || 0) > 0 && (Number(f.fee_admin_join) || 0) < 700000).length} · Fee Membership: ${adminFees.filter((f) => f.fee_kind === "membership_fee").length} (Rp ${adminFees.filter((f) => f.fee_kind === "membership_fee").reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0).toLocaleString("id-ID")})`, color: "text-violet-500", icon: "info" }} />
     </div>
   );
 
