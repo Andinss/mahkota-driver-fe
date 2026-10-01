@@ -7,6 +7,7 @@ type Option = {
   value: string;
   image?: string;
   badges?: string[];
+  search?: string;
 };
 
 interface SelectSearchProps {
@@ -71,7 +72,9 @@ export const SelectSearch = ({
   const filtered =
     query.trim() !== ""
       ? options.filter((item) =>
-          (item.label || "").toLowerCase().includes(query.toLowerCase()),
+          `${item.label} ${item.search ?? ""}`
+            .toLowerCase()
+            .includes(query.toLowerCase()),
         )
       : options;
 

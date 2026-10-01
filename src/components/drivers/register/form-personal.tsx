@@ -358,9 +358,8 @@ export function PersonalDetailsForm({
                         Biaya membership: {rupiah(selectedMembership.fee)}
                       </p>
                       <p className="text-xs text-purple-600/80 dark:text-purple-300/80 mt-0.5">
-                        Fee penuh {selectedMembership.name} (Level{" "}
-                        {selectedMembership.level}) — driver belum punya
-                        membership.
+                        Fee penuh {selectedMembership.name} — driver belum
+                        punya membership.
                       </p>
                     </>
                   ) : selectedMembership.level > currentMembership.level ? (
@@ -376,9 +375,8 @@ export function PersonalDetailsForm({
                         )}
                       </p>
                       <p className="text-xs text-amber-600/80 dark:text-amber-300/80 mt-0.5">
-                        {currentMembership.name} (Level {currentMembership.level}){" "}
-                        → {selectedMembership.name} (Level{" "}
-                        {selectedMembership.level}) — selisih fee membership.
+                        {currentMembership.name} → {selectedMembership.name} —
+                        selisih fee membership.
                       </p>
                     </>
                   ) : (
@@ -387,9 +385,8 @@ export function PersonalDetailsForm({
                         Downgrade ke {selectedMembership.name} — tanpa biaya
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        Level turun dari {currentMembership.name} (Level{" "}
-                        {currentMembership.level}) ke {selectedMembership.name}{" "}
-                        (Level {selectedMembership.level}) — tidak ada refund.
+                        Downgrade dari {currentMembership.name} ke{" "}
+                        {selectedMembership.name} — tidak ada refund.
                       </p>
                     </>
                   )}

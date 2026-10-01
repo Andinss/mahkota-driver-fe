@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
-import { LevelBadge, MembershipStatusBadge } from "./badges";
+import { MembershipStatusBadge } from "./badges";
 import { formatRupiah } from "@/lib/utils/format";
 import type { Membership } from "@/lib/types/membership";
 
@@ -20,19 +20,11 @@ export const MembershipTableRow = ({
   return (
     <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-4">
-        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-sm">
-          {membership.level}
-        </span>
-      </td>
-      <td className="px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="font-bold text-slate-900 dark:text-white">
-                {membership.name}
-              </p>
-              <LevelBadge level={membership.level} name={`Level ${membership.level}`} size="sm" />
-            </div>
+            <p className="font-bold text-slate-900 dark:text-white">
+              {membership.name}
+            </p>
             <p className="text-xs text-slate-400 truncate max-w-xs">
               {membership.description || "Tidak ada deskripsi"}
             </p>

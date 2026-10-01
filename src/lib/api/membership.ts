@@ -4,7 +4,6 @@ import type { Membership } from "../types/membership";
 
 export interface CreateMembershipPayload {
   name: string;
-  level: number;
   fee: number;
   description?: string;
   benefits?: string[];
@@ -13,7 +12,6 @@ export interface CreateMembershipPayload {
 
 export interface UpdateMembershipPayload {
   name?: string;
-  level?: number;
   fee?: number;
   description?: string;
   benefits?: string[];
