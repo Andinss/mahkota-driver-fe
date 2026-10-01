@@ -34,6 +34,38 @@ interface RentalTableRowProps {
   onEngineChanged?: (vehicleId: string, engineStatus: "on" | "off") => void;
 }
 
+/* Warna badge per tipe durasi */
+const durationColor: Record<string, string> = {
+  harian: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+  mingguan: "bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400",
+  bulanan: "bg-violet-50 text-violet-600 dark:bg-violet-900/20 dark:text-violet-400",
+  tahunan: "bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400",
+};
+
+const getDurationColor = (duration?: string): string => {
+  if (!duration)
+    return "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400";
+  return (
+    durationColor[duration.toLowerCase()] ||
+    "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
+  );
+};
+
+/* Warna badge per jenis layanan */
+const serviceColor: Record<string, string> = {
+  "lepas kunci": "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+  "pakai supir": "bg-violet-50 text-violet-600 dark:bg-violet-900/20 dark:text-violet-400",
+};
+
+const getServiceColor = (service?: string): string => {
+  if (!service)
+    return "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400";
+  return (
+    serviceColor[service.toLowerCase()] ||
+    "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+  );
+};
+
 export const RentalTableRow = ({
   rental,
   onEdit,
@@ -102,20 +134,22 @@ export const RentalTableRow = ({
 
       {/* Tipe Durasi */}
       <td className="px-4 py-3 whitespace-nowrap">
-        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 capitalize">
+        <span
+          className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold capitalize ${getDurationColor(
+            rental.rentalDuration,
+          )}`}
+        >
           {rental.rentalDuration || "-"}
         </span>
       </td>
 
       {/* Jenis Layanan */}
       <td className="px-4 py-3 whitespace-nowrap">
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold capitalize ${
-          rental.rentalService === "lepas kunci"
-            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-            : rental.rentalService === "pakai supir"
-            ? "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
-            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-        }`}>
+        <span
+          className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold capitalize ${getServiceColor(
+            rental.rentalService,
+          )}`}
+        >
           {rental.rentalService || "-"}
         </span>
       </td>
@@ -132,11 +166,13 @@ export const RentalTableRow = ({
                 onEngineChanged?.(rental.vehicleId!, next)
               }
             />
-            <span className={`text-xs font-bold ${
-              rental.vehicleEngineStatus === "on"
-                ? "text-green-600 dark:text-green-400"
-                : "text-slate-400 dark:text-slate-500"
-            }`}>
+            <span
+              className={`text-xs font-bold ${
+                rental.vehicleEngineStatus === "on"
+                  ? "text-green-600 dark:text-green-400"
+                  : "text-slate-400 dark:text-slate-500"
+              }`}
+            >
               {rental.vehicleEngineStatus === "on" ? "ON" : "OFF"}
             </span>
           </div>
