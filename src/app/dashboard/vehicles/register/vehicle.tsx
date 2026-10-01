@@ -7,13 +7,16 @@ import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import { VehicleMediaUpload } from "@/components/vehicle/register/vehicle-media-upload";
 import { StatusSelect } from "@/components/vehicle/register/status-select";
 import { VendorSelect } from "@/components/vehicle/register/vendor-select";
+import { MembershipSelect } from "@/components/vehicle/register/membership-select";
 import type { VehicleStatus } from "@/lib/types/vehicle";
 import {
   VehicleSpecificationsForm,
   VehicleFormData,
 } from "@/components/vehicle/register/vehicle-specifications-form";
 import { vehicleApi } from "@/lib/api/vehicle";
+import { membershipApi } from "@/lib/api/membership";
 import type { VehicleItem } from "@/lib/types/vehicle";
+import type { Membership } from "@/lib/types/membership";
 
 export default function VehicleRegisterPage() {
   const router = useRouter();
@@ -28,7 +31,28 @@ export default function VehicleRegisterPage() {
   const [initialValues, setInitialValues] = useState<Partial<VehicleFormData> | undefined>();
   const [initialImageUrls, setInitialImageUrls] = useState<string[] | null | undefined>();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [loadingMemberships, setLoadingMemberships] = useState(true);
+  const [selectedMembershipIds, setSelectedMembershipIds] = useState<string[]>([]);
 
+  useEffect(() => {
+    let mounted = true;
+    membershipApi
+      .getList()
+      .then((res) => {
+        if (!mounted) return;
+        setMemberships(Array.isArray(res?.data) ? res.data : []);
+      })
+      .catch((err) => {
+        console.error("Failed to load memberships:", err);
+      })
+      .finally(() => {
+        if (mounted) setLoadingMemberships(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (plateParam) {
@@ -42,6 +66,7 @@ export default function VehicleRegisterPage() {
           setEditingId(vehicle.id);
           setStatus(vehicle.status);
           setVendorId(vehicle.vendor_id || "");
+          setSelectedMembershipIds((vehicle.memberships || []).map((m) => m.id));
           const year = vehicle.launching_year
             ? new Date(vehicle.launching_year).getFullYear().toString()
             : "";
@@ -54,7 +79,6 @@ export default function VehicleRegisterPage() {
             vin: vehicle.vin_number,
             engineNumber: vehicle.engine_number,
             dailyRate: String(vehicle.daily_rate),
-            membershipIds: (vehicle.memberships || []).map((m) => m.id),
             imei: vehicle.imei,
             deviceName: vehicle.device_name,
           });
@@ -84,10 +108,16 @@ export default function VehicleRegisterPage() {
       setEditingId(null);
       setInitialValues(undefined);
       setInitialImageUrls(null);
+      setSelectedMembershipIds([]);
     }
   }, [plateParam]);
 
   const handleSubmit = async (data: VehicleFormData) => {
+    if (selectedMembershipIds.length === 0) {
+      toastError("Kategori Membership wajib dipilih.");
+      return;
+    }
+
     const actionLabel = mode === "add" ? "register this new vehicle" : "update this vehicle";
     const actionTitle = mode === "add" ? "Confirm Registration" : "Confirm Update";
     const confirmLabel = mode === "add" ? "Yes, Complete Registration" : "Yes, Update Vehicle";
@@ -109,7 +139,7 @@ export default function VehicleRegisterPage() {
         formData.append("vin_number", data.vin);
         formData.append("engine_number", data.engineNumber);
         formData.append("daily_rate", data.dailyRate.replace(/\./g, ""));
-        (data.membershipIds || []).forEach((id) => {
+        selectedMembershipIds.forEach((id) => {
           formData.append("membership_ids", id);
         });
         formData.append("status", status);
@@ -181,6 +211,13 @@ export default function VehicleRegisterPage() {
             mode={mode}
             initialValues={initialValues}
             onSubmit={handleSubmit}
+          />
+
+          <MembershipSelect
+            memberships={memberships}
+            selectedIds={selectedMembershipIds}
+            onChange={setSelectedMembershipIds}
+            loading={loadingMemberships}
           />
 
           <StatusSelect value={status} onChange={setStatus} />
