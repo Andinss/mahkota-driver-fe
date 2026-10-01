@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import { Input } from "@/components/ui/input";
-import { CurrencyInput } from "@/components/ui/currency-input";
 import { vendorApi } from "@/lib/api/vendor-vehicle";
 import { renameFile } from "@/lib/utils/file";
 import { HttpClientError } from "@/lib/api-http";
@@ -17,8 +16,6 @@ interface FormErrors {
   name?: string;
   ownerName?: string;
   logo?: string;
-  hargaPokok?: string;
-  hargaJual?: string;
 }
 
 const imageBase = (
@@ -47,7 +44,10 @@ function VendorLogoUpload({
     }
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
     const mime = file.type.split("/")[1]?.toLowerCase() || "";
-    if (!["jpg", "jpeg", "png", "webp", "svg"].includes(ext) && !["jpg", "jpeg", "png", "webp", "svg+xml"].includes(mime)) {
+    if (
+      !["jpg", "jpeg", "png", "webp", "svg"].includes(ext) &&
+      !["jpg", "jpeg", "png", "webp", "svg+xml"].includes(mime)
+    ) {
       toastError("Invalid file format. Accepted: JPG, PNG, WEBP, SVG");
       return false;
     }
@@ -78,7 +78,11 @@ function VendorLogoUpload({
       <label className="text-sm font-medium text-[#111418] dark:text-white">
         Logo Vendor {hasSubmitted && <span className="text-red-500">*</span>}
       </label>
-      <div className="relative" onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
+      <div
+        className="relative"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+      >
         <div
           className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] px-6 py-10 hover:border-primary transition-colors cursor-pointer ${error ? "border-red-500" : ""}`}
           onClick={() => fileInputRef.current?.click()}
@@ -86,12 +90,19 @@ function VendorLogoUpload({
           {preview ? (
             <div className="flex flex-col items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={preview} alt="Logo preview" className="w-24 h-24 rounded-2xl object-cover" />
+              <img
+                src={preview}
+                alt="Logo preview"
+                className="w-24 h-24 rounded-2xl object-cover"
+              />
               <div className="flex gap-2">
                 <button
                   type="button"
                   className="px-4 py-2 bg-[#f0f2f4] dark:bg-[#2a3845] text-[#111418] dark:text-white rounded-lg text-sm font-bold hover:bg-gray-200 dark:hover:bg-[#3a4855] transition-colors"
-                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
                 >
                   Change Logo
                 </button>
@@ -112,16 +123,25 @@ function VendorLogoUpload({
           ) : (
             <>
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-3xl">add_photo_alternate</span>
+                <span className="material-symbols-outlined text-primary text-3xl">
+                  add_photo_alternate
+                </span>
               </div>
               <div className="text-center">
-                <p className="text-[#111418] dark:text-white font-bold">Upload Logo Vendor</p>
-                <p className="text-[#617589] text-sm mt-1">Click to browse or drag & drop</p>
+                <p className="text-[#111418] dark:text-white font-bold">
+                  Upload Logo Vendor
+                </p>
+                <p className="text-[#617589] text-sm mt-1">
+                  Click to browse or drag & drop
+                </p>
               </div>
               <button
                 type="button"
                 className="mt-1 px-4 py-2 bg-[#f0f2f4] dark:bg-[#2a3845] text-[#111418] dark:text-white rounded-lg text-sm font-bold hover:bg-gray-200 dark:hover:bg-[#3a4855] transition-colors"
-                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
               >
                 Select Logo
               </button>
@@ -153,10 +173,10 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [name, setName] = useState("");
   const [ownerName, setOwnerName] = useState("");
-  const [hargaPokok, setHargaPokok] = useState("");
-  const [hargaJual, setHargaJual] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [initialLogoUrl, setInitialLogoUrl] = useState<string | undefined>(undefined);
+  const [initialLogoUrl, setInitialLogoUrl] = useState<string | undefined>(
+    undefined,
+  );
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -171,16 +191,6 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
           const vendor = res.data;
           setName(vendor.name || "");
           setOwnerName(vendor.owner_name || "");
-          setHargaPokok(
-            vendor.harga_pokok !== undefined && vendor.harga_pokok !== null
-              ? String(vendor.harga_pokok)
-              : "",
-          );
-          setHargaJual(
-            vendor.harga_jual !== undefined && vendor.harga_jual !== null
-              ? String(vendor.harga_jual)
-              : "",
-          );
           const rawLogo = vendor.logo || "";
           setInitialLogoUrl(
             rawLogo
@@ -219,14 +229,6 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
       newErrors.logo = "Logo vendor wajib diunggah";
       isValid = false;
     }
-    if (hargaPokok && !hargaJual) {
-      newErrors.hargaJual = "Harga jual wajib diisi jika harga pokok diisi";
-      isValid = false;
-    }
-    if (hargaJual && !hargaPokok) {
-      newErrors.hargaPokok = "Harga pokok wajib diisi jika harga jual diisi";
-      isValid = false;
-    }
 
     setErrors(newErrors);
     return isValid;
@@ -256,8 +258,6 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
       const fd = new FormData();
       fd.append("name", name.trim());
       fd.append("owner_name", ownerName.trim());
-      if (hargaPokok) fd.append("harga_pokok", hargaPokok.replace(/\./g, ""));
-      if (hargaJual) fd.append("harga_jual", hargaJual.replace(/\./g, ""));
       if (logoFile) fd.append("logo", renameFile(logoFile, "vendor_logo"));
 
       if (mode === "edit" && id) {
@@ -280,8 +280,6 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
   const handleReset = () => {
     setName("");
     setOwnerName("");
-    setHargaPokok("");
-    setHargaJual("");
     setLogoFile(null);
     setInitialLogoUrl(undefined);
     setHasSubmitted(false);
@@ -309,11 +307,15 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
               onClick={handleBack}
               className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
             >
-              <span className="material-symbols-outlined text-slate-500">arrow_back</span>
+              <span className="material-symbols-outlined text-slate-500">
+                arrow_back
+              </span>
             </button>
             <div>
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                {mode === "add" ? "Tambah Vendor Vehicle Baru" : "Edit Vendor Vehicle"}
+                {mode === "add"
+                  ? "Tambah Vendor Vehicle Baru"
+                  : "Edit Vendor Vehicle"}
               </h1>
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 {mode === "add"
@@ -328,11 +330,17 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                <span className="material-symbols-outlined text-blue-500 text-xl">storefront</span>
+                <span className="material-symbols-outlined text-blue-500 text-xl">
+                  storefront
+                </span>
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white text-base">Informasi Vendor</h3>
-                <p className="text-xs text-slate-400">Lengkapi identitas vendor vehicle</p>
+                <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                  Informasi Vendor
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Lengkapi identitas vendor vehicle
+                </p>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -344,7 +352,8 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
-                  if (hasSubmitted && errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+                  if (hasSubmitted && errors.name)
+                    setErrors((prev) => ({ ...prev, name: undefined }));
                 }}
                 error={hasSubmitted ? errors.name : undefined}
               />
@@ -356,7 +365,8 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
                 value={ownerName}
                 onChange={(e) => {
                   setOwnerName(e.target.value);
-                  if (hasSubmitted && errors.ownerName) setErrors((prev) => ({ ...prev, ownerName: undefined }));
+                  if (hasSubmitted && errors.ownerName)
+                    setErrors((prev) => ({ ...prev, ownerName: undefined }));
                 }}
                 error={hasSubmitted ? errors.ownerName : undefined}
               />
@@ -365,48 +375,18 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
 
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                <span className="material-symbols-outlined text-amber-500 text-xl">payments</span>
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-800 dark:text-white text-base">Harga Vendor</h3>
-                <p className="text-xs text-slate-400">Tentukan harga pokok dan harga jual vendor</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <CurrencyInput
-                label="Harga Pokok"
-                placeholder="0"
-                id="vendor-harga-pokok"
-                value={hargaPokok}
-                onChange={(value) => {
-                  setHargaPokok(value);
-                  if (hasSubmitted && errors.hargaPokok) setErrors((prev) => ({ ...prev, hargaPokok: undefined }));
-                }}
-                error={hasSubmitted ? errors.hargaPokok : undefined}
-              />
-              <CurrencyInput
-                label="Harga Jual"
-                placeholder="0"
-                id="vendor-harga-jual"
-                value={hargaJual}
-                onChange={(value) => {
-                  setHargaJual(value);
-                  if (hasSubmitted && errors.hargaJual) setErrors((prev) => ({ ...prev, hargaJual: undefined }));
-                }}
-                error={hasSubmitted ? errors.hargaJual : undefined}
-              />
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-            <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                <span className="material-symbols-outlined text-emerald-500 text-xl">image</span>
+                <span className="material-symbols-outlined text-emerald-500 text-xl">
+                  image
+                </span>
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white text-base">Logo Vendor</h3>
-                <p className="text-xs text-slate-400">Unggah logo resmi vendor</p>
+                <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                  Logo Vendor
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Unggah logo resmi vendor
+                </p>
               </div>
             </div>
             <VendorLogoUpload
@@ -440,7 +420,11 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
               <span className="material-symbols-outlined text-xl">
                 {isSubmitting ? "hourglass_empty" : "check_circle"}
               </span>
-              {isSubmitting ? "Menyimpan..." : mode === "add" ? "Simpan Vendor" : "Update Vendor"}
+              {isSubmitting
+                ? "Menyimpan..."
+                : mode === "add"
+                  ? "Simpan Vendor"
+                  : "Update Vendor"}
             </button>
           </div>
         </div>

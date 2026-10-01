@@ -6,6 +6,7 @@ type Option = {
   label: string;
   value: string;
   image?: string;
+  badges?: string[];
 };
 
 interface SelectSearchProps {
@@ -198,6 +199,19 @@ export const SelectSearch = ({
                 )}
 
                 <span key="label" className="text-sm">{item.label}</span>
+
+                {item.badges && item.badges.length > 0 && (
+                  <span key="badges" className="flex items-center gap-1 ml-auto shrink-0">
+                    {item.badges.map((b) => (
+                      <span
+                        key={b}
+                        className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[10px] font-semibold whitespace-nowrap"
+                      >
+                        {b}
+                      </span>
+                    ))}
+                  </span>
+                )}
               </div>
             ))
           ) : (

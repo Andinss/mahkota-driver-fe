@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { useAuth } from "@/lib/auth-context";
@@ -47,6 +47,7 @@ interface SelectOption {
   value: string;
   image?: string;
   dailyRate?: number;
+  badges?: string[];
 }
 
 const NewRentPage = () => {
@@ -79,8 +80,8 @@ const NewRentPage = () => {
   const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
   const [generalError, setGeneralError] = useState<string>("");
 
-  const [driverOptions, setDriverOptions] = useState<SelectOption[]>([]);
-  const [vehicleOptions, setVehicleOptions] = useState<SelectOption[]>([]);
+  const [allDrivers, setAllDrivers] = useState<DriverItem[]>([]);
+  const [allVehicles, setAllVehicles] = useState<VehicleItem[]>([]);
 
   const { user } = useAuth();
   const isSupervisor = user?.role?.code === "SUPERVISOR";
@@ -93,33 +94,43 @@ const NewRentPage = () => {
     const fetchDrivers = isSupervisor ? supervisorApi.getList() : driverApi.getList();
     fetchDrivers.then((res: any) => {
       const items = Array.isArray(res.data) ? res.data : [];
-      const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
-      setDriverOptions(
-        items.map((d: DriverItem) => {
-          const photo = d.profile_photo || "";
-          const image = photo ? (photo.startsWith("http") ? photo : `${imageBase}/${photo.replace(/^\//, "")}`) : "";
-          return {
-            label: `${d.first_name} ${d.last_name}`,
-            value: d.id,
-            image,
-          };
-        }),
-      );
+      setAllDrivers(items);
     }).catch(() => {});
 
     vehicleApi.getList().then((res) => {
       const items = Array.isArray(res.data) ? res.data : [];
-      setVehicleOptions(
-        items
-          .filter((v: VehicleItem) => v.status === "Available")
-          .map((v: VehicleItem) => ({
-            label: `${v.license_plate} - ${v.merk} ${v.model}`,
-            value: v.id,
-            dailyRate: Number(v.daily_rate) || 0,
-          })),
-      );
+      setAllVehicles(items.filter((v: VehicleItem) => v.status === "Available"));
     }).catch(() => {});
   }, [isSupervisor]);
+
+  const driverOptions = useMemo<SelectOption[]>(() => {
+    const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+    return allDrivers.map((d) => {
+      const photo = d.profile_photo || "";
+      const image = photo ? (photo.startsWith("http") ? photo : `${imageBase}/${photo.replace(/^\//, "")}`) : "";
+      return {
+        label: `${d.first_name} ${d.last_name}`,
+        value: d.id,
+        image,
+        badges: d.membership?.name ? [d.membership.name] : [],
+      };
+    });
+  }, [allDrivers]);
+
+  const vehicleOptions = useMemo<SelectOption[]>(() => {
+    // Kendaraan hanya tampil setelah driver dipilih, mengikuti tipe membership driver
+    const driver = allDrivers.find((d) => d.id === rentalData.driverId);
+    const membershipId = driver?.membership?.id || driver?.membership_id;
+    if (!rentalData.driverId || !membershipId) return [];
+    return allVehicles
+      .filter((v) => (v.memberships ?? []).some((m) => m.id === membershipId))
+      .map((v) => ({
+        label: `${v.license_plate} - ${v.merk} ${v.model}`,
+        value: v.id,
+        dailyRate: Number(v.daily_rate) || 0,
+        badges: (v.memberships ?? []).map((m) => m.name),
+      }));
+  }, [allDrivers, allVehicles, rentalData.driverId]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
