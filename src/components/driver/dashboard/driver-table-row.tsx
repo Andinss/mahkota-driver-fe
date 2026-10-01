@@ -10,6 +10,7 @@ export interface Driver {
   email: string;
   koin?: number;
   isActive?: boolean;
+  membership?: { name: string; level: number } | null;
 }
 
 interface DriverTableRowProps {
@@ -61,6 +62,16 @@ export function DriverTableRow({
       </td>
       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
         {driver.email}
+      </td>
+      <td className="px-6 py-4">
+        {driver.membership ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
+            <span className="material-symbols-outlined text-sm">card_membership</span>
+            {driver.membership.name} (Level {driver.membership.level})
+          </span>
+        ) : (
+          <span className="text-xs text-slate-400 dark:text-slate-500">-</span>
+        )}
       </td>
       <td className="px-6 py-4 text-sm">
         <span

@@ -20,6 +20,12 @@ export interface VehicleItem {
   imei?: string;
   device_name?: string;
   vendor?: { id: string; name: string; owner_name: string } | null;
+  memberships?: {
+    id: string;
+    name: string;
+    level: number;
+    fee?: string | number;
+  }[];
   created_at?: string;
   updated_at?: string;
 }

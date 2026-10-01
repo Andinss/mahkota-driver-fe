@@ -21,7 +21,7 @@ interface VehicleDisplay {
   year: number;
   plate: string;
   rate: string;
-  pricingCategory: string;
+  membership: string;
   status: VehicleStatus;
   isActive?: boolean;
   image: string;
@@ -83,7 +83,7 @@ export default function DashboardVehiclePage() {
           year,
           plate: item.license_plate,
           rate: `Rp ${Number(item.daily_rate || 0).toLocaleString("id-ID")}`,
-          pricingCategory: item.pricing_category || "Reguler",
+          membership: (item.memberships || []).map((m) => m.name).join(", "),
           status: item.status || "Available",
           isActive: item.is_active !== false,
           image,

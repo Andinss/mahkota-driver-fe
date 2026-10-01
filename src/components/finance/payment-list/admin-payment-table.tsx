@@ -31,7 +31,7 @@ export const AdminPaymentTable = ({ payments }: AdminPaymentTableProps) => {
     return (
       <div className="p-8 text-center text-slate-500 dark:text-slate-400">
         <span className="material-symbols-outlined text-4xl mb-2 block">admin_panel_settings</span>
-        <p>Belum ada admin fee</p>
+        <p>Belum ada fee membership</p>
       </div>
     );
   }
@@ -44,7 +44,7 @@ export const AdminPaymentTable = ({ payments }: AdminPaymentTableProps) => {
             <th className="px-6 py-4">No. Referensi</th>
             <th className="px-6 py-4">Driver</th>
             <th className="px-6 py-4">Kendaraan</th>
-            <th className="px-6 py-4">Admin Fee</th>
+            <th className="px-6 py-4">Fee Membership</th>
             <th className="px-6 py-4">Tanggal Dibuat</th>
             <th className="px-6 py-4">Tanggal Bayar</th>
             <th className="px-6 py-4">Status</th>

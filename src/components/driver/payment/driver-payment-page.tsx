@@ -128,8 +128,12 @@ export function DriverPaymentPage() {
                         <span className="material-symbols-outlined text-amber-500 text-xl">admin_panel_settings</span>
                       </div>
                       <div>
-                        <h2 className="font-bold text-slate-800 dark:text-white text-base">Admin Fee</h2>
-                        <p className="text-xs text-slate-400">Biaya pendaftaran satu kali</p>
+                        <h2 className="font-bold text-slate-800 dark:text-white text-base">
+                          Fee Membership
+                        </h2>
+                        <p className="text-xs text-slate-400">
+                          Biaya membership driver
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -154,7 +158,7 @@ export function DriverPaymentPage() {
                         onClick={handlePayAdminFee}
                         className="mt-4 w-full px-4 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl transition-all text-sm"
                       >
-                        Bayar Admin Fee Sekarang
+                        Bayar Fee Membership Sekarang
                       </button>
                     )}
                   </div>
@@ -166,7 +170,7 @@ export function DriverPaymentPage() {
                 <div className="bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm p-8 text-center">
                   <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 mb-4 block">receipt_long</span>
                   <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">Belum Ada Tagihan</h3>
-                  <p className="text-sm text-slate-400 dark:text-slate-500">Tagihan akan muncul setelah rental dibuat.</p>
+                  <p className="text-sm text-slate-400 dark:text-slate-500">Tagihan akan muncul setelah membership dipilih.</p>
                 </div>
               )}
 

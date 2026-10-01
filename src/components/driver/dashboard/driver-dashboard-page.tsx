@@ -256,10 +256,10 @@ export function DriverDashboardPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-amber-800 dark:text-amber-200 text-sm">
-                    Admin Fee Belum Dibayar
+                    Fee Membership Belum Dibayar
                   </h3>
                   <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                    Anda harus membayar Admin Fee sebesar {formatIDR(adminFee!.fee_admin_join || 0)} terlebih dahulu sebelum tagihan harian muncul.
+                    Anda harus membayar Fee Membership sebesar {formatIDR(adminFee!.fee_admin_join || 0)} terlebih dahulu sebelum tagihan harian muncul.
                   </p>
                   <a
                     href="/dashboard/driver/payment"

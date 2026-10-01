@@ -63,6 +63,7 @@ export interface FinanceItem {
   payment_method: "cash" | "transfer" | "e-wallet" | "saldo";
   amount_received: number;
   fee_admin_join: number;
+  fee_kind?: "admin_join" | "membership_fee";
   paid_amount: number;
   remaining_amount: number;
   payments_count?: number;
@@ -148,6 +149,7 @@ export interface DriverFinanceSummary {
     reference_number: string;
     payment_date: string;
     fee_admin_join: number;
+    fee_kind?: "admin_join" | "membership_fee";
     paid_amount: number;
     pending_amount: number;
     remaining_amount: number;

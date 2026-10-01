@@ -54,7 +54,7 @@ export default function VehicleRegisterPage() {
             vin: vehicle.vin_number,
             engineNumber: vehicle.engine_number,
             dailyRate: String(vehicle.daily_rate),
-            pricingCategory: vehicle.pricing_category,
+            membershipIds: (vehicle.memberships || []).map((m) => m.id),
             imei: vehicle.imei,
             deviceName: vehicle.device_name,
           });
@@ -109,7 +109,9 @@ export default function VehicleRegisterPage() {
         formData.append("vin_number", data.vin);
         formData.append("engine_number", data.engineNumber);
         formData.append("daily_rate", data.dailyRate.replace(/\./g, ""));
-        formData.append("pricing_category", data.pricingCategory);
+        (data.membershipIds || []).forEach((id) => {
+          formData.append("membership_ids", id);
+        });
         formData.append("status", status);
         formData.append("imei", data.imei);
         formData.append("device_name", data.deviceName);

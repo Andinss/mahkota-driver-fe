@@ -86,6 +86,12 @@ export default function DriverPage() {
           email: item.email || "",
           koin: item.koin ? Number(item.koin.balance) : 0,
           isActive: item.is_active !== false,
+          membership: item.membership
+            ? {
+                name: item.membership.name,
+                level: Number(item.membership.level),
+              }
+            : null,
         };
       });
       setDrivers(mapped);

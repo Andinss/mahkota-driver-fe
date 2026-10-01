@@ -8,7 +8,7 @@ interface Vehicle {
   year: number;
   plate: string;
   rate: string;
-  pricingCategory: string;
+  membership: string;
   status: string;
   isActive?: boolean;
   image: string;
@@ -63,7 +63,7 @@ export const VehicleTableRow = ({
         {vehicle.deviceName || "-"}
       </td>
       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
-        {vehicle.pricingCategory}
+        {vehicle.membership || "-"}
       </td>
       <td className="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
         {vehicle.rate}

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Select } from "@/components/ui/select";
 import { vehicleApi } from "@/lib/api/vehicle";
+import { membershipApi } from "@/lib/api/membership";
+import type { Membership } from "@/lib/types/membership";
 
 export interface VehicleFormData {
   make: string;
@@ -15,7 +17,7 @@ export interface VehicleFormData {
   vin: string;
   engineNumber: string;
   dailyRate: string;
-  pricingCategory: string;
+  membershipIds: string[];
   imei: string;
   deviceName: string;
 }
@@ -31,7 +33,6 @@ interface FormErrors {
   vin?: string;
   engineNumber?: string;
   dailyRate?: string;
-  pricingCategory?: string;
   imei?: string;
   deviceName?: string;
 }
@@ -62,7 +63,37 @@ export function VehicleSpecificationsForm({
   const [usedImeis, setUsedImeis] = useState<Set<string>>(new Set());
   const [isLoadingDevices, setIsLoadingDevices] = useState(true);
   const [pickedDevice, setPickedDevice] = useState<string | null>(null);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [loadingMemberships, setLoadingMemberships] = useState(true);
+  const [selectedMembershipIds, setSelectedMembershipIds] = useState<string[]>(
+    initialValues?.membershipIds || [],
+  );
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    membershipApi
+      .getList()
+      .then((res) => {
+        if (!mounted) return;
+        setMemberships(Array.isArray(res?.data) ? res.data : []);
+      })
+      .catch((err) => {
+        console.error("Failed to load memberships:", err);
+      })
+      .finally(() => {
+        if (mounted) setLoadingMemberships(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const toggleMembership = (id: string) => {
+    setSelectedMembershipIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
 
   const selectedDevice =
     initialValues?.imei && initialValues?.deviceName
@@ -160,7 +191,6 @@ export function VehicleSpecificationsForm({
     const vin = formData.get("vin") as string;
     const engineNumber = formData.get("engineNumber") as string;
     const dailyRate = formData.get("dailyRate") as string;
-    const pricingCategory = formData.get("pricingCategory") as string;
     const device = formData.get("device") as string;
 
     if (!make?.trim()) {
@@ -223,10 +253,6 @@ export function VehicleSpecificationsForm({
       newErrors.dailyRate = "Daily rate must be greater than 0";
     }
 
-    if (!pricingCategory) {
-      newErrors.pricingCategory = "Pricing category is required";
-    }
-
     // Validasi Device
     if (!device?.trim()) {
       newErrors.deviceName = "Device name is required";
@@ -255,7 +281,7 @@ export function VehicleSpecificationsForm({
       vin: formData.get("vin") as string,
       engineNumber: formData.get("engineNumber") as string,
       dailyRate: formData.get("dailyRate") as string,
-      pricingCategory: formData.get("pricingCategory") as string,
+      membershipIds: selectedMembershipIds,
       imei: imei || "",
       deviceName: deviceName || "",
     };
@@ -374,31 +400,51 @@ export function VehicleSpecificationsForm({
           error={errors.dailyRate}
         />
 
-        <div className="flex flex-col gap-2">
-          <label
-            className="text-sm font-medium text-[#111418] dark:text-white"
-            htmlFor="pricingCategory"
-          >
-            Pricing Category
-          </label>
-          <div className="relative">
-            <Select
-              id="pricingCategory"
-              name="pricingCategory"
-              defaultValue={initialValues?.pricingCategory}
-              required
-              className="appearance-none pr-10 w-full"
-            >
-              <option value="Reguler">Reguler</option>
-              <option value="Premium">Premium</option>
-            </Select>
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#617589] dark:text-slate-400">
-              expand_more
+        <div className="md:col-span-2 flex flex-col gap-2">
+          <label className="text-sm font-medium text-[#111418] dark:text-white">
+            Kategori Membership
+            <span className="ml-1 text-xs font-normal text-slate-400">
+              (bisa pilih lebih dari satu)
             </span>
+          </label>
+          <div className="flex flex-wrap gap-2" data-testid="membership-options">
+            {loadingMemberships ? (
+              <span className="text-xs text-slate-400 dark:text-slate-500">
+                Loading membership...
+              </span>
+            ) : memberships.length === 0 ? (
+              <span className="text-xs text-slate-400 dark:text-slate-500">
+                Belum ada membership
+              </span>
+            ) : (
+              memberships.map((m) => {
+                const checked = selectedMembershipIds.includes(m.id);
+                return (
+                  <label
+                    key={m.id}
+                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors ${
+                      checked
+                        ? "border-primary bg-primary/10 text-primary font-semibold"
+                        : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name="membership_ids"
+                      value={m.id}
+                      checked={checked}
+                      onChange={() => toggleMembership(m.id)}
+                      className="accent-primary"
+                    />
+                    <span>{m.name}</span>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                      Rp {Number(m.fee || 0).toLocaleString("id-ID")}
+                    </span>
+                  </label>
+                );
+              })
+            )}
           </div>
-          {errors.pricingCategory && (
-            <p className="text-xs text-red-500">{errors.pricingCategory}</p>
-          )}
         </div>
 
         <div className="flex flex-col gap-2">
