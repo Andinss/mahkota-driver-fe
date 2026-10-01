@@ -78,6 +78,7 @@ export default function VehicleRegisterPage() {
             color: vehicle.color,
             vin: vehicle.vin_number,
             engineNumber: vehicle.engine_number,
+            costPrice: String(vehicle.cost_price ?? 0),
             dailyRate: String(vehicle.daily_rate),
             imei: vehicle.imei,
             deviceName: vehicle.device_name,
@@ -138,6 +139,7 @@ export default function VehicleRegisterPage() {
         formData.append("color", data.color);
         formData.append("vin_number", data.vin);
         formData.append("engine_number", data.engineNumber);
+        formData.append("cost_price", data.costPrice.replace(/\./g, ""));
         formData.append("daily_rate", data.dailyRate.replace(/\./g, ""));
         selectedMembershipIds.forEach((id) => {
           formData.append("membership_ids", id);

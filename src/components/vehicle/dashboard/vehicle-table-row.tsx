@@ -8,6 +8,7 @@ interface Vehicle {
   year: number;
   plate: string;
   rate: string;
+  costPrice: string;
   membership: string;
   status: string;
   isActive?: boolean;
@@ -106,12 +107,17 @@ export const VehicleTableRow = ({
         </span>
       </td>
 
+      {/* Cost Price */}
+      <td className="px-5 py-4 text-sm font-semibold text-slate-900 dark:text-white">
+        {vehicle.costPrice}
+      </td>
+
       {/* Tarif/Hari */}
       <td className="px-5 py-4 text-sm font-semibold text-slate-900 dark:text-white">
         {vehicle.rate}
       </td>
 
-      {/* Condition — tanpa dot */}
+      {/* Condition */}
       <td className="px-5 py-4">
         <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${getStatusColor(vehicle.status)}`}>
           {getStatusLabel(vehicle.status)}

@@ -12,6 +12,7 @@ export interface VehicleItem {
   engine_number: string;
   engine_status: 'on' | 'off';
   daily_rate: number;
+  cost_price?: number;
   pricing_category: PricingCategory;
   status: VehicleStatus;
   is_active: boolean;

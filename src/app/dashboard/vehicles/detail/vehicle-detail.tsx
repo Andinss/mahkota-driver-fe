@@ -139,12 +139,9 @@ const VehicleDetail = () => {
   ] : [];
 
   const rentalPricing = vehicle ? {
+    costPrice: `Rp ${Number(vehicle.cost_price || 0).toLocaleString("id-ID")}`,
     baseRate: `Rp ${Number(vehicle.daily_rate || 0).toLocaleString("id-ID")}`,
-    features: [
-      { text: `Status: ${vehicle.status}` },
-      { text: `Membership: ${membershipNames}` },
-    ],
-  } : { baseRate: "-", features: [] };
+  } : { costPrice: "-", baseRate: "-" };
 
   const rentalHistory = vehicleRentals.map((r) => ({
     dateRange: `${new Date(r.start_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })} - ${new Date(r.end_date).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })}`,
@@ -227,8 +224,8 @@ const handleExport = () => {
               <TechnicalSpecs specs={technicalSpecs} />
               <RegistrationDetails details={registrationDetails} />
               <RentalPricing
+                costPrice={rentalPricing.costPrice}
                 baseRate={rentalPricing.baseRate}
-                features={rentalPricing.features}
               />
             </div>
           ) : (
