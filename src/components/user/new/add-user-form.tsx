@@ -351,7 +351,6 @@ export function AddUserForm({
             value={formValues.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
             error={errors.email}
-            disabled={isDriver}
           />
 
           {/* Phone Number */}
@@ -364,7 +363,6 @@ export function AddUserForm({
             value={formValues.phoneNumber}
             onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
             error={errors.phoneNumber}
-            disabled={isDriver}
           />
         </div>
 

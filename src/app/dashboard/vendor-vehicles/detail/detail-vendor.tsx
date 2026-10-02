@@ -101,8 +101,10 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
   const logoUrl = buildLogoUrl(vendor.logo);
   const statusActive = vendor.status === "active";
 
-  const hargaPokok = Number(vendor.harga_pokok) || 0;
-  const hargaJual = Number(vendor.harga_jual) || 0;
+  const hargaPokok = (vendor.vehicles || []).reduce(
+    (sum, vehicle) => sum + (Number(vehicle.cost_price) || 0),
+    0,
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -157,11 +159,17 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 p-5">
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Total Pendapatan</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Pendapatan Vendor</p>
               <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
-                {formatRupiah(Number(vendor.pendapatan) || 0)}
+                {formatRupiah(Number(vendor.pendapatan_vendor) || 0)}
+              </p>
+            </div>
+            <div className="bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-900/50 p-5">
+              <p className="text-xs text-amber-600 dark:text-amber-400 mb-1">Pendapatan PT</p>
+              <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
+                {formatRupiah(Number(vendor.pendapatan_pt) || 0)}
               </p>
             </div>
             <div className="bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/50 p-5">
@@ -200,7 +208,7 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
                     <tr>
                       <th className="px-6 py-3">Kendaraan</th>
                       <th className="px-6 py-3">Plat Nomor</th>
-                      <th className="px-6 py-3">Harga Harian</th>
+                      <th className="px-6 py-3">Harga Pokok</th>
                       <th className="px-6 py-3">Status</th>
                     </tr>
                   </thead>
@@ -214,7 +222,7 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
                           {vehicle.license_plate}
                         </td>
                         <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
-                          {formatRupiah(Number(vehicle.daily_rate) || 0)}
+                          {formatRupiah(Number(vehicle.cost_price) || 0)}
                         </td>
                         <td className="px-6 py-4">
                           <Badge
@@ -264,13 +272,15 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
                 <span className="font-semibold text-slate-900 dark:text-white">{formatRupiah(hargaPokok)}</span>
               </div>
               <div className="flex items-center justify-between px-6 py-4">
-                <span className="text-slate-500 dark:text-slate-400">Harga Jual</span>
-                <span className="font-semibold text-slate-900 dark:text-white">{formatRupiah(hargaJual)}</span>
+                <span className="text-slate-500 dark:text-slate-400">Pendapatan Vendor</span>
+                <span className="font-semibold text-slate-900 dark:text-white">
+                  {formatRupiah(Number(vendor.pendapatan_vendor) || 0)}
+                </span>
               </div>
               <div className="flex items-center justify-between px-6 py-4">
-                <span className="text-slate-500 dark:text-slate-400">Pendapatan</span>
+                <span className="text-slate-500 dark:text-slate-400">Pendapatan PT</span>
                 <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                  {formatRupiah(Number(vendor.pendapatan) || 0)}
+                  {formatRupiah(Number(vendor.pendapatan_pt) || 0)}
                 </span>
               </div>
               <div className="flex items-center justify-between px-6 py-4">

@@ -124,8 +124,8 @@ export default function VendorVehiclePage() {
   );
 
   const totalVendors = summary?.total_vendors ?? 0;
-  const totalPendapatan = summary?.total_pendapatan ?? 0;
-  const averagePendapatan = summary?.average_pendapatan ?? 0;
+  const totalPendapatanVendor = summary?.total_pendapatan_vendor ?? 0;
+  const totalPendapatanPt = summary?.total_pendapatan_pt ?? 0;
   const activeCount = summary?.active ?? 0;
 
   const safePage = Math.min(currentPage, totalPages);
@@ -236,25 +236,25 @@ export default function VendorVehiclePage() {
           }}
         />
         <VendorCard
-          title="Total Pendapatan"
-          value={formatRupiah(totalPendapatan)}
+          title="Total Pendapatan Vendor"
+          value={formatRupiah(totalPendapatanVendor)}
           icon="payments"
-          iconColor="text-emerald-600"
+          iconColor="text-slate-600"
           trend={{
-            value: "Akumulasi semua vendor",
-            color: "text-emerald-600",
+            value: "Akumulasi harga pokok semua vendor",
+            color: "text-slate-600",
             icon: "trending_up",
           }}
         />
         <VendorCard
-          title="Rata-Rata"
-          value={formatRupiah(averagePendapatan)}
+          title="Total Pendapatan PT"
+          value={formatRupiah(totalPendapatanPt)}
           icon="insights"
-          iconColor="text-blue-600"
+          iconColor="text-emerald-600"
           trend={{
-            value: "Berdasarkan semua vendor",
-            color: "text-blue-600",
-            icon: "info",
+            value: "Total margin semua vendor",
+            color: "text-emerald-600",
+            icon: "trending_up",
           }}
         />
         <VendorCard

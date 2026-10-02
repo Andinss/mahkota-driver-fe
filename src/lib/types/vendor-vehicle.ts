@@ -7,6 +7,7 @@ export interface VendorVehicleItem {
   license_plate: string;
   status: string;
   daily_rate?: number;
+  cost_price?: number;
 }
 
 export interface VendorVehicle {
@@ -14,9 +15,8 @@ export interface VendorVehicle {
   name: string;
   owner_name: string;
   logo?: string;
-  pendapatan: number;
-  harga_pokok?: number;
-  harga_jual?: number;
+  pendapatan_vendor: number;
+  pendapatan_pt: number;
   total_kendaraan: number;
   status: VendorStatus;
   vehicles?: VendorVehicleItem[];
@@ -28,8 +28,8 @@ export interface VendorVehicleSummary {
   total_vendors: number;
   active: number;
   inactive: number;
-  total_pendapatan: number;
-  average_pendapatan: number;
+  total_pendapatan_vendor: number;
+  total_pendapatan_pt: number;
   status_breakdown: Record<string, number>;
 }
 
