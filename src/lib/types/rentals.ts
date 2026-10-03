@@ -37,10 +37,22 @@ export interface RentalTransaction {
   document_contract?: string;
   rental_duration: 'harian' | 'mingguan' | 'bulanan' | 'tahunan';
   rental_service: 'lepas kunci' | 'pakai supir';
+  status?: 'active' | 'stopped';
+  stopped_at?: string | null;
   finances?: any[];
   late_payments?: any[];
   created_at?: string;
   updated_at?: string;
+}
+
+export interface OngoingRental {
+  id: string;
+  rental_number: string;
+  driver_id: string;
+  vehicle_id: string;
+  start_date: string;
+  end_date: string;
+  status?: 'active' | 'stopped';
 }
 
 export interface RentalSummary {
@@ -56,4 +68,5 @@ export interface RentalListParams {
   search?: string;
   rental_duration?: string;
   rental_service?: string;
+  status?: 'all' | 'active' | 'upcoming' | 'completed' | 'stopped';
 }

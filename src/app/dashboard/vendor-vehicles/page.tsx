@@ -40,7 +40,7 @@ export default function VendorVehiclePage() {
   const [summary, setSummary] = useState<VendorVehicleSummary | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalResults, setTotalResults] = useState(0);
@@ -290,9 +290,9 @@ export default function VendorVehiclePage() {
                 setStatusFilter(e.target.value);
               }}
             >
-              <option value="">All Status</option>
               <option value="active">Aktif</option>
               <option value="inactive">Nonaktif</option>
+              <option value="all">All Status</option>
             </Select>
           </div>
         </div>

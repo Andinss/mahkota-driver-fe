@@ -27,8 +27,11 @@ const normalize = (membership: Membership): Membership => ({
 });
 
 export const membershipApi = {
-  getList: async () => {
-    const res = await api.get<SuccessResponse<Membership[]>>("/memberships");
+  getList: async (params?: { is_active?: "true" | "false" | "all" }) => {
+    const res = await api.get<SuccessResponse<Membership[]>>(
+      "/memberships",
+      params as Record<string, string | undefined>,
+    );
     return {
       ...res,
       data: Array.isArray(res.data) ? res.data.map(normalize) : [],
@@ -52,6 +55,11 @@ export const membershipApi = {
     );
     return { ...res, data: normalize(res.data) };
   },
+
+  updateStatus: (id: string, is_active: boolean) =>
+    api.patch<SuccessResponse<Membership>>(`/memberships/${id}/status`, {
+      is_active,
+    }),
 
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/memberships/${id}`),

@@ -41,6 +41,9 @@ export default function DashboardVehiclePage() {
   const [totalPages, setTotalPages] = useState(1);
   const [summary, setSummary] = useState<VehicleSummary | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [activeFilter, setActiveFilter] = useState<
+    "true" | "false" | "all"
+  >("all");
 
   const toastShownRef = useRef(false);
 
@@ -66,7 +69,11 @@ export default function DashboardVehiclePage() {
     }
     setIsLoading(true);
     try {
-      const res = await vehicleApi.getList({ page: currentPage, limit: itemsPerPage });
+      const res = await vehicleApi.getList({
+        page: currentPage,
+        limit: itemsPerPage,
+        is_active: activeFilter,
+      });
       const items = Array.isArray(res.data) ? res.data : [];
       const mapped: VehicleDisplay[] = items.map((item: VehicleItem) => {
         const name = `${item.merk || ""} ${item.model || ""}`.trim() || "Unknown";
@@ -108,7 +115,7 @@ export default function DashboardVehiclePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, itemsPerPage, user]);
+  }, [currentPage, itemsPerPage, activeFilter, user]);
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -193,6 +200,7 @@ export default function DashboardVehiclePage() {
       format: options.format,
       columns: options.columns.join(","),
       type: options.type,
+      is_active: activeFilter,
     };
     if (options.type === "filtered") {
       if (options.dateRange?.start) params.start_date = options.dateRange.start;
@@ -209,7 +217,7 @@ export default function DashboardVehiclePage() {
   return (
     <PermissionGuard permission="vehicle.read">
     <div className="flex-1 overflow-y-auto p-4 md:p-8">
-      <div className="max-w-[1200px] mx-auto flex flex-col gap-6">
+      <div className="w-full flex flex-col gap-6">
         <PageHeader
           title="Vehicle List Overview"
           description="Kelola armada, tambah kendaraan baru, dan lacak statusnya."
@@ -274,7 +282,13 @@ export default function DashboardVehiclePage() {
           />
         </section>
 
-        <SearchFilters />
+        <SearchFilters
+          activeStatus={activeFilter}
+          onActiveStatusChange={(value) => {
+            setActiveFilter(value);
+            setCurrentPage(1);
+          }}
+        />
         <section className="xl:col-span-2">
           <div className="bg-white dark:bg-[#1a2632] rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] shadow-sm overflow-hidden">
             {/* Vehicle Table */}

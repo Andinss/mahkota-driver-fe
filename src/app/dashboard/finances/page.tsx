@@ -367,7 +367,7 @@ export default function PaymentList() {
     <PermissionGuard permission="finance.read">
       <div className="m-8">
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 pb-10">
+          <div className="w-full flex flex-col gap-8 pb-10">
             <PageHeader
               title="Finance List Overview"
               description="Kelola keuangan, lacak pembayaran, dan monitor transaksi."

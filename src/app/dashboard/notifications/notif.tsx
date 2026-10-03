@@ -9,7 +9,7 @@ const NotificationPage = () => {
   const [activeFilter, setActiveFilter] = useState<string>("all");
   return (
     <div className="m-8">
-      <div className="max-w-5xl">
+      <div className="w-full">
         {/* Header Section */}
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">

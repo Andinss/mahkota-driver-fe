@@ -52,7 +52,7 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center py-24">
             <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
               <span className="material-symbols-outlined text-xl animate-spin">
@@ -71,7 +71,7 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
   if (!finance) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <div className="flex items-center gap-3">
               <button
@@ -118,7 +118,7 @@ const FinanceDetailPage = ({ id }: FinanceDetailPageProps) => {
   return (
     <PermissionGuard permission="finance.read">
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
           {/* Page Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3">

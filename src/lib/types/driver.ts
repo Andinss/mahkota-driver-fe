@@ -76,4 +76,5 @@ export interface DriverListParams {
   search?: string;
   status?: string;
   performance?: string;
+  is_active?: "true" | "false" | "all";
 }

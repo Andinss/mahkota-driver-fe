@@ -23,6 +23,10 @@ interface Rental {
   };
   rentalDuration?: string;
   rentalService?: string;
+  status?: "active" | "stopped";
+  stoppedAt?: string | null;
+  startDate?: string;
+  endDate?: string;
 }
 
 interface RentalTableRowProps {
@@ -64,6 +68,40 @@ const getServiceColor = (service?: string): string => {
     serviceColor[service.toLowerCase()] ||
     "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
   );
+};
+
+const formatDate = (value?: string | null) => {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+/* Status rental yang sedang berjalan dihitung dari periode sewa */
+const getDerivedStatus = (rental: Rental) => {
+  const today = new Date().toISOString().slice(0, 10);
+  const start = rental.startDate;
+  const end = rental.endDate;
+  if (start && today < start) return "upcoming";
+  if (end && today > end) return "completed";
+  return "active";
+};
+
+const derivedStatusLabel: Record<string, string> = {
+  active: "Active",
+  upcoming: "Upcoming",
+  completed: "Completed",
+};
+
+const derivedStatusColor: Record<string, string> = {
+  active:
+    "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+  upcoming:
+    "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+  completed:
+    "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
 };
 
 export const RentalTableRow = ({
@@ -181,6 +219,32 @@ export const RentalTableRow = ({
         )}
       </td>
 
+      {/* Status */}
+      <td className="px-4 py-3 whitespace-nowrap">
+        {rental.status === "stopped" ? (
+          <div className="flex flex-col gap-1">
+            <span className="inline-flex items-center gap-1.5 self-start px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              <span className="material-symbols-outlined text-sm">stop_circle</span>
+              Stopped
+            </span>
+            {rental.stoppedAt && (
+              <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                {formatDate(rental.stoppedAt)}
+              </span>
+            )}
+          </div>
+        ) : (() => {
+          const derived = getDerivedStatus(rental);
+          return (
+            <span
+              className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold ${derivedStatusColor[derived]}`}
+            >
+              {derivedStatusLabel[derived]}
+            </span>
+          );
+        })()}
+      </td>
+
       {/* Aksi */}
       <td className="px-4 py-3 text-right">
         <Dropdown
@@ -195,6 +259,15 @@ export const RentalTableRow = ({
           <Link href={`/dashboard/rentals/new?id=${rental.id}`}>
             <DropdownMenuItem icon="edit">Edit</DropdownMenuItem>
           </Link>
+          {rental.status !== "stopped" && (
+            <DropdownMenuItem
+              icon="stop_circle"
+              danger
+              onClick={() => onEndRental?.(rental)}
+            >
+              Stop Rental
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             icon="delete"
             danger

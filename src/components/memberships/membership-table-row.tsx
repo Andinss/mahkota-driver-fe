@@ -10,12 +10,14 @@ interface MembershipTableRowProps {
   membership: Membership;
   onEdit?: (membership: Membership) => void;
   onDelete?: (membership: Membership) => void;
+  onToggleStatus?: (membership: Membership) => void;
 }
 
 export const MembershipTableRow = ({
   membership,
   onEdit,
   onDelete,
+  onToggleStatus,
 }: MembershipTableRowProps) => {
   return (
     <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
@@ -71,6 +73,12 @@ export const MembershipTableRow = ({
           </Link>
           <DropdownMenuItem icon="edit" onClick={() => onEdit?.(membership)}>
             Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            icon={membership.is_active !== false ? "block" : "check_circle"}
+            onClick={() => onToggleStatus?.(membership)}
+          >
+            {membership.is_active !== false ? "Mark as Inactive" : "Mark as Active"}
           </DropdownMenuItem>
           <DropdownMenuItem icon="delete" danger onClick={() => onDelete?.(membership)}>
             Delete

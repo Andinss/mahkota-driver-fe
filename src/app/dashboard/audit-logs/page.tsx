@@ -83,7 +83,7 @@ export default function AuditLogPage() {
 
   return (
     <PermissionGuard permission="audit.read">
-    <div className="p-8 max-w-7xl mx-auto w-full space-y-8">
+    <div className="p-8 w-full space-y-8">
       <PageHeader
         title="Audit Logs"
         description="Track and review all system changes and user activities."

@@ -35,10 +35,12 @@ const MembershipList = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const toastShownRef = useRef(false);
 
-  const fetchMemberships = async () => {
+  const fetchMemberships = async (status: string = filters.status) => {
     setIsLoading(true);
     try {
-      const res = await membershipApi.getList();
+      const isActive =
+        status === "active" ? "true" : status === "inactive" ? "false" : "all";
+      const res = await membershipApi.getList({ is_active: isActive });
       const list = Array.isArray(res.data) ? res.data : [];
       setMemberships([...list].sort((a, b) => a.level - b.level));
     } catch {
@@ -49,8 +51,9 @@ const MembershipList = () => {
   };
 
   useEffect(() => {
-    fetchMemberships();
-  }, []);
+    fetchMemberships(filters.status);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.status]);
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -128,6 +131,40 @@ const MembershipList = () => {
 
   const handleEdit = (membership: Membership) => {
     router.push(`/dashboard/memberships/new?id=${membership.id}`);
+  };
+
+  const handleToggleStatus = async (membership: Membership) => {
+    const isActive = membership.is_active !== false;
+    const newStatus = !isActive;
+    const action = isActive ? "nonaktif" : "aktif";
+
+    const confirmed = await confirmToast({
+      title: isActive ? "Mark as Inactive" : "Mark as Active",
+      message: `Are you sure you want to mark ${membership.name} as ${action}? ${
+        isActive
+          ? "Membership ini tidak akan muncul lagi di pilihan driver & kendaraan."
+          : "Membership ini bisa dipilih kembali."
+      }`,
+      confirmText: `Yes, ${isActive ? "Deactivate" : "Activate"}`,
+      cancelText: "Cancel",
+      variant: isActive ? "danger" : "info",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await membershipApi.updateStatus(membership.id, newStatus);
+      toastSuccess(
+        `Membership ${membership.name} has been ${isActive ? "deactivated" : "activated"} successfully.`,
+      );
+      fetchMemberships();
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : "Failed to update membership status. Please try again.";
+      toastError(message);
+    }
   };
 
   const handleExport = (options: ExportOptions) => {
@@ -213,6 +250,7 @@ const MembershipList = () => {
           isLoading={isLoading}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onToggleStatus={handleToggleStatus}
           onExport={handleExport}
         />
         <Pagination

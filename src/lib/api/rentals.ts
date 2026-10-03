@@ -1,6 +1,6 @@
 import { api } from "../api-http";
 import type { SuccessResponse, SuccessResponsePaginated } from "../types/api";
-import type { RentalTransaction, RentalListParams, RentalSummary } from "../types/rentals.ts";
+import type { RentalTransaction, RentalListParams, RentalSummary, OngoingRental } from "../types/rentals.ts";
 
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -34,6 +34,9 @@ export const rentalApi = {
       `/rentals/driver/${driverId}/rental-count`,
     ),
 
+  getOngoing: () =>
+    api.get<SuccessResponse<OngoingRental[]>>("/rentals/ongoing"),
+
   create: (formData: FormData) =>
     api.upload<SuccessResponse<RentalTransaction>>("/rentals/create", formData),
 
@@ -45,6 +48,9 @@ export const rentalApi = {
 
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/rentals/delete/${id}`),
+
+  stop: (id: string) =>
+    api.patch<SuccessResponse<RentalTransaction>>(`/rentals/stop/${id}`),
 
   exportData: async (params: Record<string, string | number | undefined>) => {
     const { blob, filename } = await api.download("/rentals/export", params);

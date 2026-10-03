@@ -62,10 +62,17 @@ export default function UserList() {
     }
     setIsLoading(true);
     try {
+      const isActiveParam =
+        filters.status === "active"
+          ? "true"
+          : filters.status === "inactive"
+            ? "false"
+            : "all";
       const res = await usersApi.getList({
         page: currentPage,
         limit: itemsPerPage,
         search: filters.search || undefined,
+        is_active: isActiveParam,
       });
 
       const items = Array.isArray(res.data) ? res.data : [];
@@ -128,6 +135,12 @@ export default function UserList() {
       format: options.format,
       columns: options.columns.join(","),
       type: options.type,
+      is_active:
+        filters.status === "active"
+          ? "true"
+          : filters.status === "inactive"
+            ? "false"
+            : "all",
     };
     if (options.type === "filtered") {
       if (filters.search) params.search = filters.search;

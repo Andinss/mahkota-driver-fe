@@ -23,6 +23,10 @@ interface Rental {
   };
   rentalDuration?: string;
   rentalService?: string;
+  status?: "active" | "stopped";
+  stoppedAt?: string | null;
+  startDate?: string;
+  endDate?: string;
 }
 
 interface RentalTableProps {
@@ -78,7 +82,7 @@ export const RentalTable = ({
             <h2 className="font-bold text-slate-800 dark:text-white text-base">
               Rental Transactions
             </h2>
-            <p className="text-xs text-slate-400">{rentals.length} transaksi aktif</p>
+            <p className="text-xs text-slate-400">{rentals.length} transaksi</p>
           </div>
         </div>
         <button
@@ -100,6 +104,7 @@ export const RentalTable = ({
               <th className="px-4 py-3">Durasi</th>
               <th className="px-4 py-3">Layanan</th>
               <th className="px-4 py-3">Engine</th>
+              <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3 text-right">Aksi</th>
             </tr>
           </thead>

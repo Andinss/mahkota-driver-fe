@@ -7,18 +7,22 @@ interface FiltersSearchProps {
   searchValue: string;
   rentalDuration: string;
   rentalService: string;
+  rentalStatus?: string;
   onSearchChange: (value: string) => void;
   onRentalDurationChange: (value: string) => void;
   onRentalServiceChange: (value: string) => void;
+  onRentalStatusChange?: (value: string) => void;
 }
 
 export const FiltersSearch = ({
   searchValue,
   rentalDuration,
   rentalService,
+  rentalStatus = "",
   onSearchChange,
   onRentalDurationChange,
   onRentalServiceChange,
+  onRentalStatusChange,
 }: FiltersSearchProps) => {
   return (
     <div className="rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] bg-white dark:bg-[#1a2632] p-4 shadow-sm">
@@ -54,6 +58,21 @@ export const FiltersSearch = ({
             <option value="lepas kunci">Lepas Kunci</option>
             <option value="pakai supir">Pakai Supir</option>
           </Select>
+          {onRentalStatusChange && (
+            <Select
+              id="filter-status"
+              label=""
+              className="min-w-[160px]"
+              value={rentalStatus}
+              onChange={(e) => onRentalStatusChange(e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="completed">Completed</option>
+              <option value="stopped">Stopped</option>
+            </Select>
+          )}
         </div>
       </div>
     </div>

@@ -68,7 +68,6 @@ const SearchBar = ({ filters, onFilterChange }: SearchBarProps) => {
               <option value="">All Statuses</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
-              <option value="locked">Locked</option>
             </Select>
           </div>
         </label>
