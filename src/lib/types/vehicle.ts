@@ -46,4 +46,5 @@ export interface VehicleListParams {
   limit?: number;
   search?: string;
   status?: string;
+  is_active?: "true" | "false" | "all";
 }

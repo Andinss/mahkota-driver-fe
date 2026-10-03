@@ -1,6 +1,17 @@
 import { SearchInput } from "@/components/ui/search-input";
 import { Select } from "@/components/ui/select";
-export const SearchFilters = () => {
+
+export type ActiveStatusFilter = "true" | "false" | "all";
+
+interface SearchFiltersProps {
+  activeStatus?: ActiveStatusFilter;
+  onActiveStatusChange?: (value: ActiveStatusFilter) => void;
+}
+
+export const SearchFilters = ({
+  activeStatus = "all",
+  onActiveStatusChange,
+}: SearchFiltersProps) => {
   return (
     <div className="rounded-xl border border-[#dbe0e6] dark:border-[#2a3845] bg-white dark:bg-[#1a2632] p-4 shadow-sm">
       <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
@@ -9,6 +20,19 @@ export const SearchFilters = () => {
           placeholder="Search by license plate, make, or model..."
         />
         <div className="flex gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+          <Select
+            id="filter-active"
+            label=""
+            className="min-w-[140px]"
+            value={activeStatus}
+            onChange={(e) =>
+              onActiveStatusChange?.(e.target.value as ActiveStatusFilter)
+            }
+          >
+            <option value="all">All Statuses</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </Select>
           <Select
             id="filter-status"
             label=""

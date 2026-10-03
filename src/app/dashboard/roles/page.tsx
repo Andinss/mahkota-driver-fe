@@ -56,7 +56,7 @@ const RolePage = () => {
     }
     setIsLoading(true);
     try {
-      const res = await rolesApi.getList();
+      const res = await rolesApi.getList({ is_active: "all" });
       setRoles(Array.isArray(res.data) ? res.data : []);
     } catch {
       setRoles([]);

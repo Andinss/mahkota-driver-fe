@@ -135,7 +135,7 @@ const DetailDriverPage = () => {
     joinedDate: driver.created_at
       ? new Date(driver.created_at).toLocaleDateString("id-ID", { year: "numeric", month: "long" })
       : "-",
-    status: "Active",
+    status: driver.is_active !== false ? "Active" : "Inactive",
   } : {
     name: "-",
     imageUrl: "",

@@ -16,6 +16,7 @@ import { supervisorApi } from "@/lib/api/supervisor";
 import { vehicleApi } from "@/lib/api/vehicle";
 import type { DriverItem } from "@/lib/types/driver";
 import type { VehicleItem } from "@/lib/types/vehicle";
+import type { OngoingRental } from "@/lib/types/rentals";
 
 interface FormErrors {
   vehicleId?: string;
@@ -83,6 +84,7 @@ const NewRentPage = () => {
 
   const [allDrivers, setAllDrivers] = useState<DriverItem[]>([]);
   const [allVehicles, setAllVehicles] = useState<VehicleItem[]>([]);
+  const [ongoingRentals, setOngoingRentals] = useState<OngoingRental[]>([]);
 
   const { user } = useAuth();
   const isSupervisor = user?.role?.code === "SUPERVISOR";
@@ -92,31 +94,76 @@ const NewRentPage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchDrivers = isSupervisor ? supervisorApi.getList() : driverApi.getList();
+    // Backend hanya mengembalikan driver & kendaraan aktif (is_active=true)
+    // kecuali diminta eksplisit; limit besar agar semua opsi termuat.
+    const fetchDrivers = isSupervisor
+      ? supervisorApi.getList()
+      : driverApi.getList({ limit: 9999, is_active: "true" });
     fetchDrivers.then((res: any) => {
       const items = Array.isArray(res.data) ? res.data : [];
-      setAllDrivers(items);
+      setAllDrivers(items.filter((d: DriverItem) => d.is_active !== false));
     }).catch(() => {});
 
-    vehicleApi.getList().then((res) => {
+    vehicleApi.getList({ limit: 9999, is_active: "true" }).then((res) => {
       const items = Array.isArray(res.data) ? res.data : [];
-      setAllVehicles(items.filter((v: VehicleItem) => v.status === "Available"));
+      setAllVehicles(
+        items.filter(
+          (v: VehicleItem) => v.is_active !== false && v.status === "Available",
+        ),
+      );
     }).catch(() => {});
+
+    // Rental yang belum dihentikan dan periodenya belum habis → driver &
+    // kendaraan ini tidak boleh dipilih lagi untuk sewa baru.
+    rentalApi
+      .getOngoing()
+      .then((res) => {
+        setOngoingRentals(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch(() => {});
   }, [isSupervisor]);
+
+  // Rentang periode sewa yang sedang dipilih. Bila belum diisi, pakai hari
+  // ini agar driver/kendaraan yang sedang tersewa langsung tersembunyi.
+  const selectedRange = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return {
+      start: rentalData.startDate || today,
+      end: rentalData.endDate || today,
+    };
+  }, [rentalData.startDate, rentalData.endDate]);
+
+  const busyIds = useMemo(() => {
+    const drivers = new Set<string>();
+    const vehicles = new Set<string>();
+    ongoingRentals.forEach((rental) => {
+      if (rental.id === rentalData.rentalId) return;
+      const overlaps =
+        rental.start_date <= selectedRange.end &&
+        rental.end_date >= selectedRange.start;
+      if (!overlaps) return;
+      drivers.add(rental.driver_id);
+      vehicles.add(rental.vehicle_id);
+    });
+    return { drivers, vehicles };
+  }, [ongoingRentals, selectedRange, rentalData.rentalId]);
 
   const driverOptions = useMemo<SelectOption[]>(() => {
     const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
-    return allDrivers.map((d) => {
-      const photo = d.profile_photo || "";
-      const image = photo ? (photo.startsWith("http") ? photo : `${imageBase}/${photo.replace(/^\//, "")}`) : "";
-      return {
-        label: `${d.first_name} ${d.last_name}`,
-        value: d.id,
-        image,
-        badges: d.membership?.name ? [d.membership.name] : [],
-      };
-    });
-  }, [allDrivers]);
+    return allDrivers
+      // Driver yang masih punya sewa berjalan disembunyikan dari pilihan.
+      .filter((d) => !busyIds.drivers.has(d.id))
+      .map((d) => {
+        const photo = d.profile_photo || "";
+        const image = photo ? (photo.startsWith("http") ? photo : `${imageBase}/${photo.replace(/^\//, "")}`) : "";
+        return {
+          label: `${d.first_name} ${d.last_name}`,
+          value: d.id,
+          image,
+          badges: d.membership?.name ? [d.membership.name] : [],
+        };
+      });
+    }, [allDrivers, busyIds]);
 
   const vehicleOptions = useMemo<SelectOption[]>(() => {
     // Kendaraan hanya tampil setelah driver dipilih.
@@ -130,6 +177,8 @@ const NewRentPage = () => {
     if (!rentalData.driverId || !driverLevel) return [];
     return allVehicles
       .filter((v) => (v.memberships ?? []).some((m) => m.level <= driverLevel))
+      // Kendaraan yang masih disewa pada periode ini disembunyikan.
+      .filter((v) => !busyIds.vehicles.has(v.id))
       .map((v) => ({
         label: `${v.license_plate} - ${v.merk} ${v.model}`,
         value: v.id,
@@ -139,7 +188,7 @@ const NewRentPage = () => {
           .map((m) => m.name),
         search: (v.memberships ?? []).map((m) => m.name).join(" "),
       }));
-  }, [allDrivers, allVehicles, rentalData.driverId]);
+  }, [allDrivers, allVehicles, rentalData.driverId, busyIds]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -411,7 +460,7 @@ const NewRentPage = () => {
   return (
     <PermissionGuard permission="rental.create">
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3">

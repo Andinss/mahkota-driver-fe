@@ -29,6 +29,7 @@ export default function DriverPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<DriverFilters>({
     search: "",
+    status: "all",
   });
   const [driverCount, setDriverCount] = useState<{ count: number; max: number; remaining: number } | null>(null);
   const [summary, setSummary] = useState<DriverSummary | null>(null);
@@ -52,12 +53,13 @@ export default function DriverPage() {
       let meta: { total: number; totalPages: number } | null = null;
 
       if (!hasReadAll && hasReadOwn) {
-        const res = await supervisorApi.getList();
+        const res = await supervisorApi.getList({ is_active: filters.status });
         items = Array.isArray((res as any).data) ? (res as any).data : [];
       } else {
         const params: Record<string, string | number | undefined> = {
           page: currentPage,
           limit: itemsPerPage,
+          is_active: filters.status,
         };
         if (filters.search) params.search = filters.search;
         const res = await driverApi.getList(params);
@@ -110,7 +112,7 @@ export default function DriverPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, itemsPerPage, filters.search, hasReadAll, hasReadOwn]);
+  }, [currentPage, itemsPerPage, filters.search, filters.status, hasReadAll, hasReadOwn]);
 
   const fetchCount = useCallback(async () => {
     if (hasReadAll || !hasReadOwn) return;
@@ -155,6 +157,7 @@ export default function DriverPage() {
         format: options.format,
         columns: options.columns.join(","),
         type: options.type,
+        is_active: filters.status,
       };
       if (options.type === "filtered") {
         if (filters.search) params.search = filters.search;

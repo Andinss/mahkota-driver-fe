@@ -53,7 +53,7 @@ const UserDetailPage = () => {
 
   return (
     <div className="flex-1 p-8 lg:px-8 lg:py-8">
-      <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div className="w-full grid grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* Left Sidebar: Profile Card */}
         <ProfileCard user={user} />
         {/* Right Side: Details & Logs */}

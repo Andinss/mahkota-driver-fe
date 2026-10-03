@@ -30,6 +30,10 @@ interface RentalDisplay {
   rentalPeriod: { start: string; end: string; duration: number };
   rentalDuration?: string;
   rentalService?: string;
+  status?: "active" | "stopped";
+  stoppedAt?: string | null;
+  startDate?: string;
+  endDate?: string;
 }
 
 const imageBase = (
@@ -74,6 +78,10 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
   },
   rentalDuration: item.rental_duration,
   rentalService: item.rental_service,
+  status: item.status === "stopped" ? "stopped" : "active",
+  stoppedAt: item.stopped_at ?? null,
+  startDate: item.start_date,
+  endDate: item.end_date,
 });
 
 export default function RentalManagementPage() {
@@ -105,6 +113,9 @@ export default function RentalManagementPage() {
   const [searchValue, setSearchValue] = useState("");
   const [rentalDuration, setRentalDuration] = useState("");
   const [rentalService, setRentalService] = useState("");
+  const [rentalStatus, setRentalStatus] = useState<
+    "all" | "active" | "upcoming" | "completed" | "stopped" | ""
+  >("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const toastShownRef = useRef(false);
@@ -148,6 +159,7 @@ export default function RentalManagementPage() {
         search: debouncedSearch || undefined,
         rental_duration: rentalDuration || undefined,
         rental_service: rentalService || undefined,
+        status: rentalStatus || undefined,
       });
       const items = Array.isArray(res.data) ? res.data : [];
       const mapped = items.map(mapToDisplay);
@@ -166,7 +178,7 @@ export default function RentalManagementPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, itemsPerPage, user, debouncedSearch, rentalDuration, rentalService]);
+  }, [currentPage, itemsPerPage, user, debouncedSearch, rentalDuration, rentalService, rentalStatus]);
 
   useEffect(() => {
     fetchRentals();
@@ -211,6 +223,30 @@ export default function RentalManagementPage() {
           err instanceof HttpClientError
             ? err.message
             : "Failed to delete rental. Please try again.",
+        );
+      }
+    }
+  };
+
+  // Handler Stop Rental
+  const handleStopRentalClick = async (rental: RentalDisplay) => {
+    const confirmed = await confirmToast({
+      title: "Stop Rental",
+      message: `Are you sure you want to stop ${rental.transactionId}? Daily payments will no longer be generated for this rental.`,
+      confirmText: "Yes, Stop Rental",
+      variant: "danger",
+    });
+    if (confirmed) {
+      try {
+        await rentalApi.stop(rental.id);
+        toastSuccess(`Rent ${rental.transactionId} has been stopped`);
+        fetchRentals();
+        fetchSummary();
+      } catch (err) {
+        toastError(
+          err instanceof HttpClientError
+            ? err.message
+            : "Failed to stop rental. Please try again.",
         );
       }
     }
@@ -300,6 +336,7 @@ export default function RentalManagementPage() {
           searchValue={searchValue}
           rentalDuration={rentalDuration}
           rentalService={rentalService}
+          rentalStatus={rentalStatus}
           onSearchChange={(v) => setSearchValue(v)}
           onRentalDurationChange={(v) => {
             setRentalDuration(v);
@@ -307,6 +344,10 @@ export default function RentalManagementPage() {
           }}
           onRentalServiceChange={(v) => {
             setRentalService(v);
+            setCurrentPage(1);
+          }}
+          onRentalStatusChange={(v) => {
+            setRentalStatus(v as typeof rentalStatus);
             setCurrentPage(1);
           }}
         />
@@ -322,6 +363,7 @@ export default function RentalManagementPage() {
                 rentals={rentals}
                 onExport={handleExport}
                 onDelete={handleDeleteClick}
+                onEndRental={handleStopRentalClick}
                 onEngineChanged={(vehicleId, engineStatus) => {
                   setRentals((prev) =>
                     prev.map((r) =>

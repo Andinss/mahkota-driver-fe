@@ -15,8 +15,11 @@ function triggerDownload(blob: Blob, filename: string) {
 }
 
 export const rolesApi = {
-  getList: () =>
-    api.get<SuccessResponse<RoleItem[]>>("/roles"),
+  getList: (params?: { is_active?: "true" | "false" | "all" }) =>
+    api.get<SuccessResponse<RoleItem[]>>(
+      "/roles",
+      params as Record<string, string | undefined>,
+    ),
 
   getById: (id: string) =>
     api.get<SuccessResponse<RoleItem>>(`/roles/${id}`),

@@ -6,6 +6,7 @@ import { PermissionGuard } from "@/components/auth-guard-permission";
 import CardCarInfo from "@/components/rent/detail/car-info";
 import DriverInfo from "@/components/rent/detail/driver-info";
 import Duration from "@/components/rent/detail/duration";
+import RentalStatus from "@/components/rent/detail/rental-status";
 import DocumentSign from "@/components/rent/detail/signed-document";
 import { rentalApi } from "@/lib/api/rentals";
 import type { RentalTransaction } from "@/lib/types/rentals";
@@ -47,7 +48,7 @@ const DetailRentPage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center py-24">
             <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
               <span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>
@@ -62,7 +63,7 @@ const DetailRentPage = () => {
   if (!rental) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <div className="flex items-center gap-3">
               <button
@@ -113,7 +114,7 @@ const DetailRentPage = () => {
   return (
     <PermissionGuard permission="rental.read">
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
           {/* Page Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3">
@@ -159,6 +160,14 @@ const DetailRentPage = () => {
               duration={rental.total_duration || 0}
               rentalDuration={rental.rental_duration}
               rentalService={rental.rental_service}
+            />
+
+            {/* Status Sewa */}
+            <RentalStatus
+              status={rental.status === "stopped" ? "stopped" : "active"}
+              stoppedAt={rental.stopped_at}
+              startDate={rental.start_date}
+              endDate={rental.end_date}
             />
 
             {/* Documents */}

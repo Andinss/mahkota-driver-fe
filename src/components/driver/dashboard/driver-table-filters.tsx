@@ -1,8 +1,10 @@
 
 import { SearchInput } from "@/components/ui/search-input";
+import { Select } from "@/components/ui/select";
 
 export interface DriverFilters {
   search: string;
+  status: "true" | "false" | "all";
 }
 
 interface DriverTableFiltersProps {
@@ -27,6 +29,23 @@ export function DriverTableFilters({
             onFilterChange({ ...filters, search: e.target.value })
           }
         />
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
+          <Select
+            id="filter-driver-status"
+            className="min-w-[160px]"
+            value={filters.status}
+            onChange={(e) =>
+              onFilterChange({
+                ...filters,
+                status: e.target.value as DriverFilters["status"],
+              })
+            }
+          >
+            <option value="all">All Statuses</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </Select>
+        </div>
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ interface MembershipTableProps {
   isLoading?: boolean;
   onEdit?: (membership: Membership) => void;
   onDelete?: (membership: Membership) => void;
+  onToggleStatus?: (membership: Membership) => void;
   onExport?: (options: ExportOptions) => void;
 }
 
@@ -29,6 +30,7 @@ export const MembershipTable = ({
   isLoading,
   onEdit,
   onDelete,
+  onToggleStatus,
   onExport,
 }: MembershipTableProps) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -77,6 +79,7 @@ export const MembershipTable = ({
                 membership={membership}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onToggleStatus={onToggleStatus}
               />
             ))}
             {memberships.length === 0 && (

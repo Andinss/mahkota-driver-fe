@@ -38,4 +38,5 @@ export interface UserListParams {
   search?: string;
   role?: string;
   status?: string;
+  is_active?: "true" | "false" | "all";
 }

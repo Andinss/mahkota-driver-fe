@@ -68,7 +68,7 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
   if (!vendor || notFound) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <div className="flex items-center gap-3">
               <button
@@ -108,7 +108,7 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <button
