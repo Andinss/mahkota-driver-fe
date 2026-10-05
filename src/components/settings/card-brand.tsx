@@ -22,6 +22,12 @@ const PALETTE_OPTIONS: {
     description: "Palet warna emas, diambil dari logo perusahaan.",
     swatches: ["#fbf7ef", "#a9822e", "#52391b"],
   },
+  {
+    id: "noir",
+    name: "Noir (Gold & Black)",
+    description: "Kombinasi emas, hitam, dan putih untuk tampilan luxury.",
+    swatches: ["#ffffff", "#d4af37", "#1c1c1f"],
+  },
 ];
 
 const CardBrandUpload = () => {
@@ -123,7 +129,7 @@ const CardBrandUpload = () => {
             <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-slate-400 mb-3">
               COLOR PALETTE
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {PALETTE_OPTIONS.map((option) => {
                 const isActive = pendingPalette === option.id;
                 return (

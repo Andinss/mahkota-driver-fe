@@ -2,9 +2,11 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type Palette = "blue" | "gold";
+export type Palette = "blue" | "gold" | "noir";
 
 export const PALETTE_STORAGE_KEY = "colorPalette";
+
+export const PALETTES: Palette[] = ["blue", "gold", "noir"];
 
 interface PaletteContextType {
   palette: Palette;
@@ -27,10 +29,10 @@ export function PaletteProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem(PALETTE_STORAGE_KEY);
-      if (stored === "blue" || stored === "gold") {
-        setPaletteState(stored);
-        setPendingPaletteState(stored);
-        applyPalette(stored);
+      if (stored && PALETTES.includes(stored as Palette)) {
+        setPaletteState(stored as Palette);
+        setPendingPaletteState(stored as Palette);
+        applyPalette(stored as Palette);
       } else {
         applyPalette("blue");
       }

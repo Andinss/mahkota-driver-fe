@@ -56,7 +56,7 @@ export default function RootLayout({
                     }
                   });
                   var palette = localStorage.getItem('colorPalette');
-                  document.documentElement.setAttribute('data-palette', palette === 'gold' ? 'gold' : 'blue');
+                  document.documentElement.setAttribute('data-palette', palette === 'gold' || palette === 'noir' ? palette : 'blue');
                 } catch(e) {}
               })();
             `,

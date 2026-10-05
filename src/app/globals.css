@@ -36,6 +36,47 @@ html[data-palette="gold"] {
  * Override semua warna primary & blue saat data-palette="gold"
  * =================================================================== */
 
+/* ===================================================================
+ * SITE BRANDING – NOIR PALETTE (Gold × Black × White)
+ * Aksen emas metalik dengan netral hitam/putih.
+ * =================================================================== */
+
+html[data-palette="noir"] {
+  --toast-success-accent: #d4af37;
+  --toastify-color-progress-success: #d4af37 !important;
+
+  /* -- primary (emas) -- */
+  --color-primary: #d4af37;
+  --color-primary-50: #fdfbf3;
+  --color-primary-100: #faf3d9;
+  --color-primary-200: #f0e0a8;
+  --color-primary-300: #e2c86e;
+  --color-primary-400: #d4af37;
+  --color-primary-500: #b8933a;
+  --color-primary-600: #96742b;
+  --color-primary-700: #745a20;
+  --color-primary-800: #524016;
+  --color-primary-900: #2f2510;
+  --color-primary-950: #17130a;
+
+  /* -- background netral hitam/putih -- */
+  --color-background-light: #f6f6f7;
+  --color-background-dark: #0c0c0d;
+
+  /* -- override skala blue -> netral hitam/putih -- */
+  --color-blue-50: #f7f7f8;
+  --color-blue-100: #ededee;
+  --color-blue-200: #d9d9dc;
+  --color-blue-300: #bcbcc0;
+  --color-blue-400: #8e8e93;
+  --color-blue-500: #71717a;
+  --color-blue-600: #52525b;
+  --color-blue-700: #3f3f46;
+  --color-blue-800: #27272a;
+  --color-blue-900: #18181b;
+  --color-blue-950: #09090b;
+}
+
 html[data-palette="gold"] {
   /* -- primary -- */
   --color-primary: #a9822e;
@@ -127,6 +168,9 @@ html[data-palette="gold"] {
 html[data-palette="gold"] .trend-bar {
   fill: #a9822e;
 }
+html[data-palette="noir"] .trend-bar {
+  fill: #d4af37;
+}
 .tab-active {
   border-bottom: 2px solid #1d76e2;
   color: #1d76e2;
@@ -134,6 +178,10 @@ html[data-palette="gold"] .trend-bar {
 html[data-palette="gold"] .tab-active {
   border-bottom-color: #a9822e;
   color: #a9822e;
+}
+html[data-palette="noir"] .tab-active {
+  border-bottom-color: #d4af37;
+  color: #b8933a;
 }
 
 .stepper-line {
@@ -157,6 +205,9 @@ html[data-palette="gold"] .tab-active {
 html[data-palette="gold"] .stepper-segment-active {
   background-color: #a9822e;
 }
+html[data-palette="noir"] .stepper-segment-active {
+  background-color: #d4af37;
+}
 .editorial-gradient {
   background: linear-gradient(135deg, #004ac6 0%, #2563eb 100%);
 }
@@ -168,6 +219,12 @@ html[data-palette="gold"] .editorial-gradient {
 }
 html[data-palette="gold"].dark .editorial-gradient {
   background: linear-gradient(135deg, #8a6530 0%, #cda968 100%);
+}
+html[data-palette="noir"] .editorial-gradient {
+  background: linear-gradient(135deg, #17130a 0%, #d4af37 100%);
+}
+html[data-palette="noir"].dark .editorial-gradient {
+  background: linear-gradient(135deg, #0c0c0d 0%, #745a20 100%);
 }
 .frosted-glass {
   backdrop-filter: blur(20px);
@@ -231,6 +288,10 @@ html[data-palette="gold"] .vehicle-photo-swiper .swiper-button-next,
 html[data-palette="gold"] .vehicle-photo-swiper .swiper-button-prev {
   background: #a9822e !important;
 }
+html[data-palette="noir"] .vehicle-photo-swiper .swiper-button-next,
+html[data-palette="noir"] .vehicle-photo-swiper .swiper-button-prev {
+  background: #18181b !important;
+}
 .vehicle-photo-swiper .swiper-button-next svg,
 .vehicle-photo-swiper .swiper-button-prev svg {
   width: 10px !important;
@@ -273,6 +334,10 @@ html[data-palette="gold"] .driver-vehicle-swiper .swiper-button-next,
 html[data-palette="gold"] .driver-vehicle-swiper .swiper-button-prev {
   background: #a9822e !important;
 }
+html[data-palette="noir"] .driver-vehicle-swiper .swiper-button-next,
+html[data-palette="noir"] .driver-vehicle-swiper .swiper-button-prev {
+  background: #18181b !important;
+}
 .driver-vehicle-swiper .swiper-button-next svg,
 .driver-vehicle-swiper .swiper-button-prev svg {
   width: 10px !important;
@@ -301,10 +366,16 @@ html[data-palette="gold"].dark .driver-vehicle-swiper .swiper-button-prev {
 html[data-palette="gold"] .driver-vehicle-swiper .swiper-pagination-bullet-active {
   background: #a9822e;
 }
+html[data-palette="noir"] .driver-vehicle-swiper .swiper-pagination-bullet-active {
+  background: #d4af37;
+}
 
 .vehicle-history-header {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e3a8a 100%);
 }
 html[data-palette="gold"] .vehicle-history-header {
   background: linear-gradient(135deg, #cda968 0%, #a9822e 50%, #6e4f26 100%);
+}
+html[data-palette="noir"] .vehicle-history-header {
+  background: linear-gradient(135deg, #d4af37 0%, #96742b 50%, #17130a 100%);
 }
