@@ -82,6 +82,12 @@ const menuStructure: SidebarItem[] = [
         icon: "card_membership",
         permission: "",
       },
+      {
+        path: "/dashboard/rekenings",
+        label: "Rekening",
+        icon: "account_balance",
+        permission: "",
+      },
     ],
   },
 
