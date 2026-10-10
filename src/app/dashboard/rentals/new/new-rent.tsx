@@ -9,6 +9,7 @@ import FinancialRental from "@/components/rent/new-rent/financial-rental";
 import Period from "@/components/rent/new-rent/rental-period";
 import SelectionForm from "@/components/rent/new-rent/selection";
 import { DocumentsForm } from "@/components/rent/new-rent/upload-document";
+import ContractPreview from "./contract-preview";
 import { rentalApi } from "@/lib/api/rentals";
 import { HttpClientError } from "@/lib/api-http";
 import { driverApi } from "@/lib/api/driver";
@@ -17,6 +18,7 @@ import { vehicleApi } from "@/lib/api/vehicle";
 import type { DriverItem } from "@/lib/types/driver";
 import type { VehicleItem } from "@/lib/types/vehicle";
 import type { OngoingRental } from "@/lib/types/rentals";
+import { getTodayLocal } from "@/lib/utils/format";
 
 interface FormErrors {
   vehicleId?: string;
@@ -126,7 +128,7 @@ const NewRentPage = () => {
   // Rentang periode sewa yang sedang dipilih. Bila belum diisi, pakai hari
   // ini agar driver/kendaraan yang sedang tersewa langsung tersembunyi.
   const selectedRange = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getTodayLocal();
     return {
       start: rentalData.startDate || today,
       end: rentalData.endDate || today,
@@ -457,6 +459,14 @@ const NewRentPage = () => {
     router.push("/dashboard/rentals");
   };
 
+  // Label driver & kendaraan terpilih untuk ditampilkan di card preview.
+  const selectedDriverLabel = driverOptions.find(
+    (option) => option.value === rentalData.driverId,
+  )?.label;
+  const selectedVehicleLabel = vehicleOptions.find(
+    (option) => option.value === rentalData.vehicleId,
+  )?.label;
+
   return (
     <PermissionGuard permission="rental.create">
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -489,66 +499,85 @@ const NewRentPage = () => {
           </div>
         )}
 
-        {/* Form */}
-        <div className="space-y-6">
-          <SelectionForm
-            key={"sel-" + (rentalData.rentalId || "add")}
-            onDataChange={handleSelectionChange}
-            initialData={{
-              vehicleId: rentalData.vehicleId,
-              driverId: rentalData.driverId,
-            }}
-            error={hasSubmitted ? errors : undefined}
-            driverOptions={driverOptions}
-            vehicleOptions={vehicleOptions}
-            serverErrors={serverErrors}
-          />
+        {/* Form (kiri) + Preview Kontrak (kanan) */}
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+          <div className="xl:col-span-3 space-y-6">
+            <SelectionForm
+              key={"sel-" + (rentalData.rentalId || "add")}
+              onDataChange={handleSelectionChange}
+              initialData={{
+                vehicleId: rentalData.vehicleId,
+                driverId: rentalData.driverId,
+              }}
+              error={hasSubmitted ? errors : undefined}
+              driverOptions={driverOptions}
+              vehicleOptions={vehicleOptions}
+              serverErrors={serverErrors}
+            />
 
-          <Period
-            key={"per-" + (rentalData.rentalId || "add")}
-            onDataChange={handlePeriodChange}
-            initialData={{
-              startDate: rentalData.startDate,
-              endDate: rentalData.endDate,
-            }}
-            error={hasSubmitted ? errors : undefined}
-          />
+            <Period
+              key={"per-" + (rentalData.rentalId || "add")}
+              onDataChange={handlePeriodChange}
+              initialData={{
+                startDate: rentalData.startDate,
+                endDate: rentalData.endDate,
+              }}
+              error={hasSubmitted ? errors : undefined}
+            />
 
-          <FinancialRental
-            key={"fin-" + (rentalData.rentalId || "add")}
-            onDataChange={handleFinancialChange}
-            initialData={{
-              dailyRate: rentalData.dailyRate,
-              totalAmount: rentalData.totalAmount,
-              rentalDuration: rentalData.rentalDuration,
-              rentalService: rentalData.rentalService,
-            }}
-            onRentalTypeChange={handleRentalTypeChange}
-            duration={rentalData.duration}
-            error={hasSubmitted ? errors : undefined}
-          />
+            <FinancialRental
+              key={"fin-" + (rentalData.rentalId || "add")}
+              onDataChange={handleFinancialChange}
+              initialData={{
+                dailyRate: rentalData.dailyRate,
+                totalAmount: rentalData.totalAmount,
+                rentalDuration: rentalData.rentalDuration,
+                rentalService: rentalData.rentalService,
+              }}
+              onRentalTypeChange={handleRentalTypeChange}
+              duration={rentalData.duration}
+              error={hasSubmitted ? errors : undefined}
+            />
 
-          <DocumentsForm onDataChange={handleDocumentsChange} />
+            <DocumentsForm onDataChange={handleDocumentsChange} />
 
-          {/* Submit Button */}
-          <div className="flex items-center justify-end gap-3 pt-4">
-            <button
-              onClick={handleCancel}
-              disabled={isSubmitting}
-              className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
-            >
-              Batal
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting || isFormInvalid}
-              className="px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center gap-2 text-sm"
-            >
-              <span className="material-symbols-outlined text-xl">
-                {isSubmitting ? "hourglass_empty" : "check_circle"}
-              </span>
-              {isSubmitting ? "Menyimpan..." : mode === "add" ? "Simpan Sewa" : "Update Sewa"}
-            </button>
+            {/* Submit Button */}
+            <div className="flex items-center justify-end gap-3 pt-4">
+              <button
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={isSubmitting || isFormInvalid}
+                className="px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center gap-2 text-sm"
+              >
+                <span className="material-symbols-outlined text-xl">
+                  {isSubmitting ? "hourglass_empty" : "check_circle"}
+                </span>
+                {isSubmitting ? "Menyimpan..." : mode === "add" ? "Simpan Sewa" : "Update Sewa"}
+              </button>
+            </div>
+          </div>
+
+          {/* Preview kontrak sesuai driver & kendaraan yang dipilih */}
+          <div className="xl:col-span-2 xl:sticky xl:top-6">
+            <ContractPreview
+              rentalId={rentalData.rentalId}
+              driverId={rentalData.driverId}
+              vehicleId={rentalData.vehicleId}
+              driverLabel={selectedDriverLabel}
+              vehicleLabel={selectedVehicleLabel}
+              startDate={rentalData.startDate}
+              endDate={rentalData.endDate}
+              duration={rentalData.duration}
+              dailyRate={rentalData.dailyRate}
+              rentalDuration={rentalData.rentalDuration}
+              rentalService={rentalData.rentalService}
+            />
           </div>
         </div>
       </div>

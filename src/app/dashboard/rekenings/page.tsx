@@ -17,7 +17,6 @@ import {
   type RekeningFilters,
 } from "@/components/rekenings/search-bar-rekening";
 import { rekeningApi } from "@/lib/api/rekening";
-import { formatRupiah } from "@/lib/utils/format";
 import type { Rekening } from "@/lib/types/rekening";
 import type { ExportOptions } from "@/components/ui/export";
 
@@ -29,7 +28,7 @@ const RekeningList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<RekeningFilters>({
     search: "",
-    type: "",
+    method: "",
     status: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,8 +41,13 @@ const RekeningList = () => {
       const res = await rekeningApi.getList();
       const list = Array.isArray(res.data) ? res.data : [];
       setRekenings([...list].sort((a, b) => a.code.localeCompare(b.code)));
-    } catch {
+    } catch (err: unknown) {
       setRekenings([]);
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : "Failed to load metode pembayaran. Please try again.";
+      toastError(message);
     } finally {
       setIsLoading(false);
     }
@@ -73,10 +77,11 @@ const RekeningList = () => {
       const matchesSearch =
         !query ||
         item.name.toLowerCase().includes(query) ||
-        item.bank_name.toLowerCase().includes(query) ||
-        item.account_number.toLowerCase().includes(query) ||
-        item.account_holder.toLowerCase().includes(query);
-      const matchesType = !filters.type || item.type === filters.type;
+        item.code.toLowerCase().includes(query) ||
+        (item.provider ?? "").toLowerCase().includes(query) ||
+        (item.account_number ?? "").toLowerCase().includes(query) ||
+        (item.account_holder ?? "").toLowerCase().includes(query);
+      const matchesMethod = !filters.method || item.method === filters.method;
       const matchesStatus =
         !filters.status ||
         (filters.status === "active"
@@ -84,7 +89,7 @@ const RekeningList = () => {
           : filters.status === "inactive"
             ? !item.is_active
             : true);
-      return matchesSearch && matchesType && matchesStatus;
+      return matchesSearch && matchesMethod && matchesStatus;
     });
   }, [rekenings, filters]);
 
@@ -100,15 +105,16 @@ const RekeningList = () => {
 
   const stats = useMemo(() => {
     const active = rekenings.filter((item) => item.is_active);
-    const totalBalance = rekenings.reduce(
-      (acc, item) => acc + Number(item.balance || 0),
-      0,
-    );
-    const highest = [...active].sort(
-      (a, b) => Number(b.balance) - Number(a.balance),
-    )[0];
-    const utama = rekenings.find((item) => item.type === "utama");
-    return { active: active.length, totalBalance, highest, utama };
+    const qris = rekenings.filter((item) => item.method === "qris");
+    const bank = rekenings.filter((item) => item.method === "bank");
+    const eWallet = rekenings.filter((item) => item.method === "e_wallet");
+    return {
+      active: active.length,
+      qris: qris.length,
+      bank: bank.length,
+      eWallet: eWallet.length,
+      tradisional: bank.length + eWallet.length,
+    };
   }, [rekenings]);
 
   const handleFilterChange = (next: RekeningFilters) => {
@@ -119,7 +125,9 @@ const RekeningList = () => {
   const handleDelete = async (rekening: Rekening) => {
     const confirmed = await confirmToast({
       title: "Delete Rekening",
-      message: `Are you sure you want to delete ${rekening.name} (${rekening.account_number})? This action cannot be undone.`,
+      message: `Are you sure you want to delete ${rekening.name}${
+        rekening.account_number ? ` (${rekening.account_number})` : ""
+      }? This action cannot be undone.`,
       confirmText: "Yes, Delete",
       variant: "danger",
     });
@@ -184,53 +192,53 @@ const RekeningList = () => {
   return (
     <div className="m-8 space-y-6">
       <PageHeader
-        title="Rekening List Overview"
-        description="Kelola rekening bank perusahaan untuk menerima pembayaran sewa dan kas."
+        title="Metode Pembayaran"
+        description="Kelola rekening bank, e-wallet, dan QRIS perusahaan untuk menerima pembayaran sewa dan kas."
         buttonText="Add New Rekening"
         buttonHref="/dashboard/rekenings/new"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <RekeningCard
-          title="Total Rekening"
+          title="Total Metode"
           value={String(rekenings.length)}
-          icon="account_balance"
+          icon="account_balance_wallet"
           iconColor="text-primary"
           trend={{
-            value: "Seluruh rekening terdaftar",
+            value: "Seluruh metode pembayaran terdaftar",
             color: "text-emerald-600",
             icon: "trending_up",
           }}
         />
         <RekeningCard
-          title="Rekening Aktif"
+          title="Metode Aktif"
           value={String(stats.active)}
           icon="verified"
           iconColor="text-emerald-600"
           trend={{
-            value: `${stats.active} dari ${rekenings.length} rekening aktif`,
+            value: `${stats.active} dari ${rekenings.length} metode aktif`,
             color: "text-emerald-600",
             icon: "info",
           }}
         />
         <RekeningCard
-          title="Total Saldo"
-          value={formatRupiah(stats.totalBalance)}
-          icon="savings"
+          title="QRIS"
+          value={String(stats.qris)}
+          icon="qr_code_scanner"
           iconColor="text-blue-600"
           trend={{
-            value: stats.utama ? `Utama: ${stats.utama.bank_name}` : "Belum ada rekening utama",
+            value: `${stats.qris} kode QRIS terdaftar`,
             color: "text-blue-600",
             icon: "info",
           }}
         />
         <RekeningCard
-          title="Saldo Tertinggi"
-          value={formatRupiah(stats.highest?.balance ?? 0)}
-          icon="trending_up"
+          title="Bank & E-Wallet"
+          value={String(stats.tradisional)}
+          icon="account_balance"
           iconColor="text-purple-600"
           trend={{
-            value: stats.highest?.name || "Belum ada data",
+            value: `${stats.bank} bank · ${stats.eWallet} e-wallet`,
             color: "text-purple-600",
             icon: "info",
           }}
@@ -246,7 +254,7 @@ const RekeningList = () => {
         <span className="font-bold text-slate-900 dark:text-white">
           {rekenings.length}
         </span>{" "}
-        rekening
+        metode pembayaran
       </div>
 
       <SearchBarRekening

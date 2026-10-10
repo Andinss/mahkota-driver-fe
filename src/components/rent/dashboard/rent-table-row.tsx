@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
 import { EngineSwitch } from "@/components/ui/engine-switch";
+import { getTodayLocal } from "@/lib/utils/format";
 
 interface Rental {
   id: string;
@@ -81,7 +82,7 @@ const formatDate = (value?: string | null) => {
 
 /* Status rental yang sedang berjalan dihitung dari periode sewa */
 const getDerivedStatus = (rental: Rental) => {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayLocal();
   const start = rental.startDate;
   const end = rental.endDate;
   if (start && today < start) return "upcoming";

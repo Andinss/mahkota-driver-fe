@@ -18,11 +18,10 @@ interface RekeningTableProps {
 
 const rekeningColumns: ExportColumn[] = [
   { id: "name", label: "Nama Rekening", defaultChecked: true },
-  { id: "bank_name", label: "Bank", defaultChecked: true },
+  { id: "method", label: "Metode", defaultChecked: true },
+  { id: "provider", label: "Bank / E-Wallet", defaultChecked: true },
   { id: "account_number", label: "Nomor Rekening", defaultChecked: true },
   { id: "account_holder", label: "Atas Nama", defaultChecked: true },
-  { id: "type", label: "Tipe", defaultChecked: true },
-  { id: "balance", label: "Saldo", defaultChecked: true },
   { id: "status", label: "Status", defaultChecked: true },
   { id: "description", label: "Deskripsi", defaultChecked: false },
 ];
@@ -44,15 +43,15 @@ export const RekeningTable = ({
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
             <span className="material-symbols-outlined text-emerald-500 text-xl">
-              account_balance
+              account_balance_wallet
             </span>
           </div>
           <div>
             <h2 className="font-bold text-slate-800 dark:text-white text-base">
-              Rekening List
+              Payment Methods
             </h2>
             <p className="text-xs text-slate-400">
-              {rekenings.length} rekening terdaftar
+              {rekenings.length} metode pembayaran terdaftar
             </p>
           </div>
         </div>
@@ -69,11 +68,10 @@ export const RekeningTable = ({
           <thead className="bg-white dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-semibold">
             <tr>
               <th className="px-6 py-4">Nama Rekening</th>
-              <th className="px-6 py-4">Bank</th>
+              <th className="px-6 py-4">Metode</th>
+              <th className="px-6 py-4">Bank / E-Wallet</th>
               <th className="px-6 py-4">Nomor Rekening</th>
               <th className="px-6 py-4">Atas Nama</th>
-              <th className="px-6 py-4">Tipe</th>
-              <th className="px-6 py-4">Saldo</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4 text-right">Aksi</th>
             </tr>
@@ -91,12 +89,12 @@ export const RekeningTable = ({
             {rekenings.length === 0 && (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={7}
                   className="px-6 py-12 text-center text-slate-500 dark:text-slate-400"
                 >
                   {isLoading
-                    ? "Memuat data rekening..."
-                    : "Tidak ada rekening yang cocok dengan pencarian."}
+                    ? "Memuat data metode..."
+                    : "Tidak ada metode yang cocok dengan pencarian."}
                 </td>
               </tr>
             )}
@@ -111,8 +109,8 @@ export const RekeningTable = ({
           onExport?.(options);
         }}
         totalRows={totalResults ?? rekenings.length}
-        title="Export Rekening Data"
-        description="Generate rekening bank reports."
+        title="Export Payment Methods Data"
+        description="Generate rekening, e-wallet & QRIS reports."
         columns={rekeningColumns}
       />
     </>

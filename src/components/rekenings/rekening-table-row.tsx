@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { Dropdown, DropdownMenuItem } from "@/components/ui/dropdown";
-import { RekeningStatusBadge, RekeningTypeBadge } from "./rekening-badges";
-import { formatRupiah } from "@/lib/utils/format";
+import {
+  RekeningMethodBadge,
+  RekeningStatusBadge,
+  methodMeta,
+} from "./rekening-badges";
 import type { Rekening } from "@/lib/types/rekening";
+import { resolveImageUrl } from "@/lib/utils/image";
 
 interface RekeningTableRowProps {
   rekening: Rekening;
@@ -13,21 +17,37 @@ interface RekeningTableRowProps {
   onToggleStatus?: (rekening: Rekening) => void;
 }
 
+const Placeholder = ({ icon }: { icon: string }) => (
+  <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center shrink-0">
+    <span className="material-symbols-outlined text-emerald-500 text-lg">
+      {icon}
+    </span>
+  </div>
+);
+
 export const RekeningTableRow = ({
   rekening,
   onEdit,
   onDelete,
   onToggleStatus,
 }: RekeningTableRowProps) => {
+  const isQris = rekening.method === "qris";
+  const { icon } = methodMeta(rekening.method);
+
   return (
     <tr className="hover:bg-white dark:hover:bg-slate-800/30 transition-colors">
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-emerald-500 text-lg">
-              account_balance
-            </span>
-          </div>
+          {isQris && rekening.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={resolveImageUrl(rekening.image_url) ?? undefined}
+              alt={rekening.name}
+              className="w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-white object-contain shrink-0"
+            />
+          ) : (
+            <Placeholder icon={icon} />
+          )}
           <div className="min-w-0">
             <p className="font-bold text-slate-900 dark:text-white">
               {rekening.name}
@@ -38,20 +58,17 @@ export const RekeningTableRow = ({
           </div>
         </div>
       </td>
+      <td className="px-6 py-4">
+        <RekeningMethodBadge method={rekening.method} />
+      </td>
       <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
-        {rekening.bank_name}
+        {rekening.provider || <span className="text-slate-400">-</span>}
       </td>
       <td className="px-6 py-4 font-mono font-bold text-slate-900 dark:text-white">
-        {rekening.account_number}
+        {rekening.account_number || <span className="text-slate-400">-</span>}
       </td>
       <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
-        {rekening.account_holder}
-      </td>
-      <td className="px-6 py-4">
-        <RekeningTypeBadge type={rekening.type} />
-      </td>
-      <td className="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400">
-        {formatRupiah(rekening.balance)}
+        {rekening.account_holder || <span className="text-slate-400">-</span>}
       </td>
       <td className="px-6 py-4">
         <RekeningStatusBadge isActive={rekening.is_active} />

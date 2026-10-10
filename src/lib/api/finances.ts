@@ -17,6 +17,22 @@ import type {
   PayDailyPaymentPayload,
 } from "../types/finances.ts";
 
+/** Ubah payload pembayaran jadi multipart (field teks + file bukti). */
+function toPaymentFormData(payload: CreateFinancePaymentPayload): FormData {
+  const { proof_image, ...fields } = payload;
+  const fd = new FormData();
+
+  Object.entries(fields).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") return;
+    fd.append(key, String(value));
+  });
+
+  if (proof_image) {
+    fd.append("proof_image", proof_image);
+  }
+  return fd;
+}
+
 export const financeApi = {
   getList: (params?: FinanceListParams) =>
     api.get<SuccessResponsePaginated<FinanceItem>>(
@@ -31,9 +47,9 @@ export const financeApi = {
     ),
 
   createMyPayment: (financeId: string, payload: CreateFinancePaymentPayload) =>
-    api.post<SuccessResponse<FinanceItem>>(
+    api.upload<SuccessResponse<FinanceItem>>(
       `/finances/my-finances/${financeId}/payments`,
-      payload,
+      toPaymentFormData(payload),
     ),
 
   getSummary: () =>
@@ -61,17 +77,19 @@ export const financeApi = {
     api.get<SuccessResponse<DailyPaymentItem>>(`/daily-payments/${id}`),
 
   payMyDailyPayment: (id: string, payload: PayDailyPaymentPayload) =>
-    api.post<SuccessResponse<DailyPaymentItem>>(
+    api.upload<SuccessResponse<DailyPaymentItem>>(
       `/daily-payments/${id}/pay`,
-      payload,
+      toPaymentFormData(payload),
     ),
 
   getMyAdminFee: () =>
     api.get<SuccessResponse<FinanceItem>>("/finances/my-admin-fee"),
 
-  updateDailyPaymentStatus: (id: string, status: string) =>
+  updateDailyPaymentStatus: (id: string, status: string, reason?: string) =>
     api.patch<SuccessResponse<DailyPaymentItem>>(
-      `/daily-payments/${id}/status?status=${status}`,
+      `/daily-payments/${id}/status?status=${status}${
+        reason ? `&reason=${encodeURIComponent(reason)}` : ""
+      }`,
     ),
 
   getMonthlySummary: (year?: number) =>

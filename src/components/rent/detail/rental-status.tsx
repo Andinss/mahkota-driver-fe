@@ -1,3 +1,5 @@
+import { getTodayLocal } from "@/lib/utils/format";
+
 interface RentalStatusProps {
   status?: "active" | "stopped";
   stoppedAt?: string | null;
@@ -28,7 +30,7 @@ const formatDateTime = (value?: string | null) => {
 };
 
 const getDerivedStatus = (startDate?: string, endDate?: string) => {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayLocal();
   if (startDate && today < startDate) return "upcoming";
   if (endDate && today > endDate) return "completed";
   return "active";

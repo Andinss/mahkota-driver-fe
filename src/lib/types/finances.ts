@@ -41,6 +41,17 @@ export type FinanceStatus =
 
 export type FinancePaymentStatus = "pending" | "paid" | "cancelled";
 
+/** Ringkas rekening tujuan (method_payments) untuk tampilan pembayaran. */
+export interface MethodPaymentBrief {
+  id: string;
+  code?: string;
+  name: string;
+  provider?: string | null;
+  method: string;
+  account_number?: string | null;
+  account_holder?: string | null;
+}
+
 export interface FinancePaymentItem {
   id: string;
   finance_id: string;
@@ -49,6 +60,10 @@ export interface FinancePaymentItem {
   payment_method: string;
   payment_date: string;
   reference_number: string | null;
+  method_payment_id?: string | null;
+  method_payment?: MethodPaymentBrief | null;
+  source_account?: string | null;
+  proof_image?: string | null;
   notes: string | null;
   status: FinancePaymentStatus;
   created_at: string;
@@ -178,8 +193,21 @@ export interface CreateFinancePaymentPayload {
   payment_method: string;
   payment_date: string;
   reference_number?: string;
+  /**
+   * ID transaksi/kode hasil transfer (daily payments).
+   * Fee membership tetap memakai `reference_number` per baris pembayaran.
+   */
+  transaction_id?: string;
   notes?: string;
+  /** Catatan driver saat konfirmasi pembayaran tagihan harian. */
+  payment_notes?: string;
   status?: "paid" | "pending";
+  /** Rekening tujuan (method_payments) yang dipilih driver. */
+  method_payment_id?: string;
+  /** Rekening asal milik driver yang dipakai bayar. */
+  source_account?: string;
+  /** File bukti bayar — wajib untuk transfer / e-wallet. */
+  proof_image?: File | null;
 }
 
 export type PayDailyPaymentPayload = CreateFinancePaymentPayload;
@@ -212,8 +240,22 @@ export interface DailyPaymentItem {
   payment_date: string;
   amount: number;
   status: string;
+  /** Nomor tagihan (PAY-yyyymm/xxx) — tidak diubah saat driver membayar. */
   reference_number: string;
   notes: string;
+  /** ID transaksi/kode hasil transfer yang diinput driver. */
+  transaction_id?: string | null;
+  /** Catatan dari driver saat konfirmasi pembayaran. */
+  payment_notes?: string | null;
+  /** Alasan penolakan pembayaran oleh admin (status `rejected`). */
+  rejection_reason?: string | null;
+  /** cash | transfer | e-wallet | saldo — metode yang dipilih driver. */
+  payment_method?: string | null;
+  method_payment_id?: string | null;
+  method_payment?: MethodPaymentBrief | null;
+  source_account?: string | null;
+  proof_image?: string | null;
+  paid_date?: string | null;
   created_at: string;
   updated_at: string;
 }

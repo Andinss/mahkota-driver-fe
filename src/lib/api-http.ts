@@ -238,6 +238,12 @@ export const api = {
       body: formData,
     }),
 
+  uploadPatch: <T>(endpoint: string, formData: FormData) =>
+    request<T>(endpoint, {
+      method: "PATCH",
+      body: formData,
+    }),
+
   download: async (
     endpoint: string,
     params?: Record<string, string | number | undefined>,

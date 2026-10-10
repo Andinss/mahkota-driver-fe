@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/toast-provider";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
+import { resolveImageUrl } from "@/lib/utils/image";
+import { getTodayLocal } from "@/lib/utils/format";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -62,9 +64,7 @@ const PaymentHistory = ({ finance, onChanged }: PaymentHistoryProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("transfer");
-  const [paymentDate, setPaymentDate] = useState(() =>
-    new Date().toISOString().slice(0, 10),
-  );
+  const [paymentDate, setPaymentDate] = useState(() => getTodayLocal());
   const [notes, setNotes] = useState("");
 
   const canPay = finance.status !== "paid" && finance.status !== "cancelled";
@@ -284,6 +284,7 @@ const PaymentHistory = ({ finance, onChanged }: PaymentHistoryProps) => {
                 <th className="px-4 py-3">Nominal</th>
                 <th className="px-4 py-3">Metode</th>
                 <th className="px-4 py-3">Referensi</th>
+                <th className="px-4 py-3">Bukti</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-center">Aksi</th>
               </tr>
@@ -300,11 +301,48 @@ const PaymentHistory = ({ finance, onChanged }: PaymentHistoryProps) => {
                   <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">
                     {formatCurrency(p.amount)}
                   </td>
-                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400 capitalize">
-                    {methodLabel[p.payment_method] || p.payment_method}
+                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                    <span className="capitalize font-medium">
+                      {methodLabel[p.payment_method] || p.payment_method}
+                    </span>
+                    {p.method_payment && (
+                      <span className="block text-xs text-slate-400 dark:text-slate-500">
+                        Ke: {p.method_payment.name}
+                        {p.method_payment.account_number
+                          ? ` (${p.method_payment.account_number})`
+                          : ""}
+                      </span>
+                    )}
+                    {p.source_account && (
+                      <span className="block text-xs text-slate-400 dark:text-slate-500">
+                        Dari: {p.source_account}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">
                     {p.reference_number || "-"}
+                  </td>
+                  <td className="px-4 py-3">
+                    {p.proof_image ? (
+                      <a
+                        href={resolveImageUrl(p.proof_image) ?? undefined}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Lihat bukti pembayaran"
+                        className="inline-block"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={resolveImageUrl(p.proof_image) ?? undefined}
+                          alt="Bukti pembayaran"
+                          className="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+                        />
+                      </a>
+                    ) : (
+                      <span className="text-xs text-slate-400 dark:text-slate-500">
+                        -
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <span

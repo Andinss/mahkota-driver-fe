@@ -84,8 +84,8 @@ const menuStructure: SidebarItem[] = [
       },
       {
         path: "/dashboard/rekenings",
-        label: "Rekening",
-        icon: "account_balance",
+        label: "Metode Bayar",
+        icon: "account_balance_wallet",
         permission: "",
       },
     ],

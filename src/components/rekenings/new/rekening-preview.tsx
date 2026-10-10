@@ -1,77 +1,72 @@
-import { formatRupiah } from "@/lib/utils/format";
-import type { RekeningType } from "@/lib/types/rekening";
+import { methodMeta } from "@/components/rekenings/rekening-badges";
+import { METHOD_LABELS, type RekeningMethod } from "@/lib/types/rekening";
+import { resolveImageUrl } from "@/lib/utils/image";
 
 interface RekeningPreviewProps {
   name: string;
-  bankName: string;
+  method: RekeningMethod;
+  provider: string;
   accountNumber: string;
   accountHolder: string;
-  balance: number;
-  type: RekeningType;
+  imageUrl: string;
 }
 
 export const RekeningPreview = ({
   name,
-  bankName,
+  method,
+  provider,
   accountNumber,
   accountHolder,
-  balance,
-  type,
+  imageUrl,
 }: RekeningPreviewProps) => {
-  const isUtama = type === "utama";
+  const isQris = method === "qris";
+  const { icon, label } = methodMeta(method);
 
   return (
-    <div
-      className={`rounded-2xl border p-6 ${
-        isUtama
-          ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/50"
-          : "bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/50"
-      }`}
-    >
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 p-6">
       <div className="flex items-center gap-4">
-        <div
-          className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
-            isUtama
-              ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-              : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-          }`}
-        >
-          <span className="material-symbols-outlined text-2xl">
-            account_balance
-          </span>
+        <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 overflow-hidden">
+          {isQris && imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={resolveImageUrl(imageUrl) ?? undefined}
+              alt="Pratinjau QRIS"
+              className="w-full h-full object-contain bg-white p-1"
+            />
+          ) : (
+            <span className="material-symbols-outlined text-2xl">{icon}</span>
+          )}
         </div>
-        <div className="min-w-0">
+
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-bold text-slate-900 dark:text-white">
-              {name.trim() || "Nama rekening baru"}
+            <h3 className="font-bold text-slate-900 dark:text-white truncate">
+              {name.trim() || "Nama metode baru"}
             </h3>
-            <span
-              className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
-                isUtama
-                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-              }`}
-            >
-              {isUtama ? "Rekening Utama" : "Reguler"}
+            <span className="inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+              {label}
             </span>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
-            {bankName || "Pilih nama bank"}
-          </p>
-          <p className="text-sm font-mono font-bold text-slate-900 dark:text-white mt-1">
-            {accountNumber || "0000000000"}
-          </p>
-        </div>
-        <div className="sm:ml-auto text-right shrink-0">
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-            Saldo Awal
-          </p>
-          <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
-            {formatRupiah(Number(balance) || 0)}
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
-            {accountHolder.trim() || "Atas nama holders"}
-          </p>
+
+          {isQris ? (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              {imageUrl
+                ? "Gambar QRIS siap digunakan untuk dipindai."
+                : "Belum ada gambar QRIS yang diunggah."}
+            </p>
+          ) : (
+            <>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                {provider || `Pilih ${METHOD_LABELS[method] === "E-Wallet" ? "e-wallet" : "bank"}`}
+              </p>
+              <p className="text-sm font-mono font-bold text-slate-900 dark:text-white mt-1">
+                {accountNumber || "0000000000"}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                {accountHolder.trim() || "Atas nama"}
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
