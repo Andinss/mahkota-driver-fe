@@ -1,14 +1,24 @@
-export type RekeningType = "utama" | "reguler";
+export type RekeningMethod = "qris" | "bank" | "e_wallet";
+
+export const METHOD_LABELS: Record<RekeningMethod, string> = {
+  qris: "QRIS",
+  bank: "Rekening Bank",
+  e_wallet: "E-Wallet",
+};
 
 export interface Rekening {
   id: string;
   code: string;
+  method: RekeningMethod;
   name: string;
-  bank_name: string;
-  account_number: string;
-  account_holder: string;
-  type: RekeningType;
-  balance: number;
+  /** Nama bank / nama e-wallet. Kosong untuk QRIS. */
+  provider?: string | null;
+  /** Nomor rekening / nomor e-wallet. Kosong untuk QRIS. */
+  account_number?: string | null;
+  /** Atas nama pemilik. Kosong untuk QRIS. */
+  account_holder?: string | null;
+  /** Gambar QRIS. Hanya untuk `method === "qris"`. */
+  image_url?: string | null;
   description: string;
   is_active: boolean;
   created_at: string;

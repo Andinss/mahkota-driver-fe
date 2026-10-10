@@ -23,6 +23,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
   unpaid: { label: "Belum Dibayar", color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/20", dot: "bg-red-500" },
   pending: { label: "Menunggu Verifikasi", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20", dot: "bg-amber-500" },
   paid: { label: "Lunas", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20", dot: "bg-emerald-500" },
+  rejected: { label: "Ditolak", color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-900/20", dot: "bg-rose-500" },
   cancelled: { label: "Dibatalkan", color: "text-slate-500 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800", dot: "bg-slate-400" },
 };
 
@@ -128,7 +129,7 @@ export function DriverPaymentPage() {
   const hasAdminFee = !!adminFee?.id;
   const adminFeeUnpaid = hasAdminFee && !adminFeePaid;
   const totalUnpaidDaily = dailyPayments
-    .filter((dp) => dp.status === "unpaid")
+    .filter((dp) => dp.status === "unpaid" || dp.status === "rejected")
     .reduce((sum, dp) => sum + dp.amount, 0);
   const totalUnpaidFee = feeList
     .filter((f) => f.status === "unpaid")
@@ -257,6 +258,13 @@ export function DriverPaymentPage() {
                                       >
                                         <span className="material-symbols-outlined text-[18px]">payments</span>
                                       </button>
+                                    ) : f.status === "pending" ? (
+                                      <span
+                                        title="Menunggu verifikasi admin"
+                                        className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
+                                      >
+                                        <span className="material-symbols-outlined text-[18px]">pending_actions</span>
+                                      </span>
                                     ) : (
                                       <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-xl">check_circle</span>
                                     )}
@@ -352,14 +360,26 @@ export function DriverPaymentPage() {
                                   </span>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                  {dp.status === "unpaid" ? (
+                                  {dp.status === "unpaid" ||
+                                  dp.status === "rejected" ? (
                                     <a
                                       href={`/dashboard/driver/payment/form?id=${dp.id}&type=daily`}
-                                      title="Bayar Tagihan Harian"
+                                      title={
+                                        dp.status === "rejected"
+                                          ? "Ajukan Ulang Pembayaran"
+                                          : "Bayar Tagihan Harian"
+                                      }
                                       className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors"
                                     >
                                       <span className="material-symbols-outlined text-[18px]">payments</span>
                                     </a>
+                                  ) : dp.status === "pending" ? (
+                                    <span
+                                      title="Menunggu verifikasi admin"
+                                      className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
+                                    >
+                                      <span className="material-symbols-outlined text-[18px]">pending_actions</span>
+                                    </span>
                                   ) : (
                                     <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-xl">check_circle</span>
                                   )}
@@ -370,7 +390,9 @@ export function DriverPaymentPage() {
                                      <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
                                 {dp.status === "paid"
                                   ? formatDateTime(dp.updated_at)
-                                  : "-"}
+                                  : dp.paid_date
+                                    ? formatDateOnly(dp.paid_date)
+                                    : "-"}
                                 </td>
                               </tr>
                             );

@@ -416,6 +416,8 @@ export default function PaymentList() {
                         { value: "", label: "All Status" },
                         { value: "paid", label: "Paid" },
                         { value: "unpaid", label: "Unpaid" },
+                        { value: "pending", label: "Pending" },
+                        { value: "rejected", label: "Rejected" },
                       ],
                     },
                   ]}
@@ -438,7 +440,13 @@ export default function PaymentList() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">
-                  <DailyPaymentTable payments={filteredDailyPayments} />
+                  <DailyPaymentTable
+                    payments={filteredDailyPayments}
+                    onChanged={() => {
+                      fetchDailyPayments();
+                      fetchFilteredDailyPayments();
+                    }}
+                  />
                 </div>
               </>
             )}

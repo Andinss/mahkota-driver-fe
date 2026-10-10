@@ -5,7 +5,7 @@ import { Select } from "@/components/ui/select";
 
 export interface RekeningFilters {
   search: string;
-  type: string;
+  method: string;
   status: string;
 }
 
@@ -23,20 +23,21 @@ export const SearchBarRekening = ({
       <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
         <SearchInput
           className="w-full md:max-w-md"
-          placeholder="Search by rekening name, bank, or number..."
+          placeholder="Search by nama, nomor, atau penyedia..."
           value={filters.search}
           onChange={(e) => onFilterChange({ ...filters, search: e.target.value })}
         />
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
           <Select
-            id="filter-rekening-type"
+            id="filter-rekening-method"
             className="min-w-[160px]"
-            value={filters.type}
-            onChange={(e) => onFilterChange({ ...filters, type: e.target.value })}
+            value={filters.method}
+            onChange={(e) => onFilterChange({ ...filters, method: e.target.value })}
           >
-            <option value="">Semua Tipe</option>
-            <option value="utama">Rekening Utama</option>
-            <option value="reguler">Reguler</option>
+            <option value="">Semua Metode</option>
+            <option value="qris">QRIS</option>
+            <option value="bank">Bank</option>
+            <option value="e_wallet">E-Wallet</option>
           </Select>
           <Select
             id="filter-rekening-status"

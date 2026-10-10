@@ -1,4 +1,6 @@
-import { formatDateOnly, formatRupiah } from "@/lib/utils/format";
+import { formatDateOnly } from "@/lib/utils/format";
+import { methodMeta } from "@/components/rekenings/rekening-badges";
+import { METHOD_LABELS } from "@/lib/types/rekening";
 import type { Rekening } from "@/lib/types/rekening";
 
 interface ActivityLog {
@@ -15,24 +17,41 @@ interface RekeningActivityProps {
 }
 
 export const RekeningActivity = ({ rekening }: RekeningActivityProps) => {
+  const isQris = rekening.method === "qris";
+  const { icon, label } = methodMeta(rekening.method);
+
   const activityLogs: ActivityLog[] = [
     {
-      icon: "account_balance",
+      icon,
       color: "text-emerald-500",
       bg: "bg-emerald-50 dark:bg-emerald-900/20",
       title: "Rekening ditambahkan",
       date: formatDateOnly(rekening.created_at),
-      description: `Rekening ${rekening.name} (${rekening.account_number}) didaftarkan pada ${rekening.bank_name}.`,
+      description: isQris
+        ? `Metode pembayaran ${METHOD_LABELS[rekening.method]} (${rekening.name}) didaftarkan.`
+        : `Metode ${METHOD_LABELS[rekening.method]} ${rekening.provider} dengan nomor ${rekening.account_number} didaftarkan.`,
     },
-    {
-      icon: "savings",
-      color: "text-blue-500",
-      bg: "bg-blue-50 dark:bg-blue-900/20",
-      title: `Saldo tercatat ${formatRupiah(rekening.balance)}`,
-      date: formatDateOnly(rekening.updated_at),
-      description:
-        "Saldo awal rekening ini digunakan sebagai acuan rekonsiliasi mutasi masuk dan keluar.",
-    },
+    isQris
+      ? {
+          icon: "image",
+          color: "text-blue-500",
+          bg: "bg-blue-50 dark:bg-blue-900/20",
+          title: rekening.image_url
+            ? "Gambar QRIS terunggah"
+            : "Gambar QRIS belum diunggah",
+          date: formatDateOnly(rekening.updated_at),
+          description: rekening.image_url
+            ? "Gambar QR siap dipakai untuk menerima pemindaian pembayaran."
+            : "Unggah gambar QRIS agar metode ini bisa digunakan.",
+        }
+      : {
+          icon: "badge",
+          color: "text-blue-500",
+          bg: "bg-blue-50 dark:bg-blue-900/20",
+          title: `Terdaftar atas nama ${rekening.account_holder || "-"}`,
+          date: formatDateOnly(rekening.updated_at),
+          description: `${label} ini menjadi tujuan penerimaan pembayaran pada sistem.`,
+        },
     {
       icon: "edit",
       color: "text-purple-500",

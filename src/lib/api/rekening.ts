@@ -1,104 +1,73 @@
-import { dummyRekening } from "@/lib/data/rekening";
+import { api } from "../api-http";
 import type { SuccessResponse } from "@/lib/types/api";
-import type { Rekening, RekeningInput, RekeningType } from "@/lib/types/rekening";
+import type { Rekening, RekeningMethod } from "@/lib/types/rekening";
 
 /**
- * TODO(single): ganti store in-memory ini dengan pemanggilan HTTP
- * (`api.get("/rekening")`, dst.) saat endpoint rekening sudah tersedia di backend.
+ * API metode pembayaran -> endpoint backend `/api/method-payments`.
+ * Create/update dikirim sebagai FormData (pola vendor-vehicle) karena
+ * membawa file gambar QRIS.
  */
 
-let store: Rekening[] = dummyRekening.map((item) => ({ ...item }));
+const normalize = (rekening: Rekening): Rekening => {
+  const method: RekeningMethod =
+    rekening.method === "qris" || rekening.method === "e_wallet"
+      ? rekening.method
+      : "bank";
 
-const ok = <T,>(data: T, message: string): SuccessResponse<T> => ({
-  success: true,
-  message,
-  data,
-});
+  const isQris = method === "qris";
 
-const wait = () => new Promise((resolve) => setTimeout(resolve, 250));
-
-const normalize = (rekening: Rekening): Rekening => ({
-  ...rekening,
-  type: (rekening.type === "utama" ? "utama" : "reguler") as RekeningType,
-  balance: Number(rekening.balance),
-  description: rekening.description ?? "",
-});
-
-const nextCode = (): string => {
-  const max = store.reduce((acc, item) => {
-    const parsed = Number(item.code.replace(/\D/g, ""));
-    return Number.isNaN(parsed) ? acc : Math.max(acc, parsed);
-  }, 0);
-  return `RKN-${String(max + 1).padStart(3, "0")}`;
+  return {
+    ...rekening,
+    method,
+    provider: isQris ? null : rekening.provider ?? null,
+    account_number: isQris ? null : rekening.account_number ?? null,
+    account_holder: isQris ? null : rekening.account_holder ?? null,
+    image_url: isQris ? rekening.image_url ?? null : null,
+    description: rekening.description ?? "",
+    is_active: rekening.is_active !== false,
+  };
 };
 
-const requireRekening = (id: string): Rekening => {
-  const found = store.find((item) => item.id === id);
-  if (!found) throw new Error("Data rekening tidak ditemukan");
-  return found;
-};
+const normalizeList = (data: unknown): Rekening[] =>
+  Array.isArray(data) ? data.map((item) => normalize(item as Rekening)) : [];
 
 export const rekeningApi = {
   getList: async () => {
-    await wait();
-    return ok(
-      store.map(normalize),
-      "Daftar rekening berhasil dimuat",
-    );
+    const res = await api.get<SuccessResponse<Rekening[]>>("/method-payments");
+    return { ...res, data: normalizeList(res.data) };
   },
 
   getById: async (id: string) => {
-    await wait();
-    return ok(normalize(requireRekening(id)), "Detail rekening berhasil dimuat");
+    const res = await api.get<SuccessResponse<Rekening>>(
+      `/method-payments/${id}`,
+    );
+    return { ...res, data: normalize(res.data) };
   },
 
-  create: async (payload: RekeningInput) => {
-    await wait();
-    const now = new Date().toISOString();
-    const created: Rekening = {
-      ...payload,
-      id: `rkn-${Date.now()}`,
-      code: nextCode(),
-      balance: Number(payload.balance ?? 0),
-      created_at: now,
-      updated_at: now,
-    };
-    store = [...store, created];
-    return ok(normalize(created), "Rekening berhasil ditambahkan");
+  create: async (payload: FormData) => {
+    const res = await api.upload<SuccessResponse<Rekening>>(
+      "/method-payments",
+      payload,
+    );
+    return { ...res, data: normalize(res.data) };
   },
 
-  update: async (id: string, payload: Partial<RekeningInput>) => {
-    await wait();
-    const current = requireRekening(id);
-    const updated: Rekening = {
-      ...current,
-      ...payload,
-      balance: Number(payload.balance ?? current.balance),
-      updated_at: new Date().toISOString(),
-    };
-    store = store.map((item) => (item.id === id ? updated : item));
-    return ok(normalize(updated), "Rekening berhasil diperbarui");
+  update: async (id: string, payload: FormData) => {
+    const res = await api.uploadPatch<SuccessResponse<Rekening>>(
+      `/method-payments/${id}`,
+      payload,
+    );
+    return { ...res, data: normalize(res.data) };
   },
 
   updateStatus: async (id: string, is_active: boolean) => {
-    await wait();
-    requireRekening(id);
-    const updated: Rekening = {
-      ...requireRekening(id),
-      is_active,
-      updated_at: new Date().toISOString(),
-    };
-    store = store.map((item) => (item.id === id ? updated : item));
-    return ok(
-      normalize(updated),
-      `Status rekening berhasil diubah menjadi ${is_active ? "aktif" : "nonaktif"}.`,
+    const res = await api.patch<SuccessResponse<Rekening>>(
+      `/method-payments/${id}/status`,
+      { is_active },
     );
+    return { ...res, data: normalize(res.data) };
   },
 
-  delete: async (id: string) => {
-    await wait();
-    const current = requireRekening(id);
-    store = store.filter((item) => item.id !== id);
-    return ok<void>(undefined, `Rekening ${current.name} berhasil dihapus`);
-  },
+  delete: (id: string) =>
+    api.delete<SuccessResponse<void>>(`/method-payments/${id}`),
 };

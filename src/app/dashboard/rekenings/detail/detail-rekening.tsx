@@ -53,7 +53,7 @@ const RekeningDetail = ({ id }: RekeningDetailProps) => {
               progress_activity
             </span>
             <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-              Memuat data rekening...
+              Memuat data metode pembayaran...
             </p>
           </div>
         </div>
@@ -77,10 +77,10 @@ const RekeningDetail = ({ id }: RekeningDetailProps) => {
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  Detail Rekening
+                  Detail Metode Pembayaran
                 </h1>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Rekening tidak ditemukan
+                  Metode tidak ditemukan
                 </p>
               </div>
             </div>
@@ -90,13 +90,13 @@ const RekeningDetail = ({ id }: RekeningDetailProps) => {
               search_off
             </span>
             <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-              Data rekening tidak ditemukan
+              Data metode tidak ditemukan
             </p>
             <button
               onClick={handleBack}
               className="mt-4 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
             >
-              Kembali ke Daftar Rekening
+              Kembali ke Daftar Metode
             </button>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { financeApi } from "@/lib/api/finances";
 import { HttpClientError } from "@/lib/api-http";
 import { toastError } from "@/components/ui/toast-provider";
 import type { FinanceItem } from "@/lib/types/finances";
+import { getTodayLocal } from "@/lib/utils/format";
 
 const formatIDR = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -23,7 +24,7 @@ interface DriverPaymentModalProps {
 export function DriverPaymentModal({ finance, onClose, onSuccess }: DriverPaymentModalProps) {
   const [paymentMethod, setPaymentMethod] = useState<string>("transfer");
   const [amount, setAmount] = useState<string>("");
-  const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [paymentDate, setPaymentDate] = useState<string>(getTodayLocal());
   const [referenceNumber, setReferenceNumber] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);

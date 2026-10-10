@@ -2,6 +2,7 @@
 
 import { DateInput } from "@/components/ui/date-input";
 import { useState } from "react";
+import { formatLocalDate } from "@/lib/utils/format";
 
 interface FormErrors {
   vehicleId?: string;
@@ -35,12 +36,7 @@ const calculateDuration = (start: string, end: string) => {
   return null;
 };
 
-const toLocalDateStr = (d: Date) => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-};
+const toLocalDateStr = (d: Date) => formatLocalDate(d);
 
 const Period = ({ onDataChange, initialData, error }: PeriodProps) => {
   const [startDate, setStartDate] = useState<string>(initialData?.startDate || "");
