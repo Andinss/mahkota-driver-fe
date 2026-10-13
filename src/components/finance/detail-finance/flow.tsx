@@ -22,6 +22,7 @@ const FlowFinance = ({ status = "unpaid" }: FlowFinanceProps) => {
   ];
 
   const cancelledBadge = status === "cancelled";
+  const rejectedBadge = status === "rejected";
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 relative overflow-hidden">
@@ -42,6 +43,13 @@ const FlowFinance = ({ status = "unpaid" }: FlowFinanceProps) => {
           <span className="material-symbols-outlined text-red-500">block</span>
           <p className="text-sm font-semibold text-red-600 dark:text-red-400">
             Tagihan dibatalkan dan tidak lagi menjadi kewajiban aktif.
+          </p>
+        </div>
+      ) : rejectedBadge ? (
+        <div className="rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-4 flex items-center gap-3">
+          <span className="material-symbols-outlined text-rose-500">cancel</span>
+          <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">
+            Pembayaran terakhir ditolak admin. Driver dapat mengajukan ulang.
           </p>
         </div>
       ) : (

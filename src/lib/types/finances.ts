@@ -37,6 +37,7 @@ export type FinanceStatus =
   | "unpaid"
   | "pending"
   | "paid"
+  | "rejected"
   | "cancelled";
 
 export type FinancePaymentStatus = "pending" | "paid" | "cancelled";
@@ -66,6 +67,7 @@ export interface FinancePaymentItem {
   proof_image?: string | null;
   notes: string | null;
   status: FinancePaymentStatus;
+  rejection_reason?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -80,6 +82,7 @@ export interface FinanceItem {
   fee_admin_join: number;
   fee_kind?: "admin_join" | "membership_fee";
   paid_amount: number;
+  pending_amount?: number;
   remaining_amount: number;
   payments_count?: number;
   notes: string;
@@ -214,6 +217,8 @@ export type PayDailyPaymentPayload = CreateFinancePaymentPayload;
 
 export interface UpdateFinancePaymentPayload {
   status: "paid" | "cancelled";
+  /** Alasan penolakan — hanya dipakai saat status `cancelled`. */
+  reason?: string;
 }
 
 export interface MonthlyFinanceItem {

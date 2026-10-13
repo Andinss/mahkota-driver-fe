@@ -166,8 +166,21 @@ export default function DriverPaymentFormPage() {
     (isDaily && daily?.status === "pending") ||
     (!isDaily && finance?.status === "pending");
 
+  /**
+   * Pembayaran fee membership yang ditolak admin. Tagihan kembali `unpaid`
+   * tetapi driver perlu tahu alasan penolakannya.
+   */
+  const rejectedFeePayment = !isDaily
+    ? [...(finance?.payments || [])]
+        .filter((p) => p.status === "cancelled")
+        .pop() ?? null
+    : null;
+  const isFeeRejected =
+    !isDaily && finance?.status === "unpaid" && !!rejectedFeePayment;
+
   /** Pembayaran ditolak admin — form terbuka lagi untuk pengajuan ulang. */
-  const isRejected = isDaily && daily?.status === "rejected";
+  const isRejected =
+    (isDaily && daily?.status === "rejected") || isFeeRejected;
 
   const proofMissing = isTransferLike && !proofFile;
   const sourceMissing = isTransferLike && !sourceAccount.trim();
@@ -198,6 +211,21 @@ export default function DriverPaymentFormPage() {
       }
       if (daily.method_payment_id) {
         setSelectedMethod(`mp:${daily.method_payment_id}`);
+      }
+    }
+    // Fee membership yang ditolak: prefill dari pembayaran terakhir yang
+    // ditolak supaya driver tinggal memperbaiki.
+    if (rejectedFeePayment) {
+      if (rejectedFeePayment.reference_number)
+        setReferenceNumber(rejectedFeePayment.reference_number);
+      if (rejectedFeePayment.source_account)
+        setSourceAccount(rejectedFeePayment.source_account);
+      if (rejectedFeePayment.notes) setNotes(rejectedFeePayment.notes);
+      if (rejectedFeePayment.payment_date) {
+        setPaymentDate(String(rejectedFeePayment.payment_date).slice(0, 10));
+      }
+      if (rejectedFeePayment.method_payment_id) {
+        setSelectedMethod(`mp:${rejectedFeePayment.method_payment_id}`);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -373,12 +401,14 @@ export default function DriverPaymentFormPage() {
                 <p>
                   Pembayaran sebelumnya{" "}
                   <span className="font-bold">ditolak oleh admin</span>. Silakan
-                  perbaiki data lalu ajukan ulang — data dan bukti sebelumnya
-                  akan ditimpa.
+                  perbaiki data lalu ajukan ulang.
                 </p>
-                {daily?.rejection_reason && (
+                {(daily?.rejection_reason ||
+                  rejectedFeePayment?.rejection_reason) && (
                   <p className="text-xs font-normal mt-1">
-                    Alasan: {daily.rejection_reason}
+                    Alasan:{" "}
+                    {daily?.rejection_reason ??
+                      rejectedFeePayment?.rejection_reason}
                   </p>
                 )}
               </div>

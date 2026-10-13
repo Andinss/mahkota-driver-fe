@@ -299,6 +299,13 @@ export default function PaymentList() {
   });
 
   const filteredAdminFees = adminFees.filter((f) => {
+    if (adminStatusFilter === "pending") {
+      // Tampilkan tagihan yang punya pembayaran menunggu verifikasi admin.
+      return (Number(f.pending_amount) || 0) > 0;
+    }
+    if (adminStatusFilter === "rejected") {
+      return f.status === "rejected" || f.status === "cancelled";
+    }
     if (adminStatusFilter && f.status !== adminStatusFilter) return false;
     return true;
   });
@@ -470,6 +477,8 @@ export default function PaymentList() {
                         { value: "", label: "All Status" },
                         { value: "paid", label: "Paid" },
                         { value: "unpaid", label: "Unpaid" },
+                        { value: "pending", label: "Pending" },
+                        { value: "rejected", label: "Ditolak" },
                       ],
                     },
                   ]}
@@ -478,6 +487,10 @@ export default function PaymentList() {
                   <AdminPaymentTable
                     payments={filteredAdminFees}
                     onSelect={(item) => setAdminFeeDetailId(item.id)}
+                    onChanged={() => {
+                      fetchAdminFees();
+                      fetchSummary();
+                    }}
                   />
                   <div className="border-t border-[#dbe0e6] dark:border-gray-700">
                     <Pagination currentPage={adminFeeMeta.page} totalPages={adminFeeMeta.totalPages} totalResults={adminFeeMeta.total} resultsPerPage={itemsPerPage} onPageChange={handlePageChange} onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }} />

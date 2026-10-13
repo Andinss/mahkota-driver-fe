@@ -31,6 +31,7 @@ const statusLabel: Record<FinanceStatus, string> = {
   unpaid: "Unpaid",
   pending: "Pending",
   paid: "Paid",
+  rejected: "Ditolak",
   cancelled: "Cancelled",
 };
 
@@ -38,6 +39,7 @@ const statusStyle: Record<FinanceStatus, string> = {
   unpaid: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
   pending: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
   paid: "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400",
+  rejected: "bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400",
   cancelled: "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400",
 };
 
@@ -45,6 +47,7 @@ const statusDot: Record<FinanceStatus, string> = {
   unpaid: "bg-slate-400",
   pending: "bg-amber-500",
   paid: "bg-green-500",
+  rejected: "bg-rose-500",
   cancelled: "bg-red-500",
 };
 

@@ -41,6 +41,7 @@ const statusLabel: Record<FinanceStatus, string> = {
   unpaid: "Unpaid",
   pending: "Pending",
   paid: "Paid",
+  rejected: "Ditolak",
   cancelled: "Cancelled",
 };
 
