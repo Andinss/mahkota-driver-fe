@@ -27,6 +27,28 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
   cancelled: { label: "Dibatalkan", color: "text-slate-500 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800", dot: "bg-slate-400" },
 };
 
+/**
+ * Status tampilan tagihan fee membership. Pembayaran yang ditolak admin
+ * (`cancelled`) membuat tagihan kembali `unpaid`; supaya driver tahu,
+ * tagihan tanpa pembayaran valid yang punya riwayat ditolak ditampilkan
+ * sebagai "Ditolak" beserta alasannya.
+ */
+const feeDisplayStatus = (
+  f: FinanceItem,
+): { key: string; reason: string | null } => {
+  const rejected = (f.payments || []).filter((p) => p.status === "cancelled");
+  const lastRejected = rejected[rejected.length - 1];
+  const hasPaidPayment = (f.payments || []).some((p) => p.status === "paid");
+  if (
+    (f.status === "unpaid" || f.status === "rejected") &&
+    !hasPaidPayment &&
+    lastRejected
+  ) {
+    return { key: "rejected", reason: lastRejected.rejection_reason ?? null };
+  }
+  return { key: f.status, reason: null };
+};
+
 export function DriverPaymentPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -225,8 +247,11 @@ export function DriverPaymentPage() {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                           {feeList.map((f) => {
-                            const st = statusConfig[f.status] || statusConfig.unpaid;
+                            const display = feeDisplayStatus(f);
+                            const st = statusConfig[display.key] || statusConfig.unpaid;
                             const sisa = Number(f.remaining_amount) || 0;
+                            const canPay =
+                              display.key === "unpaid" || display.key === "rejected";
                             return (
                               <tr key={f.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                                 <td className="px-6 py-4 font-mono font-semibold text-sm text-primary">{f.reference_number}</td>
@@ -240,6 +265,11 @@ export function DriverPaymentPage() {
                                     <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
                                     {st.label}
                                   </span>
+                                  {display.key === "rejected" && display.reason && (
+                                    <p className="text-xs text-rose-500 dark:text-rose-400 mt-1 max-w-[220px] truncate" title={display.reason}>
+                                      Alasan: {display.reason}
+                                    </p>
+                                  )}
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                   <div className="inline-flex items-center gap-1.5">
@@ -250,15 +280,19 @@ export function DriverPaymentPage() {
                                     >
                                       <span className="material-symbols-outlined text-[18px]">visibility</span>
                                     </button>
-                                    {f.status === "unpaid" ? (
+                                    {canPay ? (
                                       <button
                                         onClick={() => router.push(`/dashboard/driver/payment/form?id=${f.id}`)}
-                                        title="Bayar Fee Membership"
+                                        title={
+                                          display.key === "rejected"
+                                            ? "Ajukan Ulang Pembayaran"
+                                            : "Bayar Fee Membership"
+                                        }
                                         className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors"
                                       >
                                         <span className="material-symbols-outlined text-[18px]">payments</span>
                                       </button>
-                                    ) : f.status === "pending" ? (
+                                    ) : display.key === "pending" ? (
                                       <span
                                         title="Menunggu verifikasi admin"
                                         className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"

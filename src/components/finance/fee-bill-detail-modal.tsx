@@ -31,8 +31,8 @@ const paymentStatusStyle: Record<string, { label: string; cls: string }> = {
     cls: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
   },
   cancelled: {
-    label: "Dibatalkan",
-    cls: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+    label: "Ditolak",
+    cls: "bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400",
   },
 };
 
@@ -230,6 +230,11 @@ export const FeeBillDetailModal = ({
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${pst.cls}`}>
                               {pst.label}
                             </span>
+                            {p.status === "cancelled" && p.rejection_reason && (
+                              <p className="text-xs text-rose-500 dark:text-rose-400 mt-1 max-w-[200px] whitespace-normal" title={p.rejection_reason}>
+                                {p.rejection_reason}
+                              </p>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-xs text-slate-400 max-w-[220px] truncate" title={p.reference_number || p.notes || ""}>
                             {p.reference_number || p.notes || "-"}
