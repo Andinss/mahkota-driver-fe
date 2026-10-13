@@ -6,6 +6,7 @@ interface PageHeaderProps {
   description: string;
   buttonText?: string;
   buttonHref?: string;
+  buttonIcon?: string;
 }
 
 export const PageHeader = ({
@@ -13,6 +14,7 @@ export const PageHeader = ({
   description,
   buttonText,
   buttonHref,
+  buttonIcon = "add",
 }: PageHeaderProps) => {
   const router = useRouter();
 
@@ -33,7 +35,7 @@ export const PageHeader = ({
         </p>
       </div>
       {buttonText && buttonHref && (
-        <Button icon="add" onClick={handleClick}>
+        <Button icon={buttonIcon} onClick={handleClick}>
           {buttonText}
         </Button>
       )}

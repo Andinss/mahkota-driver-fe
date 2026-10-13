@@ -70,8 +70,8 @@ export const MonitoringTable = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/dashboard/monitorings/real-time">
-            <Button icon="map">Lihat Peta</Button>
+          <Link href="/dashboard/monitorings/out-of-town">
+            <Button icon="commute">Pengajuan</Button>
           </Link>
           <button
             onClick={() => setIsExportModalOpen(true)}
