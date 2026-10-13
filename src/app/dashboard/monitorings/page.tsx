@@ -66,7 +66,8 @@ export default function MonitoringPage() {
         !statusFilter ||
         status === statusFilter ||
         (statusFilter === "moving" && status === "moving") ||
-        (statusFilter === "idle" && (status === "idle" || status === "parking")) ||
+        (statusFilter === "idle" &&
+          (status === "idle" || status === "parking")) ||
         (statusFilter === "emergency" && status === "emergency");
       const matchesSearch =
         !q ||
@@ -105,11 +106,10 @@ export default function MonitoringPage() {
   const movingCount = records.filter(
     (r) => (r.Car_Status || "").toLowerCase() === "moving",
   ).length;
-  const idleCount = records.filter(
-    (r) =>
-      ["idle", "parking", "stopped", ""].includes(
-        (r.Car_Status || "").toLowerCase(),
-      ),
+  const idleCount = records.filter((r) =>
+    ["idle", "parking", "stopped", ""].includes(
+      (r.Car_Status || "").toLowerCase(),
+    ),
   ).length;
 
   return (
@@ -128,31 +128,66 @@ export default function MonitoringPage() {
           <PageHeader
             title="Monitoring"
             description="Daftar lokasi armada real-time dari GPS tracking."
+            buttonText="Lihat Peta"
+            buttonHref="/dashboard/monitorings/real-time"
+            buttonIcon="map"
           />
 
+          {/* Stats — 3 kolom */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { key: "emergency", label: "Darurat", value: emergencyCount, icon: "warning", iconBg: "bg-red-50 dark:bg-red-900/20", iconColor: "text-red-500" },
-              { key: "moving", label: "Bergerak", value: movingCount, icon: "directions_car", iconBg: "bg-blue-50 dark:bg-blue-900/20", iconColor: "text-blue-500" },
-              { key: "idle", label: "Idle", value: idleCount, icon: "schedule", iconBg: "bg-slate-100 dark:bg-slate-800", iconColor: "text-slate-500 dark:text-slate-400" },
-            ].map((s) => (
-              <div
-                key={s.key}
-                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5"
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${s.iconBg}`}>
-                    <span className={`material-symbols-outlined text-2xl ${s.iconColor}`}>{s.icon}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{s.value}</p>
-                    <p className="text-xs text-slate-400 font-medium">{s.label}</p>
-                  </div>
+            {/* Darurat */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-red-50 dark:bg-red-900/20">
+                  <span className="material-symbols-outlined text-2xl text-red-500">
+                    warning
+                  </span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {emergencyCount}
+                  </p>
+                  <p className="text-xs text-slate-400 font-medium">Darurat</p>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* Bergerak */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-blue-50 dark:bg-blue-900/20">
+                  <span className="material-symbols-outlined text-2xl text-blue-500">
+                    directions_car
+                  </span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {movingCount}
+                  </p>
+                  <p className="text-xs text-slate-400 font-medium">Bergerak</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Idle */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-slate-100 dark:bg-slate-800">
+                  <span className="material-symbols-outlined text-2xl text-slate-500 dark:text-slate-400">
+                    schedule
+                  </span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {idleCount}
+                  </p>
+                  <p className="text-xs text-slate-400 font-medium">Idle</p>
+                </div>
+              </div>
+            </div>
           </div>
 
+          {/* Filter */}
           <MonitoringFilters
             searchValue={search}
             onSearchChange={(value) => {
@@ -166,6 +201,7 @@ export default function MonitoringPage() {
             }}
           />
 
+          {/* Table */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             <MonitoringTable
               records={paged}
