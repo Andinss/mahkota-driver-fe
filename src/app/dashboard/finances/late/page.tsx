@@ -1,192 +1,250 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CardDriver } from "@/components/finance/late-payment/card-driver";
 import { StatsCard } from "@/components/finance/late-payment/card-stats";
-import { rentalApi } from "@/lib/api/rentals";
-import React, { useState, useEffect, useCallback } from "react";
-
-function formatTime(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHrs = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 60) return `${diffMins} min ago`;
-  if (diffHrs < 24) return `${diffHrs} hrs ago`;
-  if (diffDays < 7) return `${diffDays} days ago`;
-  return date.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
-}
+import { financeApi } from "@/lib/api/finances";
+import type { LatePaymentItem, LatePaymentStats } from "@/lib/types/finances";
+import { resolveImageUrl } from "@/lib/utils/image";
+import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
+import {
+  confirmToast,
+  toastError,
+  toastSuccess,
+} from "@/components/ui/toast-provider";
 
 function formatCurrency(amount: number): string {
-  return `Rp ${Math.round(amount).toLocaleString("id-ID")}`;
+  return `Rp ${Math.round(Number(amount) || 0).toLocaleString("id-ID")}`;
 }
 
-interface LateRentalItem {
-  id: string;
-  rental_number: string;
-  driver_id: string;
-  driver_name: string;
-  driver_photo: string;
-  vehicle_name: string;
-  plate: string;
-  end_date: string;
-  total_revenue: number;
-  days_late: number;
-}
+type Filter = "pending" | "approved" | "rejected" | "all";
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
+const filterTabs: { value: Filter; label: string }[] = [
+  { value: "pending", label: "Menunggu" },
+  { value: "approved", label: "Disetujui" },
+  { value: "rejected", label: "Ditolak" },
+  { value: "all", label: "Semua" },
+];
+
+const statusBadge: Record<string, string> = {
+  pending:
+    "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+  approved:
+    "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+  rejected:
+    "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800",
+};
+
+const statusLabel: Record<string, string> = {
+  pending: "Menunggu Persetujuan",
+  approved: "Disetujui",
+  rejected: "Ditolak",
+};
 
 export default function LatePaymentPage() {
-  const [rentals, setRentals] = useState<LateRentalItem[]>([]);
+  const [requests, setRequests] = useState<LatePaymentItem[]>([]);
+  const [stats, setStats] = useState<LatePaymentStats | null>(null);
+  const [filter, setFilter] = useState<Filter>("pending");
   const [selectedId, setSelectedId] = useState<string>("");
   const [loading, setLoading] = useState(true);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectNote, setRejectNote] = useState("");
+  const [adminNote, setAdminNote] = useState("");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await rentalApi.getList({ limit: 1000 });
-      const items = Array.isArray(res.data) ? res.data : [];
-      const now = new Date();
-      const late = items
-        .filter((r) => new Date(r.end_date) < now)
-        .map((r) => ({
-          id: r.id,
-          rental_number: r.rental_number || r.id.slice(0, 8).toUpperCase(),
-          driver_id: r.driver_id,
-          driver_name: r.driver ? `${r.driver.first_name} ${r.driver.last_name}` : "-",
-          driver_photo: r.driver?.profile_photo || "",
-          vehicle_name: r.vehicle
-            ? `${r.vehicle.merk} ${r.vehicle.model}`
-            : "-",
-          plate: r.vehicle?.license_plate || "-",
-          end_date: r.end_date,
-          total_revenue: Number(r.daily_rate) * Number(r.total_duration),
-          days_late: Math.max(
-            0,
-            Math.floor(
-              (now.getTime() - new Date(r.end_date).getTime()) /
-                (1000 * 60 * 60 * 24),
-            ),
-          ),
-        }));
-      setRentals(late);
+      const [reqRes, statsRes] = await Promise.all([
+        financeApi.lateRequests(filter === "all" ? undefined : filter),
+        financeApi.lateStats(),
+      ]);
+      const items = Array.isArray(reqRes?.data) ? reqRes.data : [];
+      setRequests(items);
+      setStats(statsRes?.data ?? null);
+      setSelectedId((prev) =>
+        items.some((r) => r.id === prev) ? prev : (items[0]?.id ?? ""),
+      );
     } catch {
-      setRentals([]);
+      setRequests([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filter]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   useEffect(() => {
-    if (rentals.length > 0 && !selectedId) {
-      setSelectedId(rentals[0].id);
+    setAdminNote("");
+  }, [selectedId]);
+
+  const currentItem = useMemo(
+    () => requests.find((r) => r.id === selectedId) || requests[0] || null,
+    [requests, selectedId],
+  );
+
+  const handleApprove = async () => {
+    if (!currentItem) return;
+    const confirmed = await confirmToast({
+      title: "Setujui Izin Telat",
+      message: `Izin telat ${currentItem.driver_name} untuk tagihan ${formatDateOnly(
+        currentItem.due_date,
+      )} akan disetujui. Hari tersebut tidak dihitung sebagai keterlambatan.`,
+      confirmText: "Ya, Setujui",
+      cancelText: "Batal",
+      variant: "info",
+    });
+    if (!confirmed) return;
+
+    setIsSubmitting(true);
+    try {
+      await financeApi.lateApprove(currentItem.id, adminNote || undefined);
+      toastSuccess("Izin telat disetujui");
+      setAdminNote("");
+      fetchData();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Gagal menyetujui izin");
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [rentals, selectedId]);
+  };
 
-  const currentItem =
-    rentals.find((r) => r.id === selectedId) || rentals[0];
-
-  const totalLate = rentals.length;
-  const totalAmount = rentals.reduce((s, r) => s + Number(r.total_revenue), 0);
-  const avgDaysLate = totalLate > 0 ? Math.round(rentals.reduce((s, r) => s + r.days_late, 0) / totalLate) : 0;
+  const handleReject = async () => {
+    if (!currentItem) return;
+    setIsSubmitting(true);
+    try {
+      await financeApi.lateReject(
+        currentItem.id,
+        rejectNote.trim() || adminNote || undefined,
+      );
+      toastSuccess("Izin telat ditolak");
+      setRejectOpen(false);
+      setRejectNote("");
+      fetchData();
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : "Gagal menolak izin");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="p-8 space-y-8">
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <StatsCard
-          title="Total Late Payments"
-          value={String(totalLate)}
-          icon="warning"
-          iconColor="text-red-600"
-          trend={{
-            icon: "arrow_upward",
-            value: `${totalLate} rental(s)`,
-            trendColor: "text-red-700",
-            bgColor: "bg-red-100 dark:bg-red-900/30",
-          }}
-        />
-        <StatsCard
-          title="Total Outstanding"
-          value={formatCurrency(totalAmount)}
-          icon="payments"
+          title="Menunggu Persetujuan"
+          value={String(stats?.pending ?? 0)}
+          icon="hourglass_top"
           iconColor="text-amber-600"
           trend={{
-            icon: "info",
-            value: "Belum dibayar",
+            icon: "schedule",
+            value: "Perlu ditinjau",
             trendColor: "text-amber-700",
-            bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
+            bgColor: "bg-amber-100 dark:bg-amber-900/30",
           }}
         />
         <StatsCard
-          title="Rata-rata Keterlambatan"
-          value={`${avgDaysLate} hari`}
-          icon="schedule"
+          title="Disetujui"
+          value={String(stats?.approved ?? 0)}
+          icon="task_alt"
           iconColor="text-blue-600"
           trend={{
-            icon: "calendar_today",
-            value: `${totalLate} transaksi`,
+            icon: "check_circle",
+            value: "Tidak dihitung telat",
             trendColor: "text-blue-700",
             bgColor: "bg-blue-100 dark:bg-blue-900/30",
           }}
         />
+        <StatsCard
+          title="Ditolak"
+          value={String(stats?.rejected ?? 0)}
+          icon="cancel"
+          iconColor="text-red-600"
+          trend={{
+            icon: "info",
+            value: "Tetap dihitung telat",
+            trendColor: "text-red-700",
+            bgColor: "bg-red-100 dark:bg-red-900/30",
+          }}
+        />
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-320px)] min-h-[600px]">
+      {/* Filter */}
+      <div className="flex gap-1 border-b border-slate-200 dark:border-slate-800">
+        {filterTabs.map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setFilter(tab.value)}
+            className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${
+              filter === tab.value
+                ? "border-primary text-primary"
+                : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-360px)] min-h-[560px]">
+        {/* List */}
         <div className="w-full lg:w-4/12 flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-2">
           {loading ? (
-            <div className="text-center text-slate-400 py-8">Loading...</div>
-          ) : rentals.length === 0 ? (
+            <div className="text-center text-slate-400 py-8">Memuat data...</div>
+          ) : requests.length === 0 ? (
             <div className="text-center text-slate-400 py-8">
-              No late payments found.
+              Tidak ada pengajuan izin telat.
             </div>
           ) : (
-            rentals.map((rental) => (
+            requests.map((item) => (
               <CardDriver
-                key={rental.id}
-                id={rental.driver_id}
-                name={rental.driver_name}
-                imageUrl={rental.driver_photo}
-                amount={formatCurrency(rental.total_revenue)}
-                time={formatTime(rental.end_date)}
-                status="Late"
-                isSelected={selectedId === rental.id}
-                onClick={() => setSelectedId(rental.id)}
+                key={item.id}
+                id={
+                  item.driver?.employee_id ||
+                  item.driver_id?.slice(0, 8).toUpperCase() ||
+                  "-"
+                }
+                name={item.driver_name || "-"}
+                imageUrl={resolveImageUrl(item.driver?.profile_photo) || ""}
+                amount={formatCurrency(item.amount)}
+                time={formatDateTime(item.created_at)}
+                status={item.status === "pending" ? "Perlu Review" : statusLabel[item.status]}
+                isSelected={currentItem?.id === item.id}
+                onClick={() => setSelectedId(item.id)}
               />
             ))
           )}
         </div>
 
+        {/* Detail */}
         {currentItem ? (
           <div className="flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden">
             <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
               <div className="flex items-center gap-4">
                 <div className="size-14 rounded-full border-2 border-white dark:border-slate-700 shadow-sm overflow-hidden bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-lg font-bold text-slate-500">
-                  {currentItem.driver_name.charAt(0)}
+                  {currentItem.driver_name?.charAt(0)?.toUpperCase() || "D"}
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                     {currentItem.driver_name}
                   </h2>
                   <p className="text-sm text-slate-500">
-                    ID: {currentItem.driver_id.slice(0, 8)}
+                    NIK:{" "}
+                    {currentItem.driver?.employee_id ||
+                      currentItem.driver_id?.slice(0, 8)}
                   </p>
                 </div>
               </div>
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">
-                Late Payment
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${
+                  statusBadge[currentItem.status] ||
+                  statusBadge.pending
+                }`}
+              >
+                {statusLabel[currentItem.status] || currentItem.status}
               </span>
             </div>
 
@@ -196,60 +254,202 @@ export default function LatePaymentPage() {
                   <span className="material-symbols-outlined text-primary text-lg">
                     receipt_long
                   </span>
-                  Rental Details
+                  Detail Pengajuan Izin
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                     <p className="text-xs text-slate-500 uppercase font-bold tracking-tight mb-1">
-                      Vehicle
+                      Kendaraan
                     </p>
                     <p className="text-sm font-bold text-slate-900 dark:text-white">
-                      {currentItem.vehicle_name}
+                      {currentItem.vehicle || "-"}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {currentItem.plate}
+                      {currentItem.plate || "-"}
                     </p>
                   </div>
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                     <p className="text-xs text-slate-500 uppercase font-bold tracking-tight mb-1">
-                      Rental #
+                      Tanggal Tagihan
                     </p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                      {currentItem.rental_number}
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {formatDateOnly(currentItem.due_date)}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      Keterlambatan {currentItem.late_days ?? 0} hari
                     </p>
                   </div>
-                  <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20">
-                    <p className="text-xs text-rose-600 dark:text-rose-400 uppercase font-bold tracking-tight mb-1">
-                      Due Date
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                    <p className="text-xs text-slate-500 uppercase font-bold tracking-tight mb-1">
+                      Diajukan
                     </p>
-                    <p className="text-sm font-bold text-rose-700 dark:text-rose-300">
-                      {formatDate(currentItem.end_date)}
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {formatDateOnly(currentItem.payment_date)}
                     </p>
-                    <p className="text-xs text-rose-500 font-medium">
-                      {currentItem.days_late} day
-                      {currentItem.days_late > 1 ? "s" : ""} late
+                    <p className="text-xs text-slate-400">
+                      {formatDateTime(currentItem.created_at)}
                     </p>
                   </div>
                   <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
                     <p className="text-xs text-primary uppercase font-bold tracking-tight mb-1">
-                      Total Amount
+                      Nominal Tagihan
                     </p>
                     <p className="text-base font-black text-primary">
-                      {formatCurrency(currentItem.total_revenue)}
+                      {formatCurrency(currentItem.amount)}
                     </p>
                   </div>
                 </div>
               </div>
+
+              <div className="mb-8">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-lg">
+                    chat_bubble_outline
+                  </span>
+                  Alasan Driver
+                </h4>
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-100 dark:border-slate-800 space-y-2">
+                  <h5 className="font-bold text-slate-900 dark:text-white">
+                    {currentItem.justification_reason ||
+                      currentItem.justification ||
+                      "-"}
+                  </h5>
+                  {currentItem.message && (
+                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                      {currentItem.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {currentItem.admin_note && currentItem.status !== "pending" && (
+                <div className="mb-8">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-lg">
+                      sticky_note_2
+                    </span>
+                    Catatan Supervisor
+                  </h4>
+                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-100 dark:border-slate-800 text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">
+                    {currentItem.admin_note}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {currentItem.status === "pending" && (
+              <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-4">
+                <div>
+                  <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium block mb-1.5">
+                    Catatan untuk Driver (opsional)
+                  </label>
+                  <textarea
+                    value={adminNote}
+                    onChange={(e) => setAdminNote(e.target.value)}
+                    rows={2}
+                    maxLength={500}
+                    disabled={isSubmitting}
+                    placeholder="Contoh: izin disetujui untuk 1 hari"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-3">
+                  <button
+                    onClick={() => {
+                      setRejectNote("");
+                      setRejectOpen(true);
+                    }}
+                    disabled={isSubmitting}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 border border-slate-200 dark:border-slate-700 font-bold rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all text-sm disabled:opacity-50"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      close
+                    </span>
+                    Tolak
+                  </button>
+                  <button
+                    onClick={handleApprove}
+                    disabled={isSubmitting}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all active:scale-[0.98] text-sm disabled:opacity-50"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      check
+                    </span>
+                    Setujui Izin
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-center text-slate-400">
-            Select a driver to view details
+            Pilih pengajuan untuk melihat detail
           </div>
         )}
       </div>
 
+      {/* Dialog tolak */}
+      {rejectOpen && currentItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !isSubmitting && setRejectOpen(false)}
+          />
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-rose-500 text-xl">
+                  cancel
+                </span>
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                  Tolak Izin Telat
+                </h3>
+                <p className="text-xs text-slate-400">
+                  {currentItem.driver_name} —{" "}
+                  {formatDateOnly(currentItem.due_date)}
+                </p>
+              </div>
+            </div>
 
+            <div>
+              <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium block mb-1.5">
+                Alasan Penolakan (opsional)
+              </label>
+              <textarea
+                value={rejectNote}
+                onChange={(e) => setRejectNote(e.target.value)}
+                rows={3}
+                maxLength={500}
+                disabled={isSubmitting}
+                placeholder="Contoh: pengajuan tidak disertai bukti / di luar ketentuan"
+                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500/50 resize-none"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-1">
+              <button
+                onClick={() => setRejectOpen(false)}
+                disabled={isSubmitting}
+                className="px-4 py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={isSubmitting}
+                className="px-4 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 text-sm"
+              >
+                <span className="material-symbols-outlined text-lg">
+                  {isSubmitting ? "hourglass_empty" : "cancel"}
+                </span>
+                {isSubmitting ? "Menyimpan..." : "Ya, Tolak"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Pagination } from "@/components/ui/pagination";
 import { financeApi } from "@/lib/api/finances";
 import {
@@ -174,6 +175,13 @@ export const DailyPaymentTable = ({
             </p>
           </div>
         </div>
+        <Link
+          href="/dashboard/finances/late"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+        >
+          <span className="material-symbols-outlined text-base">event_busy</span>
+          Izin Telat
+        </Link>
       </div>
 
       {/* Table */}

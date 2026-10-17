@@ -129,9 +129,31 @@ export interface LatePaymentItem {
   driver_image: string;
   status: "pending" | "approved" | "rejected";
   admin_note: string | null;
+  /** Tagihan harian yang diajukan izin telat (izin 1 tanggal). */
+  daily_payment_id?: string | null;
+  /** Jumlah hari keterlambatan saat pengajuan. */
+  late_days?: number;
   rentals?: RentalBrief[];
   created_at: string;
   updated_at: string;
+}
+
+export interface LatePaymentSummaryEntry {
+  daily_payment_id: string;
+  payment_date: string;
+  amount: number;
+  status: string;
+  late_days: number;
+  izin_status: "pending" | "approved" | "rejected" | null;
+  is_permitted: boolean;
+}
+
+export interface LatePaymentSummary {
+  driver_id: string;
+  entries: LatePaymentSummaryEntry[];
+  total_late_days: number;
+  countable_late_days: number;
+  permitted_late_days: number;
 }
 
 export interface LatePaymentStats {
@@ -232,6 +254,22 @@ export interface FinanceMonthlySummary {
   months: MonthlyFinanceItem[];
 }
 
+export interface DailyPaymentIzin {
+  id: string;
+  status: "pending" | "approved" | "rejected";
+  late_days: number;
+  justification: string;
+  justification_reason: string | null;
+  message: string | null;
+  /** Catatan dari supervisor saat menyetujui/menolak. */
+  admin_note: string | null;
+  due_date: string;
+  amount: number;
+  payment_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface DailyPaymentItem {
   id: string;
   rental_id: string;
@@ -261,6 +299,11 @@ export interface DailyPaymentItem {
   source_account?: string | null;
   proof_image?: string | null;
   paid_date?: string | null;
+  /** Status izin telat bayar untuk tagihan ini (jika ada). */
+  izin_id?: string | null;
+  izin_status?: "pending" | "approved" | "rejected" | null;
+  /** Detail izin telat (alasan driver + catatan supervisor). */
+  izin?: DailyPaymentIzin | null;
   created_at: string;
   updated_at: string;
 }

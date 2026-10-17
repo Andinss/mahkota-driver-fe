@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { financeApi } from "@/lib/api/finances";
 import { useAuth } from "@/lib/auth-context";
-import { toastError } from "@/components/ui/toast-provider";
+import { toastError, toastSuccess } from "@/components/ui/toast-provider";
 import { Pagination } from "@/components/ui/pagination";
 import { FeeBillDetailModal } from "@/components/finance/fee-bill-detail-modal";
 import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
@@ -25,6 +25,53 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
   paid: { label: "Lunas", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20", dot: "bg-emerald-500" },
   rejected: { label: "Ditolak", color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-900/20", dot: "bg-rose-500" },
   cancelled: { label: "Dibatalkan", color: "text-slate-500 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800", dot: "bg-slate-400" },
+};
+
+/** Tampilan status izin telat bayar + dampaknya terhadap penghitungan telat. */
+const izinStatusMeta: Record<
+  "pending" | "approved" | "rejected",
+  {
+    label: string;
+    icon: string;
+    boxBg: string;
+    boxBorder: string;
+    iconColor: string;
+    badge: string;
+    impact: string;
+    impactColor: string;
+  }
+> = {
+  pending: {
+    label: "Menunggu Persetujuan",
+    icon: "hourglass_top",
+    boxBg: "bg-amber-50 dark:bg-amber-900/20",
+    boxBorder: "border-amber-200 dark:border-amber-800",
+    iconColor: "text-amber-500",
+    badge: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+    impact: "Menunggu keputusan supervisor.",
+    impactColor: "text-amber-700 dark:text-amber-400",
+  },
+  approved: {
+    label: "Disetujui",
+    icon: "task_alt",
+    boxBg: "bg-emerald-50 dark:bg-emerald-900/20",
+    boxBorder: "border-emerald-200 dark:border-emerald-800",
+    iconColor: "text-emerald-500",
+    badge:
+      "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+    impact: "Hari ini TIDAK dihitung sebagai keterlambatan.",
+    impactColor: "text-emerald-700 dark:text-emerald-400",
+  },
+  rejected: {
+    label: "Ditolak",
+    icon: "cancel",
+    boxBg: "bg-rose-50 dark:bg-rose-900/20",
+    boxBorder: "border-rose-200 dark:border-rose-800",
+    iconColor: "text-rose-500",
+    badge: "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400",
+    impact: "Hari ini tetap dihitung sebagai keterlambatan.",
+    impactColor: "text-rose-700 dark:text-rose-400",
+  },
 };
 
 /**
@@ -76,6 +123,13 @@ export function DriverPaymentPage() {
   const [feePageSize, setFeePageSize] = useState(10);
   const [isLoadingFees, setIsLoadingFees] = useState(false);
   const [detailFeeId, setDetailFeeId] = useState<string | null>(null);
+  // Dialog ajukan izin telat bayar (per tagihan harian).
+  const [izinTarget, setIzinTarget] = useState<DailyPaymentItem | null>(null);
+  const [izinReason, setIzinReason] = useState("");
+  const [izinMessage, setIzinMessage] = useState("");
+  const [isSubmittingIzin, setIsSubmittingIzin] = useState(false);
+  // Modal detail izin telat (status + catatan supervisor).
+  const [izinDetail, setIzinDetail] = useState<DailyPaymentItem | null>(null);
 
   const fetchFeeList = useCallback(async () => {
     if (!user?.driver_id) return;
@@ -147,6 +201,41 @@ export function DriverPaymentPage() {
     }
   }, [activeTab, fetchFeeList]);
 
+  const openIzinDialog = (dp: DailyPaymentItem) => {
+    setIzinTarget(dp);
+    setIzinReason("");
+    setIzinMessage("");
+  };
+
+  const submitIzin = async () => {
+    if (!izinTarget) return;
+    if (!izinReason.trim()) {
+      toastError("Alasan izin wajib diisi");
+      return;
+    }
+    setIsSubmittingIzin(true);
+    try {
+      await financeApi.createMyLatePayment({
+        daily_payment_id: izinTarget.id,
+        justification: izinReason.trim(),
+        message: izinMessage.trim() || undefined,
+      });
+      toastSuccess(
+        "Pengajuan izin telat terkirim, menunggu persetujuan supervisor",
+      );
+      setIzinTarget(null);
+      setIzinReason("");
+      setIzinMessage("");
+      fetchDailyPayments();
+    } catch (err) {
+      toastError(
+        err instanceof Error ? err.message : "Gagal mengirim pengajuan izin",
+      );
+    } finally {
+      setIsSubmittingIzin(false);
+    }
+  };
+
   const adminFeePaid = adminFee?.status === "paid";
   const hasAdminFee = !!adminFee?.id;
   const adminFeeUnpaid = hasAdminFee && !adminFeePaid;
@@ -156,6 +245,10 @@ export function DriverPaymentPage() {
   const totalUnpaidFee = feeList
     .filter((f) => f.status === "unpaid")
     .reduce((sum, f) => sum + (Number(f.fee_admin_join) || 0), 0);
+
+  const izinMeta = izinDetail?.izin
+    ? izinStatusMeta[izinDetail.izin.status]
+    : null;
 
   return (
     <div className="m-8">
@@ -394,29 +487,69 @@ export function DriverPaymentPage() {
                                   </span>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                  {dp.status === "unpaid" ||
-                                  dp.status === "rejected" ? (
-                                    <a
-                                      href={`/dashboard/driver/payment/form?id=${dp.id}&type=daily`}
-                                      title={
-                                        dp.status === "rejected"
-                                          ? "Ajukan Ulang Pembayaran"
-                                          : "Bayar Tagihan Harian"
-                                      }
-                                      className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors"
-                                    >
-                                      <span className="material-symbols-outlined text-[18px]">payments</span>
-                                    </a>
-                                  ) : dp.status === "pending" ? (
-                                    <span
-                                      title="Menunggu verifikasi admin"
-                                      className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
-                                    >
-                                      <span className="material-symbols-outlined text-[18px]">pending_actions</span>
-                                    </span>
-                                  ) : (
-                                    <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-xl">check_circle</span>
-                                  )}
+                                  <div className="inline-flex items-center justify-end gap-1.5">
+                                    {(dp.status === "unpaid" ||
+                                      dp.status === "rejected") && (
+                                      <a
+                                        href={`/dashboard/driver/payment/form?id=${dp.id}&type=daily`}
+                                        title={
+                                          dp.status === "rejected"
+                                            ? "Ajukan Ulang Pembayaran"
+                                            : "Bayar Tagihan Harian"
+                                        }
+                                        className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors"
+                                      >
+                                        <span className="material-symbols-outlined text-[18px]">payments</span>
+                                      </a>
+                                    )}
+                                    {dp.izin_status ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => setIzinDetail(dp)}
+                                        title={
+                                          dp.izin_status === "approved"
+                                            ? "Izin telat disetujui — lihat detail"
+                                            : dp.izin_status === "rejected"
+                                              ? "Izin telat ditolak — lihat detail"
+                                              : "Izin telat menunggu persetujuan — lihat detail"
+                                        }
+                                        className={`inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors ${
+                                          dp.izin_status === "approved"
+                                            ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white"
+                                            : dp.izin_status === "rejected"
+                                              ? "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white"
+                                              : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white"
+                                        }`}
+                                      >
+                                        <span className="material-symbols-outlined text-[18px]">
+                                          {dp.izin_status === "approved"
+                                            ? "task_alt"
+                                            : dp.izin_status === "rejected"
+                                              ? "event_busy"
+                                              : "hourglass_top"}
+                                        </span>
+                                      </button>
+                                    ) : dp.status === "unpaid" ||
+                                      dp.status === "rejected" ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => openIzinDialog(dp)}
+                                        title="Ajukan izin telat bayar"
+                                        className="inline-flex items-center justify-center w-8 h-8 rounded-md transition-colors bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 hover:bg-slate-500 hover:text-white"
+                                      >
+                                        <span className="material-symbols-outlined text-[18px]">event_busy</span>
+                                      </button>
+                                    ) : dp.status === "pending" ? (
+                                      <span
+                                        title="Menunggu verifikasi admin"
+                                        className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
+                                      >
+                                        <span className="material-symbols-outlined text-[18px]">pending_actions</span>
+                                      </span>
+                                    ) : (
+                                      <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-xl">check_circle</span>
+                                    )}
+                                  </div>
                                 </td>
                                      <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
                                   {formatDateTime(dp.created_at)}
@@ -484,6 +617,275 @@ export function DriverPaymentPage() {
               router.push(`/dashboard/driver/payment/form?id=${id}`);
             }}
           />
+
+          {/* Dialog ajukan izin telat bayar */}
+          {izinTarget && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onClick={() => !isSubmittingIzin && setIzinTarget(null)}
+              />
+              <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-amber-500 text-xl">
+                      event_busy
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                      Ajukan Izin Telat Bayar
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Pengajuan akan disetujui oleh Supervisor
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-4 py-3 text-sm space-y-1.5">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-slate-500 dark:text-slate-400">
+                      Kendaraan
+                    </span>
+                    <span className="font-semibold text-slate-900 dark:text-white text-right">
+                      {izinTarget.vehicle_name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-slate-500 dark:text-slate-400">
+                      Plat
+                    </span>
+                    <span className="font-mono text-xs text-slate-700 dark:text-slate-300">
+                      {izinTarget.license_plate}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-slate-500 dark:text-slate-400">
+                      Tanggal Tagihan
+                    </span>
+                    <span className="font-semibold text-slate-900 dark:text-white">
+                      {formatDateOnly(izinTarget.payment_date)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-slate-500 dark:text-slate-400">
+                      Nominal
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-white">
+                      {formatIDR(izinTarget.amount)}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium block mb-1.5">
+                    Alasan Izin <span className="text-rose-500">*</span>
+                  </label>
+                  <textarea
+                    value={izinReason}
+                    onChange={(e) => setIzinReason(e.target.value)}
+                    rows={3}
+                    maxLength={500}
+                    disabled={isSubmittingIzin}
+                    placeholder="Contoh: keperluan keluarga mendesak / kendala teknis"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium block mb-1.5">
+                    Pesan Tambahan (opsional)
+                  </label>
+                  <input
+                    value={izinMessage}
+                    onChange={(e) => setIzinMessage(e.target.value)}
+                    maxLength={1000}
+                    disabled={isSubmittingIzin}
+                    placeholder="Boleh dikosongkan"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-1">
+                  <button
+                    onClick={() => setIzinTarget(null)}
+                    disabled={isSubmittingIzin}
+                    className="px-4 py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={submitIzin}
+                    disabled={isSubmittingIzin}
+                    className="px-4 py-2.5 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 text-sm"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {isSubmittingIzin ? "hourglass_empty" : "send"}
+                    </span>
+                    {isSubmittingIzin ? "Mengirim..." : "Kirim Pengajuan"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal detail izin telat bayar (status + catatan supervisor) */}
+          {izinDetail?.izin && izinMeta && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onClick={() => setIzinDetail(null)}
+              />
+              <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
+                {/* Header */}
+                <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${izinMeta.boxBg}`}
+                  >
+                    <span
+                      className={`material-symbols-outlined text-xl ${izinMeta.iconColor}`}
+                    >
+                      {izinMeta.icon}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base truncate">
+                      Detail Izin Telat Bayar
+                    </h3>
+                    <p className="text-xs text-slate-400 truncate">
+                      {izinDetail.vehicle_name} • {izinDetail.license_plate}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIzinDetail(null)}
+                    className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-xl">
+                      close
+                    </span>
+                  </button>
+                </div>
+
+                <div className="p-5 space-y-4 overflow-y-auto">
+                  {/* Status banner */}
+                  <div
+                    className={`rounded-xl border px-4 py-3 flex items-center justify-between gap-3 ${izinMeta.boxBg} ${izinMeta.boxBorder}`}
+                  >
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${izinMeta.badge}`}
+                    >
+                      <span className="material-symbols-outlined text-sm">
+                        {izinMeta.icon}
+                      </span>
+                      {izinMeta.label}
+                    </span>
+                    <span
+                      className={`text-xs font-medium text-right ${izinMeta.impactColor}`}
+                    >
+                      {izinMeta.impact}
+                    </span>
+                  </div>
+
+                  {/* Info tagihan */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 px-4 py-3">
+                      <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+                        Tanggal Tagihan
+                      </p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {formatDateOnly(izinDetail.payment_date)}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 px-4 py-3">
+                      <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+                        Nominal
+                      </p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">
+                        {formatIDR(izinDetail.amount)}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 px-4 py-3">
+                      <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+                        Keterlambatan
+                      </p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {izinDetail.izin.late_days} hari
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 px-4 py-3">
+                      <p className="text-[11px] text-slate-500 uppercase font-bold tracking-tight mb-1">
+                        Diajukan
+                      </p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {formatDateTime(izinDetail.izin.created_at)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Alasan driver */}
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                      Alasan Anda
+                    </h5>
+                    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 p-4 space-y-1">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {izinDetail.izin.justification_reason ||
+                          izinDetail.izin.justification ||
+                          "-"}
+                      </p>
+                      {izinDetail.izin.message && (
+                        <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">
+                          {izinDetail.izin.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Catatan supervisor — hanya jika ada */}
+                  {izinDetail.izin.admin_note && (
+                    <div>
+                      <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        Catatan Supervisor
+                      </h5>
+                      <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 p-4">
+                        <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">
+                          {izinDetail.izin.admin_note}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIzinDetail(null)}
+                    className="px-4 py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+                  >
+                    Tutup
+                  </button>
+                  {izinDetail.izin.status === "rejected" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const target = izinDetail;
+                        setIzinDetail(null);
+                        openIzinDialog(target);
+                      }}
+                      className="px-4 py-2.5 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-all active:scale-[0.98] flex items-center gap-2 text-sm"
+                    >
+                      <span className="material-symbols-outlined text-lg">
+                        refresh
+                      </span>
+                      Ajukan Ulang
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

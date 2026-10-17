@@ -8,6 +8,7 @@ import type {
   UpdateFinancePayload,
   LatePaymentItem,
   LatePaymentStats,
+  LatePaymentSummary,
   FinanceMonthlySummary,
   DriverFinanceSummary,
   FinancePaymentItem,
@@ -158,6 +159,31 @@ export const financeApi = {
     api.post<SuccessResponse<LatePaymentItem>>(`/late-payments/${id}/reject`, {
       admin_note: adminNote,
     }),
+
+  /** Daftar pengajuan izin telat (halaman persetujuan). */
+  lateRequests: (status?: string) =>
+    api.get<SuccessResponse<LatePaymentItem[]>>(
+      "/late-payments/requests",
+      status ? { status } : undefined,
+    ),
+
+  /** Pengajuan izin telat bayar oleh driver untuk satu tagihan harian. */
+  createMyLatePayment: (payload: {
+    daily_payment_id: string;
+    justification?: string;
+    message?: string;
+  }) =>
+    api.post<SuccessResponse<LatePaymentItem>>("/late-payments/my", payload),
+
+  /** Daftar izin telat milik driver. */
+  myLatePayments: () =>
+    api.get<SuccessResponse<LatePaymentItem[]>>("/late-payments/my"),
+
+  /** Ringkasan keterlambatan (dasar limit hutang; izin approved dikecualikan). */
+  myLateSummary: () =>
+    api.get<SuccessResponse<LatePaymentSummary>>(
+      "/late-payments/my-late-summary",
+    ),
 
   exportData: async (params: Record<string, string | number | undefined>) => {
     const { blob, filename } = await api.download("/finances/export", params);
