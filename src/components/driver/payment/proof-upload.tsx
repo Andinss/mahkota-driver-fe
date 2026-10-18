@@ -15,6 +15,16 @@ interface ProofUploadProps {
   file: File | null;
   onChange: (next: ProofUploadValue) => void;
   error?: string;
+  /** Label singkat jenis berkas (default: "Bukti pembayaran"). */
+  label?: string;
+  /** Judul area drop di keadaan kosong. */
+  title?: string;
+  /** Petunjuk tambahan di keadaan kosong. */
+  hint?: string;
+  /** Keterangan saat file sudah dipilih. */
+  note?: string;
+  /** Ikon material di area drop (default: receipt_long). */
+  icon?: string;
 }
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB — sesuai limit backend
@@ -29,6 +39,11 @@ export const ProofUpload = ({
   file,
   onChange,
   error,
+  label = "Bukti pembayaran",
+  title = "Tarik & letakkan foto bukti pembayaran di sini",
+  hint = "atau klik untuk memilih file · PNG, JPG, WEBP · maks 5 MB",
+  note = "Pastikan nominal, tanggal, dan tujuan transfer terlihat jelas.",
+  icon = "receipt_long",
 }: ProofUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -80,16 +95,16 @@ export const ProofUpload = ({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={displaySrc ?? undefined}
-              alt="Pratinjau bukti pembayaran"
+              alt={`Pratinjau ${label.toLowerCase()}`}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-900 dark:text-white">
-              {file ? "Bukti pembayaran siap dikirim" : "Bukti pembayaran"}
+              {file ? `${label} siap dikirim` : label}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Pastikan nominal, tanggal, dan tujuan transfer terlihat jelas.
+              {note}
             </p>
             <div className="flex flex-wrap gap-2 mt-3">
               <button
@@ -160,13 +175,13 @@ export const ProofUpload = ({
         }`}
       >
         <span className="material-symbols-outlined text-4xl text-slate-400">
-          receipt_long
+          {icon}
         </span>
         <p className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-2">
-          Tarik &amp; letakkan foto bukti pembayaran di sini
+          {title}
         </p>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          atau klik untuk memilih file &middot; PNG, JPG, WEBP &middot; maks 5 MB
+          {hint}
         </p>
       </div>
       <input

@@ -322,6 +322,30 @@ export default function LatePaymentPage() {
                 </div>
               </div>
 
+              {currentItem.proof_image && (
+                <div className="mb-8">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-lg">
+                      image
+                    </span>
+                    Bukti / Evidence
+                  </h4>
+                  <a
+                    href={resolveImageUrl(currentItem.proof_image) || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:opacity-90 transition-opacity"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={resolveImageUrl(currentItem.proof_image) || ""}
+                      alt="Bukti izin telat"
+                      className="w-full max-h-80 object-contain bg-white dark:bg-slate-900"
+                    />
+                  </a>
+                </div>
+              )}
+
               {currentItem.admin_note && currentItem.status !== "pending" && (
                 <div className="mb-8">
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
