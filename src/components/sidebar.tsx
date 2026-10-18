@@ -77,6 +77,12 @@ const menuStructure: SidebarItem[] = [
         permission: "finance.read",
       },
       {
+        path: "/dashboard/finances/late",
+        label: "Request",
+        icon: "request_quote",
+        permission: "late_payment.read",
+      },
+      {
         path: "/dashboard/memberships",
         label: "Memberships",
         icon: "card_membership",

@@ -171,9 +171,22 @@ export const financeApi = {
   createMyLatePayment: (payload: {
     daily_payment_id: string;
     justification?: string;
-    message?: string;
-  }) =>
-    api.post<SuccessResponse<LatePaymentItem>>("/late-payments/my", payload),
+    proof_image?: File | null;
+  }) => {
+    const { proof_image, ...fields } = payload;
+    const fd = new FormData();
+    Object.entries(fields).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") return;
+      fd.append(key, String(value));
+    });
+    if (proof_image) {
+      fd.append("proof_image", proof_image);
+    }
+    return api.upload<SuccessResponse<LatePaymentItem>>(
+      "/late-payments/my",
+      fd,
+    );
+  },
 
   /** Daftar izin telat milik driver. */
   myLatePayments: () =>

@@ -125,7 +125,7 @@ export interface LatePaymentItem {
   justification: string;
   justification_reason: string;
   message: string;
-  proof_image: string;
+  proof_image: string | null;
   driver_image: string;
   status: "pending" | "approved" | "rejected";
   admin_note: string | null;
@@ -261,6 +261,8 @@ export interface DailyPaymentIzin {
   justification: string;
   justification_reason: string | null;
   message: string | null;
+  /** Bukti/gambar pendukung yang diunggah driver (opsional). */
+  proof_image?: string | null;
   /** Catatan dari supervisor saat menyetujui/menolak. */
   admin_note: string | null;
   due_date: string;

@@ -35,6 +35,28 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
   cancelled: { label: "Dibatalkan", color: "text-slate-500 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800", dot: "bg-slate-400" },
 };
 
+/** Badge "Izin Telat" pada kolom Aksi, warna & tooltip mengikuti status izin. */
+const izinBadgeConfig: Record<
+  "pending" | "approved" | "rejected",
+  { className: string; title: string }
+> = {
+  pending: {
+    className:
+      "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+    title: "Izin telat menunggu persetujuan",
+  },
+  approved: {
+    className:
+      "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+    title: "Izin telat disetujui",
+  },
+  rejected: {
+    className:
+      "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800",
+    title: "Izin telat ditolak",
+  },
+};
+
 export function DriverDashboardPage() {
   const { user } = useAuth();
   const [driver, setDriver] = useState<DriverItem | null>(null);
@@ -102,6 +124,8 @@ export function DriverDashboardPage() {
       amount: Number(f.fee_admin_join) || 0,
       status: f.status,
       href: `/dashboard/driver/payment/form?id=${f.id}`,
+      izinStatus: null as "pending" | "approved" | "rejected" | null,
+      izinNote: null as string | null,
     })),
     ...dailyPayments.map((dp) => ({
       id: `daily-${dp.id}`,
@@ -110,6 +134,8 @@ export function DriverDashboardPage() {
       amount: dp.amount,
       status: dp.status,
       href: `/dashboard/driver/payment/form?id=${dp.id}&type=daily`,
+      izinStatus: dp.izin_status ?? null,
+      izinNote: dp.izin?.admin_note ?? null,
     })),
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -315,17 +341,38 @@ export function DriverDashboardPage() {
                             </span>
                           </td>
                           <td className="px-6 py-3 text-right">
-                            {row.status === "unpaid" ? (
-                              <a
-                                href={row.href}
-                                title="Bayar Tagihan"
-                                className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors"
-                              >
-                                <span className="material-symbols-outlined text-[18px]">payments</span>
-                              </a>
-                            ) : (
-                              <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-xl">check_circle</span>
-                            )}
+                            <div className="inline-flex items-center justify-end gap-2">
+                              {row.status === "unpaid" && (
+                                <a
+                                  href={row.href}
+                                  title="Bayar Tagihan"
+                                  className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors"
+                                >
+                                  <span className="material-symbols-outlined text-[18px]">payments</span>
+                                </a>
+                              )}
+                              {row.izinStatus ? (
+                                <span
+                                  title={`${
+                                    izinBadgeConfig[row.izinStatus].title
+                                  }${
+                                    row.izinNote
+                                      ? ` — Catatan: ${row.izinNote}`
+                                      : ""
+                                  }`}
+                                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] font-semibold whitespace-nowrap ${izinBadgeConfig[row.izinStatus].className}`}
+                                >
+                                  <span className="material-symbols-outlined text-[14px]">
+                                    event_busy
+                                  </span>
+                                  Izin Telat
+                                </span>
+                              ) : row.status !== "unpaid" ? (
+                                <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-xl">
+                                  check_circle
+                                </span>
+                              ) : null}
+                            </div>
                           </td>
                         </tr>
                       );
