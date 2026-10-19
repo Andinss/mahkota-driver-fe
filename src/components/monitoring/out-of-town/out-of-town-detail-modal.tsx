@@ -2,8 +2,14 @@
 
 import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
+import { Textarea } from "@/components/ui/textarea";
 import { OutOfTownRequest, OutOfTownStatus } from "./out-of-town-table-row";
-import { confirmToast, toastSuccess } from "@/components/ui/toast-provider";
+import { outOfTownApi } from "@/lib/api/out-of-town";
+import {
+  confirmToast,
+  toastError,
+  toastSuccess,
+} from "@/components/ui/toast-provider";
 
 interface OutOfTownDetailModalProps {
   request: OutOfTownRequest | null;
@@ -38,6 +44,7 @@ export const OutOfTownDetailModal = ({
   onStatusChange,
 }: OutOfTownDetailModalProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [adminNote, setAdminNote] = useState("");
 
   if (!request) return null;
 
@@ -59,11 +66,21 @@ export const OutOfTownDetailModal = ({
 
     setIsProcessing(true);
     try {
-      onStatusChange?.(request.id, newStatus);
+      const note = adminNote.trim() || undefined;
+      if (newStatus === "approved") {
+        await outOfTownApi.approve(request.id, note);
+      } else {
+        await outOfTownApi.reject(request.id, note);
+      }
       toastSuccess(
         `Pengajuan dari ${request.driverName} berhasil di${newStatus === "approved" ? "setujui" : "tolak"}.`,
       );
+      onStatusChange?.(request.id, newStatus);
       onClose();
+    } catch (err) {
+      toastError(
+        err instanceof Error ? err.message : "Gagal memproses pengajuan",
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -110,6 +127,14 @@ export const OutOfTownDetailModal = ({
             </span>
           </InfoField>
 
+          {request.adminNote && (
+            <InfoField icon="sticky_note_2" label="Catatan Admin">
+              <span className="font-normal text-slate-600 dark:text-slate-300">
+                {request.adminNote}
+              </span>
+            </InfoField>
+          )}
+
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wide">
               Status
@@ -124,27 +149,37 @@ export const OutOfTownDetailModal = ({
 
         {/* Footer — hanya kalau pending */}
         {request.status === "pending" && (
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
-            <button
-              onClick={() => handleAction("rejected")}
-              disabled={isProcessing}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 font-semibold rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors text-sm disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-base">
-                cancel
-              </span>
-              Tolak
-            </button>
-            <button
-              onClick={() => handleAction("approved")}
-              disabled={isProcessing}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors text-sm disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-base">
-                check_circle
-              </span>
-              Setujui
-            </button>
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
+            <Textarea
+              id="admin-note"
+              label="Catatan (opsional)"
+              placeholder="Tambahkan catatan untuk driver..."
+              className="min-h-[80px]"
+              value={adminNote}
+              onChange={(e) => setAdminNote(e.target.value)}
+            />
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => handleAction("rejected")}
+                disabled={isProcessing}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 font-semibold rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors text-sm disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-base">
+                  cancel
+                </span>
+                Tolak
+              </button>
+              <button
+                onClick={() => handleAction("approved")}
+                disabled={isProcessing}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors text-sm disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-base">
+                  check_circle
+                </span>
+                Setujui
+              </button>
+            </div>
           </div>
         )}
       </div>
