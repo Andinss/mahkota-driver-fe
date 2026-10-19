@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { Select } from "@/components/ui/select";
@@ -8,16 +8,66 @@ import { DriverOutOfTownCard } from "@/components/driver/out-of-town/driver-out-
 import { DriverOutOfTownForm } from "@/components/driver/out-of-town/driver-out-of-town-form";
 import type { OutOfTownRequest } from "@/components/monitoring/out-of-town/out-of-town-table-row";
 import { useAuth } from "@/lib/auth-context";
+import { outOfTownApi } from "@/lib/api/out-of-town";
+import type { OutOfTownItem, OutOfTownStats } from "@/lib/types/out-of-town";
+import { toastError } from "@/components/ui/toast-provider";
+import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
+
+/** Ubah data backend (snake_case) ke bentuk tampilan komponen. */
+const toView = (item: OutOfTownItem): OutOfTownRequest => ({
+  id: item.id,
+  driverName: item.driver_name || "-",
+  driverPhone: item.driver_phone || "-",
+  vehiclePlate: item.vehicle_plate || "-",
+  vehicleName: item.vehicle_name || "-",
+  destination: item.destination,
+  departureDate: formatDateOnly(item.departure_date),
+  returnDate: formatDateOnly(item.return_date),
+  reason: item.reason || "-",
+  status: item.status,
+  submittedAt: formatDateTime(item.created_at),
+});
 
 export default function DriverOutOfTownPage() {
   const { user } = useAuth();
   const [requests, setRequests] = useState<OutOfTownRequest[]>([]);
+  const [stats, setStats] = useState<OutOfTownStats>({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    total: 0,
+  });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const handleSubmit = (newRequest: OutOfTownRequest) => {
-    setRequests([newRequest, ...requests]);
-  };
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    if (!user?.driver_id) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const [listRes, statsRes] = await Promise.all([
+        outOfTownApi.listMine(),
+        outOfTownApi.stats(),
+      ]);
+      setRequests((listRes?.data || []).map(toView));
+      if (statsRes?.data) setStats(statsRes.data);
+    } catch (err) {
+      toastError(
+        err instanceof Error ? err.message : "Gagal memuat pengajuan",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.driver_id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const filteredRequests = useMemo(() => {
     return requests.filter((r) => {
@@ -31,9 +81,9 @@ export default function DriverOutOfTownPage() {
     });
   }, [requests, search, statusFilter]);
 
-  const pendingCount = requests.filter((r) => r.status === "pending").length;
-  const approvedCount = requests.filter((r) => r.status === "approved").length;
-  const rejectedCount = requests.filter((r) => r.status === "rejected").length;
+  const handleSubmit = () => {
+    fetchData();
+  };
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -66,7 +116,7 @@ export default function DriverOutOfTownPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {pendingCount}
+                  {stats.pending}
                 </p>
                 <p className="text-xs text-slate-400 font-medium">Menunggu</p>
               </div>
@@ -83,7 +133,7 @@ export default function DriverOutOfTownPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {approvedCount}
+                  {stats.approved}
                 </p>
                 <p className="text-xs text-slate-400 font-medium">Disetujui</p>
               </div>
@@ -100,7 +150,7 @@ export default function DriverOutOfTownPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {rejectedCount}
+                  {stats.rejected}
                 </p>
                 <p className="text-xs text-slate-400 font-medium">Ditolak</p>
               </div>
@@ -141,15 +191,23 @@ export default function DriverOutOfTownPage() {
           ))}
           {filteredRequests.length === 0 && (
             <div className="col-span-full py-20 flex flex-col items-center justify-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 mb-3">
-                search_off
+              <span
+                className={`material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 mb-3 ${
+                  isLoading ? "animate-spin" : ""
+                }`}
+              >
+                {isLoading ? "hourglass_empty" : "search_off"}
               </span>
               <p className="text-base font-semibold text-slate-600 dark:text-slate-400">
-                Tidak ada pengajuan ditemukan
+                {isLoading
+                  ? "Memuat pengajuan..."
+                  : "Tidak ada pengajuan ditemukan"}
               </p>
-              <p className="text-sm text-slate-400">
-                Coba ubah kata kunci atau filter Anda
-              </p>
+              {!isLoading && (
+                <p className="text-sm text-slate-400">
+                  Coba ubah kata kunci atau filter Anda
+                </p>
+              )}
             </div>
           )}
         </div>

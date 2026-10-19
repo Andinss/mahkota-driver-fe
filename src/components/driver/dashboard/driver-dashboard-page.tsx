@@ -61,22 +61,25 @@ const statusConfig: Record<
 
 const izinBadgeConfig: Record<
   "pending" | "approved" | "rejected",
-  { className: string; title: string }
+  { className: string; title: string; icon: string }
 > = {
   pending: {
     className:
       "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800",
     title: "Izin telat menunggu persetujuan",
+    icon: "hourglass_top",
   },
   approved: {
     className:
       "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
     title: "Izin telat disetujui",
+    icon: "task_alt",
   },
   rejected: {
     className:
       "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800",
     title: "Izin telat ditolak",
+    icon: "event_busy",
   },
 };
 
@@ -436,7 +439,7 @@ export function DriverDashboardPage() {
                                   className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] font-semibold whitespace-nowrap ${izinBadgeConfig[row.izinStatus].className}`}
                                 >
                                   <span className="material-symbols-outlined text-[14px]">
-                                    event_busy
+                                    {izinBadgeConfig[row.izinStatus].icon}
                                   </span>
                                   Izin Telat
                                 </span>

@@ -544,7 +544,7 @@ export function DriverPaymentPage() {
                                         className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-semibold whitespace-nowrap hover:bg-slate-500 hover:text-white hover:border-slate-500 transition-colors"
                                       >
                                         <span className="material-symbols-outlined text-[14px]">event_busy</span>
-                                        Minta Izin
+                                        Izin Telat
                                       </button>
                                     ) : dp.status === "pending" ? (
                                       <span

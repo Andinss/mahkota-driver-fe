@@ -14,6 +14,7 @@ export interface OutOfTownRequest {
   reason: string;
   status: OutOfTownStatus;
   submittedAt: string;
+  adminNote?: string | null;
 }
 
 interface OutOfTownTableRowProps {

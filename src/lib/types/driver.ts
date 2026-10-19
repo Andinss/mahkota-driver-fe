@@ -1,6 +1,7 @@
 import type { Membership } from "./membership";
 
 export interface DriverRentalVehicle {
+  id: string;
   merk: string;
   model: string;
   license_plate: string;
@@ -17,6 +18,7 @@ export interface DriverRentalItem {
   daily_rate?: number;
   total_duration?: number;
   rental_duration?: string;
+  status?: "active" | "stopped";
   vehicle?: DriverRentalVehicle;
 }
 
