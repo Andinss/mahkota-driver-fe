@@ -12,6 +12,7 @@ import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
 import { formatDateOnly } from "@/lib/utils/format";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
+import { DriverQuickActions } from "./driver-quick-actions";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -28,14 +29,36 @@ const formatDate = formatDateOnly;
 
 const PLACEHOLDER_IMG = "/images/placeholder-car.jpg";
 
-const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  unpaid: { label: "Belum Dibayar", color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/20", dot: "bg-red-500" },
-  pending: { label: "Menunggu Verifikasi", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-900/20", dot: "bg-amber-500" },
-  paid: { label: "Lunas", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/20", dot: "bg-emerald-500" },
-  cancelled: { label: "Dibatalkan", color: "text-slate-500 dark:text-slate-400", bg: "bg-slate-100 dark:bg-slate-800", dot: "bg-slate-400" },
+const statusConfig: Record<
+  string,
+  { label: string; color: string; bg: string; dot: string }
+> = {
+  unpaid: {
+    label: "Belum Dibayar",
+    color: "text-red-600 dark:text-red-400",
+    bg: "bg-red-50 dark:bg-red-900/20",
+    dot: "bg-red-500",
+  },
+  pending: {
+    label: "Menunggu Verifikasi",
+    color: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-900/20",
+    dot: "bg-amber-500",
+  },
+  paid: {
+    label: "Lunas",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-50 dark:bg-emerald-900/20",
+    dot: "bg-emerald-500",
+  },
+  cancelled: {
+    label: "Dibatalkan",
+    color: "text-slate-500 dark:text-slate-400",
+    bg: "bg-slate-100 dark:bg-slate-800",
+    dot: "bg-slate-400",
+  },
 };
 
-/** Badge "Izin Telat" pada kolom Aksi, warna & tooltip mengikuti status izin. */
 const izinBadgeConfig: Record<
   "pending" | "approved" | "rejected",
   { className: string; title: string }
@@ -92,7 +115,9 @@ export function DriverDashboardPage() {
         try {
           const dailyRes = await financeApi.getMyDailyPayments({ limit: 10 });
           const dailyData = (dailyRes as any)?.data ?? dailyRes;
-          const items = Array.isArray(dailyData) ? dailyData : dailyData?.data ?? [];
+          const items = Array.isArray(dailyData)
+            ? dailyData
+            : (dailyData?.data ?? []);
           setDailyPayments(items);
         } catch {
           setDailyPayments([]);
@@ -177,14 +202,22 @@ export function DriverDashboardPage() {
               title="Unit Operasional"
               value={`${activeRentals} Unit`}
               icon="directions_car"
-              iconColor={activeRentals > 0 ? "text-emerald-500" : "text-slate-400"}
+              iconColor={
+                activeRentals > 0 ? "text-emerald-500" : "text-slate-400"
+              }
               trend={{
-                value: activeRentals > 0 ? "Aktif Beroperasi" : "Belum ada unit terdaftar",
-                color: activeRentals > 0 ? "text-emerald-500" : "text-slate-400",
+                value:
+                  activeRentals > 0
+                    ? "Aktif Beroperasi"
+                    : "Belum ada unit terdaftar",
+                color:
+                  activeRentals > 0 ? "text-emerald-500" : "text-slate-400",
                 icon: activeRentals > 0 ? "check_circle" : "info",
               }}
             />
           </div>
+
+          <DriverQuickActions />
 
           {/* Vehicle Cards / Slider */}
           {driver?.rentals && driver.rentals.length > 0 && (
@@ -192,13 +225,17 @@ export function DriverDashboardPage() {
               <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-blue-500 text-xl">directions_car</span>
+                    <span className="material-symbols-outlined text-blue-500 text-xl">
+                      directions_car
+                    </span>
                   </div>
                   <div>
                     <h2 className="font-bold text-slate-800 dark:text-white text-base">
                       Unit Kendaraan Saya
                     </h2>
-                    <p className="text-xs text-slate-400">{driver.rentals.length} unit aktif</p>
+                    <p className="text-xs text-slate-400">
+                      {driver.rentals.length} unit aktif
+                    </p>
                   </div>
                 </div>
               </div>
@@ -228,7 +265,9 @@ export function DriverDashboardPage() {
                           <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
                             {imageUrl === PLACEHOLDER_IMG ? (
                               <div className="w-full h-full flex items-center justify-center">
-                                <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">directions_car</span>
+                                <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">
+                                  directions_car
+                                </span>
                               </div>
                             ) : (
                               <img
@@ -238,9 +277,15 @@ export function DriverDashboardPage() {
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
                                   target.style.display = "none";
-                                  target.parentElement?.classList.add("flex", "items-center", "justify-center");
-                                  const fallback = document.createElement("span");
-                                  fallback.className = "material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600";
+                                  target.parentElement?.classList.add(
+                                    "flex",
+                                    "items-center",
+                                    "justify-center",
+                                  );
+                                  const fallback =
+                                    document.createElement("span");
+                                  fallback.className =
+                                    "material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600";
                                   fallback.textContent = "directions_car";
                                   target.parentElement?.appendChild(fallback);
                                 }}
@@ -261,16 +306,28 @@ export function DriverDashboardPage() {
                             </p>
                             <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 space-y-2">
                               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                <span className="material-symbols-outlined text-[14px]">calendar_today</span>
-                                <span>{formatDate(rental.start_date)} - {formatDate(rental.end_date)}</span>
+                                <span className="material-symbols-outlined text-[14px]">
+                                  calendar_today
+                                </span>
+                                <span>
+                                  {formatDate(rental.start_date)} -{" "}
+                                  {formatDate(rental.end_date)}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                <span className="material-symbols-outlined text-[14px]">speed</span>
-                                <span>{rental.total_duration} hari &middot; {formatIDR(rental.daily_rate || 0)}/hari</span>
+                                <span className="material-symbols-outlined text-[14px]">
+                                  speed
+                                </span>
+                                <span>
+                                  {rental.total_duration} hari &middot;{" "}
+                                  {formatIDR(rental.daily_rate || 0)}/hari
+                                </span>
                               </div>
                               {vehicle.color && (
                                 <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                  <span className="material-symbols-outlined text-[14px]">palette</span>
+                                  <span className="material-symbols-outlined text-[14px]">
+                                    palette
+                                  </span>
                                   <span>{vehicle.color}</span>
                                 </div>
                               )}
@@ -291,13 +348,17 @@ export function DriverDashboardPage() {
               <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-orange-500 text-xl">pending</span>
+                    <span className="material-symbols-outlined text-orange-500 text-xl">
+                      pending
+                    </span>
                   </div>
                   <div>
                     <h2 className="font-bold text-slate-800 dark:text-white text-base">
                       Tagihan Saya
                     </h2>
-                    <p className="text-xs text-slate-400">{billRows.length} tagihan tercatat</p>
+                    <p className="text-xs text-slate-400">
+                      {billRows.length} tagihan tercatat
+                    </p>
                   </div>
                 </div>
                 <a
@@ -320,14 +381,20 @@ export function DriverDashboardPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                     {billRows.map((row) => {
-                      const st = statusConfig[row.status] || statusConfig.unpaid;
+                      const st =
+                        statusConfig[row.status] || statusConfig.unpaid;
                       return (
-                        <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <tr
+                          key={row.id}
+                          className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                        >
                           <td className="px-6 py-3 font-medium text-slate-500 dark:text-slate-400">
                             {formatDate(row.date)}
                           </td>
                           <td className="px-6 py-3">
-                            <span className="font-semibold text-slate-900 dark:text-white">{row.vehicleName}</span>
+                            <span className="font-semibold text-slate-900 dark:text-white">
+                              {row.vehicleName}
+                            </span>
                           </td>
                           <td className="px-6 py-3">
                             <span className="font-semibold text-orange-600 dark:text-orange-400">
@@ -335,8 +402,12 @@ export function DriverDashboardPage() {
                             </span>
                           </td>
                           <td className="px-6 py-3">
-                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${st.bg} ${st.color}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${st.bg} ${st.color}`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${st.dot}`}
+                              />
                               {st.label}
                             </span>
                           </td>
@@ -348,7 +419,9 @@ export function DriverDashboardPage() {
                                   title="Bayar Tagihan"
                                   className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-colors"
                                 >
-                                  <span className="material-symbols-outlined text-[18px]">payments</span>
+                                  <span className="material-symbols-outlined text-[18px]">
+                                    payments
+                                  </span>
                                 </a>
                               )}
                               {row.izinStatus ? (
@@ -386,13 +459,17 @@ export function DriverDashboardPage() {
           <div className="bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm p-5">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-xl">support_agent</span>
+                <span className="material-symbols-outlined text-primary text-xl">
+                  support_agent
+                </span>
               </div>
               <div>
                 <h3 className="font-bold text-slate-800 dark:text-white text-base">
                   Butuh Bantuan?
                 </h3>
-                <p className="text-xs text-slate-400">Hubungi Tim Finance Mahkota Fleet</p>
+                <p className="text-xs text-slate-400">
+                  Hubungi Tim Finance Mahkota Fleet
+                </p>
               </div>
             </div>
             <a
@@ -401,7 +478,9 @@ export function DriverDashboardPage() {
               rel="noopener noreferrer"
               target="_blank"
             >
-              <span className="material-symbols-outlined text-[18px]">chat</span>
+              <span className="material-symbols-outlined text-[18px]">
+                chat
+              </span>
               WhatsApp Finance: 0811-9876-0000
             </a>
           </div>

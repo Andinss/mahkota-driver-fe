@@ -1,4 +1,7 @@
+"use client";
+
 import { Card } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 interface QuickActionItem {
   icon: string;
@@ -19,6 +22,7 @@ const defaultActions: QuickActionItem[] = [
     title: "Izin Luar Kota",
     description: "Ajukan izin perjalanan armada",
     variant: "primary",
+    href: "/dashboard/driver/out-of-town",
   },
   {
     icon: "verified_user",
@@ -41,13 +45,21 @@ const defaultActions: QuickActionItem[] = [
 ];
 
 const variantStyles: Record<string, string> = {
-  primary: "bg-primary/10 dark:bg-primary/20 text-primary group-hover:bg-primary group-hover:text-white",
-  amber: "bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 group-hover:bg-amber-500 group-hover:text-white",
-  indigo: "bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 group-hover:bg-indigo-500 group-hover:text-white",
-  slate: "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 group-hover:bg-slate-600 group-hover:text-white",
+  primary:
+    "bg-primary/10 dark:bg-primary/20 text-primary group-hover:bg-primary group-hover:text-white",
+  amber:
+    "bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 group-hover:bg-amber-500 group-hover:text-white",
+  indigo:
+    "bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 group-hover:bg-indigo-500 group-hover:text-white",
+  slate:
+    "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 group-hover:bg-slate-600 group-hover:text-white",
 };
 
-export function DriverQuickActions({ actions = defaultActions }: DriverQuickActionsProps) {
+export function DriverQuickActions({
+  actions = defaultActions,
+}: DriverQuickActionsProps) {
+  const router = useRouter();
+
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-5">
@@ -71,10 +83,15 @@ export function DriverQuickActions({ actions = defaultActions }: DriverQuickActi
           <button
             key={index}
             type="button"
-            onClick={action.onClick}
+            onClick={() => {
+              if (action.href) router.push(action.href);
+              if (action.onClick) action.onClick();
+            }}
             className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group text-left"
           >
-            <div className={`size-10 rounded-lg ${variantStyles[action.variant]} flex items-center justify-center shrink-0 transition-colors`}>
+            <div
+              className={`size-10 rounded-lg ${variantStyles[action.variant]} flex items-center justify-center shrink-0 transition-colors`}
+            >
               <span className="material-symbols-outlined">{action.icon}</span>
             </div>
             <div className="min-w-0">

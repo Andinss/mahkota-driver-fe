@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Modal } from "@/components/ui/modal";
 import { OutOfTownRequest, OutOfTownStatus } from "./out-of-town-table-row";
 import { confirmToast, toastSuccess } from "@/components/ui/toast-provider";
 
@@ -69,37 +70,18 @@ export const OutOfTownDetailModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-
-      <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-blue-500 text-xl">
-                commute
-              </span>
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                Detail Pengajuan
-              </h3>
-              <p className="text-xs text-slate-400">
-                Diajukan {request.submittedAt}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-          >
-            <span className="material-symbols-outlined text-xl">close</span>
-          </button>
+    <Modal isOpen={true} onClose={onClose} title="Detail Pengajuan" size="md">
+      <div className="p-6">
+        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-200 dark:border-slate-800">
+          <span className="material-symbols-outlined text-primary text-xl">
+            commute
+          </span>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Diajukan pada {request.submittedAt}
+          </p>
         </div>
 
-        {/* Body */}
-        <div className="px-6 py-5 space-y-4">
+        <div className="space-y-4 mb-6">
           <InfoField icon="person" label="Driver">
             {request.driverName}
             <span className="block text-xs font-normal text-slate-400">
@@ -128,7 +110,7 @@ export const OutOfTownDetailModal = ({
             </span>
           </InfoField>
 
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wide">
               Status
             </span>
@@ -142,7 +124,7 @@ export const OutOfTownDetailModal = ({
 
         {/* Footer — hanya kalau pending */}
         {request.status === "pending" && (
-          <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
             <button
               onClick={() => handleAction("rejected")}
               disabled={isProcessing}
@@ -166,7 +148,7 @@ export const OutOfTownDetailModal = ({
           </div>
         )}
       </div>
-    </div>
+    </Modal>
   );
 };
 
