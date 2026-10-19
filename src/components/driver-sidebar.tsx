@@ -12,6 +12,11 @@ interface DriverMenuItem {
 
 const driverMenu: DriverMenuItem[] = [
   { path: "/dashboard/driver", label: "Dashboard", icon: "dashboard" },
+  {
+    path: "/dashboard/driver/out-of-town",
+    label: "Izin Luar Kota",
+    icon: "map",
+  },
   { path: "/dashboard/driver/payment", label: "Payment", icon: "payment" },
   { path: "/dashboard/driver/profile", label: "Profile", icon: "person" },
 ];
@@ -96,8 +101,12 @@ const DriverSidebar = () => {
   useEffect(() => {
     const navEl = navRef.current;
     if (!navEl) return;
-    const handleScroll = () => { if (isOpenRef.current) updateMenuPosition(); };
-    const handleResize = () => { if (isOpenRef.current) updateMenuPosition(); };
+    const handleScroll = () => {
+      if (isOpenRef.current) updateMenuPosition();
+    };
+    const handleResize = () => {
+      if (isOpenRef.current) updateMenuPosition();
+    };
     navEl.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleResize);
     return () => {
@@ -106,7 +115,10 @@ const DriverSidebar = () => {
     };
   }, [updateMenuPosition]);
 
-  const handleMenuClick = (path: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleMenuClick = (
+    path: string,
+    e: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
     e.preventDefault();
     setIsMobileOpen(false);
     setActiveMenu(path);
@@ -162,7 +174,9 @@ const DriverSidebar = () => {
             {driverMenu.map((item) => (
               <a
                 key={item.path}
-                ref={(el) => { menuRefs.current[item.path] = el; }}
+                ref={(el) => {
+                  menuRefs.current[item.path] = el;
+                }}
                 className={`flex items-center rounded-lg relative z-10 transition-colors cursor-pointer gap-3 px-3 py-2.5 ${
                   activeMenu === item.path
                     ? "text-primary"
@@ -170,8 +184,12 @@ const DriverSidebar = () => {
                 }`}
                 onClick={(e) => handleMenuClick(item.path, e)}
               >
-                <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-                <span className="text-sm font-medium leading-normal">{item.label}</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  {item.icon}
+                </span>
+                <span className="text-sm font-medium leading-normal">
+                  {item.label}
+                </span>
               </a>
             ))}
           </nav>
@@ -181,7 +199,9 @@ const DriverSidebar = () => {
               className="flex items-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer gap-3 px-3 py-2.5"
               onClick={handleLogout}
             >
-              <span className="material-symbols-outlined text-[20px]">logout</span>
+              <span className="material-symbols-outlined text-[20px]">
+                logout
+              </span>
               <p className="text-sm font-medium leading-normal">Logout</p>
             </a>
           </div>
