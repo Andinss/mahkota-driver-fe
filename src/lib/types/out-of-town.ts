@@ -29,7 +29,6 @@ export interface OutOfTownStats {
 }
 
 export interface CreateOutOfTownPayload {
-  vehicle_id: string;
   destination: string;
   departure_date: string;
   return_date: string;
