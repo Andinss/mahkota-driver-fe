@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth-context";
 import { PaletteProvider } from "@/lib/palette-context";
+import { QueryProvider } from "@/lib/query-provider";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import "./globals.css";
 
@@ -67,10 +68,14 @@ export default function RootLayout({
         className={`${inter.variable} bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 antialiased overflow-hidden`}
       >
         <AuthProvider>
-          <PaletteProvider>
-            <div className="flex h-screen w-full overflow-hidden">{children}</div>
-            <ToastProvider />
-          </PaletteProvider>
+          <QueryProvider>
+            <PaletteProvider>
+              <div className="flex h-screen w-full overflow-hidden">
+                {children}
+              </div>
+              <ToastProvider />
+            </PaletteProvider>
+          </QueryProvider>
         </AuthProvider>
       </body>
     </html>

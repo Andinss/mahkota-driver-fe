@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/page-header";
 import { financeApi } from "@/lib/api/finances";
 import { useAuth } from "@/lib/auth-context";
@@ -10,6 +11,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { FeeBillDetailModal } from "@/components/finance/fee-bill-detail-modal";
 import { ProofUpload } from "@/components/driver/payment/proof-upload";
 import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
+import { financeKeys } from "@/lib/query-keys";
 import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
 import { resolveImageUrl } from "@/lib/utils/image";
 
@@ -101,29 +103,13 @@ const feeDisplayStatus = (
 export function DriverPaymentPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [adminFee, setAdminFee] = useState<FinanceItem | null>(null);
-  const [dailyPayments, setDailyPayments] = useState<DailyPaymentItem[]>([]);
-  const [dailyMeta, setDailyMeta] = useState({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-  });
+  const queryClient = useQueryClient();
+  const driverId = user?.driver_id ?? null;
   const [dailyPage, setDailyPage] = useState(1);
   const [dailyPageSize, setDailyPageSize] = useState(10);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingDaily, setIsLoadingDaily] = useState(false);
   const [activeTab, setActiveTab] = useState<"admin" | "daily">("daily");
-  const [feeList, setFeeList] = useState<FinanceItem[]>([]);
-  const [feeMeta, setFeeMeta] = useState({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 1,
-  });
   const [feePage, setFeePage] = useState(1);
   const [feePageSize, setFeePageSize] = useState(10);
-  const [isLoadingFees, setIsLoadingFees] = useState(false);
   const [detailFeeId, setDetailFeeId] = useState<string | null>(null);
   // Dialog ajukan izin telat bayar (per tagihan harian).
   const [izinTarget, setIzinTarget] = useState<DailyPaymentItem | null>(null);
@@ -136,75 +122,74 @@ export function DriverPaymentPage() {
   // Modal detail izin telat (status + catatan supervisor).
   const [izinDetail, setIzinDetail] = useState<DailyPaymentItem | null>(null);
 
-  const fetchFeeList = useCallback(async () => {
-    if (!user?.driver_id) return;
-    setIsLoadingFees(true);
-    try {
+  const adminFeeQuery = useQuery({
+    queryKey: financeKeys.myAdminFee(),
+    queryFn: async () => {
+      const res = await financeApi.getMyAdminFee();
+      const data = (res as { data?: FinanceItem })?.data ?? res;
+      return (data as FinanceItem)?.id ? (data as FinanceItem) : null;
+    },
+    enabled: !!driverId,
+  });
+
+  const dailyQuery = useQuery({
+    queryKey: financeKeys.myDailyPayments({
+      page: dailyPage,
+      limit: dailyPageSize,
+    }),
+    queryFn: async () => {
+      const res = await financeApi.getMyDailyPayments({
+        page: dailyPage,
+        limit: dailyPageSize,
+      });
+      const data = (res as { data?: unknown })?.data ?? res;
+      const items = Array.isArray(data)
+        ? data
+        : ((data as { data?: unknown })?.data ?? []);
+      return {
+        items: Array.isArray(items) ? (items as DailyPaymentItem[]) : [],
+        meta: res?.meta,
+      };
+    },
+    enabled: !!driverId,
+  });
+
+  const feeListQuery = useQuery({
+    queryKey: financeKeys.myList({ page: feePage, limit: feePageSize }),
+    queryFn: async () => {
       const res = await financeApi.getMyFinances({
         page: feePage,
         limit: feePageSize,
       });
-      setFeeList(Array.isArray(res?.data) ? res.data : []);
-      if (res?.meta) setFeeMeta(res.meta);
-    } catch {
-      setFeeList([]);
-    } finally {
-      setIsLoadingFees(false);
-    }
-  }, [user?.driver_id, feePage, feePageSize]);
+      return {
+        items: Array.isArray(res?.data) ? res.data : [],
+        meta: res?.meta,
+      };
+    },
+    enabled: !!driverId && activeTab === "admin",
+  });
 
-  const fetchDailyPayments = useCallback(async () => {
-    if (!user?.driver_id) return;
-    setIsLoadingDaily(true);
-    try {
-      const dailyRes = await financeApi.getMyDailyPayments({
-        page: dailyPage,
-        limit: dailyPageSize,
-      });
-      const dailyData = (dailyRes as any)?.data ?? dailyRes;
-      const items = Array.isArray(dailyData) ? dailyData : dailyData?.data ?? [];
-      setDailyPayments(items);
-      if ((dailyRes as any)?.meta) {
-        setDailyMeta((dailyRes as any).meta);
-      }
-    } catch {
-      setDailyPayments([]);
-    } finally {
-      setIsLoadingDaily(false);
-    }
-  }, [user?.driver_id, dailyPage, dailyPageSize]);
+  const adminFee = adminFeeQuery.data ?? null;
+  const dailyPayments = dailyQuery.data?.items ?? [];
+  const dailyMeta = dailyQuery.data?.meta ?? {
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  };
+  const feeList = feeListQuery.data?.items ?? [];
+  const feeMeta = feeListQuery.data?.meta ?? {
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  };
+  const isLoading = !!driverId && adminFeeQuery.isLoading;
+  const isLoadingDaily = dailyQuery.isFetching;
+  const isLoadingFees = feeListQuery.isFetching;
 
-  const fetchData = useCallback(async () => {
-    if (!user?.driver_id) {
-      setIsLoading(false);
-      return;
-    }
-    try {
-      setIsLoading(true);
-      const adminFeeRes = await financeApi.getMyAdminFee();
-      const adminFeeData = (adminFeeRes as any)?.data ?? adminFeeRes;
-      setAdminFee(adminFeeData?.id ? adminFeeData : null);
-    } catch (err) {
-      console.error("Failed to fetch payment data:", err);
-      toastError("Gagal memuat data tagihan");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.driver_id]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  useEffect(() => {
-    fetchDailyPayments();
-  }, [fetchDailyPayments]);
-
-  useEffect(() => {
-    if (activeTab === "admin") {
-      fetchFeeList();
-    }
-  }, [activeTab, fetchFeeList]);
+  const refreshDaily = () =>
+    queryClient.invalidateQueries({ queryKey: financeKeys.all });
 
   const openIzinDialog = (dp: DailyPaymentItem) => {
     setIzinTarget(dp);
@@ -231,7 +216,7 @@ export function DriverPaymentPage() {
       setIzinTarget(null);
       setIzinReason("");
       setIzinProof({ value: null, file: null });
-      fetchDailyPayments();
+      refreshDaily();
     } catch (err) {
       toastError(
         err instanceof Error ? err.message : "Gagal mengirim pengajuan izin",

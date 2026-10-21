@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { Select } from "@/components/ui/select";
@@ -10,7 +11,7 @@ import type { OutOfTownRequest } from "@/components/monitoring/out-of-town/out-o
 import { useAuth } from "@/lib/auth-context";
 import { outOfTownApi } from "@/lib/api/out-of-town";
 import type { OutOfTownItem, OutOfTownStats } from "@/lib/types/out-of-town";
-import { toastError } from "@/components/ui/toast-provider";
+import { outOfTownKeys } from "@/lib/query-keys";
 import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
 
 /** Ubah data backend (snake_case) ke bentuk tampilan komponen. */
@@ -26,48 +27,46 @@ const toView = (item: OutOfTownItem): OutOfTownRequest => ({
   reason: item.reason || "-",
   status: item.status,
   submittedAt: formatDateTime(item.created_at),
+  feeAmount: item.fee_amount ? Number(item.fee_amount) : null,
 });
 
 export default function DriverOutOfTownPage() {
   const { user } = useAuth();
-  const [requests, setRequests] = useState<OutOfTownRequest[]>([]);
-  const [stats, setStats] = useState<OutOfTownStats>({
-    pending: 0,
-    approved: 0,
-    rejected: 0,
-    total: 0,
-  });
+  const queryClient = useQueryClient();
+  const driverId = user?.driver_id ?? null;
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  const [isLoading, setIsLoading] = useState(true);
+  const listQuery = useQuery({
+    queryKey: outOfTownKeys.myList(),
+    queryFn: async () => {
+      const res = await outOfTownApi.listMine();
+      return (res?.data || []).map(toView);
+    },
+    enabled: !!driverId,
+  });
 
-  const fetchData = useCallback(async () => {
-    if (!user?.driver_id) {
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const [listRes, statsRes] = await Promise.all([
-        outOfTownApi.listMine(),
-        outOfTownApi.stats(),
-      ]);
-      setRequests((listRes?.data || []).map(toView));
-      if (statsRes?.data) setStats(statsRes.data);
-    } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal memuat pengajuan",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.driver_id]);
+  const statsQuery = useQuery({
+    queryKey: outOfTownKeys.myStats(),
+    queryFn: async () => {
+      const res = await outOfTownApi.myStats();
+      return res?.data;
+    },
+    enabled: !!driverId,
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const requests: OutOfTownRequest[] = useMemo(
+    () => listQuery.data ?? [],
+    [listQuery.data],
+  );
+  const stats: OutOfTownStats = statsQuery.data ?? {
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    total: 0,
+  };
+  const isLoading = !!driverId && listQuery.isLoading;
 
   const filteredRequests = useMemo(() => {
     return requests.filter((r) => {
@@ -82,7 +81,7 @@ export default function DriverOutOfTownPage() {
   }, [requests, search, statusFilter]);
 
   const handleSubmit = () => {
-    fetchData();
+    queryClient.invalidateQueries({ queryKey: outOfTownKeys.all });
   };
 
   return (
@@ -196,16 +195,24 @@ export default function DriverOutOfTownPage() {
                   isLoading ? "animate-spin" : ""
                 }`}
               >
-                {isLoading ? "hourglass_empty" : "search_off"}
+                {isLoading
+                  ? "hourglass_empty"
+                  : requests.length === 0
+                    ? "commute"
+                    : "search_off"}
               </span>
               <p className="text-base font-semibold text-slate-600 dark:text-slate-400">
                 {isLoading
                   ? "Memuat pengajuan..."
-                  : "Tidak ada pengajuan ditemukan"}
+                  : requests.length === 0
+                    ? "Belum ada pengajuan"
+                    : "Tidak ada pengajuan ditemukan"}
               </p>
               {!isLoading && (
                 <p className="text-sm text-slate-400">
-                  Coba ubah kata kunci atau filter Anda
+                  {requests.length === 0
+                    ? "Klik \u201cAjukan Baru\u201d untuk membuat pengajuan keluar kota."
+                    : "Coba ubah kata kunci atau filter Anda"}
                 </p>
               )}
             </div>

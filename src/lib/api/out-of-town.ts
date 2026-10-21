@@ -25,12 +25,17 @@ export const outOfTownApi = {
   stats: () =>
     api.get<SuccessResponse<OutOfTownStats>>("/out-of-town/stats"),
 
+  /** Statistik pengajuan milik driver yang login. */
+  myStats: () =>
+    api.get<SuccessResponse<OutOfTownStats>>("/out-of-town/my/stats"),
+
   getById: (id: string) =>
     api.get<SuccessResponse<OutOfTownItem>>(`/out-of-town/${id}`),
 
-  approve: (id: string, adminNote?: string) =>
+  approve: (id: string, adminNote?: string, feeAmount?: number) =>
     api.post<SuccessResponse<OutOfTownItem>>(`/out-of-town/${id}/approve`, {
       admin_note: adminNote,
+      fee_amount: feeAmount,
     }),
 
   reject: (id: string, adminNote?: string) =>

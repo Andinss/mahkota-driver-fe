@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   confirmToast,
   toastSuccess,
@@ -19,6 +20,7 @@ import type { RentalTransaction, RentalSummary } from "@/lib/types/rentals";
 import { useAuth } from "@/lib/auth-context";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { canAccess } from "@/lib/can-access";
+import { rentalKeys } from "@/lib/query-keys";
 
 interface RentalDisplay {
   id: string;
@@ -87,6 +89,7 @@ const mapToDisplay = (item: RentalTransaction): RentalDisplay => ({
 export default function RentalManagementPage() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
 
   const handleExport = async (options?: ExportOptions) => {
     if (!options) return;
@@ -102,13 +105,8 @@ export default function RentalManagementPage() {
     await rentalApi.exportData(params);
   };
 
-  // Data state
-  const [rentals, setRentals] = useState<RentalDisplay[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Filter & pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalResults, setTotalResults] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [summary, setSummary] = useState<RentalSummary | null>(null);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchValue, setSearchValue] = useState("");
   const [rentalDuration, setRentalDuration] = useState("");
@@ -120,14 +118,50 @@ export default function RentalManagementPage() {
 
   const toastShownRef = useRef(false);
 
-  const fetchSummary = useCallback(async () => {
-    try {
+  const canRead = canAccess(user?.permissions, "rental.read");
+
+  const listParams = {
+    page: currentPage,
+    limit: itemsPerPage,
+    search: debouncedSearch || undefined,
+    rental_duration: rentalDuration || undefined,
+    rental_service: rentalService || undefined,
+    status: rentalStatus || undefined,
+  };
+
+  const rentalsQuery = useQuery({
+    queryKey: rentalKeys.list(listParams),
+    queryFn: async () => {
+      const res = await rentalApi.getList(listParams);
+      const items = Array.isArray(res.data) ? res.data : [];
+      const mapped = items.map(mapToDisplay);
+      return {
+        items: mapped,
+        total: res.meta ? res.meta.total : mapped.length,
+        totalPages: res.meta ? res.meta.totalPages : 1,
+      };
+    },
+    enabled: canRead,
+  });
+
+  const summaryQuery = useQuery({
+    queryKey: rentalKeys.summary(),
+    queryFn: async () => {
       const res = await rentalApi.getSummary();
-      setSummary(res.data);
-    } catch {
-      // non-critical
-    }
-  }, []);
+      return res.data as RentalSummary;
+    },
+    enabled: canRead,
+  });
+
+  const rentals: RentalDisplay[] = rentalsQuery.data?.items ?? [];
+  const totalResults = rentalsQuery.data?.total ?? 0;
+  const totalPages = rentalsQuery.data?.totalPages ?? 1;
+  const summary: RentalSummary | null = summaryQuery.data ?? null;
+  const isLoading = canRead && rentalsQuery.isLoading;
+
+  const refreshRentals = () => {
+    queryClient.invalidateQueries({ queryKey: rentalKeys.all });
+  };
 
   // Tampilkan alert jika ada succes param di url
   useEffect(() => {
@@ -145,48 +179,6 @@ export default function RentalManagementPage() {
       window.history.replaceState({}, "", "/dashboard/rentals");
     }
   }, [searchParams]);
-
-  const fetchRentals = useCallback(async () => {
-    if (!canAccess(user?.permissions, "rental.read")) {
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const res = await rentalApi.getList({
-        page: currentPage,
-        limit: itemsPerPage,
-        search: debouncedSearch || undefined,
-        rental_duration: rentalDuration || undefined,
-        rental_service: rentalService || undefined,
-        status: rentalStatus || undefined,
-      });
-      const items = Array.isArray(res.data) ? res.data : [];
-      const mapped = items.map(mapToDisplay);
-      setRentals(mapped);
-      if (res.meta) {
-        setTotalResults(res.meta.total);
-        setTotalPages(res.meta.totalPages);
-      } else {
-        setTotalResults(mapped.length);
-        setTotalPages(1);
-      }
-    } catch {
-      setRentals([]);
-      setTotalResults(0);
-      setTotalPages(1);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, itemsPerPage, user, debouncedSearch, rentalDuration, rentalService, rentalStatus]);
-
-  useEffect(() => {
-    fetchRentals();
-  }, [fetchRentals]);
-
-  useEffect(() => {
-    fetchSummary();
-  }, [fetchSummary]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -216,8 +208,7 @@ export default function RentalManagementPage() {
         toastSuccess(
           `Rent ${rental.transactionId} has been deleted successfully`,
         );
-        fetchRentals();
-        fetchSummary();
+        refreshRentals();
       } catch (err) {
         toastError(
           err instanceof HttpClientError
@@ -240,8 +231,7 @@ export default function RentalManagementPage() {
       try {
         await rentalApi.stop(rental.id);
         toastSuccess(`Rent ${rental.transactionId} has been stopped`);
-        fetchRentals();
-        fetchSummary();
+        refreshRentals();
       } catch (err) {
         toastError(
           err instanceof HttpClientError
@@ -365,12 +355,20 @@ export default function RentalManagementPage() {
                 onDelete={handleDeleteClick}
                 onEndRental={handleStopRentalClick}
                 onEngineChanged={(vehicleId, engineStatus) => {
-                  setRentals((prev) =>
-                    prev.map((r) =>
-                      r.vehicleId === vehicleId
-                        ? { ...r, vehicleEngineStatus: engineStatus }
-                        : r,
-                    ),
+                  queryClient.setQueryData<
+                    { items: RentalDisplay[]; total: number; totalPages: number }
+                  >(rentalKeys.list(listParams), (prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          items: prev.items.map(
+                            (r: RentalDisplay): RentalDisplay =>
+                              r.vehicleId === vehicleId
+                                ? { ...r, vehicleEngineStatus: engineStatus }
+                                : r,
+                          ),
+                        }
+                      : prev,
                   );
                 }}
               />

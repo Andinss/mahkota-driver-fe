@@ -61,7 +61,7 @@ export function DriverQuickActions({
   const router = useRouter();
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 lg:col-span-1">
       <div className="flex items-center justify-between mb-5">
         <div>
           <div className="flex items-center gap-2">
@@ -75,10 +75,11 @@ export function DriverQuickActions({
           </p>
         </div>
         <span className="hidden sm:inline-flex text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
-          {actions.length} Layanan Terintegrasi
+          {actions.length} Layanan
         </span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <div className="flex flex-col gap-3">
         {actions.map((action, index) => (
           <button
             key={index}
@@ -87,7 +88,7 @@ export function DriverQuickActions({
               if (action.href) router.push(action.href);
               if (action.onClick) action.onClick();
             }}
-            className="flex items-start gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group text-left"
+            className="flex items-start gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group text-left"
           >
             <div
               className={`size-10 rounded-lg ${variantStyles[action.variant]} flex items-center justify-center shrink-0 transition-colors`}

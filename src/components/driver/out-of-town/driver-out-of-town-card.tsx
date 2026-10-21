@@ -4,6 +4,7 @@ import type {
   OutOfTownRequest,
   OutOfTownStatus,
 } from "@/components/monitoring/out-of-town/out-of-town-table-row";
+import { formatRupiah } from "@/lib/utils/format";
 
 interface DriverOutOfTownCardProps {
   request: OutOfTownRequest;
@@ -99,6 +100,24 @@ export function DriverOutOfTownCard({ request }: DriverOutOfTownCardProps) {
             </p>
           </div>
         </div>
+
+        {request.feeAmount ? (
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-emerald-500 text-base">
+                payments
+              </span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wide leading-tight">
+                Biaya Tambahan Luar Kota
+              </p>
+              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 leading-tight">
+                {formatRupiah(request.feeAmount)}
+              </p>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

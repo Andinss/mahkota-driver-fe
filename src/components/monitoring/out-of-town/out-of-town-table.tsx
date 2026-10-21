@@ -5,9 +5,20 @@ import { OutOfTownTableRow, OutOfTownRequest } from "./out-of-town-table-row";
 interface OutOfTownTableProps {
   requests: OutOfTownRequest[];
   onSelect?: (request: OutOfTownRequest) => void;
+  /** Total pengajuan sebelum difilter — untuk memilih pesan empty state. */
+  totalCount?: number;
+  /** Dipakai tombol "Reset Filter" di empty state. */
+  onResetFilter?: () => void;
 }
 
-export const OutOfTownTable = ({ requests, onSelect }: OutOfTownTableProps) => {
+export const OutOfTownTable = ({
+  requests,
+  onSelect,
+  totalCount,
+  onResetFilter,
+}: OutOfTownTableProps) => {
+  const hasAnyData = totalCount === undefined || totalCount > 0;
+
   return (
     <>
       {/* Header Card */}
@@ -52,11 +63,30 @@ export const OutOfTownTable = ({ requests, onSelect }: OutOfTownTableProps) => {
         {requests.length === 0 && (
           <div className="p-12 text-center">
             <span className="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600 mb-3 block">
-              commute
+              {hasAnyData ? "search_off" : "commute"}
             </span>
             <p className="text-slate-400 text-sm font-medium">
-              Tidak ada pengajuan ditemukan
+              {hasAnyData
+                ? "Tidak ada pengajuan ditemukan"
+                : "Belum ada pengajuan keluar kota"}
             </p>
+            {hasAnyData ? (
+              onResetFilter && (
+                <button
+                  onClick={onResetFilter}
+                  className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-base">
+                    filter_alt_off
+                  </span>
+                  Reset Filter
+                </button>
+              )
+            ) : (
+              <p className="text-xs text-slate-400 mt-1">
+                Pengajuan dari driver akan muncul di sini.
+              </p>
+            )}
           </div>
         )}
       </div>
