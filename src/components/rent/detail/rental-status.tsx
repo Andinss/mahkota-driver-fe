@@ -1,4 +1,4 @@
-import { getTodayLocal } from "@/lib/utils/format";
+import { getRentalDisplayStatus } from "@/lib/utils/rental-status";
 
 interface RentalStatusProps {
   status?: "active" | "stopped";
@@ -27,13 +27,6 @@ const formatDateTime = (value?: string | null) => {
     hour: "2-digit",
     minute: "2-digit",
   });
-};
-
-const getDerivedStatus = (startDate?: string, endDate?: string) => {
-  const today = getTodayLocal();
-  if (startDate && today < startDate) return "upcoming";
-  if (endDate && today > endDate) return "completed";
-  return "active";
 };
 
 const derivedStatusLabel: Record<string, string> = {
@@ -80,10 +73,12 @@ const RentalStatus = ({ status, stoppedAt, startDate, endDate }: RentalStatusPro
         ) : (
           <span
             className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold ${
-              derivedStatusColor[getDerivedStatus(startDate, endDate)]
+              derivedStatusColor[
+                getRentalDisplayStatus(status, startDate, endDate)
+              ]
             }`}
           >
-            {derivedStatusLabel[getDerivedStatus(startDate, endDate)]}
+            {derivedStatusLabel[getRentalDisplayStatus(status, startDate, endDate)]}
           </span>
         )}
       </div>

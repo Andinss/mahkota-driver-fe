@@ -10,6 +10,10 @@ import { koinApi } from "@/lib/api/koin";
 import type { DriverItem } from "@/lib/types/driver";
 import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
 import { formatDateOnly } from "@/lib/utils/format";
+import {
+  getRentalDisplayStatus,
+  type RentalDisplayStatus,
+} from "@/lib/utils/rental-status";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { DriverQuickActions } from "./driver-quick-actions";
@@ -83,6 +87,16 @@ const izinBadgeConfig: Record<
   },
 };
 
+const rentalBadgeConfig: Record<
+  RentalDisplayStatus,
+  { label: string; className: string }
+> = {
+  active: { label: "Aktif", className: "bg-emerald-500" },
+  upcoming: { label: "Akan Datang", className: "bg-blue-500" },
+  completed: { label: "Selesai", className: "bg-slate-400 dark:bg-slate-600" },
+  stopped: { label: "Dihentikan", className: "bg-rose-500" },
+};
+
 export function DriverDashboardPage() {
   const { user } = useAuth();
   const [driver, setDriver] = useState<DriverItem | null>(null);
@@ -142,7 +156,20 @@ export function DriverDashboardPage() {
   const fullName = driver
     ? `${driver.first_name} ${driver.last_name}`.trim()
     : user?.username || "Driver";
-  const activeRentals = driver?.rentals?.length ?? 0;
+  // Riwayat pemakaian unit (aktif + selesai), urut dari yang terbaru.
+  const rentalHistory = [...(driver?.rentals ?? [])].sort(
+    (a, b) =>
+      new Date(b.start_date ?? 0).getTime() -
+      new Date(a.start_date ?? 0).getTime(),
+  );
+  const activeRentals = rentalHistory.filter(
+    (rental) =>
+      getRentalDisplayStatus(
+        rental.status,
+        rental.start_date,
+        rental.end_date,
+      ) === "active",
+  ).length;
 
   const billRows = [
     ...feeBills.map((f) => ({
@@ -212,7 +239,7 @@ export function DriverDashboardPage() {
                 value:
                   activeRentals > 0
                     ? "Aktif Beroperasi"
-                    : "Belum ada unit terdaftar",
+                    : "Belum ada unit aktif",
                 color:
                   activeRentals > 0 ? "text-emerald-500" : "text-slate-400",
                 icon: activeRentals > 0 ? "check_circle" : "info",
@@ -222,8 +249,8 @@ export function DriverDashboardPage() {
 
           <DriverQuickActions />
 
-          {/* Vehicle Cards / Slider */}
-          {driver?.rentals && driver.rentals.length > 0 && (
+          {/* Vehicle Cards / Slider — riwayat unit yang pernah dipakai */}
+          {rentalHistory.length > 0 && (
             <div className="bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-3">
@@ -237,7 +264,7 @@ export function DriverDashboardPage() {
                       Unit Kendaraan Saya
                     </h2>
                     <p className="text-xs text-slate-400">
-                      {driver.rentals.length} unit aktif
+                      {rentalHistory.length} unit pernah dipakai
                     </p>
                   </div>
                 </div>
@@ -251,9 +278,17 @@ export function DriverDashboardPage() {
                   pagination={{ clickable: true }}
                   className="driver-vehicle-swiper"
                 >
-                  {driver.rentals.map((rental) => {
+                  {rentalHistory.map((rental) => {
                     const vehicle = rental.vehicle;
                     if (!vehicle) return null;
+                    const badge =
+                      rentalBadgeConfig[
+                        getRentalDisplayStatus(
+                          rental.status,
+                          rental.start_date,
+                          rental.end_date,
+                        )
+                      ];
                     const photos = vehicle.vehicle_photo;
                     const imageUrl =
                       Array.isArray(photos) && photos.length > 0
@@ -295,8 +330,10 @@ export function DriverDashboardPage() {
                               />
                             )}
                             <div className="absolute top-3 right-3">
-                              <span className="px-2.5 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">
-                                Aktif
+                              <span
+                                className={`px-2.5 py-1 text-white text-xs font-semibold rounded-full ${badge.className}`}
+                              >
+                                {badge.label}
                               </span>
                             </div>
                           </div>

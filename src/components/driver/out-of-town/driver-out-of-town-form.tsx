@@ -3,36 +3,54 @@
 import { useState, useEffect, useCallback } from "react";
 import { DateInput } from "@/components/ui/date-input";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { driverApi } from "@/lib/api/driver";
 import { outOfTownApi } from "@/lib/api/out-of-town";
 import { toastError, toastSuccess } from "@/components/ui/toast-provider";
-import type { DriverItem } from "@/lib/types/driver";
+import { formatDateOnly, getTodayLocal } from "@/lib/utils/format";
+import type { DriverRentalItem } from "@/lib/types/driver";
 
 interface DriverOutOfTownFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  driverName: string;
-  driverPhone: string;
-}
-
-interface VehicleOption {
-  id: string;
-  name: string;
-  plate: string;
-  label: string;
 }
 
 const emptyForm = {
-  vehicleId: "",
   destination: "",
   departureDate: "",
   returnDate: "",
   reason: "",
+};
+
+/** Ambil bagian YYYY-MM-DD dari nilai tanggal apa pun. */
+const dateOnly = (value?: string | null): string => {
+  if (!value) return "";
+  return value.slice(0, 10);
+};
+
+/**
+ * Rental yang masih berlaku (status active & hari ini dalam rentang),
+ * sama seperti definisi di backend. Terbaru (start_date) dipakai lebih dulu.
+ */
+const pickActiveRental = (
+  rentals: DriverRentalItem[],
+): DriverRentalItem | null => {
+  const today = getTodayLocal();
+  const active = rentals
+    .filter(
+      (r) =>
+        r.status === "active" &&
+        r.vehicle &&
+        (!r.start_date || dateOnly(r.start_date) <= today) &&
+        (!r.end_date || dateOnly(r.end_date) >= today),
+    )
+    .sort((a, b) =>
+      dateOnly(a.start_date) < dateOnly(b.start_date) ? 1 : -1,
+    );
+  return active[0] || null;
 };
 
 export function DriverOutOfTownForm({
@@ -41,61 +59,66 @@ export function DriverOutOfTownForm({
   onSubmit,
 }: DriverOutOfTownFormProps) {
   const [loading, setLoading] = useState(false);
-  const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
-  const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
+  const [isLoadingRental, setIsLoadingRental] = useState(false);
+  const [rental, setRental] = useState<DriverRentalItem | null>(null);
   const [formData, setFormData] = useState(emptyForm);
 
-  const loadVehicles = useCallback(async () => {
-    setIsLoadingVehicles(true);
+  const loadRental = useCallback(async () => {
+    setIsLoadingRental(true);
     try {
       const res = await driverApi.getMe();
-      const driver: DriverItem | null = res?.data ?? null;
-      const rentals = driver?.rentals || [];
-      const active = rentals.filter((r) => r.status === "active");
-      const source = active.length > 0 ? active : rentals;
-      const options: VehicleOption[] = source
-        .filter((r) => r.vehicle)
-        .map((r) => {
-          const name = `${r.vehicle!.merk} ${r.vehicle!.model}`.trim();
-          const plate = r.vehicle!.license_plate || "-";
-          return { id: r.vehicle!.id, name, plate, label: `${name} (${plate})` };
-        });
-      // Hilangkan duplikat kendaraan.
-      const unique = Array.from(
-        new Map(options.map((o) => [o.id, o])).values(),
-      );
-      setVehicles(unique);
-      setFormData((prev) => ({
-        ...prev,
-        vehicleId: unique.some((o) => o.id === prev.vehicleId)
-          ? prev.vehicleId
-          : unique[0]?.id || "",
-      }));
+      const rentals = res?.data?.rentals || [];
+      setRental(pickActiveRental(rentals));
     } catch {
-      setVehicles([]);
+      setRental(null);
     } finally {
-      setIsLoadingVehicles(false);
+      setIsLoadingRental(false);
     }
   }, []);
 
   useEffect(() => {
     if (isOpen) {
       setFormData(emptyForm);
-      loadVehicles();
+      loadRental();
     }
-  }, [isOpen, loadVehicles]);
+  }, [isOpen, loadRental]);
+
+  const contractStart = dateOnly(rental?.start_date);
+  const contractEnd = dateOnly(rental?.end_date);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.vehicleId) {
-      toastError("Pilih kendaraan terlebih dahulu");
+    if (!rental?.vehicle) {
+      toastError(
+        "Anda tidak memiliki kontrak rental aktif untuk mengajukan keluar kota",
+      );
       return;
     }
-    setLoading(true);
+    if (
+      formData.departureDate &&
+      formData.returnDate &&
+      formData.returnDate < formData.departureDate
+    ) {
+      toastError("Tanggal kembali tidak boleh sebelum tanggal keluar");
+      return;
+    }
+    if (
+      contractStart &&
+      contractEnd &&
+      (formData.departureDate < contractStart ||
+        formData.returnDate > contractEnd)
+    ) {
+      toastError(
+        `Tanggal perjalanan harus di dalam masa kontrak rental (${formatDateOnly(
+          contractStart,
+        )} s/d ${formatDateOnly(contractEnd)})`,
+      );
+      return;
+    }
 
+    setLoading(true);
     try {
       await outOfTownApi.createMy({
-        vehicle_id: formData.vehicleId,
         destination: formData.destination.trim(),
         departure_date: formData.departureDate,
         return_date: formData.returnDate,
@@ -114,6 +137,11 @@ export function DriverOutOfTownForm({
     }
   };
 
+  const hasRental = !!rental?.vehicle;
+  const vehicleLabel = rental?.vehicle
+    ? `${rental.vehicle.merk} ${rental.vehicle.model}`.trim()
+    : "";
+
   return (
     <Modal
       isOpen={isOpen}
@@ -122,26 +150,49 @@ export function DriverOutOfTownForm({
       size="md"
     >
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
-        <Select
-          id="vehicle"
-          label="Pilih Kendaraan"
-          value={formData.vehicleId}
-          onChange={(e) =>
-            setFormData({ ...formData, vehicleId: e.target.value })
-          }
-          disabled={isLoadingVehicles || vehicles.length === 0}
-          required
-        >
-          {isLoadingVehicles && <option value="">Memuat kendaraan...</option>}
-          {!isLoadingVehicles && vehicles.length === 0 && (
-            <option value="">Tidak ada kendaraan terdaftar</option>
+        {/* Kendaraan ditentukan otomatis dari kontrak rental aktif. */}
+        <div>
+          <p className="text-sm font-medium text-[#111418] dark:text-white mb-1.5">
+            Kendaraan
+          </p>
+          {isLoadingRental ? (
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-3 text-sm text-slate-400">
+              Memuat data kontrak...
+            </div>
+          ) : hasRental ? (
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-3 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-primary text-xl">
+                  directions_car
+                </span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                  {vehicleLabel}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                  {rental!.vehicle!.license_plate}
+                </p>
+                {contractStart && contractEnd && (
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Masa kontrak: {formatDateOnly(contractStart)} -{" "}
+                    {formatDateOnly(contractEnd)}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/20 px-4 py-3">
+              <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">
+                Tidak ada kontrak rental aktif
+              </p>
+              <p className="text-xs text-rose-500 dark:text-rose-400">
+                Pengajuan keluar kota memerlukan kontrak rental yang masih
+                berlaku. Hubungi admin untuk penugasan kendaraan.
+              </p>
+            </div>
           )}
-          {vehicles.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.label}
-            </option>
-          ))}
-        </Select>
+        </div>
 
         <Input
           id="destination"
@@ -159,6 +210,8 @@ export function DriverOutOfTownForm({
             id="departureDate"
             label="Tgl Keluar"
             value={formData.departureDate}
+            min={contractStart || undefined}
+            max={contractEnd || undefined}
             onChange={(e) =>
               setFormData({ ...formData, departureDate: e.target.value })
             }
@@ -168,6 +221,8 @@ export function DriverOutOfTownForm({
             id="returnDate"
             label="Tgl Kembali"
             value={formData.returnDate}
+            min={contractStart || undefined}
+            max={contractEnd || undefined}
             onChange={(e) =>
               setFormData({ ...formData, returnDate: e.target.value })
             }
@@ -185,18 +240,14 @@ export function DriverOutOfTownForm({
           required
         />
 
-        {!isLoadingVehicles && vehicles.length === 0 && (
-          <p className="text-xs text-rose-500">
-            Anda belum memiliki kendaraan aktif. Hubungi admin untuk penugasan
-            kendaraan.
-          </p>
-        )}
-
         <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onClose}>
             Batal
           </Button>
-          <Button type="submit" disabled={loading || vehicles.length === 0}>
+          <Button
+            type="submit"
+            disabled={loading || isLoadingRental || !hasRental}
+          >
             {loading ? "Mengirim..." : "Ajukan Sekarang"}
           </Button>
         </div>

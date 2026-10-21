@@ -218,8 +218,6 @@ export default function DriverOutOfTownPage() {
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleSubmit}
-        driverName={user?.username || "Driver"}
-        driverPhone={user?.email || "-"}
       />
     </div>
   );
