@@ -124,10 +124,9 @@ export function DriverDashboardPage() {
     queryKey: koinKeys.balance(driverId ?? ""),
     queryFn: async () => {
       const res = await koinApi.getBalance(driverId!);
-      const data = (res as { data?: { balance?: string | number } })?.data ?? res;
-      const balance = Number(
-        (data as { balance?: string | number })?.balance,
-      );
+      const data =
+        (res as { data?: { balance?: string | number } })?.data ?? res;
+      const balance = Number((data as { balance?: string | number })?.balance);
       return Number.isFinite(balance) ? balance : 0;
     },
     enabled: !!driverId,
@@ -255,8 +254,7 @@ export function DriverDashboardPage() {
                   !isLoading && activeRentals > 0
                     ? "text-emerald-500"
                     : "text-slate-400",
-                icon:
-                  !isLoading && activeRentals > 0 ? "check_circle" : "info",
+                icon: !isLoading && activeRentals > 0 ? "check_circle" : "info",
               }}
             />
           </div>
