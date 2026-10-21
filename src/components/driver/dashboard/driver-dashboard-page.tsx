@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/page-header";
 import { PaymentCard } from "@/components/finance/payment-list/card";
 import { useAuth } from "@/lib/auth-context";
 import { driverApi } from "@/lib/api/driver";
 import { financeApi } from "@/lib/api/finances";
 import { koinApi } from "@/lib/api/koin";
+import { driverKeys, financeKeys, koinKeys } from "@/lib/query-keys";
 import type { DriverItem } from "@/lib/types/driver";
 import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
 import { formatDateOnly } from "@/lib/utils/format";
@@ -99,63 +100,62 @@ const rentalBadgeConfig: Record<
 
 export function DriverDashboardPage() {
   const { user } = useAuth();
-  const [driver, setDriver] = useState<DriverItem | null>(null);
-  const [feeBills, setFeeBills] = useState<FinanceItem[]>([]);
-  const [dailyPayments, setDailyPayments] = useState<DailyPaymentItem[]>([]);
-  const [koinBalance, setKoinBalance] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const driverId = user?.driver_id ?? null;
 
-  useEffect(() => {
-    if (!user?.driver_id) {
-      setIsLoading(false);
-      return;
-    }
+  const driverQuery = useQuery({
+    queryKey: driverKeys.me(),
+    queryFn: async () => {
+      const res = await driverApi.getMe();
+      return (res?.data ?? res) as DriverItem;
+    },
+    enabled: !!driverId,
+  });
 
-    const fetchData = async () => {
-      try {
-        const [driverRes, feeRes, koinRes] = await Promise.allSettled([
-          driverApi.getMe(),
-          financeApi.getMyFinances({ limit: 10 }),
-          koinApi.getBalance(user.driver_id!),
-        ]);
+  const feeQuery = useQuery({
+    queryKey: financeKeys.myList({ limit: 10 }),
+    queryFn: async () => {
+      const res = await financeApi.getMyFinances({ limit: 10 });
+      return Array.isArray(res?.data) ? res.data : [];
+    },
+    enabled: !!driverId,
+  });
 
-        if (driverRes.status === "fulfilled") {
-          const data = (driverRes.value as any)?.data ?? driverRes.value;
-          setDriver(data);
-        }
-        if (feeRes.status === "fulfilled") {
-          const env = feeRes.value;
-          const items = Array.isArray(env?.data) ? env.data : [];
-          setFeeBills(items);
-        }
+  const koinQuery = useQuery({
+    queryKey: koinKeys.balance(driverId ?? ""),
+    queryFn: async () => {
+      const res = await koinApi.getBalance(driverId!);
+      const data =
+        (res as { data?: { balance?: string | number } })?.data ?? res;
+      const balance = Number((data as { balance?: string | number })?.balance);
+      return Number.isFinite(balance) ? balance : 0;
+    },
+    enabled: !!driverId,
+  });
 
-        try {
-          const dailyRes = await financeApi.getMyDailyPayments({ limit: 10 });
-          const dailyData = (dailyRes as any)?.data ?? dailyRes;
-          const items = Array.isArray(dailyData)
-            ? dailyData
-            : (dailyData?.data ?? []);
-          setDailyPayments(items);
-        } catch {
-          setDailyPayments([]);
-        }
-        if (koinRes.status === "fulfilled") {
-          const data = (koinRes.value as any)?.data ?? koinRes.value;
-          setKoinBalance(data?.balance ?? 0);
-        }
-      } catch (err) {
-        console.error("Failed to fetch driver data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const dailyQuery = useQuery({
+    queryKey: financeKeys.myDailyPayments({ limit: 10 }),
+    queryFn: async () => {
+      const res = await financeApi.getMyDailyPayments({ limit: 10 });
+      const data = (res as { data?: unknown })?.data ?? res;
+      const items = Array.isArray(data)
+        ? data
+        : ((data as { data?: unknown })?.data ?? []);
+      return Array.isArray(items) ? (items as DailyPaymentItem[]) : [];
+    },
+    enabled: !!driverId,
+  });
 
-    fetchData();
-  }, [user?.driver_id]);
+  const driver = driverQuery.data ?? null;
+  const feeBills: FinanceItem[] = feeQuery.data ?? [];
+  const dailyPayments: DailyPaymentItem[] = dailyQuery.data ?? [];
+  const koinBalance = koinQuery.data ?? null;
+  const isLoading = driverQuery.isLoading;
+  const isRefreshing =
+    driverQuery.isFetching || koinQuery.isFetching || feeQuery.isFetching;
 
   const fullName = driver
     ? `${driver.first_name} ${driver.last_name}`.trim()
-    : user?.username || "Driver";
+    : user?.driver_name || user?.username || "Driver";
   // Riwayat pemakaian unit (aktif + selesai), urut dari yang terbaru.
   const rentalHistory = [...(driver?.rentals ?? [])].sort(
     (a, b) =>
@@ -208,11 +208,20 @@ export function DriverDashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <PaymentCard
               title="Koin Utama"
-              value={`${koinBalance.toLocaleString("id-ID")} Koin`}
+              value={
+                koinBalance === null
+                  ? "…"
+                  : `${koinBalance.toLocaleString("id-ID")} Koin`
+              }
               icon="toll"
               iconColor="text-primary"
               trend={{
-                value: `Setara ${formatIDR(koinBalance)}`,
+                value:
+                  koinBalance === null
+                    ? isRefreshing
+                      ? "Menyinkronkan ulang…"
+                      : "Memuat saldo…"
+                    : `Setara ${formatIDR(koinBalance)}`,
                 color: "text-primary",
                 icon: "account_balance_wallet",
               }}
@@ -230,157 +239,161 @@ export function DriverDashboardPage() {
             />
             <PaymentCard
               title="Unit Operasional"
-              value={`${activeRentals} Unit`}
+              value={isLoading ? "…" : `${activeRentals} Unit`}
               icon="directions_car"
               iconColor={
                 activeRentals > 0 ? "text-emerald-500" : "text-slate-400"
               }
               trend={{
-                value:
-                  activeRentals > 0
+                value: isLoading
+                  ? "Memuat unit…"
+                  : activeRentals > 0
                     ? "Aktif Beroperasi"
                     : "Belum ada unit aktif",
                 color:
-                  activeRentals > 0 ? "text-emerald-500" : "text-slate-400",
-                icon: activeRentals > 0 ? "check_circle" : "info",
+                  !isLoading && activeRentals > 0
+                    ? "text-emerald-500"
+                    : "text-slate-400",
+                icon: !isLoading && activeRentals > 0 ? "check_circle" : "info",
               }}
             />
           </div>
 
-          <DriverQuickActions />
-
           {/* Vehicle Cards / Slider — riwayat unit yang pernah dipakai */}
-          {rentalHistory.length > 0 && (
-            <div className="bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-blue-500 text-xl">
-                      directions_car
-                    </span>
-                  </div>
-                  <div>
-                    <h2 className="font-bold text-slate-800 dark:text-white text-base">
-                      Unit Kendaraan Saya
-                    </h2>
-                    <p className="text-xs text-slate-400">
-                      {rentalHistory.length} unit pernah dipakai
-                    </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {rentalHistory.length > 0 && (
+              <div className="bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-blue-500 text-xl">
+                        directions_car
+                      </span>
+                    </div>
+                    <div>
+                      <h2 className="font-bold text-slate-800 dark:text-white text-base">
+                        Unit Kendaraan Saya
+                      </h2>
+                      <p className="text-xs text-slate-400">
+                        {rentalHistory.length} unit pernah dipakai
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="p-6">
-                <Swiper
-                  modules={[Navigation, Pagination]}
-                  spaceBetween={16}
-                  slidesPerView={1}
-                  navigation
-                  pagination={{ clickable: true }}
-                  className="driver-vehicle-swiper"
-                >
-                  {rentalHistory.map((rental) => {
-                    const vehicle = rental.vehicle;
-                    if (!vehicle) return null;
-                    const badge =
-                      rentalBadgeConfig[
-                        getRentalDisplayStatus(
-                          rental.status,
-                          rental.start_date,
-                          rental.end_date,
-                        )
-                      ];
-                    const photos = vehicle.vehicle_photo;
-                    const imageUrl =
-                      Array.isArray(photos) && photos.length > 0
-                        ? photos[0]
-                        : typeof photos === "string" && photos
-                          ? photos
-                          : PLACEHOLDER_IMG;
+                <div className="p-6">
+                  <Swiper
+                    modules={[Navigation, Pagination]}
+                    spaceBetween={16}
+                    slidesPerView={1}
+                    navigation
+                    pagination={{ clickable: true }}
+                    className="driver-vehicle-swiper"
+                  >
+                    {rentalHistory.map((rental) => {
+                      const vehicle = rental.vehicle;
+                      if (!vehicle) return null;
+                      const badge =
+                        rentalBadgeConfig[
+                          getRentalDisplayStatus(
+                            rental.status,
+                            rental.start_date,
+                            rental.end_date,
+                          )
+                        ];
+                      const photos = vehicle.vehicle_photo;
+                      const imageUrl =
+                        Array.isArray(photos) && photos.length > 0
+                          ? photos[0]
+                          : typeof photos === "string" && photos
+                            ? photos
+                            : PLACEHOLDER_IMG;
 
-                    return (
-                      <SwiperSlide key={rental.id}>
-                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-                          <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
-                            {imageUrl === PLACEHOLDER_IMG ? (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">
-                                  directions_car
+                      return (
+                        <SwiperSlide key={rental.id}>
+                          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                            <div className="relative h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 overflow-hidden">
+                              {imageUrl === PLACEHOLDER_IMG ? (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">
+                                    directions_car
+                                  </span>
+                                </div>
+                              ) : (
+                                <img
+                                  src={imageUrl}
+                                  alt={`${vehicle.merk} ${vehicle.model}`}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = "none";
+                                    target.parentElement?.classList.add(
+                                      "flex",
+                                      "items-center",
+                                      "justify-center",
+                                    );
+                                    const fallback =
+                                      document.createElement("span");
+                                    fallback.className =
+                                      "material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600";
+                                    fallback.textContent = "directions_car";
+                                    target.parentElement?.appendChild(fallback);
+                                  }}
+                                />
+                              )}
+                              <div className="absolute top-3 right-3">
+                                <span
+                                  className={`px-2.5 py-1 text-white text-xs font-semibold rounded-full ${badge.className}`}
+                                >
+                                  {badge.label}
                                 </span>
                               </div>
-                            ) : (
-                              <img
-                                src={imageUrl}
-                                alt={`${vehicle.merk} ${vehicle.model}`}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = "none";
-                                  target.parentElement?.classList.add(
-                                    "flex",
-                                    "items-center",
-                                    "justify-center",
-                                  );
-                                  const fallback =
-                                    document.createElement("span");
-                                  fallback.className =
-                                    "material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600";
-                                  fallback.textContent = "directions_car";
-                                  target.parentElement?.appendChild(fallback);
-                                }}
-                              />
-                            )}
-                            <div className="absolute top-3 right-3">
-                              <span
-                                className={`px-2.5 py-1 text-white text-xs font-semibold rounded-full ${badge.className}`}
-                              >
-                                {badge.label}
-                              </span>
                             </div>
-                          </div>
-                          <div className="p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                              {vehicle.merk} {vehicle.model}
-                            </h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 font-mono mt-1">
-                              {vehicle.license_plate}
-                            </p>
-                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 space-y-2">
-                              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                <span className="material-symbols-outlined text-[14px]">
-                                  calendar_today
-                                </span>
-                                <span>
-                                  {formatDate(rental.start_date)} -{" "}
-                                  {formatDate(rental.end_date)}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                <span className="material-symbols-outlined text-[14px]">
-                                  speed
-                                </span>
-                                <span>
-                                  {rental.total_duration} hari &middot;{" "}
-                                  {formatIDR(rental.daily_rate || 0)}/hari
-                                </span>
-                              </div>
-                              {vehicle.color && (
+                            <div className="p-4">
+                              <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                                {vehicle.merk} {vehicle.model}
+                              </h3>
+                              <p className="text-sm text-slate-500 dark:text-slate-400 font-mono mt-1">
+                                {vehicle.license_plate}
+                              </p>
+                              <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 space-y-2">
                                 <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                                   <span className="material-symbols-outlined text-[14px]">
-                                    palette
+                                    calendar_today
                                   </span>
-                                  <span>{vehicle.color}</span>
+                                  <span>
+                                    {formatDate(rental.start_date)} -{" "}
+                                    {formatDate(rental.end_date)}
+                                  </span>
                                 </div>
-                              )}
+                                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                                  <span className="material-symbols-outlined text-[14px]">
+                                    speed
+                                  </span>
+                                  <span>
+                                    {rental.total_duration} hari &middot;{" "}
+                                    {formatIDR(rental.daily_rate || 0)}/hari
+                                  </span>
+                                </div>
+                                {vehicle.color && (
+                                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                                    <span className="material-symbols-outlined text-[14px]">
+                                      palette
+                                    </span>
+                                    <span>{vehicle.color}</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </SwiperSlide>
-                    );
-                  })}
-                </Swiper>
+                        </SwiperSlide>
+                      );
+                    })}
+                  </Swiper>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+            <DriverQuickActions />
+          </div>
 
           {/* Tagihan — data general (fee membership + daily payment), tanpa tab, kolom tetap */}
           {billRows.length > 0 && (

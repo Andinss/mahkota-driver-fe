@@ -17,6 +17,9 @@ export interface OutOfTownItem {
   admin_note?: string | null;
   reviewed_by?: string | null;
   reviewed_at?: string | null;
+  /** Biaya tambahan luar kota (diinput admin saat approve). */
+  fee_amount?: number | null;
+  daily_payment_id?: string | null;
   created_at: string;
   updated_at: string;
 }

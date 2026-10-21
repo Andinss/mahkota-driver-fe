@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { OutOfTownRequest, OutOfTownStatus } from "./out-of-town-table-row";
 import { outOfTownApi } from "@/lib/api/out-of-town";
 import {
@@ -10,6 +11,7 @@ import {
   toastError,
   toastSuccess,
 } from "@/components/ui/toast-provider";
+import { formatRupiah } from "@/lib/utils/format";
 
 interface OutOfTownDetailModalProps {
   request: OutOfTownRequest | null;
@@ -45,6 +47,7 @@ export const OutOfTownDetailModal = ({
 }: OutOfTownDetailModalProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [adminNote, setAdminNote] = useState("");
+  const [feeAmount, setFeeAmount] = useState("");
 
   if (!request) return null;
 
@@ -53,10 +56,19 @@ export const OutOfTownDetailModal = ({
   const handleAction = async (newStatus: OutOfTownStatus) => {
     const actionLabel = newStatus === "approved" ? "menyetujui" : "menolak";
 
+    const parsedFee = Number(feeAmount);
+    const fee =
+      newStatus === "approved" && feeAmount.trim() && parsedFee > 0
+        ? parsedFee
+        : undefined;
+
     const confirmed = await confirmToast({
       title:
         newStatus === "approved" ? "Setujui Pengajuan?" : "Tolak Pengajuan?",
-      message: `Apakah Anda yakin ingin ${actionLabel} pengajuan dari ${request.driverName}?`,
+      message:
+        newStatus === "approved" && fee
+          ? `Setujui pengajuan dari ${request.driverName} dan tambahkan biaya ${formatRupiah(fee)} ke daily payment tanggal keberangkatan?`
+          : `Apakah Anda yakin ingin ${actionLabel} pengajuan dari ${request.driverName}?`,
       confirmText: newStatus === "approved" ? "Ya, Setujui" : "Ya, Tolak",
       cancelText: "Batal",
       variant: newStatus === "approved" ? "info" : "danger",
@@ -68,7 +80,7 @@ export const OutOfTownDetailModal = ({
     try {
       const note = adminNote.trim() || undefined;
       if (newStatus === "approved") {
-        await outOfTownApi.approve(request.id, note);
+        await outOfTownApi.approve(request.id, note, fee);
       } else {
         await outOfTownApi.reject(request.id, note);
       }
@@ -127,6 +139,14 @@ export const OutOfTownDetailModal = ({
             </span>
           </InfoField>
 
+          {request.feeAmount ? (
+            <InfoField icon="payments" label="Biaya Tambahan Luar Kota">
+              <span className="text-emerald-600 dark:text-emerald-400">
+                {formatRupiah(request.feeAmount)}
+              </span>
+            </InfoField>
+          ) : null}
+
           {request.adminNote && (
             <InfoField icon="sticky_note_2" label="Catatan Admin">
               <span className="font-normal text-slate-600 dark:text-slate-300">
@@ -150,6 +170,22 @@ export const OutOfTownDetailModal = ({
         {/* Footer — hanya kalau pending */}
         {request.status === "pending" && (
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
+            <div>
+              <Input
+                id="fee-amount"
+                label="Biaya Tambahan Luar Kota (opsional)"
+                type="number"
+                min={0}
+                step={1000}
+                placeholder="Cth: 50000"
+                value={feeAmount}
+                onChange={(e) => setFeeAmount(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-slate-400">
+                Nominal bebas. Jika diisi, biaya ini ditambahkan ke daily
+                payment pada tanggal keberangkatan driver.
+              </p>
+            </div>
             <Textarea
               id="admin-note"
               label="Catatan (opsional)"

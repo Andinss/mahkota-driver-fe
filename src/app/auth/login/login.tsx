@@ -23,6 +23,7 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileError, setTurnstileError] = useState<string | null>(null);
   const [formValues, setFormValues] = useState({
     email: "",
     password: "",
@@ -83,11 +84,15 @@ const LoginPage = () => {
     }
 
     if (!turnstileToken) {
+      setTurnstileError(
+        "Verifikasi keamanan belum selesai. Selesaikan dulu, lalu klik Masuk.",
+      );
       toastWarning("Please complete the security verification.");
       turnstileRef.current?.reset();
       return;
     }
 
+    setTurnstileError(null);
     setIsSubmitting(true);
 
     try {
@@ -106,6 +111,7 @@ const LoginPage = () => {
       if (error instanceof HttpClientError) {
         const msg = (error.message || "").toLowerCase();
         if (msg.includes("turnstile") || msg.includes("security")) {
+          setTurnstileError(error.message);
           toastError(error.message);
         } else if (error.statusCode === 401) {
           toastError(error.message && error.message !== "Unauthorized"
@@ -178,27 +184,57 @@ const LoginPage = () => {
           <Turnstile
             ref={turnstileRef}
             siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-            onSuccess={(token) => setTurnstileToken(token)}
+            onSuccess={(token) => {
+              setTurnstileToken(token);
+              setTurnstileError(null);
+            }}
             onError={() => {
               setTurnstileToken("");
+              setTurnstileError(
+                "Verifikasi keamanan gagal dimuat. Muat ulang halaman lalu coba lagi.",
+              );
               toastWarning("Security check gagal. Silakan coba muat ulang halaman.");
             }}
             onExpire={() => {
               setTurnstileToken("");
+              setTurnstileError(
+                "Verifikasi keamanan kedaluwarsa. Selesaikan ulang verifikasi.",
+              );
               toastWarning("Security check expired — silakan selesaikan ulang.");
             }}
           />
         </div>
+
+        {turnstileError && (
+          <div className="flex items-start gap-2 rounded-lg border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/20 px-3 py-2">
+            <span className="material-symbols-outlined text-rose-500 text-base shrink-0">
+              error
+            </span>
+            <p className="text-xs font-medium text-rose-600 dark:text-rose-400">
+              {turnstileError}
+            </p>
+          </div>
+        )}
+
+        {!turnstileToken && !turnstileError && (
+          <p className="text-center text-xs text-slate-400">
+            Menunggu verifikasi keamanan…
+          </p>
+        )}
 
         <button
           type="submit"
           disabled={isSubmitting}
           className="w-full h-11 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center justify-center gap-2 text-sm"
         >
-          <span className="material-symbols-outlined text-xl">
-            {isSubmitting ? "hourglass_empty" : "login"}
+          <span
+            className={`material-symbols-outlined text-xl ${
+              isSubmitting ? "animate-spin" : ""
+            }`}
+          >
+            {isSubmitting ? "progress_activity" : "login"}
           </span>
-          {isSubmitting ? "Masuk..." : "Masuk"}
+          {isSubmitting ? "Memverifikasi & masuk…" : "Masuk"}
         </button>
       </form>
     </div>

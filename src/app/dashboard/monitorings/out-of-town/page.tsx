@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/page-header";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { Pagination } from "@/components/ui/pagination";
@@ -10,7 +11,7 @@ import { OutOfTownDetailModal } from "@/components/monitoring/out-of-town/out-of
 import type { OutOfTownRequest } from "@/components/monitoring/out-of-town/out-of-town-table-row";
 import { outOfTownApi } from "@/lib/api/out-of-town";
 import type { OutOfTownItem, OutOfTownStats } from "@/lib/types/out-of-town";
-import { toastError } from "@/components/ui/toast-provider";
+import { outOfTownKeys } from "@/lib/query-keys";
 import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
 
 /** Ubah data backend (snake_case) ke bentuk tampilan komponen. */
@@ -27,16 +28,11 @@ const toView = (item: OutOfTownItem): OutOfTownRequest => ({
   status: item.status,
   submittedAt: formatDateTime(item.created_at),
   adminNote: item.admin_note,
+  feeAmount: item.fee_amount ? Number(item.fee_amount) : null,
 });
 
 export default function OutOfTownPage() {
-  const [requests, setRequests] = useState<OutOfTownRequest[]>([]);
-  const [stats, setStats] = useState<OutOfTownStats>({
-    pending: 0,
-    approved: 0,
-    rejected: 0,
-    total: 0,
-  });
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
@@ -44,33 +40,34 @@ export default function OutOfTownPage() {
   const [selectedRequest, setSelectedRequest] =
     useState<OutOfTownRequest | null>(null);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const listQuery = useQuery({
+    queryKey: outOfTownKeys.list(),
+    queryFn: async () => {
+      const res = await outOfTownApi.list();
+      const items: OutOfTownItem[] = Array.isArray(res?.data) ? res.data : [];
+      return items.map(toView);
+    },
+  });
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [listRes, statsRes] = await Promise.all([
-        outOfTownApi.list(),
-        outOfTownApi.stats(),
-      ]);
-      const items: OutOfTownItem[] = Array.isArray(listRes?.data)
-        ? listRes.data
-        : [];
-      setRequests(items.map(toView));
-      if (statsRes?.data) setStats(statsRes.data);
-    } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal memuat pengajuan",
-      );
-      setRequests([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const statsQuery = useQuery({
+    queryKey: outOfTownKeys.stats(),
+    queryFn: async () => {
+      const res = await outOfTownApi.stats();
+      return res?.data;
+    },
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const requests: OutOfTownRequest[] = useMemo(
+    () => listQuery.data ?? [],
+    [listQuery.data],
+  );
+  const stats: OutOfTownStats = statsQuery.data ?? {
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    total: 0,
+  };
+  const isLoading = listQuery.isLoading;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -90,7 +87,7 @@ export default function OutOfTownPage() {
   const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   const handleStatusChange = () => {
-    fetchData();
+    queryClient.invalidateQueries({ queryKey: outOfTownKeys.all });
   };
 
   return (
@@ -187,6 +184,12 @@ export default function OutOfTownPage() {
                 <OutOfTownTable
                   requests={paged}
                   onSelect={setSelectedRequest}
+                  totalCount={requests.length}
+                  onResetFilter={() => {
+                    setSearch("");
+                    setStatusFilter("");
+                    setPage(1);
+                  }}
                 />
                 {filtered.length > 0 && (
                   <Pagination

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageHeader } from "@/components/page-header";
 import { PaymentCard } from "@/components/finance/payment-list/card";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth-context";
 import { driverApi } from "@/lib/api/driver";
 import { koinApi } from "@/lib/api/koin";
+import { driverKeys, koinKeys } from "@/lib/query-keys";
 import type { DriverItem } from "@/lib/types/driver";
 
 const formatIDR = (value: number) =>
@@ -19,43 +20,36 @@ const formatIDR = (value: number) =>
 
 export default function ProfilDriver() {
   const { user } = useAuth();
-  const [driver, setDriver] = useState<DriverItem | null>(null);
-  const [koinBalance, setKoinBalance] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const driverId = user?.driver_id ?? null;
 
-  useEffect(() => {
-    if (!user?.driver_id) {
-      setIsLoading(false);
-      return;
-    }
-    driverApi
-      .getMe()
-      .then((res: any) => {
-        const data = res?.data ?? res;
-        setDriver(data);
-        if (data?.koin?.balance !== undefined) {
-          setKoinBalance(Number(data.koin.balance) || 0);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to fetch driver profile:", err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+  const driverQuery = useQuery({
+    queryKey: driverKeys.me(),
+    queryFn: async () => {
+      const res = await driverApi.getMe();
+      return (res?.data ?? res) as DriverItem;
+    },
+    enabled: !!driverId,
+  });
 
-    koinApi
-      .getBalance(user.driver_id)
-      .then((res: any) => {
-        const data = res?.data ?? res;
-        setKoinBalance(Number(data?.balance) || 0);
-      })
-      .catch(() => {});
-  }, [user?.driver_id]);
+  const koinQuery = useQuery({
+    queryKey: koinKeys.balance(driverId ?? ""),
+    queryFn: async () => {
+      const res = await koinApi.getBalance(driverId!);
+      const data = (res as { data?: { balance?: string | number } })?.data ?? res;
+      const balance = Number(
+        (data as { balance?: string | number })?.balance,
+      );
+      return Number.isFinite(balance) ? balance : 0;
+    },
+    enabled: !!driverId,
+  });
+
+  const driver = driverQuery.data ?? null;
+  const koinBalance = koinQuery.data ?? null;
 
   const fullName = driver
     ? `${driver.first_name} ${driver.last_name}`.trim()
-    : user?.username || "-";
+    : user?.driver_name || user?.username || "-";
   const employeeId = driver?.employee_id || "-";
   const activeRentals = driver?.rentals?.length ?? 0;
 
@@ -93,13 +87,25 @@ export default function ProfilDriver() {
             />
             <PaymentCard
             title="Koin"
-            value={`${koinBalance.toLocaleString("id-ID")} Koin`}
+            value={
+              koinBalance === null
+                ? "…"
+                : `${koinBalance.toLocaleString("id-ID")} Koin`
+            }
             icon="toll"
             iconColor="text-blue-500"
             trend={{
-              value: koinBalance > 0 ? `Setara ${formatIDR(koinBalance)}` : "Belum ada transaksi",
-              color: koinBalance > 0 ? "text-blue-500" : "text-blue-500",
-              icon: "account_balance_wallet",
+              value:
+                koinBalance === null
+                  ? "Memuat saldo…"
+                  : koinBalance > 0
+                    ? `Setara ${formatIDR(koinBalance)}`
+                    : "Belum ada transaksi",
+              color: koinBalance === null ? "text-slate-400" : "text-blue-500",
+              icon:
+                koinBalance === null
+                  ? "hourglass_empty"
+                  : "account_balance_wallet",
             }}
           />
             <PaymentCard

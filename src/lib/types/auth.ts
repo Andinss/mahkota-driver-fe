@@ -20,6 +20,8 @@ export interface User {
   username: string;
   email: string;
   driver_id?: string | null;
+  /** Nama lengkap driver dari relasi (dikirim login & /auth/me). */
+  driver_name?: string | null;
   role?: RoleInfo | null;
   permissions?: string[];
 }

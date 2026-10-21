@@ -15,6 +15,8 @@ export interface OutOfTownRequest {
   status: OutOfTownStatus;
   submittedAt: string;
   adminNote?: string | null;
+  /** Biaya tambahan luar kota yang dikenakan (hasil input admin). */
+  feeAmount?: number | null;
 }
 
 interface OutOfTownTableRowProps {
