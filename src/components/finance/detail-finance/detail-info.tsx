@@ -55,9 +55,41 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
     : finance.payer;
 
   const status: FinanceStatus = finance.status || finance.finance_type || "unpaid";
+  const isAdditionalCharge = finance.fee_kind === "additional_charge";
+  const feeLabel = isAdditionalCharge
+    ? "Tagihan Tambahan:"
+    : finance.fee_kind === "membership_fee"
+      ? "Fee Membership:"
+      : "Admin Fee Join:";
+
+  const totalFee = finance.fee_admin_join ?? 0;
+  const paidFee = finance.paid_amount ?? finance.amount_received ?? 0;
+  const cicilanLabel =
+    totalFee <= 0
+      ? "-"
+      : paidFee >= totalFee
+        ? "Lunas"
+        : paidFee > 0
+          ? "Dicicil"
+          : "Belum";
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {isAdditionalCharge && (
+        <div className="md:col-span-2 rounded-2xl border border-orange-200 dark:border-orange-900/40 bg-orange-50 dark:bg-orange-900/10 p-4 flex items-start gap-3">
+          <span className="material-symbols-outlined text-orange-500">receipt_long</span>
+          <div className="min-w-0">
+            <p className="font-bold text-sm text-orange-700 dark:text-orange-400">
+              {finance.charge_name || finance.notes || "Tagihan Tambahan"}
+            </p>
+            {finance.reason && (
+              <p className="text-xs text-orange-700/80 dark:text-orange-300/80 mt-0.5">
+                {finance.reason}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
@@ -128,11 +160,11 @@ const DetailInfo = ({ finance }: DetailInfoProps) => {
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-slate-500 dark:text-slate-400">Cicilan:</span>
-            <span className="text-sm font-bold text-slate-900 dark:text-white">Lunas</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white">{cicilanLabel}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-slate-500 dark:text-slate-400">
-              {"Fee Membership:"}
+              {feeLabel}
             </span>
             <span className={`text-sm font-bold ${(finance.fee_admin_join ?? 0) > 0 ? "text-slate-900 dark:text-white" : "text-slate-400"}`}>
               {formatCurrency(finance.fee_admin_join ?? 0)}

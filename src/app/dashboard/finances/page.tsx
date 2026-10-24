@@ -12,6 +12,8 @@ import { Pagination } from "@/components/ui/pagination";
 import { PaymentTable } from "@/components/finance/payment-list/payment-table";
 import { DailyPaymentTable } from "@/components/finance/payment-list/daily-payment-table";
 import { AdminPaymentTable } from "@/components/finance/payment-list/admin-payment-table";
+import { AdditionalChargeTable } from "@/components/finance/payment-list/additional-charge-table";
+import { AdditionalChargeModal } from "@/components/finance/payment-list/additional-charge-modal";
 import { FeeBillDetailModal } from "@/components/finance/fee-bill-detail-modal";
 import { PageHeader } from "@/components/page-header";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -33,11 +35,12 @@ import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { Button } from "@/components/ui/button";
 
-type FinanceTab = "daily" | "admin-koin" | "koin";
+type FinanceTab = "daily" | "admin-koin" | "additional" | "koin";
 
 const tabConfig: { key: FinanceTab; label: string }[] = [
   { key: "daily", label: "Daily Payment" },
   { key: "admin-koin", label: "Admin Payment" },
+  { key: "additional", label: "Additional Charges" },
   { key: "koin", label: "Koin" },
 ];
 
@@ -60,6 +63,10 @@ export default function PaymentList() {
   const [adminFeeMeta, setAdminFeeMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
   const [adminFeeDetailId, setAdminFeeDetailId] = useState<string | null>(null);
 
+  const [additionalCharges, setAdditionalCharges] = useState<FinanceItem[]>([]);
+  const [additionalMeta, setAdditionalMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+  const [showChargeModal, setShowChargeModal] = useState(false);
+
   const [koinTransactions, setKoinTransactions] = useState<KoinTransaction[]>([]);
   const [koinMeta, setKoinMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
   const [koinSummary, setKoinSummary] = useState<KoinSummary | null>(null);
@@ -70,6 +77,7 @@ export default function PaymentList() {
   const [dailyDateFilter, setDailyDateFilter] = useState(""); // "" | "today"
   const [dailyStatusFilter, setDailyStatusFilter] = useState(""); // "" | "paid" | "unpaid"
   const [adminStatusFilter, setAdminStatusFilter] = useState(""); // "" | "paid" | "unpaid"
+  const [additionalStatusFilter, setAdditionalStatusFilter] = useState(""); // "" | "paid" | "unpaid" | "pending"
   const [koinTypeFilter, setKoinTypeFilter] = useState(""); // "" | "top_up" | "refund"
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -88,6 +96,7 @@ export default function PaymentList() {
     setDailyDateFilter("");
     setDailyStatusFilter("");
     setAdminStatusFilter("");
+    setAdditionalStatusFilter("");
     setKoinTypeFilter("");
     setCurrentPage(1);
   }, [activeTab]);
@@ -168,6 +177,28 @@ export default function PaymentList() {
     }
   }, [currentPage, itemsPerPage, debouncedSearch, user]);
 
+  const fetchAdditionalCharges = useCallback(async () => {
+    if (!canAccess(user?.permissions, "finance.read")) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await financeApi.getAdditionalCharges({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debouncedSearch || undefined,
+      });
+      const items = Array.isArray(response.data) ? response.data : [];
+      setAdditionalCharges(items);
+      if (response.meta) setAdditionalMeta(response.meta);
+    } catch {
+      toastError("Failed to load additional charges");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, itemsPerPage, debouncedSearch, user]);
+
   const fetchKoinTransactions = useCallback(async () => {
     if (!canAccess(user?.permissions, "finance.read")) {
       return;
@@ -204,11 +235,13 @@ export default function PaymentList() {
       fetchDailyPayments();
     } else if (activeTab === "admin-koin") {
       fetchAdminFees();
+    } else if (activeTab === "additional") {
+      fetchAdditionalCharges();
     } else if (activeTab === "koin") {
       fetchKoinTransactions();
       fetchKoinSummary();
     }
-  }, [activeTab, fetchDailyPayments, fetchAdminFees, fetchKoinTransactions, fetchKoinSummary]);
+  }, [activeTab, fetchDailyPayments, fetchAdminFees, fetchAdditionalCharges, fetchKoinTransactions, fetchKoinSummary]);
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -273,7 +306,11 @@ export default function PaymentList() {
     setPaymentMethod(value); setCurrentPage(1);
   };
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= adminFeeMeta.totalPages) setCurrentPage(page);
+    const maxPage =
+      activeTab === "additional"
+        ? additionalMeta.totalPages
+        : adminFeeMeta.totalPages;
+    if (page >= 1 && page <= maxPage) setCurrentPage(page);
   };
 
   const isToday = (dateStr?: string) => {
@@ -307,6 +344,17 @@ export default function PaymentList() {
       return f.status === "rejected" || f.status === "cancelled";
     }
     if (adminStatusFilter && f.status !== adminStatusFilter) return false;
+    return true;
+  });
+
+  const filteredAdditionalCharges = additionalCharges.filter((f) => {
+    if (additionalStatusFilter === "pending") {
+      return (Number(f.pending_amount) || 0) > 0;
+    }
+    if (additionalStatusFilter === "rejected") {
+      return f.status === "rejected" || f.status === "cancelled";
+    }
+    if (additionalStatusFilter && f.status !== additionalStatusFilter) return false;
     return true;
   });
 
@@ -350,6 +398,23 @@ export default function PaymentList() {
         trend={{ value: `${adminFees.length - paidAdminFeeCount} belum dibayar`, color: "text-red-500", icon: "info" }} />
       <PaymentCard title="Premium (Rp 700K)" value={String(adminFees.filter((f) => f.fee_kind !== "membership_fee" && (Number(f.fee_admin_join) || 0) >= 700000).length)} icon="star" iconColor="text-violet-500"
         trend={{ value: `Reguler: ${adminFees.filter((f) => f.fee_kind !== "membership_fee" && (Number(f.fee_admin_join) || 0) > 0 && (Number(f.fee_admin_join) || 0) < 700000).length} · Fee Membership: ${adminFees.filter((f) => f.fee_kind === "membership_fee").length} (Rp ${adminFees.filter((f) => f.fee_kind === "membership_fee").reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0).toLocaleString("id-ID")})`, color: "text-violet-500", icon: "info" }} />
+    </div>
+  );
+
+  const totalAdditionalAmount = additionalCharges.reduce((sum, f) => sum + (Number(f.fee_admin_join) || 0), 0);
+  const paidAdditionalAmount = additionalCharges.reduce((sum, f) => sum + (Number(f.paid_amount) || 0), 0);
+  const remainingAdditionalAmount = additionalCharges.reduce((sum, f) => sum + (Number(f.remaining_amount) || 0), 0);
+
+  const renderAdditionalCards = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <PaymentCard title="Total Tagihan Tambahan" value={`Rp ${totalAdditionalAmount.toLocaleString("id-ID")}`} icon="receipt_long" iconColor="text-orange-500"
+        trend={{ value: `${additionalCharges.length} tagihan`, color: "text-orange-500", icon: "trending_up" }} />
+      <PaymentCard title="Sudah Dibayar" value={`Rp ${paidAdditionalAmount.toLocaleString("id-ID")}`} icon="check_circle" iconColor="text-emerald-500"
+        trend={{ value: `${additionalCharges.filter((f) => f.status === "paid").length} lunas`, color: "text-emerald-500", icon: "trending_up" }} />
+      <PaymentCard title="Sisa Tagihan" value={`Rp ${remainingAdditionalAmount.toLocaleString("id-ID")}`} icon="schedule" iconColor="text-amber-500"
+        trend={{ value: `${additionalCharges.filter((f) => Number(f.remaining_amount) > 0).length} belum lunas`, color: "text-amber-500", icon: "info" }} />
+      <PaymentCard title="Menunggu Verifikasi" value={`${additionalCharges.reduce((s, f) => s + (Number(f.pending_amount) > 0 ? 1 : 0), 0)}`} icon="pending_actions" iconColor="text-blue-500"
+        trend={{ value: `${additionalCharges.filter((f) => f.status === "cancelled").length} dibatalkan`, color: "text-blue-500", icon: "info" }} />
     </div>
   );
 
@@ -502,6 +567,67 @@ export default function PaymentList() {
               <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">Loading...</div>
             )}
 
+            {activeTab === "additional" && !isLoading && (
+              <>
+                {renderAdditionalCards()}
+                <FinanceTabFilters
+                  searchValue={searchValue}
+                  onSearchChange={handleSearchChange}
+                  searchPlaceholder="Search reference number, driver, or charge name..."
+                  selects={[
+                    {
+                      id: "filter-additional-status",
+                      value: additionalStatusFilter,
+                      onChange: setAdditionalStatusFilter,
+                      options: [
+                        { value: "", label: "All Status" },
+                        { value: "paid", label: "Lunas" },
+                        { value: "unpaid", label: "Belum Bayar" },
+                        { value: "pending", label: "Pending" },
+                        { value: "rejected", label: "Ditolak" },
+                      ],
+                    },
+                  ]}
+                />
+                <div className="flex flex-col gap-4 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+                  <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-orange-500 text-xl">receipt_long</span>
+                      </div>
+                      <div>
+                        <h2 className="font-bold text-slate-800 dark:text-white text-base">
+                          Tagihan Tambahan ke Driver
+                        </h2>
+                        <p className="text-xs text-slate-400">
+                          Ganti rugi kendaraan, kecelakaan, kehilangan STNK, dan tagihan manual lainnya
+                        </p>
+                      </div>
+                    </div>
+                    <PermissionGuard permission="finance.create">
+                      <Button icon="add" variant="primary" onClick={() => setShowChargeModal(true)}>
+                        Tambah Tagihan Tambahan
+                      </Button>
+                    </PermissionGuard>
+                  </div>
+                  <AdditionalChargeTable
+                    payments={filteredAdditionalCharges}
+                    onSelect={(item) => setAdminFeeDetailId(item.id)}
+                    onChanged={() => {
+                      fetchAdditionalCharges();
+                      fetchSummary();
+                    }}
+                  />
+                  <div className="border-t border-[#dbe0e6] dark:border-gray-700">
+                    <Pagination currentPage={additionalMeta.page} totalPages={additionalMeta.totalPages} totalResults={additionalMeta.total} resultsPerPage={itemsPerPage} onPageChange={handlePageChange} onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }} />
+                  </div>
+                </div>
+              </>
+            )}
+            {activeTab === "additional" && isLoading && (
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">Loading...</div>
+            )}
+
             {activeTab === "koin" && !isLoading && (
               <>
                 {renderKoinCards()}
@@ -556,6 +682,16 @@ export default function PaymentList() {
           <FeeBillDetailModal
             financeId={adminFeeDetailId}
             onClose={() => setAdminFeeDetailId(null)}
+          />
+
+          {/* Form tagihan tambahan (admin → driver) */}
+          <AdditionalChargeModal
+            isOpen={showChargeModal}
+            onClose={() => setShowChargeModal(false)}
+            onCreated={() => {
+              fetchAdditionalCharges();
+              fetchSummary();
+            }}
           />
         </div>
       </div>
