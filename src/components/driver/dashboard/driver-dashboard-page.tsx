@@ -175,7 +175,14 @@ export function DriverDashboardPage() {
     ...feeBills.map((f) => ({
       id: `fee-${f.id}`,
       date: f.payment_date || f.created_at || "",
-      vehicleName: "-",
+      vehicleName:
+        f.fee_kind === "additional_charge"
+          ? f.charge_name || "Tagihan Tambahan"
+          : "-",
+      subLabel:
+        f.fee_kind === "additional_charge" ? "Tagihan Tambahan" : null,
+      subTitle:
+        f.fee_kind === "additional_charge" ? f.reason || null : null,
       amount: Number(f.fee_admin_join) || 0,
       status: f.status,
       href: `/dashboard/driver/payment/form?id=${f.id}`,
@@ -186,6 +193,8 @@ export function DriverDashboardPage() {
       id: `daily-${dp.id}`,
       date: dp.payment_date,
       vehicleName: dp.vehicle_name,
+      subLabel: null as string | null,
+      subTitle: null as string | null,
       amount: dp.amount,
       status: dp.status,
       href: `/dashboard/driver/payment/form?id=${dp.id}&type=daily`,
@@ -260,9 +269,9 @@ export function DriverDashboardPage() {
           </div>
 
           {/* Vehicle Cards / Slider — riwayat unit yang pernah dipakai */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {rentalHistory.length > 0 && (
-              <div className="bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+              <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
@@ -448,6 +457,19 @@ export function DriverDashboardPage() {
                             <span className="font-semibold text-slate-900 dark:text-white">
                               {row.vehicleName}
                             </span>
+                            {row.subLabel && (
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 align-middle">
+                                {row.subLabel}
+                              </span>
+                            )}
+                            {row.subTitle && (
+                              <p
+                                className="text-xs text-slate-400 truncate max-w-[220px]"
+                                title={row.subTitle}
+                              >
+                                {row.subTitle}
+                              </p>
+                            )}
                           </td>
                           <td className="px-6 py-3">
                             <span className="font-semibold text-orange-600 dark:text-orange-400">

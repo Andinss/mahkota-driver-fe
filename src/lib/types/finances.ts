@@ -80,7 +80,11 @@ export interface FinanceItem {
   payment_method: "cash" | "transfer" | "e-wallet" | "saldo";
   amount_received: number;
   fee_admin_join: number;
-  fee_kind?: "admin_join" | "membership_fee";
+  fee_kind?: "admin_join" | "membership_fee" | "additional_charge";
+  /** Nama tagihan tambahan (fee_kind = additional_charge). */
+  charge_name?: string | null;
+  /** Alasan tagihan tambahan dibuat (fee_kind = additional_charge). */
+  reason?: string | null;
   paid_amount: number;
   pending_amount?: number;
   remaining_amount: number;
@@ -110,6 +114,10 @@ export interface FinanceListParams {
   status?: FinanceStatus;
   start_date?: string;
   end_date?: string;
+  /** Tampilkan hanya jenis fee ini (mis. `additional_charge`). */
+  fee_kind?: "admin_join" | "membership_fee" | "additional_charge";
+  /** Sembunyikan jenis fee ini (mis. `additional_charge` di tab Fee Membership). */
+  exclude_fee_kind?: "additional_charge";
 }
 
 export interface LatePaymentItem {
@@ -189,7 +197,7 @@ export interface DriverFinanceSummary {
     reference_number: string;
     payment_date: string;
     fee_admin_join: number;
-    fee_kind?: "admin_join" | "membership_fee";
+    fee_kind?: "admin_join" | "membership_fee" | "additional_charge";
     paid_amount: number;
     pending_amount: number;
     remaining_amount: number;
@@ -212,6 +220,15 @@ export interface CreateFinancePayload {
 }
 
 export type UpdateFinancePayload = Partial<CreateFinancePayload>;
+
+/** Payload pembuatan tagihan tambahan manual (admin ke driver). */
+export interface CreateAdditionalChargePayload {
+  driver_id: string;
+  charge_name: string;
+  amount: number;
+  reason: string;
+  payment_date?: string;
+}
 
 export interface CreateFinancePaymentPayload {
   amount: number;

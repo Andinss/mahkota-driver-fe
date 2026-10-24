@@ -104,6 +104,7 @@ export const FeeBillDetailModal = ({
   const paid = current?.paid_amount ?? current?.amount_received ?? 0;
   const remaining = current?.remaining_amount ?? Math.max(0, total - paid);
   const isPartial = total > 0 && paid > 0 && remaining > 0;
+  const isAdditionalCharge = current?.fee_kind === "additional_charge";
   const statusKey =
     current?.status === "paid" || current?.status === "cancelled"
       ? current.status
@@ -134,15 +135,27 @@ export const FeeBillDetailModal = ({
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-amber-500">admin_panel_settings</span>
+                <span className={`material-symbols-outlined ${isAdditionalCharge ? "text-orange-500" : "text-amber-500"}`}>
+                  {isAdditionalCharge ? "receipt_long" : "admin_panel_settings"}
+                </span>
                 <p className="font-mono font-bold text-sm text-primary">{current.reference_number}</p>
+                {isAdditionalCharge && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400">
+                    Tagihan Tambahan
+                  </span>
+                )}
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${st.cls}`}>
                   {st.label}
                 </span>
               </div>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {current.notes || "Fee Membership"}
+                {current.charge_name || current.notes || "Fee Membership"}
               </p>
+              {isAdditionalCharge && current.reason && (
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-[420px]">
+                  Alasan: {current.reason}
+                </p>
+              )}
             </div>
             <div className="text-right text-xs text-slate-400">
               <p>Dibuat {current.created_at ? formatDateTime(current.created_at) : "-"}</p>

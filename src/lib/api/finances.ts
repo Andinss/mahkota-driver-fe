@@ -6,6 +6,7 @@ import type {
   FinanceSummary,
   CreateFinancePayload,
   UpdateFinancePayload,
+  CreateAdditionalChargePayload,
   LatePaymentItem,
   LatePaymentStats,
   LatePaymentSummary,
@@ -60,6 +61,20 @@ export const financeApi = {
     api.get<SuccessResponsePaginated<FinanceItem>>(
       "/finances/admin-fees",
       params,
+    ),
+
+  /** Daftar tagihan tambahan buatan admin (tab "Additional Charges"). */
+  getAdditionalCharges: (params?: Record<string, string | number | undefined>) =>
+    api.get<SuccessResponsePaginated<FinanceItem>>(
+      "/finances/additional-charges",
+      params,
+    ),
+
+  /** Buat tagihan tambahan manual ke driver (ganti rugi, kecelakaan, STNK, dll). */
+  createAdditionalCharge: (payload: CreateAdditionalChargePayload) =>
+    api.post<SuccessResponse<FinanceItem>>(
+      "/finances/additional-charges",
+      payload,
     ),
 
   getDailyPayments: (params?: Record<string, string | number | undefined>) =>
