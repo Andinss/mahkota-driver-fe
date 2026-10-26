@@ -1,5 +1,8 @@
 "use client";
 
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -53,7 +56,10 @@ const VendorDetailPage = ({ id }: VendorDetailPageProps) => {
         setVendor(res.data);
         setNotFound(false);
       })
-      .catch(() => setNotFound(true))
+      .catch((err) => {
+        setNotFound(true);
+        toastError(getErrorMessage(err, "Gagal memuat detail vendor."));
+      })
       .finally(() => setIsLoading(false));
   }, [id]);
 

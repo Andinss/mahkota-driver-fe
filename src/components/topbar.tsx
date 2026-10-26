@@ -7,6 +7,8 @@ import { DropdownNotif } from "@/components/notif";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { notificationApi } from "@/lib/api/notification";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 const pathLabels: Record<string, string> = {
   dashboard: "Dashboard",
@@ -38,6 +40,8 @@ const Topbar = () => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  // Polling: cukup sekali toast per gangguan, jangan spam tiap interval.
+  const pollErrorNotifiedRef = useRef(false);
 
   const handleToggleSidebar = () => {
     window.dispatchEvent(new CustomEvent("sidebar:toggle"));
@@ -52,8 +56,15 @@ const Topbar = () => {
       try {
         const res = await notificationApi.getUnreadCount();
         setUnreadCount(res.data?.count || 0);
-      } catch {
-        // silent fail
+        pollErrorNotifiedRef.current = false;
+      } catch (err) {
+        console.error("Gagal memuat jumlah notifikasi:", err);
+        if (!pollErrorNotifiedRef.current) {
+          pollErrorNotifiedRef.current = true;
+          toastError(
+            getErrorMessage(err, "Gagal memuat jumlah notifikasi baru."),
+          );
+        }
       }
     };
 

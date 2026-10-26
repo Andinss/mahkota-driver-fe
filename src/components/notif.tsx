@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { notificationApi } from "@/lib/api/notification";
 import type { NotificationItem } from "@/lib/types/notification";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 const typeToIcon: Record<string, { icon: string; color: string }> = {
   emergency: { icon: "warning", color: "red" },
@@ -33,6 +35,8 @@ export const DropdownNotif = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  // Polling: cukup sekali toast per gangguan, jangan spam tiap 30 detik.
+  const pollErrorNotifiedRef = useRef(false);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -40,8 +44,14 @@ export const DropdownNotif = () => {
         const res = await notificationApi.getRecent(5);
         setNotifications(res.data || []);
         setUnreadCount(res.unread_count || 0);
-      } catch {
+        pollErrorNotifiedRef.current = false;
+      } catch (err) {
+        console.error("Gagal memuat notifikasi:", err);
         setNotifications([]);
+        if (!pollErrorNotifiedRef.current) {
+          pollErrorNotifiedRef.current = true;
+          toastError(getErrorMessage(err, "Gagal memuat notifikasi."));
+        }
       } finally {
         setLoading(false);
       }
@@ -57,8 +67,9 @@ export const DropdownNotif = () => {
       await notificationApi.markAllAsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true, status: "read" })));
       setUnreadCount(0);
-    } catch {
-      // silent fail
+    } catch (err) {
+      console.error("Gagal menandai semua notifikasi dibaca:", err);
+      toastError(getErrorMessage(err, "Gagal menandai notifikasi sebagai dibaca."));
     }
   };
 

@@ -85,6 +85,7 @@ export const KoinTable = ({ transactions, onBuatTopUp }: KoinTableProps) => {
               <th className="px-4 py-3">No. Referensi</th>
               <th className="px-4 py-3">Driver</th>
               <th className="px-4 py-3">Tipe</th>
+              <th className="px-4 py-3">Alasan</th>
               <th className="px-4 py-3 text-right">Jumlah</th>
               <th className="px-4 py-3">Tanggal</th>
             </tr>
@@ -112,6 +113,14 @@ export const KoinTable = ({ transactions, onBuatTopUp }: KoinTableProps) => {
                     )}`}
                   >
                     {typeLabel[item.type] || item.type}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <span
+                    title={item.reason || item.notes || "-"}
+                    className="block truncate max-w-[180px] text-xs text-slate-600 dark:text-slate-400"
+                  >
+                    {item.reason || item.notes || "-"}
                   </span>
                 </td>
                 <td

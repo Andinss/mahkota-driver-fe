@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { koinApi } from "@/lib/api/koin";
 import type { KoinTransaction } from "@/lib/types/koin";
 import { KoinHistoryCard } from "./koin-history-card";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 interface KoinHistoryListProps {
   driverId: string;
@@ -26,9 +28,10 @@ export function KoinHistoryList({ driverId }: KoinHistoryListProps) {
       .then((res: any) => {
         setTransactions(res?.data || []);
       })
-      .catch((err) => {
-        console.error("Failed to load koin transactions:", err);
+      .catch((err: unknown) => {
+        console.error("Gagal memuat transaksi koin:", err);
         setTransactions([]);
+        toastError(getErrorMessage(err, "Gagal memuat riwayat transaksi koin."));
       })
       .finally(() => setLoading(false));
   }, [driverId]);

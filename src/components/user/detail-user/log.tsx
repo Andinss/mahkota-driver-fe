@@ -1,5 +1,8 @@
 "use client";
 
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
+
 import { useState, useEffect } from "react";
 import { auditApi } from "@/lib/api/audit";
 import type { UserItem } from "@/lib/types/user";
@@ -29,7 +32,10 @@ const ActivityLog = ({ user }: ActivityLogProps) => {
         const items = Array.isArray(res.data) ? res.data : [];
         setLogs(items);
       })
-      .catch(() => setLogs([]))
+      .catch((err) => {
+        setLogs([]);
+        toastError(getErrorMessage(err, "Gagal memuat log aktivitas pengguna."));
+      })
       .finally(() => setIsLoading(false));
   }, [user.id]);
 

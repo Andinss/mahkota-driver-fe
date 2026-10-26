@@ -1,5 +1,8 @@
 "use client";
 
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import AccountDetails from "@/components/user/detail-user/account-details";
@@ -28,7 +31,10 @@ const UserDetailPage = () => {
             throw new Error("Invalid response");
           }
         })
-        .catch(() => setUser(null))
+        .catch((err) => {
+          setUser(null);
+          toastError(getErrorMessage(err, "Gagal memuat detail pengguna."));
+        })
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);

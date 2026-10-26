@@ -9,6 +9,7 @@ import {
   toastSuccess,
 } from "@/components/ui/toast-provider";
 import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 interface AdditionalChargeTableProps {
   payments: FinanceItem[];
@@ -71,9 +72,8 @@ export const AdditionalChargeTable = ({
       toastSuccess("Tagihan tambahan dibatalkan");
       onChanged?.();
     } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal membatalkan tagihan",
-      );
+      console.error("Gagal membatalkan tagihan:", err);
+      toastError(getErrorMessage(err, "Gagal membatalkan tagihan."));
     } finally {
       setIsSubmitting(false);
     }

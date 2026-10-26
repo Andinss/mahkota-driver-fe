@@ -10,6 +10,7 @@ import { driverApi } from "@/lib/api/driver";
 import { outOfTownApi } from "@/lib/api/out-of-town";
 import { toastError, toastSuccess } from "@/components/ui/toast-provider";
 import { formatDateOnly, getTodayLocal } from "@/lib/utils/format";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { DriverRentalItem } from "@/lib/types/driver";
 
 interface DriverOutOfTownFormProps {
@@ -69,8 +70,10 @@ export function DriverOutOfTownForm({
       const res = await driverApi.getMe();
       const rentals = res?.data?.rentals || [];
       setRental(pickActiveRental(rentals));
-    } catch {
+    } catch (err) {
+      console.error("Gagal memuat data kontrak rental:", err);
       setRental(null);
+      toastError(getErrorMessage(err, "Gagal memuat data kontrak rental."));
     } finally {
       setIsLoadingRental(false);
     }
@@ -129,9 +132,8 @@ export function DriverOutOfTownForm({
       onClose();
       setFormData(emptyForm);
     } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal mengirim pengajuan",
-      );
+      console.error("Gagal mengirim pengajuan luar kota:", err);
+      toastError(getErrorMessage(err, "Gagal mengirim pengajuan."));
     } finally {
       setLoading(false);
     }

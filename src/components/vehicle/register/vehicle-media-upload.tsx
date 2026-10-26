@@ -77,7 +77,7 @@ export function VehicleMediaUpload({
   const isValidFile = (file: File): boolean => {
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      toastError(`File size exceeds ${maxSizeMB}MB limit`);
+      toastError(`Ukuran file melebihi batas ${maxSizeMB}MB.`);
       return false;
     }
     const accepted = acceptedFormats.flatMap((f) => {
@@ -88,7 +88,9 @@ export function VehicleMediaUpload({
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
     const mime = file.type.split("/")[1]?.toLowerCase() || "";
     if (!accepted.includes(ext) && !accepted.includes(mime)) {
-      toastError(`Invalid file format. Accepted: ${acceptedFormats.join(", ")}`);
+      toastError(
+        `Format file tidak valid. Format yang diterima: ${acceptedFormats.join(", ")}.`,
+      );
       return false;
     }
     return true;

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import {
   monitoringApi,
   type GpsTrackingRecord,
@@ -41,12 +42,18 @@ export default function MonitoringPage() {
     try {
       const res = await monitoringApi
         .getList({ limit: 1000 })
-        .catch(() => ({ success: false, data: [] }));
+        .catch((err: unknown) => {
+          console.error("Gagal memuat data monitoring:", err);
+          toastError(getErrorMessage(err, "Gagal memuat data monitoring."));
+          return { success: false, data: [] };
+        });
       if (res.success && Array.isArray(res.data)) {
         setRecords(res.data);
       }
-    } catch {
+    } catch (err) {
+      console.error("Gagal memuat data monitoring:", err);
       setRecords([]);
+      toastError(getErrorMessage(err, "Gagal memuat data monitoring."));
     } finally {
       setLoading(false);
     }

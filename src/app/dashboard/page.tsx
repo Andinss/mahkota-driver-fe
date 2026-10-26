@@ -1,5 +1,8 @@
 "use client";
 
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
+
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { StatCard } from "@/components/dashboard/card";
@@ -61,37 +64,49 @@ export default function DashboardPage() {
         .then((r) => {
           setFinanceAmount(r.data.total_amount_received);
         })
-        .catch(() => {}),
+        .catch((err) => {
+          toastError(getErrorMessage(err, "Gagal memuat ringkasan keuangan."));
+        }),
       financeApi
         .getMonthlySummary()
         .then((r) => {
           setMonthlyData(r.data.months);
         })
-        .catch(() => {}),
+        .catch((err) => {
+          toastError(getErrorMessage(err, "Gagal memuat ringkasan bulanan."));
+        }),
       rentalApi
         .getSummary()
         .then((r) => {
           setTotalRentals(r.data.total_rentals);
         })
-        .catch(() => {}),
+        .catch((err) => {
+          toastError(getErrorMessage(err, "Gagal memuat ringkasan sewa."));
+        }),
       vehicleApi
         .getSummary()
         .then((r) => {
           setTotalVehicles(r.data.total_vehicles);
         })
-        .catch(() => {}),
+        .catch((err) => {
+          toastError(getErrorMessage(err, "Gagal memuat ringkasan kendaraan."));
+        }),
       driverApi
         .getSummary()
         .then((r) => {
           setTotalDrivers(r.data.total_drivers);
         })
-        .catch(() => {}),
+        .catch((err) => {
+          toastError(getErrorMessage(err, "Gagal memuat ringkasan driver."));
+        }),
       usersApi
         .getSummary()
         .then((r) => {
           setTotalUsers(r.data.total_users);
         })
-        .catch(() => {}),
+        .catch((err) => {
+          toastError(getErrorMessage(err, "Gagal memuat ringkasan pengguna."));
+        }),
     ]);
     setLoading(false);
   }, []);

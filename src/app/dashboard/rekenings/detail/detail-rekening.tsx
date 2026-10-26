@@ -6,6 +6,8 @@ import { RekeningHeader } from "@/components/rekenings/detail/rekening-header";
 import { RekeningInfo } from "@/components/rekenings/detail/rekening-info";
 import { RekeningActivity } from "@/components/rekenings/detail/rekening-activity";
 import { rekeningApi } from "@/lib/api/rekening";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { Rekening } from "@/lib/types/rekening";
 
 interface RekeningDetailProps {
@@ -28,8 +30,10 @@ const RekeningDetail = ({ id }: RekeningDetailProps) => {
       try {
         const res = await rekeningApi.getById(id);
         if (!cancelled) setRekening(res.data);
-      } catch {
+      } catch (err) {
+        console.error("Gagal memuat detail metode pembayaran:", err);
         if (!cancelled) setRekening(null);
+        toastError(getErrorMessage(err, "Gagal memuat data metode pembayaran."));
       } finally {
         if (!cancelled) setIsLoading(false);
       }

@@ -15,7 +15,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { ExportOptions } from "@/components/ui/export";
 import { useSearchParams } from "next/navigation";
 import { rentalApi } from "@/lib/api/rentals";
-import { HttpClientError } from "@/lib/api-http";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { RentalTransaction, RentalSummary } from "@/lib/types/rentals";
 import { useAuth } from "@/lib/auth-context";
 import { PermissionGuard } from "@/components/auth-guard-permission";
@@ -102,7 +102,14 @@ export default function RentalManagementPage() {
       if (options.dateRange?.start) params.start_date = options.dateRange.start;
       if (options.dateRange?.end) params.end_date = options.dateRange.end;
     }
-    await rentalApi.exportData(params);
+    try {
+      await rentalApi.exportData(params);
+    } catch (err) {
+      console.error("Gagal mengekspor data sewa:", err);
+      toastError(
+        getErrorMessage(err, "Gagal mengekspor riwayat sewa. Silakan coba lagi."),
+      );
+    }
   };
 
   // Filter & pagination state
@@ -210,10 +217,9 @@ export default function RentalManagementPage() {
         );
         refreshRentals();
       } catch (err) {
+        console.error("Gagal menghapus sewa:", err);
         toastError(
-          err instanceof HttpClientError
-            ? err.message
-            : "Failed to delete rental. Please try again.",
+          getErrorMessage(err, "Gagal menghapus sewa. Silakan coba lagi."),
         );
       }
     }
@@ -233,10 +239,9 @@ export default function RentalManagementPage() {
         toastSuccess(`Rent ${rental.transactionId} has been stopped`);
         refreshRentals();
       } catch (err) {
+        console.error("Gagal menghentikan sewa:", err);
         toastError(
-          err instanceof HttpClientError
-            ? err.message
-            : "Failed to stop rental. Please try again.",
+          getErrorMessage(err, "Gagal menghentikan sewa. Silakan coba lagi."),
         );
       }
     }

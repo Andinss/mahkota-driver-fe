@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { membershipApi } from "@/lib/api/membership";
 import { formatRupiah } from "@/lib/utils/format";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { Membership } from "@/lib/types/membership";
 
 interface NewMembershipFormProps {
@@ -50,8 +51,10 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
         setDescription(data.description ?? "");
         setBenefits((data.benefits ?? []).join("\n"));
         setIsActive(data.is_active ? "1" : "0");
-      } catch {
+      } catch (err) {
+        console.error("Gagal memuat data membership:", err);
         if (!cancelled) setExisting(null);
+        toastError(getErrorMessage(err, "Gagal memuat data membership."));
       } finally {
         if (!cancelled) setIsLoadingExisting(false);
       }
@@ -122,11 +125,10 @@ const NewMembership = ({ id }: NewMembershipFormProps) => {
         `/dashboard/memberships?success=${action}&name=${encodeURIComponent(name.trim())}`,
       );
     } catch (err: unknown) {
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : "Failed to save membership. Please try again.";
-      toastError(message);
+      console.error("Gagal menyimpan membership:", err);
+      toastError(
+        getErrorMessage(err, "Gagal menyimpan membership. Silakan coba lagi."),
+      );
       setIsSubmitting(false);
     }
   };

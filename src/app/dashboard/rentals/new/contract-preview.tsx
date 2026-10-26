@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import JSZip from "jszip";
 import { rentalContractApi } from "@/lib/api/rental-contract";
-import { HttpClientError } from "@/lib/api-http";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 interface ContractPreviewProps {
   rentalId?: string;
@@ -470,13 +471,12 @@ const ContractPreview = ({
       } catch (err) {
         if (cancelled) return;
         setHasPreview(false);
-        setError(
-          err instanceof HttpClientError
-            ? err.message
-            : err instanceof Error
-              ? err.message
-              : "Gagal memuat preview kontrak",
+        const message = getErrorMessage(
+          err,
+          "Gagal memuat preview kontrak. Silakan coba lagi.",
         );
+        setError(message);
+        toastError(message);
       } finally {
         if (!cancelled) setLoading(false);
       }

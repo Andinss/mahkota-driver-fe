@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { sanitizeNameInput, containsNameSymbols, sanitizeEmailInput } from "@/lib/utils/validation";
 import { membershipApi } from "@/lib/api/membership";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { Membership } from "@/lib/types/membership";
 
 export interface PersonalFormData {
@@ -73,8 +75,9 @@ export function PersonalDetailsForm({
         setMemberships(list.filter((m: Membership) => m.is_active));
       })
       .catch((err: any) => {
-        console.error("Failed to load memberships:", err);
+        console.error("Gagal memuat daftar membership:", err);
         setMemberships([]);
+        toastError(getErrorMessage(err, "Gagal memuat daftar membership."));
       })
       .finally(() => setLoadingMemberships(false));
   }, []);

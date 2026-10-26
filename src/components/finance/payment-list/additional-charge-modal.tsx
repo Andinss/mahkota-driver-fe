@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { driverApi } from "@/lib/api/driver";
 import { financeApi } from "@/lib/api/finances";
 import { toastError, toastSuccess } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { DriverItem } from "@/lib/types/driver";
 
 interface AdditionalChargeModalProps {
@@ -84,8 +85,10 @@ export const AdditionalChargeModal = ({
         });
         setDrivers(Array.isArray(res.data) ? res.data : []);
         setShowDropdown(true);
-      } catch {
+      } catch (err) {
+        console.error("Gagal mencari driver:", err);
         setDrivers([]);
+        toastError(getErrorMessage(err, "Gagal mencari driver."));
       } finally {
         setLoadingDrivers(false);
       }
@@ -144,9 +147,8 @@ export const AdditionalChargeModal = ({
       onCreated?.();
       onClose();
     } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal membuat tagihan tambahan",
-      );
+      console.error("Gagal membuat tagihan tambahan:", err);
+      toastError(getErrorMessage(err, "Gagal membuat tagihan tambahan."));
     } finally {
       setIsSubmitting(false);
     }

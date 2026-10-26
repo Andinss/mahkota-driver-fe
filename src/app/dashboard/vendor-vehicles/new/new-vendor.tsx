@@ -6,7 +6,7 @@ import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import { Input } from "@/components/ui/input";
 import { vendorApi } from "@/lib/api/vendor-vehicle";
 import { renameFile } from "@/lib/utils/file";
-import { HttpClientError } from "@/lib/api-http";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 interface NewVendorFormProps {
   id: string | null;
@@ -39,7 +39,7 @@ function VendorLogoUpload({
   const isValidFile = (file: File) => {
     const maxSizeBytes = 5 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      toastError("File size exceeds 5MB limit");
+      toastError("Ukuran file melebihi batas 5MB.");
       return false;
     }
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
@@ -48,7 +48,7 @@ function VendorLogoUpload({
       !["jpg", "jpeg", "png", "webp", "svg"].includes(ext) &&
       !["jpg", "jpeg", "png", "webp", "svg+xml"].includes(mime)
     ) {
-      toastError("Invalid file format. Accepted: JPG, PNG, WEBP, SVG");
+      toastError("Format file tidak valid. Format yang diterima: JPG, PNG, WEBP, SVG");
       return false;
     }
     return true;
@@ -200,12 +200,9 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
               : undefined,
           );
         })
-        .catch((err: any) => {
-          const msg =
-            err instanceof HttpClientError
-              ? err.message
-              : "Failed to load vendor data.";
-          toastError(msg);
+        .catch((err) => {
+          console.error("Gagal memuat data vendor:", err);
+          toastError(getErrorMessage(err, "Gagal memuat data vendor."));
         })
         .finally(() => setIsLoading(false));
     } else {
@@ -271,9 +268,11 @@ const NewVendorForm = ({ id }: NewVendorFormProps) => {
         `/dashboard/vendor-vehicles?success=${action}&name=${encodeURIComponent(name.trim())}`,
       );
     } catch (err) {
-      console.error("Failed to save vendor:", err);
+      console.error("Gagal menyimpan vendor:", err);
       setIsSubmitting(false);
-      toastError("Failed to save vendor. Please try again.");
+      toastError(
+        getErrorMessage(err, "Gagal menyimpan vendor. Silakan coba lagi."),
+      );
     }
   };
 

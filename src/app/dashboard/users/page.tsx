@@ -9,6 +9,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { usersApi } from "@/lib/api/users";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { PermissionGuard } from "@/components/auth-guard-permission";
@@ -91,7 +92,9 @@ export default function UserList() {
         setTotalResults(mapped.length);
         setTotalPages(1);
       }
-    } catch {
+    } catch (err) {
+      console.error("Gagal memuat data pengguna:", err);
+      toastError(getErrorMessage(err, "Gagal memuat data pengguna."));
       setUsers([]);
     } finally {
       setIsLoading(false);
@@ -123,8 +126,9 @@ export default function UserList() {
         await usersApi.delete(user.id);
         toastSuccess(`User ${user.username} has been deleted successfully`);
         fetchUsers();
-      } catch {
-        toastError("Failed to delete user. Please try again.");
+      } catch (err) {
+        console.error("Gagal menghapus pengguna:", err);
+        toastError(getErrorMessage(err, "Gagal menghapus pengguna. Silakan coba lagi."));
       }
     }
   };
@@ -145,7 +149,12 @@ export default function UserList() {
     if (options.type === "filtered") {
       if (filters.search) params.search = filters.search;
     }
-    await usersApi.exportData(params);
+    try {
+      await usersApi.exportData(params);
+    } catch (err) {
+      console.error("Gagal mengekspor data pengguna:", err);
+      toastError(getErrorMessage(err, "Gagal mengekspor data pengguna. Silakan coba lagi."));
+    }
   };
 
   return (

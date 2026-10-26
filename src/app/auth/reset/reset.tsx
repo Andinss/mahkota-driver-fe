@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { authApi } from "@/lib/api/auth";
 import { HttpClientError } from "@/lib/api-http";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { sanitizeInput, containsSymbols } from "@/lib/utils/validation";
 import { useRouter } from "next/navigation";
 
@@ -47,6 +48,8 @@ const ResetPasswordPage = ({ token }: ResetPasswordPageProps) => {
         if (err instanceof HttpClientError && (err.statusCode === 404 || err.statusCode === 400)) {
           setIsTokenValid(true);
         } else {
+          console.error("Gagal memverifikasi tautan reset password:", err);
+          toastError(getErrorMessage(err, "Gagal memverifikasi tautan. Silakan coba lagi."));
           router.replace("/auth/login");
         }
       })
@@ -96,11 +99,10 @@ const ResetPasswordPage = ({ token }: ResetPasswordPageProps) => {
       toastSuccess("Your password has been reset. Redirecting to login...");
       setTimeout(() => router.push("/auth/login"), 2000);
     } catch (error) {
-      if (error instanceof HttpClientError) {
-        toastError(error.message);
-      } else {
-        toastError("An unexpected error occurred. Please try again.");
-      }
+      console.error("Gagal mereset password:", error);
+      toastError(
+        getErrorMessage(error, "Gagal mereset password. Silakan coba lagi."),
+      );
     } finally {
       setIsSubmitting(false);
     }

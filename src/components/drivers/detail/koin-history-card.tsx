@@ -62,7 +62,7 @@ export function KoinHistoryCard({ item }: KoinHistoryCardProps) {
     <div
       className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 ${cfg.border} shadow-sm overflow-hidden flex flex-col`}
     >
-      {/* Header: Type */}
+      {/* Header: Type + Alasan */}
       <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <span className={`material-symbols-outlined text-lg ${cfg.color}`}>
@@ -72,6 +72,19 @@ export function KoinHistoryCard({ item }: KoinHistoryCardProps) {
             {cfg.label}
           </h3>
         </div>
+        {item.reason && (
+          <span
+            title={item.reason}
+            className={`shrink max-w-[60%] truncate rounded-lg px-2 py-1 text-[11px] font-bold border ${
+              item.type === "top_up"
+                ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/25 dark:text-amber-400 dark:border-amber-800/60"
+                : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+            }`}
+          >
+            {item.type === "top_up" ? "Dapat Koin: " : "Alasan: "}
+            {item.reason}
+          </span>
+        )}
       </div>
 
       {/* Hero: Amount */}
@@ -90,6 +103,15 @@ export function KoinHistoryCard({ item }: KoinHistoryCardProps) {
         <InfoField icon="receipt_long" label="Referensi">
           <span className="font-mono">{item.reference_number || "-"}</span>
         </InfoField>
+
+        {item.reason && (
+          <InfoField
+            icon={item.type === "top_up" ? "emoji_events" : "info"}
+            label={item.type === "top_up" ? "Alasan Koin Ditambahkan" : "Alasan"}
+          >
+            <span className="block">{item.reason}</span>
+          </InfoField>
+        )}
 
         <InfoField icon="calendar_today" label="Tanggal">
           <span className="block">{dateStr}</span>

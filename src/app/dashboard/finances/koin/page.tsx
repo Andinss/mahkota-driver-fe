@@ -11,11 +11,23 @@ import type {
 } from "@/lib/types/koin";
 import type { DriverItem } from "@/lib/types/driver";
 import { CurrencyInput } from "@/components/ui/currency-input";
-import { confirmToast } from "@/components/ui/toast-provider";
+import { confirmToast, toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 type TabType = "overview" | "transactions" | "topup";
 
 const TOPUP_PRESETS = [50000, 100000, 200000, 500000, 1000000];
+
+/**
+ * Preset alasan top up. Alasan (wajib) dikirim sebagai `reason` dan
+ * tampil ke driver pada riwayat koinnya — bukan sebagai catatan biasa.
+ */
+const TOPUP_REASONS = [
+  "Sebagai Reward",
+  "Bonus Kinerja",
+  "Kompensasi",
+  "Lainnya",
+];
 
 const KoinPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -29,6 +41,7 @@ const KoinPage = () => {
   const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   const [topUpAmount, setTopUpAmount] = useState<string>("");
+  const [topUpReason, setTopUpReason] = useState<string>("");
   const [topUpNotes, setTopUpNotes] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [refundAmount, setRefundAmount] = useState<string>("");
@@ -47,6 +60,7 @@ const KoinPage = () => {
       }
     } catch (err) {
       console.error("Failed to fetch koin summary:", err);
+      toastError(getErrorMessage(err, "Gagal memuat ringkasan koin."));
     }
   }, []);
 
@@ -57,6 +71,7 @@ const KoinPage = () => {
       setDrivers(items);
     } catch (err) {
       console.error("Failed to fetch drivers:", err);
+      toastError(getErrorMessage(err, "Gagal memuat daftar driver."));
     }
   }, []);
 
@@ -79,6 +94,7 @@ const KoinPage = () => {
       }
     } catch (err) {
       console.error("Failed to fetch driver koin balance:", err);
+      toastError(getErrorMessage(err, "Gagal memuat saldo koin driver."));
       setDriverBalance(null);
     } finally {
       setLoadingBalance(false);
@@ -98,6 +114,7 @@ const KoinPage = () => {
       }
     } catch (err) {
       console.error("Failed to fetch koin transactions:", err);
+      toastError(getErrorMessage(err, "Gagal memuat riwayat transaksi koin."));
       setTransactions([]);
     } finally {
       setLoadingTransactions(false);
@@ -114,21 +131,28 @@ const KoinPage = () => {
   }, [selectedDriverId, activeTab, fetchDriverBalance, fetchTransactions]);
 
   const handleTopUp = async () => {
-    if (!selectedDriverId || !topUpAmount) return;
+    const reason = topUpReason.trim();
+    if (!selectedDriverId || !topUpAmount || !reason) return;
     setIsSubmitting(true);
     try {
       const amount = parseInt(topUpAmount.replace(/\./g, ""), 10);
       await koinApi.topUp({
         driver_id: selectedDriverId,
         amount,
-        notes: topUpNotes || undefined,
+        reason,
+        notes: topUpNotes.trim() || undefined,
       });
       setTopUpAmount("");
+      setTopUpReason("");
       setTopUpNotes("");
       fetchDriverBalance(selectedDriverId);
       fetchSummary();
+      if (activeTab === "transactions" && selectedDriverId) {
+        fetchTransactions(selectedDriverId);
+      }
     } catch (err) {
       console.error("Failed to top up koin:", err);
+      toastError(getErrorMessage(err, "Gagal melakukan top up koin. Silakan coba lagi."));
     } finally {
       setIsSubmitting(false);
     }
@@ -150,6 +174,7 @@ const KoinPage = () => {
       fetchSummary();
     } catch (err) {
       console.error("Failed to refund koin:", err);
+      toastError(getErrorMessage(err, "Gagal melakukan refund koin. Silakan coba lagi."));
     } finally {
       setIsSubmitting(false);
     }
@@ -616,6 +641,49 @@ const KoinPage = () => {
                     </div>
                   )}
                   <div>
+                    <label
+                      htmlFor="topUpReason"
+                      className="block text-sm font-medium text-[#111418] dark:text-white mb-1.5"
+                    >
+                      Alasan{" "}
+                      <span
+                        className="text-red-500 font-semibold"
+                        title="Wajib diisi"
+                      >
+                        *
+                      </span>
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {TOPUP_REASONS.map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setTopUpReason(preset)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                            topUpReason.trim() === preset
+                              ? "border-primary bg-primary text-white shadow-sm shadow-primary/30"
+                              : "border-primary/40 dark:border-primary/50 text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary"
+                          }`}
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      id="topUpReason"
+                      type="text"
+                      value={topUpReason}
+                      onChange={(e) => setTopUpReason(e.target.value)}
+                      maxLength={255}
+                      placeholder="Contoh: Sebagai Reward capai target Juni"
+                      className="w-full rounded-lg border border-[#dbe0e6] dark:border-[#4b5563] bg-white dark:bg-[#1a2632] px-3 py-2 text-sm text-[#111418] dark:text-white placeholder:text-[#617589] focus:outline-none ring-1 ring-inset ring-transparent focus:ring-2 focus:ring-inset focus:ring-primary focus:border-primary"
+                    />
+                    <p className="mt-1.5 text-xs text-slate-400">
+                      Wajib diisi — ditampilkan ke driver sebagai alasan
+                      penambahan koin.
+                    </p>
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-[#111418] dark:text-white mb-1.5">
                       Catatan (Opsional)
                     </label>
@@ -632,7 +700,7 @@ const KoinPage = () => {
                   onClick={async () => {
                     const confirmed = await confirmToast({
                       title: "Konfirmasi Top Up",
-                      message: `Top up koin Rp ${parseCurrency(topUpAmount).toLocaleString("id-ID")} untuk ${selectedDriver?.first_name} ${selectedDriver?.last_name}?`,
+                      message: `Top up koin Rp ${parseCurrency(topUpAmount).toLocaleString("id-ID")} untuk ${selectedDriver?.first_name} ${selectedDriver?.last_name} — alasan: "${topUpReason.trim()}"?`,
                       confirmText: "Ya, Top Up",
                       cancelText: "Batal",
                       variant: "info",
@@ -642,7 +710,13 @@ const KoinPage = () => {
                   disabled={
                     !topUpAmount ||
                     parseCurrency(topUpAmount) <= 0 ||
+                    !topUpReason.trim() ||
                     isSubmitting
+                  }
+                  title={
+                    !topUpReason.trim()
+                      ? "Alasan wajib diisi"
+                      : undefined
                   }
                   className="mt-5 w-full h-11 px-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
                 >
@@ -778,6 +852,9 @@ const KoinPage = () => {
                       <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
                         Tipe
                       </th>
+                      <th className="px-4 py-3 text-left font-medium text-slate-600 dark:text-slate-400">
+                        Alasan
+                      </th>
                       <th className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">
                         Jumlah
                       </th>
@@ -824,6 +901,12 @@ const KoinPage = () => {
                                   ? "Refund"
                                   : tx.type}
                           </span>
+                        </td>
+                        <td
+                          className="px-4 py-3 text-slate-500 dark:text-slate-400 max-w-[200px] truncate"
+                          title={tx.reason || tx.notes || "-"}
+                        >
+                          {tx.reason || tx.notes || "-"}
                         </td>
                         <td
                           className={`px-4 py-3 text-right font-medium ${

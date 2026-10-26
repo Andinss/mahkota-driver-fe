@@ -15,6 +15,7 @@ import {
 } from "@/components/vehicle/register/vehicle-specifications-form";
 import { vehicleApi } from "@/lib/api/vehicle";
 import { membershipApi } from "@/lib/api/membership";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { VehicleItem } from "@/lib/types/vehicle";
 import type { Membership } from "@/lib/types/membership";
 
@@ -44,7 +45,8 @@ export default function VehicleRegisterPage() {
         setMemberships(Array.isArray(res?.data) ? res.data : []);
       })
       .catch((err) => {
-        console.error("Failed to load memberships:", err);
+        console.error("Gagal memuat daftar membership:", err);
+        toastError(getErrorMessage(err, "Gagal memuat daftar membership."));
       })
       .finally(() => {
         if (mounted) setLoadingMemberships(false);
@@ -100,7 +102,9 @@ export default function VehicleRegisterPage() {
         } else {
           setInitialImageUrls(null);
         }
-      }).catch(() => {
+      }).catch((err) => {
+        console.error("Gagal memuat data kendaraan:", err);
+        toastError(getErrorMessage(err, "Gagal memuat data kendaraan."));
         setMode("add");
         setInitialImageUrls(null);
       });
@@ -164,9 +168,11 @@ export default function VehicleRegisterPage() {
         const vehicleName = `${data.make} ${data.model}`;
         router.push(`/dashboard/vehicles?success=${action}&vehicle=${encodeURIComponent(vehicleName)}`);
       } catch (err) {
-        console.error("Failed to save vehicle:", err);
+        console.error("Gagal menyimpan kendaraan:", err);
         setIsSubmitting(false);
-        toastError("Failed to save vehicle. Please try again.");
+        toastError(
+          getErrorMessage(err, "Gagal menyimpan kendaraan. Silakan coba lagi."),
+        );
       }
     }
   };

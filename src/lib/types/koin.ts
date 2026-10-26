@@ -23,6 +23,11 @@ export interface KoinTransaction {
   balance_after: number;
   reference_id?: string;
   reference_number?: string;
+  /**
+   * Alasan transaksi (khususnya top up), mis. "Sebagai Reward".
+   * Baris lama bisa NULL.
+   */
+  reason?: string | null;
   notes?: string;
   created_at: string;
 }
@@ -38,6 +43,9 @@ export interface KoinSummary {
 export interface TopUpKoinPayload {
   driver_id: string;
   amount: number;
+  /** Alasan top up (wajib) — ditampilkan ke driver di riwayat koinnya. */
+  reason: string;
+  /** Keterangan detail (opsional). */
   notes?: string;
   reference_number?: string;
 }

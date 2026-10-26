@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { financeApi } from "@/lib/api/finances";
-import { HttpClientError } from "@/lib/api-http";
 import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { FinanceItem } from "@/lib/types/finances";
 import { getTodayLocal } from "@/lib/utils/format";
 
@@ -51,11 +51,9 @@ export function DriverPaymentModal({ finance, onClose, onSuccess }: DriverPaymen
       });
       onSuccess();
     } catch (err) {
-      if (err instanceof HttpClientError) {
-        setServerError(err.message || "Gagal menyimpan pembayaran");
-      } else {
-        setServerError("Gagal menyimpan pembayaran. Silakan coba lagi.");
-      }
+      const message = getErrorMessage(err, "Gagal menyimpan pembayaran. Silakan coba lagi.");
+      setServerError(message);
+      toastError(message);
     } finally {
       setIsSubmitting(false);
     }

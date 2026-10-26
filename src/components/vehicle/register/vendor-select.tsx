@@ -1,5 +1,8 @@
 "use client";
 
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
+
 import { useEffect, useState } from "react";
 import { Select } from "@/components/ui/select";
 import { vendorApi } from "@/lib/api/vendor-vehicle";
@@ -21,7 +24,10 @@ export function VendorSelect({ value, onChange }: VendorSelectProps) {
         const items = Array.isArray(res.data) ? res.data : [];
         setVendors(items.filter((v) => v.status === "active"));
       })
-      .catch(() => setVendors([]))
+      .catch((err) => {
+        setVendors([]);
+        toastError(getErrorMessage(err, "Gagal memuat daftar vendor."));
+      })
       .finally(() => setIsLoading(false));
   }, []);
 

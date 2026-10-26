@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Select } from "@/components/ui/select";
 import { vehicleApi } from "@/lib/api/vehicle";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 export interface VehicleFormData {
   make: string;
@@ -83,7 +85,8 @@ export function VehicleSpecificationsForm({
         setUsedImeis(used);
       })
       .catch((err) => {
-        console.error("Failed to load assigned devices:", err);
+        console.error("Gagal memuat data kendaraan terdaftar:", err);
+        toastError(getErrorMessage(err, "Gagal memuat data kendaraan."));
       });
     return () => {
       mounted = false;
@@ -107,7 +110,8 @@ export function VehicleSpecificationsForm({
         );
       })
       .catch((err) => {
-        console.error("Failed to load GPSID devices:", err);
+        console.error("Gagal memuat daftar device GPSID:", err);
+        toastError(getErrorMessage(err, "Gagal memuat daftar device GPSID."));
       })
       .finally(() => {
         if (mounted) setIsLoadingDevices(false);

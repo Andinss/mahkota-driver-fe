@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import NotificationCard from "@/components/ui/notification-card";
 import { notificationApi } from "@/lib/api/notification";
 import type { NotificationItem } from "@/lib/types/notification";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 interface ListNotificationProps {
   activeFilter: string;
@@ -52,8 +54,10 @@ const ListNotification = ({ activeFilter }: ListNotificationProps) => {
       try {
         const res = await notificationApi.getAll({ limit: 50 });
         setNotifications(res.data || []);
-      } catch {
+      } catch (err) {
+        console.error("Gagal memuat notifikasi:", err);
         setNotifications([]);
+        toastError(getErrorMessage(err, "Gagal memuat notifikasi."));
       } finally {
         setLoading(false);
       }

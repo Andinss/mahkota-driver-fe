@@ -7,6 +7,7 @@ import { financeApi } from "@/lib/api/finances";
 import type { LatePaymentItem, LatePaymentStats } from "@/lib/types/finances";
 import { resolveImageUrl } from "@/lib/utils/image";
 import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import {
   confirmToast,
   toastError,
@@ -65,7 +66,9 @@ export default function LatePaymentPage() {
       setSelectedId((prev) =>
         items.some((r) => r.id === prev) ? prev : (items[0]?.id ?? ""),
       );
-    } catch {
+    } catch (err) {
+      console.error("Gagal memuat pengajuan izin telat:", err);
+      toastError(getErrorMessage(err, "Gagal memuat pengajuan izin telat."));
       setRequests([]);
     } finally {
       setLoading(false);
@@ -105,7 +108,8 @@ export default function LatePaymentPage() {
       setAdminNote("");
       fetchData();
     } catch (err) {
-      toastError(err instanceof Error ? err.message : "Gagal menyetujui izin");
+      console.error("Gagal menyetujui izin telat:", err);
+      toastError(getErrorMessage(err, "Gagal menyetujui izin telat. Silakan coba lagi."));
     } finally {
       setIsSubmitting(false);
     }
@@ -124,7 +128,8 @@ export default function LatePaymentPage() {
       setRejectNote("");
       fetchData();
     } catch (err) {
-      toastError(err instanceof Error ? err.message : "Gagal menolak izin");
+      console.error("Gagal menolak izin telat:", err);
+      toastError(getErrorMessage(err, "Gagal menolak izin telat. Silakan coba lagi."));
     } finally {
       setIsSubmitting(false);
     }

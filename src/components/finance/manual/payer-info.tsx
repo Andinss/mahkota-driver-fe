@@ -1,4 +1,7 @@
 "use client";
+
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { useState, useEffect, useRef } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { driverApi } from "@/lib/api/driver";
@@ -109,8 +112,9 @@ const PayerInfo = ({
           setFilteredDrivers(mapped);
           setShowDropdown(true);
         })
-        .catch(() => {
+        .catch((err) => {
           setFilteredDrivers([]);
+          toastError(getErrorMessage(err, "Gagal mencari driver."));
         })
         .finally(() => setIsSearching(false));
     } else {
@@ -130,7 +134,9 @@ const PayerInfo = ({
             onSearchChange?.(driver.name);
           }
         })
-        .catch(() => {});
+        .catch((err) => {
+          toastError(getErrorMessage(err, "Gagal memuat detail pembayar."));
+        });
     }
   }, [selectedPayerId]);
 

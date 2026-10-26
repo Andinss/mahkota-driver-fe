@@ -40,6 +40,16 @@ export const koinApi = {
       params as Record<string, string | number | undefined>,
     ),
 
+  /**
+   * Riwayat koin milik sendiri (portal driver) — driverId diambil dari
+   * JWT di server, jadi tidak bisa melihat transaksi driver lain.
+   */
+  getMyTransactions: (params?: KoinTransactionParams) =>
+    api.get<SuccessResponsePaginated<KoinTransaction>>(
+      "/koin/my-transactions",
+      params as Record<string, string | number | undefined>,
+    ),
+
   getAllTransactions: (params?: KoinTransactionParams) =>
     api.get<SuccessResponsePaginated<KoinTransaction>>(
       `/koin/transactions`,

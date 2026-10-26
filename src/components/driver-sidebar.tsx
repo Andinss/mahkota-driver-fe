@@ -18,6 +18,7 @@ const driverMenu: DriverMenuItem[] = [
     icon: "map",
   },
   { path: "/dashboard/driver/payment", label: "Payment", icon: "payment" },
+  { path: "/dashboard/driver/koin", label: "Koin", icon: "toll" },
   { path: "/dashboard/driver/profile", label: "Profile", icon: "person" },
 ];
 

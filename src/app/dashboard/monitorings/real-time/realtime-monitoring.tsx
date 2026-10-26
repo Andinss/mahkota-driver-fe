@@ -8,6 +8,8 @@ import SideStatus from "@/components/monitoring/real-time/side-status";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import type { FleetLocation } from "@/lib/types/monitoring";
 import { monitoringApi } from "@/lib/api/monitoring";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 const MonitoringMap = dynamic(
   () => import("@/components/monitoring/real-time/monitoring-map"),
@@ -39,6 +41,8 @@ const RealtimeMonitoring = () => {
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const mountedRef = useRef(true);
+  // Polling: cukup sekali toast per gangguan, jangan spam tiap siklus.
+  const pollErrorNotifiedRef = useRef(false);
 
   const fetchLocations = useCallback(async () => {
     try {
@@ -49,9 +53,15 @@ const RealtimeMonitoring = () => {
         setSelectedVehicle((prev) =>
           prev ? mapped.find((v) => v.id === prev.id) ?? prev : null,
         );
+        pollErrorNotifiedRef.current = false;
       }
-    } catch {
-      // silent fail — keep last known positions
+    } catch (err) {
+      // Pertahankan posisi terakhir yang diketahui, tapi tetap beri tahu user.
+      console.error("Gagal memuat lokasi armada:", err);
+      if (!pollErrorNotifiedRef.current) {
+        pollErrorNotifiedRef.current = true;
+        toastError(getErrorMessage(err, "Gagal memuat lokasi armada."));
+      }
     } finally {
       if (mountedRef.current) {
         setLoading(false);

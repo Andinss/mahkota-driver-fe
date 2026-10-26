@@ -10,6 +10,7 @@ import {
 } from "@/components/rekenings/new/rekening-form";
 import { RekeningPreview } from "@/components/rekenings/new/rekening-preview";
 import { rekeningApi } from "@/lib/api/rekening";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { Rekening } from "@/lib/types/rekening";
 
 interface NewRekeningFormProps {
@@ -60,8 +61,10 @@ const NewRekening = ({ id }: NewRekeningFormProps) => {
           description: data.description ?? "",
           is_active: data.is_active ? "1" : "0",
         });
-      } catch {
+      } catch (err) {
+        console.error("Gagal memuat data metode pembayaran:", err);
         if (!cancelled) setExisting(null);
+        toastError(getErrorMessage(err, "Gagal memuat data metode pembayaran."));
       } finally {
         if (!cancelled) setIsLoadingExisting(false);
       }
@@ -173,11 +176,10 @@ const NewRekening = ({ id }: NewRekeningFormProps) => {
         `/dashboard/rekenings?success=${action}&name=${encodeURIComponent(values.name.trim())}`,
       );
     } catch (err: unknown) {
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : "Failed to save rekening. Please try again.";
-      toastError(message);
+      console.error("Gagal menyimpan rekening:", err);
+      toastError(
+        getErrorMessage(err, "Gagal menyimpan rekening. Silakan coba lagi."),
+      );
       setIsSubmitting(false);
     }
   };

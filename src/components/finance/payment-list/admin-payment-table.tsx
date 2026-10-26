@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/toast-provider";
 import { resolveImageUrl } from "@/lib/utils/image";
 import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 interface AdminPaymentTableProps {
   payments: FinanceItem[];
@@ -93,9 +94,8 @@ export const AdminPaymentTable = ({
       toastSuccess("Pembayaran diverifikasi");
       onChanged?.();
     } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal mengubah status pembayaran",
-      );
+      console.error("Gagal mengubah status pembayaran:", err);
+      toastError(getErrorMessage(err, "Gagal mengubah status pembayaran."));
     } finally {
       setIsSubmitting(false);
     }
@@ -118,9 +118,8 @@ export const AdminPaymentTable = ({
       );
       onChanged?.();
     } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal mengubah status pembayaran",
-      );
+      console.error("Gagal mengubah status pembayaran:", err);
+      toastError(getErrorMessage(err, "Gagal mengubah status pembayaran."));
     } finally {
       setIsSubmitting(false);
     }

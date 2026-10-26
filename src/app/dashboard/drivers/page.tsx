@@ -19,8 +19,8 @@ import { supervisorApi } from "@/lib/api/supervisor";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
 import { PermissionGuard } from "@/components/auth-guard-permission";
-import { HttpClientError } from "@/lib/api-http";
 import { confirmToast, toastError, toastSuccess } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 export default function DriverPage() {
   const { user } = useAuth();
@@ -106,8 +106,7 @@ export default function DriverPage() {
       }
     } catch (err: any) {
       console.error("Failed to fetch drivers:", err);
-      const msg = err instanceof HttpClientError ? err.message : "Failed to load driver data.";
-      toastError(msg);
+      toastError(getErrorMessage(err, "Gagal memuat data driver."));
       setDrivers([]);
     } finally {
       setIsLoading(false);
@@ -121,6 +120,7 @@ export default function DriverPage() {
       setDriverCount((res as any).data);
     } catch (err: any) {
       console.error("Failed to fetch driver count:", err);
+      toastError(getErrorMessage(err, "Gagal memuat jumlah driver."));
     }
   }, [hasReadAll, hasReadOwn]);
 
@@ -130,6 +130,7 @@ export default function DriverPage() {
       setSummary(res.data);
     } catch (err: any) {
       console.error("Failed to fetch driver summary:", err);
+      toastError(getErrorMessage(err, "Gagal memuat ringkasan driver."));
     }
   }, []);
 
@@ -166,7 +167,7 @@ export default function DriverPage() {
       }
       await driverApi.exportData(params);
     } catch (err: any) {
-      const msg = err instanceof HttpClientError ? err.message : "Failed to export driver data.";
+      const msg = getErrorMessage(err, "Gagal mengekspor data driver. Silakan coba lagi.");
       toastError(msg);
     }
   };
@@ -176,13 +177,17 @@ export default function DriverPage() {
   };
 
   const handleDeleteDriver = async (driverId: string) => {
-    if (!hasReadAll && hasReadOwn) {
-      await supervisorApi.delete(driverId);
-    } else {
-      await driverApi.delete(driverId);
+    try {
+      if (!hasReadAll && hasReadOwn) {
+        await supervisorApi.delete(driverId);
+      } else {
+        await driverApi.delete(driverId);
+      }
+      await fetchDrivers();
+      await fetchCount();
+    } catch (err) {
+      toastError(getErrorMessage(err, "Gagal menghapus driver. Silakan coba lagi."));
     }
-    await fetchDrivers();
-    await fetchCount();
   };
 
   const handleToggleStatus = async (driver: Driver) => {
@@ -212,7 +217,7 @@ export default function DriverPage() {
       fetchDrivers();
       fetchSummary();
     } catch (err: any) {
-      const msg = err instanceof HttpClientError ? err.message : "Failed to update driver status.";
+      const msg = getErrorMessage(err, "Gagal mengubah status driver. Silakan coba lagi.");
       toastError(msg);
     }
   };

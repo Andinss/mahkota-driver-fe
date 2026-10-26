@@ -14,6 +14,9 @@ export const koinKeys = {
   all: ["koin"] as const,
   balance: (driverId: string) =>
     [...koinKeys.all, "balance", driverId] as const,
+  /** Riwayat koin milik driver yang login (halaman "Koin Saya"). */
+  myTransactions: (params?: Record<string, string | number | undefined>) =>
+    [...koinKeys.all, "my-transactions", params ?? {}] as const,
 };
 
 export const financeKeys = {

@@ -10,6 +10,7 @@ import {
   toastInfo,
   toastSuccess,
 } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { MembershipCard } from "@/components/memberships/membership-card";
 import { MembershipTable } from "@/components/memberships/membership-table";
 import {
@@ -43,8 +44,10 @@ const MembershipList = () => {
       const res = await membershipApi.getList({ is_active: isActive });
       const list = Array.isArray(res.data) ? res.data : [];
       setMemberships([...list].sort((a, b) => a.level - b.level));
-    } catch {
+    } catch (err) {
+      console.error("Gagal memuat daftar membership:", err);
       setMemberships([]);
+      toastError(getErrorMessage(err, "Gagal memuat daftar membership."));
     } finally {
       setIsLoading(false);
     }
@@ -121,11 +124,10 @@ const MembershipList = () => {
       toastSuccess(`Membership ${membership.name} has been deleted successfully`);
       fetchMemberships();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : "Failed to delete membership. Please try again.";
-      toastError(message);
+      console.error("Gagal menghapus membership:", err);
+      toastError(
+        getErrorMessage(err, "Gagal menghapus membership. Silakan coba lagi."),
+      );
     }
   };
 
@@ -159,11 +161,13 @@ const MembershipList = () => {
       );
       fetchMemberships();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : "Failed to update membership status. Please try again.";
-      toastError(message);
+      console.error("Gagal mengubah status membership:", err);
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal mengubah status membership. Silakan coba lagi.",
+        ),
+      );
     }
   };
 
