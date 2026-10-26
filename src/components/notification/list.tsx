@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import NotificationCard from "@/components/ui/notification-card";
 import { notificationApi } from "@/lib/api/notification";
 import type { NotificationItem } from "@/lib/types/notification";
-import { toastError } from "@/components/ui/toast-provider";
-import { getErrorMessage } from "@/lib/utils/error-message";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
+import { notificationKeys } from "@/lib/query-keys";
 
 interface ListNotificationProps {
   activeFilter: string;
@@ -46,25 +48,20 @@ const formatTimestamp = (dateStr: string) => {
 };
 
 const ListNotification = ({ activeFilter }: ListNotificationProps) => {
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const canRead = canAccess(user?.permissions, "notification.read");
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await notificationApi.getAll({ limit: 50 });
-        setNotifications(res.data || []);
-      } catch (err) {
-        console.error("Gagal memuat notifikasi:", err);
-        setNotifications([]);
-        toastError(getErrorMessage(err, "Gagal memuat notifikasi."));
-      } finally {
-        setLoading(false);
-      }
-    };
+  const listQuery = useQuery({
+    queryKey: notificationKeys.list({ limit: 50 }),
+    queryFn: async () => {
+      const res = await notificationApi.getAll({ limit: 50 });
+      return (res.data ?? []) as NotificationItem[];
+    },
+    enabled: canRead,
+  });
 
-    fetchNotifications();
-  }, []);
+  const notifications: NotificationItem[] = listQuery.data ?? [];
+  const loading = canRead && listQuery.isLoading;
 
   const filteredNotifications = notifications.filter((notification) => {
     if (activeFilter === "all") return true;

@@ -5,10 +5,11 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Avatar } from "@/components/ui/avatar";
 import { DropdownNotif } from "@/components/notif";
 import { useState, useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import { notificationApi } from "@/lib/api/notification";
-import { toastError } from "@/components/ui/toast-provider";
-import { getErrorMessage } from "@/lib/utils/error-message";
+import { canAccess } from "@/lib/can-access";
+import { notificationKeys } from "@/lib/query-keys";
 
 const pathLabels: Record<string, string> = {
   dashboard: "Dashboard",
@@ -39,9 +40,19 @@ const Topbar = () => {
   const breadcrumbs = generateBreadcrumbs(pathname);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
-  // Polling: cukup sekali toast per gangguan, jangan spam tiap interval.
-  const pollErrorNotifiedRef = useRef(false);
+  // Hanya role dengan izin baca notifikasi yang boleh polling; mencegah 403.
+  const canSeeNotifications = canAccess(user?.permissions, "notification.read");
+
+  const unreadQuery = useQuery({
+    queryKey: notificationKeys.unreadCount(),
+    queryFn: async () => {
+      const res = await notificationApi.getUnreadCount();
+      return res.data?.count ?? 0;
+    },
+    enabled: canSeeNotifications,
+    refetchInterval: 30_000,
+  });
+  const unreadCount = canSeeNotifications ? (unreadQuery.data ?? 0) : 0;
 
   const handleToggleSidebar = () => {
     window.dispatchEvent(new CustomEvent("sidebar:toggle"));
@@ -50,28 +61,6 @@ const Topbar = () => {
   const toggleNotif = () => {
     setIsNotifOpen((prev) => !prev);
   };
-
-  useEffect(() => {
-    const fetchUnreadCount = async () => {
-      try {
-        const res = await notificationApi.getUnreadCount();
-        setUnreadCount(res.data?.count || 0);
-        pollErrorNotifiedRef.current = false;
-      } catch (err) {
-        console.error("Gagal memuat jumlah notifikasi:", err);
-        if (!pollErrorNotifiedRef.current) {
-          pollErrorNotifiedRef.current = true;
-          toastError(
-            getErrorMessage(err, "Gagal memuat jumlah notifikasi baru."),
-          );
-        }
-      }
-    };
-
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -123,23 +112,25 @@ const Topbar = () => {
       </nav>
 
       <div className="flex items-center gap-4 ml-auto">
-        <div className="relative" ref={notifRef}>
-          <div
-            onClick={toggleNotif}
-            className="cursor-pointer transition-colors relative"
-          >
-            <IconButton name="notifications" badge={unreadCount > 0} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-white text-[10px] font-bold items-center justify-center">
-                  {unreadCount > 99 ? "99+" : unreadCount}
+        {canSeeNotifications && (
+          <div className="relative" ref={notifRef}>
+            <div
+              onClick={toggleNotif}
+              className="cursor-pointer transition-colors relative"
+            >
+              <IconButton name="notifications" badge={unreadCount > 0} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-white text-[10px] font-bold items-center justify-center">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
                 </span>
-              </span>
-            )}
+              )}
+            </div>
+            {isNotifOpen && <DropdownNotif />}
           </div>
-          {isNotifOpen && <DropdownNotif />}
-        </div>
+        )}
         <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
         <div className="flex items-center gap-3 cursor-pointer group">
           <div className="text-right hidden sm:block">
