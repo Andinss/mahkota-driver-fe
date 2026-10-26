@@ -126,13 +126,24 @@ export default function DriverPage() {
 
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await driverApi.getSummary();
-      setSummary(res.data);
+      // Administrator / role dengan driver.read.all → ringkasan global.
+      if (hasReadAll) {
+        const res = await driverApi.getSummary();
+        setSummary(res.data);
+        return;
+      }
+      // Supervisor (driver.read.own) → ringkasan driver miliknya sendiri.
+      if (hasReadOwn) {
+        const res = await supervisorApi.getSummary();
+        setSummary(res.data);
+        return;
+      }
+      setSummary(null);
     } catch (err: any) {
       console.error("Failed to fetch driver summary:", err);
       toastError(getErrorMessage(err, "Gagal memuat ringkasan driver."));
     }
-  }, []);
+  }, [hasReadAll, hasReadOwn]);
 
   useEffect(() => {
     fetchDrivers();
@@ -330,8 +341,9 @@ export default function DriverPage() {
             <DriverTable
               drivers={drivers}
               onDeleteDriver={handleDeleteDriver}
-              onToggleStatus={handleToggleStatus}
-              onExport={handleExport}
+              // Supervisor tidak punya driver.update.all → sembunyikan aksi global.
+              onToggleStatus={hasReadAll ? handleToggleStatus : undefined}
+              onExport={hasReadAll ? handleExport : undefined}
               onDetailsDriver={handleDetails}
             />
             <div className="border-t border-slate-200 dark:border-slate-800">
