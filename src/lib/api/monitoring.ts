@@ -93,11 +93,18 @@ export const monitoringApi = {
     limit?: number;
     search?: string;
     VehicleId?: string;
+    /** `own` = hanya armada yang disewa driver milik supervisor. */
+    scope?: "all" | "own";
   }) => {
     return api.get<SuccessResponse<GpsTrackingRecord[]>>("/monitoring", params);
   },
 
-  getFleetLocations: async (params?: { status?: string; vehicle_id?: string }) => {
+  getFleetLocations: async (params?: {
+    status?: string;
+    vehicle_id?: string;
+    /** `own` = hanya armada yang disewa driver milik supervisor. */
+    scope?: "all" | "own";
+  }) => {
     const res = await api.get<SuccessResponse<GpsTrackingRecord[]>>("/monitoring", params);
     if (!res.success) {
       return { ...res, data: [] as FleetLocation[] };

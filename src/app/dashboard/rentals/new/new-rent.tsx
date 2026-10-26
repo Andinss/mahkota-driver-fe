@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 import { confirmToast, toastError } from "@/components/ui/toast-provider";
 import { getErrorMessage } from "@/lib/utils/error-message";
 import FinancialRental from "@/components/rent/new-rent/financial-rental";
@@ -90,7 +91,11 @@ const NewRentPage = () => {
   const [ongoingRentals, setOngoingRentals] = useState<OngoingRental[]>([]);
 
   const { user } = useAuth();
-  const isSupervisor = user?.role?.code === "SUPERVISOR";
+  // Cek berbasis permission (bukan kode role) agar tetap benar walau kode
+  // role supervisor diubah.
+  const isSupervisor =
+    canAccess(user?.permissions, "driver.read.own") &&
+    !canAccess(user?.permissions, "driver.read.all");
 
   useEffect(() => {
     setErrors({});

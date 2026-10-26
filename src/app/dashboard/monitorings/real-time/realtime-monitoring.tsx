@@ -8,6 +8,8 @@ import SideStatus from "@/components/monitoring/real-time/side-status";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import type { FleetLocation } from "@/lib/types/monitoring";
 import { monitoringApi } from "@/lib/api/monitoring";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 import { toastError } from "@/components/ui/toast-provider";
 import { getErrorMessage } from "@/lib/utils/error-message";
 
@@ -36,6 +38,12 @@ function mapFleetLocationToVehicle(loc: FleetLocation): FleetVehicle {
 }
 
 const RealtimeMonitoring = () => {
+  const { user } = useAuth();
+  // Supervisor hanya boleh melihat armada yang disewa driver miliknya.
+  const isSupervisor =
+    canAccess(user?.permissions, "driver.read.own") &&
+    !canAccess(user?.permissions, "driver.read.all");
+
   const [selectedVehicle, setSelectedVehicle] = useState<FleetVehicle | null>(null);
   const [vehicles, setVehicles] = useState<FleetVehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +54,9 @@ const RealtimeMonitoring = () => {
 
   const fetchLocations = useCallback(async () => {
     try {
-      const res = await monitoringApi.getFleetLocations();
+      const res = await monitoringApi.getFleetLocations({
+        scope: isSupervisor ? "own" : undefined,
+      });
       if (mountedRef.current && res.success) {
         const mapped = (res.data || []).map(mapFleetLocationToVehicle);
         setVehicles(mapped);
@@ -67,7 +77,7 @@ const RealtimeMonitoring = () => {
         setLoading(false);
       }
     }
-  }, []);
+  }, [isSupervisor]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -90,7 +100,7 @@ const RealtimeMonitoring = () => {
   };
 
   return (
-    <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
+    <PermissionGuard permission="monitoring.read">
       <div className="h-full p-2 md:p-4 lg:p-8">
         <div className="flex h-full bg-white dark:bg-slate-950">
           {/* Sidebar */}

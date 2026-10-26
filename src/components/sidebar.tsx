@@ -52,6 +52,12 @@ const menuStructure: SidebarItem[] = [
         permission: "monitoring.read",
       },
       {
+        path: "/dashboard/monitorings/out-of-town",
+        label: "Izin Keluar Kota",
+        icon: "travel_explore",
+        permission: "out_of_town.read",
+      },
+      {
         path: "/dashboard/vendor-vehicles",
         label: "Vendor Vehicles",
         icon: "storefront",

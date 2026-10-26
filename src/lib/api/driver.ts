@@ -1,6 +1,11 @@
 import { api } from "../api-http";
 import type { SuccessResponse, SuccessResponsePaginated } from "../types/api";
-import type { DriverItem, DriverListParams, DriverSummary } from "../types/driver";
+import type {
+  DriverItem,
+  DriverListParams,
+  DriverSummary,
+  SupervisorOption,
+} from "../types/driver";
 
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -40,6 +45,16 @@ export const driverApi = {
 
   updateStatus: (employeeId: string, is_active: boolean) =>
     api.put<SuccessResponse<DriverItem>>(`/drivers/status/${employeeId}`,{ is_active },),
+
+  /** Kandidat supervisor (Administrator & Owner). */
+  getSupervisorOptions: () =>
+    api.get<SuccessResponse<SupervisorOption[]>>("/drivers/supervisors"),
+
+  /** Tunjuk / ganti / lepas supervisor driver (null = lepas). */
+  assignSupervisor: (id: string, supervisorId: string | null) =>
+    api.put<SuccessResponse<DriverItem>>(`/drivers/assign-supervisor/${id}`, {
+      supervisor_id: supervisorId,
+    }),
 
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/drivers/delete/${id}`),

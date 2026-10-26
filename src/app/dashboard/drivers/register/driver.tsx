@@ -20,6 +20,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { driverApi } from "@/lib/api/driver";
 import { supervisorApi } from "@/lib/api/supervisor";
 import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { getErrorMessage } from "@/lib/utils/error-message";
 import { renameFile } from "@/lib/utils/file";
@@ -33,7 +34,11 @@ export default function DriverRegisterPage() {
   const driverIdParam = searchParams.get("id");
   const [mode, setMode] = useState<"add" | "edit">("add");
 
-  const isSupervisor = user?.role?.code === "SUPERVISOR";
+  // Cek berbasis permission (bukan kode role) agar tetap benar walau kode
+  // role supervisor diubah.
+  const isSupervisor =
+    canAccess(user?.permissions, "driver.read.own") &&
+    !canAccess(user?.permissions, "driver.read.all");
 
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [formData, setFormData] = useState<{

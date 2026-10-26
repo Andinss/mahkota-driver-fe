@@ -21,6 +21,10 @@ export default function MonitoringPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const hasAccess = canAccess(user?.permissions, "monitoring.read");
+  // Supervisor hanya melihat armada yang disewa driver miliknya.
+  const isSupervisor =
+    canAccess(user?.permissions, "driver.read.own") &&
+    !canAccess(user?.permissions, "driver.read.all");
 
   const [records, setRecords] = useState<GpsTrackingRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +45,7 @@ export default function MonitoringPage() {
     setLoading(true);
     try {
       const res = await monitoringApi
-        .getList({ limit: 1000 })
+        .getList({ limit: 1000, scope: isSupervisor ? "own" : undefined })
         .catch((err: unknown) => {
           console.error("Gagal memuat data monitoring:", err);
           toastError(getErrorMessage(err, "Gagal memuat data monitoring."));
@@ -57,7 +61,7 @@ export default function MonitoringPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isSupervisor]);
 
   useEffect(() => {
     if (hasAccess && !isLoading) {
