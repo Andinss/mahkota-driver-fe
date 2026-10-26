@@ -159,8 +159,7 @@ export const financeApi = {
     api.delete<SuccessResponse<void>>(`/finances/delete/${id}`),
 
   // Late payments
-  lateList: () =>
-    api.get<SuccessResponse<LatePaymentItem[]>>("/late-payments"),
+  lateList: () => api.get<SuccessResponse<LatePaymentItem[]>>("/late-payments"),
 
   lateStats: () =>
     api.get<SuccessResponse<LatePaymentStats>>("/late-payments/stats"),
@@ -215,6 +214,16 @@ export const financeApi = {
 
   exportData: async (params: Record<string, string | number | undefined>) => {
     const { blob, filename } = await api.download("/finances/export", params);
+    triggerDownload(blob, filename);
+  },
+
+  exportMyDailyPayments: async (
+    params: Record<string, string | number | undefined>,
+  ) => {
+    const { blob, filename } = await api.download(
+      "/daily-payments/my-daily-payments/export",
+      params,
+    );
     triggerDownload(blob, filename);
   },
 };
