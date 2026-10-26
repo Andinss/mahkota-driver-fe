@@ -16,6 +16,7 @@ import {
   type VehicleHistory,
 } from "@/components/drivers/detail/vehicle-history-list";
 import { DriverOverview } from "@/components/drivers/detail/overview";
+import { SupervisorCard } from "@/components/drivers/detail/supervisor-card";
 import { DepositHistoryList } from "@/components/drivers/detail/deposit-history-list";
 import { KoinHistoryList } from "@/components/drivers/detail/koin-history-list";
 import { PermissionGuard } from "@/components/auth-guard-permission";
@@ -51,6 +52,10 @@ const DetailDriverPage = () => {
   const isSupervisor =
     canAccess(user?.permissions, "driver.read.own") &&
     !canAccess(user?.permissions, "driver.read.all");
+  const canAssignSupervisor = canAccess(
+    user?.permissions,
+    "driver.assign_supervisor",
+  );
 
   const [driver, setDriver] = useState<DriverItem | null>(null);
   const [currentRental, setCurrentRental] = useState<RentalTransaction | null>(null);
@@ -218,6 +223,12 @@ const DetailDriverPage = () => {
     <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
     <div className="p-7">
       <DriverHeader driver={driverHeader} />
+
+      <SupervisorCard
+        driver={driver}
+        canAssign={canAssignSupervisor}
+        onChanged={(updated) => setDriver(updated)}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <DriverStatsCard

@@ -35,6 +35,7 @@ function formatAction(action: string): string {
     reject: "REJECT",
     activate: "ACTIVATE",
     assign_vehicle: "ASSIGN VEHICLE",
+    assign_supervisor: "ASSIGN SUPERVISOR",
     assign_permissions: "ASSIGN PERMS",
     manage_role: "MANAGE ROLE",
     change_status: "CHANGE STATUS",

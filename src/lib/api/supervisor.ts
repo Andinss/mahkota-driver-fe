@@ -8,7 +8,7 @@ export const supervisorApi = {
   getCount: () =>
     api.get<{ success: boolean; message: string; data: { count: number; max: number; remaining: number } }>("/supervisor/drivers/count"),
 
-  /** Ringkasan driver milik supervisor (hanya driver yang ia buat). */
+  /** Ringkasan driver yang ditunjuk ke supervisor ini. */
   getSummary: () =>
     api.get<{ success: boolean; message: string; data: DriverSummary }>("/supervisor/drivers/summary"),
 

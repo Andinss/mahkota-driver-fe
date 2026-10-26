@@ -22,6 +22,23 @@ export interface DriverRentalItem {
   vehicle?: DriverRentalVehicle;
 }
 
+export interface DriverSupervisorSummary {
+  id: string;
+  username: string;
+  fullname?: string | null;
+  email: string;
+}
+
+export interface SupervisorOption {
+  id: string;
+  username: string;
+  fullname?: string | null;
+  email: string;
+  driver_count: number;
+  max_drivers: number;
+  remaining: number;
+}
+
 export interface DriverItem {
   id: string;
   first_name: string;
@@ -49,6 +66,9 @@ export interface DriverItem {
   membership?: Membership | null;
   created_by_id?: string;
   created_by?: { id: string; username: string; email: string };
+  /** Supervisor yang ditunjuk (null = belum ditunjuk). */
+  supervisor_id?: string | null;
+  supervisor?: DriverSupervisorSummary | null;
   koin?: { id: string; balance: number };
   province?: string;
   province_name?: string;
