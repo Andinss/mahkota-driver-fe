@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { notificationApi } from "@/lib/api/notification";
 import type { NotificationItem } from "@/lib/types/notification";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
+import { notificationKeys } from "@/lib/query-keys";
 import { toastError } from "@/components/ui/toast-provider";
 import { getErrorMessage } from "@/lib/utils/error-message";
 
@@ -32,44 +35,50 @@ const formatTimestamp = (dateStr: string) => {
 };
 
 export const DropdownNotif = () => {
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  // Polling: cukup sekali toast per gangguan, jangan spam tiap 30 detik.
-  const pollErrorNotifiedRef = useRef(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const canRead = canAccess(user?.permissions, "notification.read");
+  // Menandai notifikasi global = aksi monitoring, bukan sekadar baca.
+  const canMarkRead = canAccess(user?.permissions, "monitoring.update");
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await notificationApi.getRecent(5);
-        setNotifications(res.data || []);
-        setUnreadCount(res.unread_count || 0);
-        pollErrorNotifiedRef.current = false;
-      } catch (err) {
-        console.error("Gagal memuat notifikasi:", err);
-        setNotifications([]);
-        if (!pollErrorNotifiedRef.current) {
-          pollErrorNotifiedRef.current = true;
-          toastError(getErrorMessage(err, "Gagal memuat notifikasi."));
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+  const recentQuery = useQuery({
+    queryKey: notificationKeys.recent(5),
+    queryFn: async () => {
+      const res = await notificationApi.getRecent(5);
+      return { items: res.data ?? [], unread: res.unread_count ?? 0 };
+    },
+    enabled: canRead,
+    refetchInterval: 30_000,
+  });
 
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const notifications: NotificationItem[] = recentQuery.data?.items ?? [];
+  const unreadCount = recentQuery.data?.unread ?? 0;
+  const loading = canRead && recentQuery.isLoading;
 
   const handleMarkAllRead = async () => {
     try {
       await notificationApi.markAllAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true, status: "read" })));
-      setUnreadCount(0);
+      queryClient.setQueryData<{ items: NotificationItem[]; unread: number }>(
+        notificationKeys.recent(5),
+        (prev) =>
+        prev
+          ? {
+              items: prev.items.map((n) => ({
+                ...n,
+                is_read: true,
+                status: "read",
+              })),
+              unread: 0,
+            }
+          : prev,
+      );
+      queryClient.invalidateQueries({
+        queryKey: notificationKeys.unreadCount(),
+      });
     } catch (err) {
-      console.error("Gagal menandai semua notifikasi dibaca:", err);
-      toastError(getErrorMessage(err, "Gagal menandai notifikasi sebagai dibaca."));
+      toastError(
+        getErrorMessage(err, "Gagal menandai notifikasi sebagai dibaca."),
+      );
     }
   };
 
@@ -84,12 +93,14 @@ export const DropdownNotif = () => {
             </span>
           )}
         </h3>
-        <button
-          onClick={handleMarkAllRead}
-          className="text-xs font-semibold text-primary hover:underline"
-        >
-          Mark all as read
-        </button>
+        {canMarkRead && (
+          <button
+            onClick={handleMarkAllRead}
+            className="text-xs font-semibold text-primary hover:underline"
+          >
+            Mark all as read
+          </button>
+        )}
       </div>
       <div className="max-h-[400px] overflow-y-auto">
         {loading ? (

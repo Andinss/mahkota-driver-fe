@@ -43,3 +43,12 @@ export const rentalKeys = {
     [...rentalKeys.all, "list", params ?? {}] as const,
   summary: () => [...rentalKeys.all, "summary"] as const,
 };
+
+export const notificationKeys = {
+  all: ["notification"] as const,
+  unreadCount: () => [...notificationKeys.all, "unread-count"] as const,
+  recent: (limit?: number) =>
+    [...notificationKeys.all, "recent", limit ?? 5] as const,
+  list: (params?: Record<string, string | number | undefined>) =>
+    [...notificationKeys.all, "list", params ?? {}] as const,
+};
