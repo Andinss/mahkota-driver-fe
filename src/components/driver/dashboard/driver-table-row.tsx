@@ -137,13 +137,14 @@ export function DriverTableRow({
           >
             Delete
           </DropdownMenuItem> */}
-          <DropdownMenuItem
-            icon={isActive ? "person_off" : "person_check"}
-            onClick={() => onToggleStatus?.(driver)}
-          >
-            {isActive ? "Mark as Inactive" : "Mark as Active"}
-          </DropdownMenuItem>
-          <Link href={`/dashboard/drivers/detail?id=${driver.id}`}>
+          {onToggleStatus && (
+            <DropdownMenuItem
+              icon={isActive ? "person_off" : "person_check"}
+              onClick={() => onToggleStatus(driver)}
+            >
+              {isActive ? "Mark as Inactive" : "Mark as Active"}
+            </DropdownMenuItem>
+          )}          <Link href={`/dashboard/drivers/detail?id=${driver.id}`}>
             <DropdownMenuItem icon="visibility">Details</DropdownMenuItem>
           </Link>
         </Dropdown>

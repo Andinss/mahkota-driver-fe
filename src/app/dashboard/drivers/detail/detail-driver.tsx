@@ -20,8 +20,11 @@ import { DepositHistoryList } from "@/components/drivers/detail/deposit-history-
 import { KoinHistoryList } from "@/components/drivers/detail/koin-history-list";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { driverApi } from "@/lib/api/driver";
+import { supervisorApi } from "@/lib/api/supervisor";
 import { rentalApi } from "@/lib/api/rentals";
 import { financeApi } from "@/lib/api/finances";
+import { useAuth } from "@/lib/auth-context";
+import { canAccess } from "@/lib/can-access";
 import type { DriverItem } from "@/lib/types/driver";
 import type { RentalTransaction } from "@/lib/types/rentals";
 import type { HistorySetoran } from "@/lib/types/history";
@@ -43,6 +46,11 @@ const mapFinanceToHistory = (f: FinanceItem): HistorySetoran => ({
 const DetailDriverPage = () => {
   const searchParams = useSearchParams();
   const driverId = searchParams.get("id");
+  const { user } = useAuth();
+  // Supervisor hanya punya driver.read.own → pakai endpoint /supervisor/drivers.
+  const isSupervisor =
+    canAccess(user?.permissions, "driver.read.own") &&
+    !canAccess(user?.permissions, "driver.read.all");
 
   const [driver, setDriver] = useState<DriverItem | null>(null);
   const [currentRental, setCurrentRental] = useState<RentalTransaction | null>(null);
@@ -62,6 +70,24 @@ const DetailDriverPage = () => {
     setIsLoading(true);
 
     const fetchDriver = async () => {
+      if (isSupervisor) {
+        try {
+          const res = await supervisorApi.getById(driverId);
+          const item = res.data;
+          if (item?.employee_id) {
+            setDriver(item);
+          } else {
+            setDriver(null);
+            toastError("Data driver tidak ditemukan atau tidak lengkap.");
+          }
+        } catch (err) {
+          const msg = getErrorMessage(err, "Gagal memuat data driver. Silakan coba lagi.");
+          toastError(msg);
+          setDriver(null);
+        }
+        return;
+      }
+
       try {
         const res = await driverApi.getById(driverId);
         const item = res.data ?? (res as unknown as DriverItem);
@@ -128,7 +154,7 @@ const DetailDriverPage = () => {
 
     fetchDriver().then(fetchRental).finally(() => setIsLoading(false));
     fetchHistory();
-  }, [driverId]);
+  }, [driverId, isSupervisor]);
 
   const driverHeader: DriverHeaderData = driver ? {
     name: `${driver.first_name || ""} ${driver.last_name || ""}`.trim() || "-",
