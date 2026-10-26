@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { confirmToast, toastSuccess, toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { VehicleStatsCard } from "@/components/vehicle/dashboard/vehicle-stats-card";
 import { VehicleTable } from "@/components/vehicle/dashboard/vehicle-table";
 import { SearchFilters } from "@/components/search-filters";
@@ -57,8 +58,8 @@ export default function DashboardVehiclePage() {
     try {
       const res = await vehicleApi.getSummary();
       setSummary(res.data);
-    } catch {
-      // non-critical
+    } catch (err) {
+      toastError(getErrorMessage(err, "Gagal memuat ringkasan kendaraan."));
     }
   }, []);
 
@@ -111,6 +112,7 @@ export default function DashboardVehiclePage() {
       }
     } catch (err) {
       console.error("Failed to fetch vehicles:", err);
+      toastError(getErrorMessage(err, "Gagal memuat data kendaraan."));
       setVehicles([]);
     } finally {
       setIsLoading(false);
@@ -154,7 +156,7 @@ export default function DashboardVehiclePage() {
         fetchSummary();
       } catch (err) {
         console.error("Failed to delete vehicle:", err);
-        toastError("Failed to delete vehicle. Please try again.");
+        toastError(getErrorMessage(err, "Gagal menghapus kendaraan. Silakan coba lagi."));
       }
     }
   };
@@ -190,7 +192,7 @@ export default function DashboardVehiclePage() {
       fetchSummary();
     } catch (err: any) {
       console.error("Failed to update vehicle status:", err);
-      toastError(err?.message || "Failed to update vehicle status.");
+      toastError(getErrorMessage(err, "Gagal mengubah status kendaraan."));
     }
   };
 
@@ -206,7 +208,11 @@ export default function DashboardVehiclePage() {
       if (options.dateRange?.start) params.start_date = options.dateRange.start;
       if (options.dateRange?.end) params.end_date = options.dateRange.end;
     }
-    await vehicleApi.exportData(params);
+    try {
+      await vehicleApi.exportData(params);
+    } catch (err) {
+      toastError(getErrorMessage(err, "Gagal mengekspor data kendaraan. Silakan coba lagi."));
+    }
   };
 
 

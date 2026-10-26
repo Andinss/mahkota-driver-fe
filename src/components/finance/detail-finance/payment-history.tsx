@@ -12,6 +12,7 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { resolveImageUrl } from "@/lib/utils/image";
 import { getTodayLocal } from "@/lib/utils/format";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -100,9 +101,8 @@ const PaymentHistory = ({ finance, onChanged }: PaymentHistoryProps) => {
       );
       refresh();
     } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal mengubah status pembayaran",
-      );
+      console.error("Gagal mengubah status pembayaran:", err);
+      toastError(getErrorMessage(err, "Gagal mengubah status pembayaran."));
     } finally {
       setIsSubmitting(false);
     }
@@ -138,9 +138,8 @@ const PaymentHistory = ({ finance, onChanged }: PaymentHistoryProps) => {
       setNotes("");
       refresh();
     } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal mencatat pembayaran",
-      );
+      console.error("Gagal mencatat pembayaran:", err);
+      toastError(getErrorMessage(err, "Gagal mencatat pembayaran."));
     } finally {
       setIsSubmitting(false);
     }

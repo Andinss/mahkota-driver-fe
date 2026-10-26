@@ -21,7 +21,7 @@ import type { ExportOptions } from "@/components/ui/export";
 import { FinanceTabFilters } from "@/components/finance/payment-list/finance-tab-filters";
 import { financeApi } from "@/lib/api/finances";
 import { koinApi } from "@/lib/api/koin";
-import { HttpClientError } from "@/lib/api-http";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type {
   FinanceItem,
   FinanceListParams,
@@ -105,8 +105,9 @@ export default function PaymentList() {
     try {
       const res = await financeApi.getSummary();
       setSummary(res.data);
-    } catch {
-      // summary non-critical
+    } catch (err) {
+      console.error("Gagal memuat ringkasan keuangan:", err);
+      toastError(getErrorMessage(err, "Gagal memuat ringkasan keuangan."));
     }
   }, []);
 
@@ -125,8 +126,9 @@ export default function PaymentList() {
       const items = Array.isArray(response.data) ? response.data : [];
       setDailyPayments(items);
       if (response.meta) setDailyMeta(response.meta);
-    } catch {
-      toastError("Failed to load daily payments");
+    } catch (err) {
+      console.error("Gagal memuat pembayaran harian:", err);
+      toastError(getErrorMessage(err, "Gagal memuat pembayaran harian."));
     } finally {
       setIsLoading(false);
     }
@@ -146,8 +148,9 @@ export default function PaymentList() {
       });
       const items = Array.isArray(response.data) ? response.data : [];
       setDailyTablePayments(items);
-    } catch {
-      toastError("Failed to load daily payments");
+    } catch (err) {
+      console.error("Gagal memuat pembayaran harian:", err);
+      toastError(getErrorMessage(err, "Gagal memuat pembayaran harian."));
     }
   }, [dailyStatusFilter, debouncedSearch, user]);
 
@@ -170,8 +173,9 @@ export default function PaymentList() {
       const items = Array.isArray(response.data) ? response.data : [];
       setAdminFees(items);
       if (response.meta) setAdminFeeMeta(response.meta);
-    } catch {
-      toastError("Failed to load admin fees");
+    } catch (err) {
+      console.error("Gagal memuat fee admin:", err);
+      toastError(getErrorMessage(err, "Gagal memuat fee admin."));
     } finally {
       setIsLoading(false);
     }
@@ -192,8 +196,9 @@ export default function PaymentList() {
       const items = Array.isArray(response.data) ? response.data : [];
       setAdditionalCharges(items);
       if (response.meta) setAdditionalMeta(response.meta);
-    } catch {
-      toastError("Failed to load additional charges");
+    } catch (err) {
+      console.error("Gagal memuat tagihan tambahan:", err);
+      toastError(getErrorMessage(err, "Gagal memuat tagihan tambahan."));
     } finally {
       setIsLoading(false);
     }
@@ -212,8 +217,9 @@ export default function PaymentList() {
       const items = Array.isArray(response.data) ? response.data : [];
       setKoinTransactions(items);
       if (response.meta) setKoinMeta(response.meta);
-    } catch {
-      toastError("Failed to load koin transactions");
+    } catch (err) {
+      console.error("Gagal memuat transaksi koin:", err);
+      toastError(getErrorMessage(err, "Gagal memuat transaksi koin."));
     }
   }, [user, koinTypeFilter]);
 
@@ -223,8 +229,9 @@ export default function PaymentList() {
       if ((res as any)?.success) {
         setKoinSummary((res as any).data);
       }
-    } catch {
-      // koin summary non-critical
+    } catch (err) {
+      console.error("Gagal memuat ringkasan koin:", err);
+      toastError(getErrorMessage(err, "Gagal memuat ringkasan koin."));
     }
   }, []);
 
@@ -270,7 +277,12 @@ export default function PaymentList() {
       if (options.dateRange?.start) params.start_date = options.dateRange.start;
       if (options.dateRange?.end) params.end_date = options.dateRange.end;
     }
-    await financeApi.exportData(params);
+    try {
+      await financeApi.exportData(params);
+    } catch (err) {
+      console.error("Gagal mengekspor data keuangan:", err);
+      toastError(getErrorMessage(err, "Gagal mengekspor data keuangan. Silakan coba lagi."));
+    }
   };
 
   const handleDelete = async (finance: FinanceItem) => {
@@ -289,7 +301,8 @@ export default function PaymentList() {
       toastSuccess(`Finance ${finance.reference_number} has been deleted successfully`);
       fetchAdminFees(); fetchSummary();
     } catch (err) {
-      toastError(err instanceof HttpClientError ? err.message : "Failed to delete finance record");
+      console.error("Gagal menghapus data pembayaran:", err);
+      toastError(getErrorMessage(err, "Gagal menghapus data pembayaran. Silakan coba lagi."));
     } finally {
       setIsDeleting(false);
     }

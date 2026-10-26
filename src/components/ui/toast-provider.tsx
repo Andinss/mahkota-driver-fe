@@ -2,6 +2,7 @@
 
 import { ToastContainer, toast, type ToastOptions } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { sanitizeErrorMessage } from "@/lib/utils/error-message";
 
 let toastCounter = 0;
 
@@ -33,6 +34,23 @@ function makeToastId(msg: string) {
   return `toast-${msg.slice(0, 40)}`;
 }
 
+/**
+ * Toast dengan pesan yang sama dalam waktu singkat tidak ditampilkan
+ * berulang (mis. beberapa request gagal bersamaan / polling yang error).
+ */
+const DEDUPE_WINDOW_MS = 8000;
+const lastShownAt = new Map<string, number>();
+
+function isDuplicate(id: string): boolean {
+  const now = Date.now();
+  const last = lastShownAt.get(id);
+  if (last && now - last < DEDUPE_WINDOW_MS) return true;
+  // Jaga agar map tidak tumbuh tanpa batas pada sesi panjang.
+  if (lastShownAt.size > 200) lastShownAt.clear();
+  lastShownAt.set(id, now);
+  return false;
+}
+
 const baseOpts: ToastOptions = {
   autoClose: 3000,
   hideProgressBar: false,
@@ -50,9 +68,11 @@ export function toastSuccess(msg: string) {
 }
 
 export function toastError(msg: string) {
-  const id = makeToastId(msg);
+  const text = sanitizeErrorMessage(msg);
+  const id = makeToastId(text);
+  if (isDuplicate(id)) return;
   toast.dismiss(id);
-  toast.error(msg, {
+  toast.error(text, {
     ...baseOpts,
     toastId: id,
     style: { borderLeft: "4px solid #dc2626" },
@@ -60,9 +80,11 @@ export function toastError(msg: string) {
 }
 
 export function toastWarning(msg: string, toastId?: string) {
-  const id = toastId ?? makeToastId(msg);
+  const text = sanitizeErrorMessage(msg);
+  const id = toastId ?? makeToastId(text);
+  if (isDuplicate(id)) return;
   toast.dismiss(id);
-  toast.warning(msg, {
+  toast.warning(text, {
     ...baseOpts,
     toastId: id,
     autoClose: toastId ? 8000 : 3000,
@@ -71,9 +93,11 @@ export function toastWarning(msg: string, toastId?: string) {
 }
 
 export function toastInfo(msg: string) {
-  const id = makeToastId(msg);
+  const text = sanitizeErrorMessage(msg);
+  const id = makeToastId(text);
+  if (isDuplicate(id)) return;
   toast.dismiss(id);
-  toast.info(msg, {
+  toast.info(text, {
     ...baseOpts,
     toastId: id,
     style: { borderLeft: "4px solid #3b82f6" },

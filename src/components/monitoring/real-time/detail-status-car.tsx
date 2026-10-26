@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { monitoringApi } from "@/lib/api/monitoring";
 import { notificationApi } from "@/lib/api/notification";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { FleetVehicle } from "./monitoring-map";
 
 interface DetailStatusCardProps {
@@ -38,6 +40,7 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
       onStatusChanged?.();
     } catch (err) {
       console.error("Failed to shutdown vehicle:", err);
+      toastError(getErrorMessage(err, "Gagal mematikan mesin kendaraan. Silakan coba lagi."));
     } finally {
       setIsShuttingDown(false);
     }
@@ -50,6 +53,7 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
       onStatusChanged?.();
     } catch (err) {
       console.error("Failed to turn on vehicle engine:", err);
+      toastError(getErrorMessage(err, "Gagal menyalakan mesin kendaraan. Silakan coba lagi."));
     } finally {
       setIsSendingAction(false);
     }
@@ -72,10 +76,12 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
       setActionAlertMessage(`Contact request sent to driver of ${vehicle.plate}`);
       setShowActionAlert(true);
       setTimeout(() => setShowActionAlert(false), 3000);
-    } catch {
-      setActionAlertMessage("Failed to send contact request");
+    } catch (err) {
+      const message = "Gagal mengirim permintaan menghubungi driver.";
+      setActionAlertMessage(message);
       setShowActionAlert(true);
       setTimeout(() => setShowActionAlert(false), 3000);
+      toastError(getErrorMessage(err, message));
     } finally {
       setIsSendingAction(false);
     }
@@ -100,10 +106,12 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
       setShowActionAlert(true);
       onStatusChanged?.();
       setTimeout(() => setShowActionAlert(false), 3000);
-    } catch {
-      setActionAlertMessage("Failed to initiate retrieval");
+    } catch (err) {
+      const message = "Gagal memulai penarikan kendaraan.";
+      setActionAlertMessage(message);
       setShowActionAlert(true);
       setTimeout(() => setShowActionAlert(false), 3000);
+      toastError(getErrorMessage(err, message));
     } finally {
       setIsSendingAction(false);
     }
@@ -127,10 +135,12 @@ const DetailStatusCard = ({ onClose, vehicle, onStatusChanged }: DetailStatusCar
       setActionAlertMessage(`Emergency assistance requested for ${vehicle.plate}`);
       setShowActionAlert(true);
       setTimeout(() => setShowActionAlert(false), 5000);
-    } catch {
-      setActionAlertMessage("Failed to request emergency assistance");
+    } catch (err) {
+      const message = "Gagal mengirim permintaan bantuan darurat.";
+      setActionAlertMessage(message);
       setShowActionAlert(true);
       setTimeout(() => setShowActionAlert(false), 3000);
+      toastError(getErrorMessage(err, message));
     } finally {
       setIsSendingAction(false);
     }

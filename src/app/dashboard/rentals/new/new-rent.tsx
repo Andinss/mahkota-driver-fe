@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { useAuth } from "@/lib/auth-context";
-import { confirmToast } from "@/components/ui/toast-provider";
+import { confirmToast, toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import FinancialRental from "@/components/rent/new-rent/financial-rental";
 import Period from "@/components/rent/new-rent/rental-period";
 import SelectionForm from "@/components/rent/new-rent/selection";
@@ -104,7 +105,9 @@ const NewRentPage = () => {
     fetchDrivers.then((res: any) => {
       const items = Array.isArray(res.data) ? res.data : [];
       setAllDrivers(items.filter((d: DriverItem) => d.is_active !== false));
-    }).catch(() => {});
+    }).catch((err) => {
+      toastError(getErrorMessage(err, "Gagal memuat daftar driver."));
+    });
 
     vehicleApi.getList({ limit: 9999, is_active: "true" }).then((res) => {
       const items = Array.isArray(res.data) ? res.data : [];
@@ -113,7 +116,9 @@ const NewRentPage = () => {
           (v: VehicleItem) => v.is_active !== false && v.status === "Available",
         ),
       );
-    }).catch(() => {});
+    }).catch((err) => {
+      toastError(getErrorMessage(err, "Gagal memuat daftar kendaraan."));
+    });
 
     // Rental yang belum dihentikan dan periodenya belum habis → driver &
     // kendaraan ini tidak boleh dipilih lagi untuk sewa baru.
@@ -122,7 +127,9 @@ const NewRentPage = () => {
       .then((res) => {
         setOngoingRentals(Array.isArray(res.data) ? res.data : []);
       })
-      .catch(() => {});
+      .catch((err) => {
+        toastError(getErrorMessage(err, "Gagal memuat daftar sewa berjalan."));
+      });
   }, [isSupervisor]);
 
   // Rentang periode sewa yang sedang dipilih. Bila belum diisi, pakai hari
@@ -278,8 +285,9 @@ const NewRentPage = () => {
           dailyRate: Number(rental.daily_rate) || 0,
           totalAmount: Number(rental.daily_rate) * (rental.total_duration || 0),
         });
-      }).catch(() => {
+      }).catch((err) => {
         setMode("add");
+        toastError(getErrorMessage(err, "Gagal memuat data sewa yang akan diedit."));
       });
     } else {
       setMode("add");
@@ -448,9 +456,13 @@ const NewRentPage = () => {
         }
         setErrors((prev) => ({ ...prev, ...newErrors }));
 
-        setGeneralError(err.message || "Gagal menyimpan rental. Silakan coba lagi.");
+        const message = getErrorMessage(err, "Gagal menyimpan rental. Silakan coba lagi.");
+        setGeneralError(message);
+        toastError(message);
       } else {
-        setGeneralError("Gagal menyimpan rental. Silakan coba lagi.");
+        const message = "Gagal menyimpan rental. Silakan coba lagi.";
+        setGeneralError(message);
+        toastError(message);
       }
     }
   };

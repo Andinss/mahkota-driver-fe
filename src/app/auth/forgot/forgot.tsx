@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toastSuccess, toastError } from "@/components/ui/toast-provider";
 import { authApi } from "@/lib/api/auth";
-import { HttpClientError } from "@/lib/api-http";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { sanitizeEmailInput, containsInvalidEmailChars } from "@/lib/utils/validation";
 
 interface FormErrors {
@@ -54,11 +54,10 @@ const ForgotPasswordPage = () => {
       await authApi.forgotPassword({ email: formValues.email.trim() });
       toastSuccess("Password reset instructions have been sent to your email.");
     } catch (error) {
-      if (error instanceof HttpClientError) {
-        toastError(error.message);
-      } else {
-        toastError("An unexpected error occurred. Please try again.");
-      }
+      console.error("Gagal mengirim instruksi reset password:", error);
+      toastError(
+        getErrorMessage(error, "Gagal mengirim instruksi reset password. Silakan coba lagi."),
+      );
     } finally {
       setIsSubmitting(false);
     }

@@ -8,6 +8,11 @@ import { useState, useRef } from "react";
 import { toastSuccess, toastError, toastWarning } from "@/components/ui/toast-provider";
 import { useAuth } from "@/lib/auth-context";
 import { HttpClientError } from "@/lib/api-http";
+import {
+  LOGIN_FAILED_MESSAGE,
+  NETWORK_ERROR_MESSAGE,
+  getLoginErrorMessage,
+} from "@/lib/utils/error-message";
 import { sanitizeEmailInput, containsInvalidEmailChars } from "@/lib/utils/validation";
 
 interface FormErrors {
@@ -87,7 +92,7 @@ const LoginPage = () => {
       setTurnstileError(
         "Verifikasi keamanan belum selesai. Selesaikan dulu, lalu klik Masuk.",
       );
-      toastWarning("Please complete the security verification.");
+      toastWarning("Verifikasi keamanan belum selesai. Silakan selesaikan dulu.");
       turnstileRef.current?.reset();
       return;
     }
@@ -110,20 +115,25 @@ const LoginPage = () => {
       setTurnstileToken("");
       if (error instanceof HttpClientError) {
         const msg = (error.message || "").toLowerCase();
-        if (msg.includes("turnstile") || msg.includes("security")) {
-          setTurnstileError(error.message);
-          toastError(error.message);
+        const isSecurityIssue =
+          msg.includes("turnstile") ||
+          msg.includes("captcha") ||
+          msg.includes("security check");
+        if (isSecurityIssue) {
+          const securityMessage =
+            "Verifikasi keamanan gagal. Silakan selesaikan ulang verifikasi.";
+          setTurnstileError(securityMessage);
+          toastError(securityMessage);
         } else if (error.statusCode === 401) {
-          toastError(error.message && error.message !== "Unauthorized"
-            ? error.message
-            : "Email atau password salah.");
+          // Jangan pernah tampilkan pesan backend (bisa bocorkan data akun).
+          toastError(LOGIN_FAILED_MESSAGE);
         } else if (error.statusCode === 0) {
-          toastError("Tidak bisa terhubung ke server. Periksa koneksi Anda.");
+          toastError(NETWORK_ERROR_MESSAGE);
         } else {
-          toastError(error.message || "Login gagal. Coba lagi.");
+          toastError(getLoginErrorMessage(error));
         }
       } else {
-        toastError("Tidak bisa terhubung ke server. Periksa koneksi Anda.");
+        toastError(getLoginErrorMessage(error));
       }
     } finally {
       setIsSubmitting(false);
@@ -193,14 +203,14 @@ const LoginPage = () => {
               setTurnstileError(
                 "Verifikasi keamanan gagal dimuat. Muat ulang halaman lalu coba lagi.",
               );
-              toastWarning("Security check gagal. Silakan coba muat ulang halaman.");
+              toastWarning("Verifikasi keamanan gagal dimuat. Muat ulang halaman lalu coba lagi.");
             }}
             onExpire={() => {
               setTurnstileToken("");
               setTurnstileError(
                 "Verifikasi keamanan kedaluwarsa. Selesaikan ulang verifikasi.",
               );
-              toastWarning("Security check expired — silakan selesaikan ulang.");
+              toastWarning("Verifikasi keamanan kedaluwarsa. Silakan selesaikan ulang.");
             }}
           />
         </div>

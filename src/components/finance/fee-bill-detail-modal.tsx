@@ -1,5 +1,8 @@
 "use client";
 
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
+
 import { useEffect, useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { financeApi } from "@/lib/api/finances";
@@ -85,11 +88,12 @@ export const FeeBillDetailModal = ({
         setError("");
         setLoadedForId(financeId);
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
         setDetail(null);
         setError("Gagal memuat detail pembayaran");
         setLoadedForId(financeId);
+        toastError(getErrorMessage(err, "Gagal memuat detail pembayaran."));
       });
     return () => {
       cancelled = true;

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { MembershipStatusBadge } from "@/components/memberships/badges";
 import { membershipApi } from "@/lib/api/membership";
 import { formatDateOnly, formatRupiah } from "@/lib/utils/format";
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { Membership } from "@/lib/types/membership";
 
 interface MembershipDetailProps {
@@ -28,8 +30,10 @@ const MembershipDetail = ({ id }: MembershipDetailProps) => {
       try {
         const res = await membershipApi.getById(id);
         if (!cancelled) setMembership(res.data);
-      } catch {
+      } catch (err) {
+        console.error("Gagal memuat detail membership:", err);
         if (!cancelled) setMembership(null);
+        toastError(getErrorMessage(err, "Gagal memuat data membership."));
       } finally {
         if (!cancelled) setIsLoading(false);
       }

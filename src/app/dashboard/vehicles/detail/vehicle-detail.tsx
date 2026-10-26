@@ -22,6 +22,7 @@ import { rentalApi } from "@/lib/api/rentals";
 import type { VehicleItem } from "@/lib/types/vehicle";
 import type { RentalTransaction } from "@/lib/types/rentals";
 import { toastInfo, toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 const statusMap: Record<string, string> = {
   Available: "ACTIVE",
@@ -57,16 +58,20 @@ const VehicleDetail = () => {
             setVehicle(item);
             return;
           }
-        } catch {
-          // fallback
+        } catch (err) {
+          // Fallback ke endpoint lama bila endpoint detail gagal.
+          console.error("Gagal memuat detail kendaraan:", err);
+          toastError(getErrorMessage(err, "Gagal memuat data kendaraan."));
         }
         try {
           const res = await vehicleApi.getById(vehicleId);
           const item = (res as any)?.data ?? (res as any);
           if (item?.merk) setVehicle(item);
           else setVehicle(null);
-        } catch {
+        } catch (err) {
+          console.error("Gagal memuat data kendaraan:", err);
           setVehicle(null);
+          toastError(getErrorMessage(err, "Gagal memuat data kendaraan."));
         }
       };
 
@@ -76,8 +81,10 @@ const VehicleDetail = () => {
           const rentals = (res as any)?.data ?? [];
           const filtered = rentals.filter((r: RentalTransaction) => r.vehicle_id === vehicleId);
           setVehicleRentals(filtered);
-        } catch {
-          // ignore
+        } catch (err) {
+          console.error("Gagal memuat riwayat sewa kendaraan:", err);
+          setVehicleRentals([]);
+          toastError(getErrorMessage(err, "Gagal memuat riwayat sewa kendaraan."));
         }
       };
 
@@ -187,8 +194,14 @@ const handleExport = () => {
     try {
       await rentalApi.exportData(params);
       toastInfo(`Exporting rental history as ${options.format}`);
-    } catch {
-      toastError("Failed to export rental history. Please try again.");
+    } catch (err) {
+      console.error("Gagal mengekspor riwayat sewa:", err);
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal mengekspor riwayat sewa. Silakan coba lagi.",
+        ),
+      );
     }
     setIsExportModalOpen(false);
   };

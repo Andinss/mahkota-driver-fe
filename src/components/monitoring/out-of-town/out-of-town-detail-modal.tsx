@@ -12,6 +12,7 @@ import {
   toastSuccess,
 } from "@/components/ui/toast-provider";
 import { formatRupiah } from "@/lib/utils/format";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 interface OutOfTownDetailModalProps {
   request: OutOfTownRequest | null;
@@ -90,9 +91,8 @@ export const OutOfTownDetailModal = ({
       onStatusChange?.(request.id, newStatus);
       onClose();
     } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal memproses pengajuan",
-      );
+      console.error("Gagal memproses pengajuan luar kota:", err);
+      toastError(getErrorMessage(err, "Gagal memproses pengajuan."));
     } finally {
       setIsProcessing(false);
     }

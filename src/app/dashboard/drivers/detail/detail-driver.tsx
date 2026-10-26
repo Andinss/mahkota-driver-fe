@@ -22,12 +22,12 @@ import { PermissionGuard } from "@/components/auth-guard-permission";
 import { driverApi } from "@/lib/api/driver";
 import { rentalApi } from "@/lib/api/rentals";
 import { financeApi } from "@/lib/api/finances";
-import { HttpClientError } from "@/lib/api-http";
 import type { DriverItem } from "@/lib/types/driver";
 import type { RentalTransaction } from "@/lib/types/rentals";
 import type { HistorySetoran } from "@/lib/types/history";
 import type { FinanceItem } from "@/lib/types/finances";
 import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 const mapFinanceToHistory = (f: FinanceItem): HistorySetoran => ({
   id: f.id,
@@ -70,7 +70,7 @@ const DetailDriverPage = () => {
           return;
         }
       } catch (err) {
-        const msg = err instanceof HttpClientError ? err.message : "Failed to load driver data.";
+        const msg = getErrorMessage(err, "Gagal memuat data driver. Silakan coba lagi.");
         toastError(msg);
         setDriver(null);
         return;
@@ -83,10 +83,10 @@ const DetailDriverPage = () => {
           setDriver(item);
         } else {
           setDriver(null);
-          toastError("Driver data is empty or invalid.");
+          toastError("Data driver tidak ditemukan atau tidak lengkap.");
         }
       } catch (err) {
-        const msg = err instanceof HttpClientError ? err.message : "Failed to load driver details.";
+        const msg = getErrorMessage(err, "Gagal memuat detail driver. Silakan coba lagi.");
         toastError(msg);
         setDriver(null);
       }
@@ -107,6 +107,8 @@ const DetailDriverPage = () => {
         }
       } catch (err) {
         console.error("Failed to load rental data:", err);
+        setDriverRentals([]);
+        toastError(getErrorMessage(err, "Gagal memuat riwayat sewa driver."));
       }
     };
 
@@ -118,6 +120,7 @@ const DetailDriverPage = () => {
       } catch (err) {
         console.error("Failed to load deposit history:", err instanceof Error ? err.message : err);
         setDepositHistory([]);
+        toastError(getErrorMessage(err, "Gagal memuat riwayat setoran driver."));
       } finally {
         setIsLoadingHistory(false);
       }

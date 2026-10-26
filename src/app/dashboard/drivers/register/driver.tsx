@@ -21,7 +21,7 @@ import { driverApi } from "@/lib/api/driver";
 import { supervisorApi } from "@/lib/api/supervisor";
 import { useAuth } from "@/lib/auth-context";
 import { PermissionGuard } from "@/components/auth-guard-permission";
-import { HttpClientError } from "@/lib/api-http";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { renameFile } from "@/lib/utils/file";
 import { toastError } from "@/components/ui/toast-provider";
 type Step = 1 | 2 | 3 | 4;
@@ -96,11 +96,10 @@ export default function DriverRegisterPage() {
             },
           });
         } else {
-          toastError("Driver data not found.");
+          toastError("Data driver tidak ditemukan.");
         }
       }).catch((err: any) => {
-        const msg = err instanceof HttpClientError ? err.message : "Failed to load driver data.";
-        toastError(msg);
+        toastError(getErrorMessage(err, "Gagal memuat data driver. Silakan coba lagi."));
       });
     } else {
       setMode("add");
@@ -204,7 +203,14 @@ export default function DriverRegisterPage() {
       const successType = mode === "edit" ? "updated" : "registered";
       router.push(`/dashboard/drivers?success=${successType}&driver=${encodeURIComponent(driverName)}`);
     } catch (error: any) {
-      toastError(error?.message || `Failed to ${mode === "edit" ? "update" : "create"} driver. Please try again.`);
+      toastError(
+        getErrorMessage(
+          error,
+          mode === "edit"
+            ? "Gagal memperbarui data driver. Silakan coba lagi."
+            : "Gagal menambahkan driver baru. Silakan coba lagi.",
+        ),
+      );
     }
   };
 

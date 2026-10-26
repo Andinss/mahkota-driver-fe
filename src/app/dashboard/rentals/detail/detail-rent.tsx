@@ -1,5 +1,8 @@
 "use client";
 
+import { toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
+
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PermissionGuard } from "@/components/auth-guard-permission";
@@ -37,7 +40,10 @@ const DetailRentPage = () => {
             if (item?.rental_number) {
               setRental(item);
             }
-          }).catch(() => setRental(null));
+          }).catch((err) => {
+            setRental(null);
+            toastError(getErrorMessage(err, "Gagal memuat detail sewa."));
+          });
         })
         .finally(() => setIsLoading(false));
     } else {

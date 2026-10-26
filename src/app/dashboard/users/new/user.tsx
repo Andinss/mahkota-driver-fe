@@ -9,6 +9,7 @@ import CardUser from "@/components/user/new/card-user";
 import { usersApi } from "@/lib/api/users";
 import { rolesApi } from "@/lib/api/roles";
 import { driverApi } from "@/lib/api/driver";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { useAuth } from "@/lib/auth-context";
 import type { RoleItem } from "@/lib/types/role";
 import type { CreateUserPayload, UserItem } from "@/lib/types/user";
@@ -37,7 +38,10 @@ export default function AddNewUserPage() {
     rolesApi.getList().then((res) => {
       const list = Array.isArray(res.data) ? res.data : [];
       setRoles(list);
-    }).catch(() => {});
+    }).catch((err) => {
+      console.error("Gagal memuat daftar role:", err);
+      toastError(getErrorMessage(err, "Gagal memuat daftar role."));
+    });
   }, []);
 
   useEffect(() => {
@@ -65,7 +69,10 @@ export default function AddNewUserPage() {
           phone: d.phone || "",
         }));
       setAvailableDrivers(driversWithoutUser);
-    }).catch(() => {});
+    }).catch((err) => {
+      console.error("Gagal memuat data driver dan pengguna:", err);
+      toastError(getErrorMessage(err, "Gagal memuat data driver dan pengguna."));
+    });
   }, [userIdParam]);
 
   useEffect(() => {
@@ -92,7 +99,9 @@ export default function AddNewUserPage() {
           }
           setIsLoadingUser(false);
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error("Gagal memuat data pengguna:", err);
+          toastError(getErrorMessage(err, "Gagal memuat data pengguna."));
           setMode("add");
           setIsLoadingUser(false);
         });
@@ -140,8 +149,9 @@ export default function AddNewUserPage() {
         const action = mode === "edit" ? "updated" : "registered";
         const userName = data?.username || "New User";
         router.push(`/dashboard/users?success=${action}&user=${encodeURIComponent(userName)}`);
-      } catch {
-        toastError("Failed to save user. Please try again.");
+      } catch (err) {
+        console.error("Gagal menyimpan pengguna:", err);
+        toastError(getErrorMessage(err, "Gagal menyimpan pengguna. Silakan coba lagi."));
       } finally {
         setIsSubmitting(false);
       }

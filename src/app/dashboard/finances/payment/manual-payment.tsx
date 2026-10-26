@@ -10,6 +10,7 @@ import { koinApi } from "@/lib/api/koin";
 import { HttpClientError } from "@/lib/api-http";
 import type { FinanceItem } from "@/lib/types/finances";
 import { confirmToast, toastError, toastWarning } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 interface ManualPaymentPageProps {
   id: string | null;
@@ -79,7 +80,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
         } catch (err) {
           console.error("Failed to fetch finance:", err);
           setMode("add");
-          toastError("Failed to load finance data for editing.");
+          toastError("Gagal memuat data pembayaran yang akan diedit.");
         } finally {
           setIsLoading(false);
         }
@@ -179,7 +180,7 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
 
     if (!selectedPayer?.id) {
       setIsSubmitting(false);
-      toastWarning("Please select a valid payer/driver before submitting.");
+      toastWarning("Silakan pilih pembayar/driver yang valid terlebih dahulu.");
       return;
     }
 
@@ -230,14 +231,16 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
       router.push(`/dashboard/finances?success=${action}&ref=${encodeURIComponent(ref)}`);
     } catch (err) {
       setIsSubmitting(false);
+      const fallback =
+        "Gagal menyimpan pembayaran. Periksa isian Anda lalu coba lagi.";
+      const message = getErrorMessage(err, fallback);
       if (err instanceof HttpClientError) {
         if (err.errors && Object.keys(err.errors).length > 0) {
           setServerErrors(err.errors);
         }
-        setGeneralError(err.message || "Failed to save payment. Please check your input and try again.");
-      } else {
-        setGeneralError("Failed to save payment. Please check your input and try again.");
       }
+      setGeneralError(message);
+      toastError(message);
     }
   };
 
@@ -300,7 +303,10 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
       financeApi
         .getList({ rental_id: selectedRentalId, limit: 1 })
         .then((res) => setRentalFinanceCount(res.meta?.total ?? 0))
-        .catch(() => setRentalFinanceCount(null));
+        .catch((err) => {
+          setRentalFinanceCount(null);
+          toastError(getErrorMessage(err, "Gagal memuat jumlah pembayaran rental."));
+        });
     } else {
       setRentalFinanceCount(null);
     }
@@ -313,8 +319,9 @@ const ManualPaymentPage = ({ id }: ManualPaymentPageProps) => {
         .then((res: any) => {
           setDriverKoinBalance(res?.data?.balance ?? 0);
         })
-        .catch(() => {
+        .catch((err) => {
           setDriverKoinBalance(0);
+          toastError(getErrorMessage(err, "Gagal memuat saldo koin driver."));
         });
     } else {
       setDriverKoinBalance(0);

@@ -6,8 +6,8 @@ import { financeApi } from "@/lib/api/finances";
 import { koinApi } from "@/lib/api/koin";
 import { rekeningApi } from "@/lib/api/rekening";
 import { useAuth } from "@/lib/auth-context";
-import { HttpClientError } from "@/lib/api-http";
 import { toastSuccess, toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { ProofUpload } from "@/components/driver/payment/proof-upload";
 import { resolveImageUrl } from "@/lib/utils/image";
 import { getTodayLocal } from "@/lib/utils/format";
@@ -109,9 +109,10 @@ export default function DriverPaymentFormPage() {
           return list.length > 0 ? `mp:${list[0].id}` : "cash";
         });
       })
-      .catch(() => {
+      .catch((err) => {
         if (!active) return;
         setSelectedMethod((prev) => (prev === "mp-pending" ? "cash" : prev));
+        toastError(getErrorMessage(err, "Gagal memuat daftar metode pembayaran."));
       });
     return () => {
       active = false;
@@ -132,7 +133,10 @@ export default function DriverPaymentFormPage() {
       koinApi
         .getBalance(user.driver_id)
         .then((res) => setKoinBalance(res?.data?.balance ?? 0))
-        .catch(() => setKoinBalance(0));
+        .catch((err) => {
+          setKoinBalance(0);
+          toastError(getErrorMessage(err, "Gagal memuat saldo koin Anda."));
+        });
     }
   }, [paymentMethod, user?.driver_id, koinBalance]);
 
@@ -285,11 +289,9 @@ export default function DriverPaymentFormPage() {
       }
       router.push("/dashboard/driver/payment");
     } catch (err) {
-      if (err instanceof HttpClientError) {
-        setServerError(err.message || "Gagal menyimpan pembayaran");
-      } else {
-        setServerError("Gagal menyimpan pembayaran. Silakan coba lagi.");
-      }
+      const message = getErrorMessage(err, "Gagal menyimpan pembayaran. Silakan coba lagi.");
+      setServerError(message);
+      toastError(message);
     } finally {
       setIsSubmitting(false);
     }

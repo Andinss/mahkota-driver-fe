@@ -10,6 +10,7 @@ import {
   toastInfo,
   toastSuccess,
 } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { RekeningCard } from "@/components/rekenings/rekening-card";
 import { RekeningTable } from "@/components/rekenings/rekening-table";
 import {
@@ -42,12 +43,14 @@ const RekeningList = () => {
       const list = Array.isArray(res.data) ? res.data : [];
       setRekenings([...list].sort((a, b) => a.code.localeCompare(b.code)));
     } catch (err: unknown) {
+      console.error("Gagal memuat metode pembayaran:", err);
       setRekenings([]);
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : "Failed to load metode pembayaran. Please try again.";
-      toastError(message);
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal memuat metode pembayaran. Silakan coba lagi.",
+        ),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -138,11 +141,10 @@ const RekeningList = () => {
       toastSuccess(`Rekening ${rekening.name} has been deleted successfully`);
       fetchRekenings();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : "Failed to delete rekening. Please try again.";
-      toastError(message);
+      console.error("Gagal menghapus rekening:", err);
+      toastError(
+        getErrorMessage(err, "Gagal menghapus rekening. Silakan coba lagi."),
+      );
     }
   };
 
@@ -175,11 +177,13 @@ const RekeningList = () => {
       );
       fetchRekenings();
     } catch (err: unknown) {
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : "Failed to update rekening status. Please try again.";
-      toastError(message);
+      console.error("Gagal mengubah status rekening:", err);
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal mengubah status rekening. Silakan coba lagi.",
+        ),
+      );
     }
   };
 

@@ -8,6 +8,7 @@ import { AuditStatsCards } from "@/components/audit/dashboard/stats-cards";
 import { Pagination } from "@/components/ui/pagination";
 import { PageHeader } from "@/components/page-header";
 import { auditApi } from "@/lib/api/audit";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { AuditLogItem, AuditStats } from "@/lib/types/audit";
 import type { ExportOptions } from "@/components/ui/export";
 import { PermissionGuard } from "@/components/auth-guard-permission";
@@ -31,8 +32,9 @@ export default function AuditLogPage() {
         setTotalResults(response.meta.total);
         setTotalPages(response.meta.totalPages);
       }
-    } catch {
-      toastError("Failed to load audit logs");
+    } catch (err) {
+      console.error("Gagal memuat log audit:", err);
+      toastError(getErrorMessage(err, "Gagal memuat log audit."));
     } finally {
       setIsLoading(false);
     }
@@ -42,8 +44,9 @@ export default function AuditLogPage() {
     try {
       const response = await auditApi.getStats();
       setStats(response.data);
-    } catch {
-      // silent
+    } catch (err) {
+      console.error("Gagal memuat statistik audit:", err);
+      toastError(getErrorMessage(err, "Gagal memuat statistik audit."));
     }
   }, []);
 
@@ -78,7 +81,12 @@ export default function AuditLogPage() {
       if (options.dateRange?.start) params.start_date = options.dateRange.start;
       if (options.dateRange?.end) params.end_date = options.dateRange.end;
     }
-    await auditApi.exportData(params);
+    try {
+      await auditApi.exportData(params);
+    } catch (err) {
+      console.error("Gagal mengekspor log audit:", err);
+      toastError(getErrorMessage(err, "Gagal mengekspor log audit. Silakan coba lagi."));
+    }
   };
 
   return (

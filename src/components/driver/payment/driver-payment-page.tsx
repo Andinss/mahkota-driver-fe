@@ -16,6 +16,7 @@ import type { FinanceItem, DailyPaymentItem } from "@/lib/types/finances";
 import { financeKeys } from "@/lib/query-keys";
 import { formatDateOnly, formatDateTime } from "@/lib/utils/format";
 import { resolveImageUrl } from "@/lib/utils/image";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 const formatIDR = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -294,9 +295,8 @@ export function DriverPaymentPage() {
       setIzinProof({ value: null, file: null });
       refreshDaily();
     } catch (err) {
-      toastError(
-        err instanceof Error ? err.message : "Gagal mengirim pengajuan izin",
-      );
+      console.error("Gagal mengirim pengajuan izin telat:", err);
+      toastError(getErrorMessage(err, "Gagal mengirim pengajuan izin telat."));
     } finally {
       setIsSubmittingIzin(false);
     }

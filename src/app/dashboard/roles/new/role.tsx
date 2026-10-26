@@ -8,6 +8,7 @@ import GeneralInformation from "@/components/role/new/general";
 import RoleHierarchy from "@/components/role/new/hierarchy";
 import { PermissionList } from "@/components/role/new/permission-list";
 import { confirmToast, toastError } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { rolesApi } from "@/lib/api/roles";
 import { permissionsApi } from "@/lib/api/permissions";
 import type { PermissionItem } from "@/lib/types/permission";
@@ -40,7 +41,10 @@ const RoleFormPage = () => {
     permissionsApi.getList().then((res) => {
       const list = Array.isArray(res.data) ? res.data : [];
       setAllPermissions(list);
-    }).catch(() => {});
+    }).catch((err) => {
+      console.error("Gagal memuat daftar permission:", err);
+      toastError(getErrorMessage(err, "Gagal memuat daftar permission."));
+    });
   }, []);
 
   useEffect(() => {
@@ -93,10 +97,15 @@ const RoleFormPage = () => {
           const ids = perms.map((p: any) => p.id);
           setSelectedPermissionIds(ids);
           setInitialPermissionIds(ids);
-        }).catch(() => {});
+        }).catch((err) => {
+          console.error("Gagal memuat permission role:", err);
+          toastError(getErrorMessage(err, "Gagal memuat permission role."));
+        });
 
         setLastSaved("Draft saved");
-      }).catch(() => {
+      }).catch((err) => {
+        console.error("Gagal memuat data role:", err);
+        toastError(getErrorMessage(err, "Gagal memuat data role."));
         setMode("add");
         setFormValues({
           roleName: "",
@@ -169,9 +178,10 @@ const RoleFormPage = () => {
       const roleNameForRedirect = formValues.roleName || "New Role";
 
       router.push(`/dashboard/roles?success=${action}&role=${encodeURIComponent(roleNameForRedirect)}`);
-    } catch (err: any) {
+    } catch (err) {
       setIsSubmitting(false);
-      toastError(err?.message || "Failed to save role. Please try again.");
+      console.error("Gagal menyimpan role:", err);
+      toastError(getErrorMessage(err, "Gagal menyimpan role. Silakan coba lagi."));
     }
   };
 

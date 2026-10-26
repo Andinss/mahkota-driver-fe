@@ -9,6 +9,7 @@ import {
   toastSuccess,
 } from "@/components/ui/toast-provider";
 import { resolveImageUrl } from "@/lib/utils/image";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { DailyPaymentItem } from "@/lib/types/finances";
 
 interface DailyPaymentTableProps {
@@ -111,11 +112,8 @@ export const DailyPaymentTable = ({
       toastSuccess("Pembayaran diverifikasi");
       onChanged?.();
     } catch (err) {
-      toastError(
-        err instanceof Error
-          ? err.message
-          : "Gagal mengubah status pembayaran",
-      );
+      console.error("Gagal mengubah status pembayaran:", err);
+      toastError(getErrorMessage(err, "Gagal mengubah status pembayaran."));
     } finally {
       setIsSubmitting(false);
     }
@@ -136,11 +134,8 @@ export const DailyPaymentTable = ({
       );
       onChanged?.();
     } catch (err) {
-      toastError(
-        err instanceof Error
-          ? err.message
-          : "Gagal mengubah status pembayaran",
-      );
+      console.error("Gagal mengubah status pembayaran:", err);
+      toastError(getErrorMessage(err, "Gagal mengubah status pembayaran."));
     } finally {
       setIsSubmitting(false);
     }

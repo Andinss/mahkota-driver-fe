@@ -7,6 +7,7 @@ import {
   toastSuccess,
   toastError,
 } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import { PageHeader } from "@/components/page-header";
 import { SearchInput } from "@/components/ui/search-input";
 import { Select } from "@/components/ui/select";
@@ -77,6 +78,7 @@ export default function VendorVehiclePage() {
       }
     } catch (err) {
       console.error("Failed to fetch vendors:", err);
+      toastError(getErrorMessage(err, "Gagal memuat data vendor."));
       setVendors([]);
       setTotalResults(0);
       setTotalPages(1);
@@ -90,7 +92,7 @@ export default function VendorVehiclePage() {
       const res = await vendorApi.getSummary();
       setSummary(res.data);
     } catch {
-      // non-critical
+      toastError("Gagal memuat ringkasan vendor.");
     }
   }, []);
 
@@ -151,7 +153,7 @@ export default function VendorVehiclePage() {
         fetchSummary();
       } catch (err) {
         console.error("Failed to delete vendor:", err);
-        toastError("Failed to delete vendor. Please try again.");
+        toastError(getErrorMessage(err, "Gagal menghapus vendor. Silakan coba lagi."));
       }
     }
   };
@@ -184,7 +186,7 @@ export default function VendorVehiclePage() {
       fetchSummary();
     } catch (err: any) {
       console.error("Failed to update vendor status:", err);
-      toastError(err?.message || "Failed to update vendor status.");
+      toastError(getErrorMessage(err, "Gagal mengubah status vendor."));
     }
   };
 
@@ -210,7 +212,7 @@ export default function VendorVehiclePage() {
       await vendorApi.exportData(params);
     } catch (err) {
       console.error("Failed to export vendors:", err);
-      toastError("Failed to export vendor data. Please try again.");
+      toastError(getErrorMessage(err, "Gagal mengekspor data vendor. Silakan coba lagi."));
     }
   };
 

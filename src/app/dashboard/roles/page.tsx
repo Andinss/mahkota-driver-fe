@@ -14,6 +14,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { ExportOptions } from "@/components/ui/export";
 import { rolesApi } from "@/lib/api/roles";
+import { getErrorMessage } from "@/lib/utils/error-message";
 import type { RoleItem } from "@/lib/types/role";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
@@ -34,8 +35,9 @@ const RolePage = () => {
     try {
       await rolesApi.exportData(params);
       toastInfo(`Exporting role data as ${options.format}`);
-    } catch {
-      toastError("Failed to export role data. Please try again.");
+    } catch (err) {
+      console.error("Gagal mengekspor data role:", err);
+      toastError(getErrorMessage(err, "Gagal mengekspor data role. Silakan coba lagi."));
     }
   };
 
@@ -58,7 +60,9 @@ const RolePage = () => {
     try {
       const res = await rolesApi.getList({ is_active: "all" });
       setRoles(Array.isArray(res.data) ? res.data : []);
-    } catch {
+    } catch (err) {
+      console.error("Gagal memuat data role:", err);
+      toastError(getErrorMessage(err, "Gagal memuat data role."));
       setRoles([]);
     } finally {
       setIsLoading(false);
@@ -111,8 +115,9 @@ const RolePage = () => {
         await rolesApi.delete(role.id);
         toastSuccess(`Role ${role.name} has been deleted successfully`);
         fetchRoles();
-      } catch {
-        toastError("Failed to delete role. Please try again.");
+      } catch (err) {
+        console.error("Gagal menghapus role:", err);
+        toastError(getErrorMessage(err, "Gagal menghapus role. Silakan coba lagi."));
       }
     }
   };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
 import { PaymentCard } from "@/components/finance/payment-list/card";
 import { useAuth } from "@/lib/auth-context";
@@ -215,26 +216,32 @@ export function DriverDashboardPage() {
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <PaymentCard
-              title="Koin Utama"
-              value={
-                koinBalance === null
-                  ? "…"
-                  : `${koinBalance.toLocaleString("id-ID")} Koin`
-              }
-              icon="toll"
-              iconColor="text-primary"
-              trend={{
-                value:
+            <Link
+              href="/dashboard/driver/koin"
+              title="Lihat riwayat koin saya"
+              className="block rounded-xl outline-none transition-all hover:ring-2 hover:ring-primary/40 focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              <PaymentCard
+                title="Koin Utama"
+                value={
                   koinBalance === null
-                    ? isRefreshing
-                      ? "Menyinkronkan ulang…"
-                      : "Memuat saldo…"
-                    : `Setara ${formatIDR(koinBalance)}`,
-                color: "text-primary",
-                icon: "account_balance_wallet",
-              }}
-            />
+                    ? "…"
+                    : `${koinBalance.toLocaleString("id-ID")} Koin`
+                }
+                icon="toll"
+                iconColor="text-primary"
+                trend={{
+                  value:
+                    koinBalance === null
+                      ? isRefreshing
+                        ? "Menyinkronkan ulang…"
+                        : "Memuat saldo…"
+                      : `Setara ${formatIDR(koinBalance)} · Lihat riwayat koin →`,
+                  color: "text-primary",
+                  icon: "account_balance_wallet",
+                }}
+              />
+            </Link>
             <PaymentCard
               title="Status Keanggotaan"
               value="Aktif"
