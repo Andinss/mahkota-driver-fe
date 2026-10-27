@@ -64,7 +64,9 @@ export const financeApi = {
     ),
 
   /** Daftar tagihan tambahan buatan admin (tab "Additional Charges"). */
-  getAdditionalCharges: (params?: Record<string, string | number | undefined>) =>
+  getAdditionalCharges: (
+    params?: Record<string, string | number | undefined>,
+  ) =>
     api.get<SuccessResponsePaginated<FinanceItem>>(
       "/finances/additional-charges",
       params,
@@ -222,6 +224,17 @@ export const financeApi = {
   ) => {
     const { blob, filename } = await api.download(
       "/daily-payments/my-daily-payments/export",
+      params,
+    );
+    triggerDownload(blob, filename);
+  },
+
+  /** Export daily payments untuk admin (semua driver + kolom Nama Driver). */
+  exportAdminDailyPayments: async (
+    params: Record<string, string | number | undefined>,
+  ) => {
+    const { blob, filename } = await api.download(
+      "/daily-payments/export",
       params,
     );
     triggerDownload(blob, filename);
