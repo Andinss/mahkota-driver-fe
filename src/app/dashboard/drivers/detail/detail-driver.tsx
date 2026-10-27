@@ -56,7 +56,6 @@ const DetailDriverPage = () => {
   const searchParams = useSearchParams();
   const driverId = searchParams.get("id");
   const { user } = useAuth();
-  // Supervisor hanya punya driver.read.own → pakai endpoint /supervisor/drivers.
   const isSupervisor =
     canAccess(user?.permissions, "driver.read.own") &&
     !canAccess(user?.permissions, "driver.read.all");
@@ -267,7 +266,6 @@ const DetailDriverPage = () => {
     [driverRentals],
   );
 
-  // Persentase keterlambatan sebagai "rate" (izin telat approved / total izin).
   const lateRateText = (() => {
     if (!stats || stats.late_payment_count === 0) return "0";
     return `${stats.late_payment_approved}`;
@@ -296,15 +294,15 @@ const DetailDriverPage = () => {
         fallbackPermission="driver.read.own"
       >
         <div className="p-7">
-          <DriverHeader driver={driverHeader} />
+          <DriverHeader driver={driverHeader}>
+            <SupervisorCard
+              driver={driver}
+              canAssign={canAssignSupervisor}
+              onChanged={(updated) => setDriver(updated)}
+            />
+          </DriverHeader>
 
-          <SupervisorCard
-            driver={driver}
-            canAssign={canAssignSupervisor}
-            onChanged={(updated) => setDriver(updated)}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 mt-6">
             {/* Total Perjalanan */}
             <DriverStatsCard
               title="Total Perjalanan"

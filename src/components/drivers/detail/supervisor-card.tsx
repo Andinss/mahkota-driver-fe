@@ -97,99 +97,84 @@ export function SupervisorCard({
   };
 
   return (
-    <>
-      <div className="bg-white dark:bg-slate-900 p-6 mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
-              <span className="material-symbols-outlined text-indigo-500">
-                supervisor_account
-              </span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-500 uppercase tracking-wider mb-1">
-                Supervisor
-              </p>
-              {supervisorName ? (
-                <>
-                  <p className="text-lg font-bold text-slate-900 dark:text-white">
-                    {supervisorName}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    {driver.supervisor?.email}
-                  </p>
-                </>
-              ) : (
-                <p className="text-lg font-bold text-amber-600 dark:text-amber-400">
-                  Belum ditunjuk
-                </p>
-              )}
-            </div>
-          </div>
+    <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
+      <div className="flex items-center gap-2 shrink-0">
+        <span className="material-symbols-outlined text-indigo-500 text-lg">
+          supervisor_account
+        </span>
+        <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">
+          Supervisor:
+        </span>
+        {supervisorName ? (
+          <span className="text-sm font-bold text-slate-900 dark:text-white">
+            {supervisorName}
+          </span>
+        ) : (
+          <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
+            Belum ditunjuk
+          </span>
+        )}
+      </div>
 
-          {canAssign && (
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end lg:w-auto">
-              <div className="w-full sm:w-72">
-                <Select
-                  label="Tunjuk / ganti supervisor"
-                  value={selectedId}
-                  disabled={isLoadingOptions || isSaving}
-                  onChange={(e) => setSelectedId(e.target.value)}
-                >
-                  <option value="">
-                    {isLoadingOptions
-                      ? "Memuat supervisor..."
-                      : "Belum ditunjuk"}
-                  </option>
-                  {options.map((option) => {
-                    const isFull = option.remaining <= 0;
-                    const isCurrent = option.id === driver.supervisor_id;
-                    return (
-                      <option
-                        key={option.id}
-                        value={option.id}
-                        disabled={isFull && !isCurrent}
-                      >
-                        {option.fullname || option.username} (
-                        {option.driver_count}/{option.max_drivers}
-                        {isFull && !isCurrent ? " - penuh" : ""})
-                      </option>
-                    );
-                  })}
-                </Select>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() =>
-                    void assign(
-                      selectedId || null,
-                      selectedId
-                        ? "Supervisor berhasil ditunjuk."
-                        : "Penunjukan supervisor dilepas.",
-                    )
-                  }
-                  disabled={
-                    isSaving ||
-                    (!hasChanges && Boolean(driver.supervisor_id)) ||
-                    (!driver.supervisor_id && !selectedId)
-                  }
-                >
-                  {isSaving ? "Menyimpan..." : "Simpan"}
-                </Button>
-                {driver.supervisor_id && (
-                  <Button
-                    variant="danger"
-                    onClick={() => void unassign()}
-                    disabled={isSaving}
+      {canAssign && (
+        <div className="flex items-center gap-2 w-full md:max-w-md md:ml-auto">
+          <div className="flex-1">
+            <Select
+              value={selectedId}
+              disabled={isLoadingOptions || isSaving}
+              onChange={(e) => setSelectedId(e.target.value)}
+              className="h-9 text-sm" // Sedikit lebih kecil agar pas di header
+            >
+              <option value="">
+                {isLoadingOptions ? "Memuat..." : "Pilih Supervisor"}
+              </option>
+              {options.map((option) => {
+                const isFull = option.remaining <= 0;
+                const isCurrent = option.id === driver.supervisor_id;
+                return (
+                  <option
+                    key={option.id}
+                    value={option.id}
+                    disabled={isFull && !isCurrent}
                   >
-                    Lepas
-                  </Button>
-                )}
-              </div>
-            </div>
+                    {option.fullname || option.username} ({option.driver_count}/
+                    {option.max_drivers}
+                    {isFull && !isCurrent ? " - penuh" : ""})
+                  </option>
+                );
+              })}
+            </Select>
+          </div>
+          <Button
+            onClick={() =>
+              void assign(
+                selectedId || null,
+                selectedId
+                  ? "Supervisor berhasil ditunjuk."
+                  : "Penunjukan supervisor dilepas.",
+              )
+            }
+            disabled={
+              isSaving ||
+              (!hasChanges && Boolean(driver.supervisor_id)) ||
+              (!driver.supervisor_id && !selectedId)
+            }
+            className="h-9 px-3 text-sm shrink-0"
+          >
+            {isSaving ? "..." : "Simpan"}
+          </Button>
+          {driver.supervisor_id && (
+            <Button
+              variant="danger"
+              onClick={() => void unassign()}
+              disabled={isSaving}
+              className="h-9 px-3 text-sm shrink-0"
+            >
+              Lepas
+            </Button>
           )}
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 }

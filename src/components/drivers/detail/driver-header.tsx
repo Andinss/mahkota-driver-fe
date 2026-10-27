@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import type { ReactNode } from "react";
 
 export interface DriverHeaderData {
   name: string;
@@ -11,13 +12,17 @@ export interface DriverHeaderData {
 
 interface DriverHeaderProps {
   driver: DriverHeaderData;
+  children?: ReactNode;
 }
 
-export function DriverHeader({ driver }: DriverHeaderProps) {
+export function DriverHeader({ driver, children }: DriverHeaderProps) {
   const statusColors = {
-    Active: "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    "On Leave": "bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    Inactive: "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400",
+    Active:
+      "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    "On Leave":
+      "bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    Inactive:
+      "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400",
   };
 
   const statusDotColors = {
@@ -27,7 +32,7 @@ export function DriverHeader({ driver }: DriverHeaderProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
       <div className="p-8 flex flex-col md:flex-row items-center gap-8">
         <div className="relative">
           {driver.imageUrl ? (
@@ -38,7 +43,9 @@ export function DriverHeader({ driver }: DriverHeaderProps) {
             />
           ) : (
             <div className="w-32 h-32 rounded-2xl ring-4 ring-slate-50 dark:ring-slate-800 bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-              <span className="material-symbols-outlined text-4xl text-slate-400">person</span>
+              <span className="material-symbols-outlined text-4xl text-slate-400">
+                person
+              </span>
             </div>
           )}
           <span className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-1 rounded-lg border-4 border-white dark:border-slate-900">
@@ -89,6 +96,12 @@ export function DriverHeader({ driver }: DriverHeaderProps) {
           <Button variant="primary">Assign New Vehicle</Button>
         </div>
       </div>
+
+      {children && (
+        <div className="px-8 py-3 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
