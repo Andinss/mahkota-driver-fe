@@ -1,6 +1,4 @@
 import { useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
   ExportColumn,
   ExportOptions,
@@ -70,9 +68,6 @@ export const MonitoringTable = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/dashboard/monitorings/out-of-town">
-            <Button icon="commute">Pengajuan</Button>
-          </Link>
           <button
             onClick={() => setIsExportModalOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
@@ -93,7 +88,6 @@ export const MonitoringTable = ({
               <th className="px-4 py-4 whitespace-nowrap">Lokasi</th>
               <th className="px-4 py-4 whitespace-nowrap">Waktu (UTC)</th>
               <th className="px-4 py-4 whitespace-nowrap">Status</th>
-              {/* <th className="px-4 py-4 whitespace-nowrap">Kecepatan</th> */}
               <th className="px-4 py-4 whitespace-nowrap">Odometer</th>
               <th className="px-4 py-4 whitespace-nowrap">Alarm</th>
               <th className="px-4 py-4 whitespace-nowrap">Mesin</th>

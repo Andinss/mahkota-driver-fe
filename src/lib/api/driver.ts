@@ -3,6 +3,7 @@ import type { SuccessResponse, SuccessResponsePaginated } from "../types/api";
 import type {
   DriverItem,
   DriverListParams,
+  DriverStats,
   DriverSummary,
   SupervisorOption,
 } from "../types/driver";
@@ -19,8 +20,7 @@ function triggerDownload(blob: Blob, filename: string) {
 }
 
 export const driverApi = {
-  getMe: () =>
-    api.get<SuccessResponse<DriverItem>>("/drivers/me"),
+  getMe: () => api.get<SuccessResponse<DriverItem>>("/drivers/me"),
 
   getList: (params?: DriverListParams) =>
     api.get<SuccessResponsePaginated<DriverItem>>(
@@ -28,8 +28,7 @@ export const driverApi = {
       params as Record<string, string | number | undefined>,
     ),
 
-  getSummary: () =>
-    api.get<SuccessResponse<DriverSummary>>("/drivers/summary"),
+  getSummary: () => api.get<SuccessResponse<DriverSummary>>("/drivers/summary"),
 
   getById: (id: string) =>
     api.get<SuccessResponse<DriverItem>>(`/drivers/${id}`),
@@ -37,14 +36,22 @@ export const driverApi = {
   getDetail: (id: string) =>
     api.get<SuccessResponse<DriverItem>>(`/drivers/detail/${id}`),
 
+  getStats: (id: string) =>
+    api.get<SuccessResponse<DriverStats>>(`/drivers/${id}/stats`),
+
   create: (formData: FormData) =>
     api.upload<SuccessResponse<DriverItem>>("/drivers/create", formData),
 
   update: (id: string, payload: FormData) =>
-    api.uploadPut<SuccessResponse<DriverItem>>(`/drivers/update/${id}`, payload),
+    api.uploadPut<SuccessResponse<DriverItem>>(
+      `/drivers/update/${id}`,
+      payload,
+    ),
 
   updateStatus: (employeeId: string, is_active: boolean) =>
-    api.put<SuccessResponse<DriverItem>>(`/drivers/status/${employeeId}`,{ is_active },),
+    api.put<SuccessResponse<DriverItem>>(`/drivers/status/${employeeId}`, {
+      is_active,
+    }),
 
   /** Kandidat supervisor (Administrator & Owner). */
   getSupervisorOptions: () =>
