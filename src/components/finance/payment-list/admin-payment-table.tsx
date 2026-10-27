@@ -17,6 +17,7 @@ interface AdminPaymentTableProps {
   onSelect?: (item: FinanceItem) => void;
   /** Dipanggil setelah verifikasi / penolakan supaya daftar di-refresh. */
   onChanged?: () => void;
+  onExportClick?: () => void;
 }
 
 const formatCurrency = (value: number) => {
@@ -31,9 +32,11 @@ const formatCurrency = (value: number) => {
 const statusColor: Record<string, string> = {
   paid: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
   unpaid: "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400",
-  pending: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
+  pending:
+    "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
   rejected: "bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400",
-  cancelled: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+  cancelled:
+    "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
 };
 
 const statusLabel: Record<string, string> = {
@@ -55,6 +58,7 @@ export const AdminPaymentTable = ({
   payments,
   onSelect,
   onChanged,
+  onExportClick,
 }: AdminPaymentTableProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Dialog penolakan — berisi alasan opsional yang dikirim ke driver.
@@ -65,9 +69,7 @@ export const AdminPaymentTable = ({
   const [rejectReason, setRejectReason] = useState("");
 
   /** Ambil pembayaran pending terakhir (paling baru) dari sebuah tagihan. */
-  const getPendingPayment = (
-    item: FinanceItem,
-  ): FinancePaymentItem | null => {
+  const getPendingPayment = (item: FinanceItem): FinancePaymentItem | null => {
     const pending = (item.payments || []).filter((p) => p.status === "pending");
     if (pending.length === 0) return null;
     return pending[pending.length - 1];
@@ -144,6 +146,14 @@ export const AdminPaymentTable = ({
             </p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={() => onExportClick?.()}
+          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
+        >
+          <span className="material-symbols-outlined text-base">download</span>
+          Export
+        </button>
       </div>
 
       {/* Table */}
@@ -184,8 +194,7 @@ export const AdminPaymentTable = ({
                     ? [...(item.payments || [])]
                         .reverse()
                         .find(
-                          (p) =>
-                            p.status === "cancelled" && p.rejection_reason,
+                          (p) => p.status === "cancelled" && p.rejection_reason,
                         )?.rejection_reason
                     : undefined;
                 return (

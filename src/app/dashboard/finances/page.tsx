@@ -60,6 +60,19 @@ const dailyExportColumns: ExportColumn[] = [
   { id: "paidAt", label: "Tanggal Bayar", defaultChecked: true },
 ];
 
+const adminFeeExportColumns: ExportColumn[] = [
+  { id: "reference_number", label: "No. Referensi", defaultChecked: true },
+  { id: "payer", label: "Payer / Driver", defaultChecked: true },
+  { id: "vehicle", label: "Kendaraan", defaultChecked: true },
+  { id: "licensePlate", label: "Plat Nomor", defaultChecked: true },
+  { id: "fee_admin_join", label: "Fee Membership", defaultChecked: true },
+  { id: "paid_amount", label: "Sudah Dibayar", defaultChecked: true },
+  { id: "remaining_amount", label: "Sisa Tagihan", defaultChecked: true },
+  { id: "status", label: "Status", defaultChecked: true },
+  { id: "payment_method", label: "Metode Pembayaran", defaultChecked: true },
+  { id: "created_at", label: "Tanggal Dibuat", defaultChecked: false },
+];
+
 export default function PaymentList() {
   const router = useRouter();
   const { user } = useAuth();
@@ -128,6 +141,7 @@ export default function PaymentList() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDailyExportOpen, setIsDailyExportOpen] = useState(false);
+  const [isAdminFeeExportOpen, setIsAdminFeeExportOpen] = useState(false);
   const toastShownRef = useRef(false);
 
   useEffect(() => {
@@ -369,6 +383,34 @@ export default function PaymentList() {
         getErrorMessage(
           err,
           "Gagal mengekspor tagihan harian. Silakan coba lagi.",
+        ),
+      );
+    }
+  };
+
+  /**
+   * Handler export admin payment (fee membership).
+   * Full data — memakai endpoint generic `/finances/export` dengan
+   * `exclude_fee_kind=additional_charge` (agar tagihan tambahan tidak ikut,
+   * konsisten dengan list di tab Admin Payment).
+   */
+  const handleExportAdminFee = async (options?: ExportOptions) => {
+    if (!options) return;
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+      exclude_fee_kind: "additional_charge",
+    };
+    if (options.dateRange?.start) params.start_date = options.dateRange.start;
+    if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    try {
+      await financeApi.exportData(params);
+    } catch (err) {
+      console.error("Gagal mengekspor fee membership:", err);
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal mengekspor fee membership. Silakan coba lagi.",
         ),
       );
     }
@@ -876,6 +918,7 @@ export default function PaymentList() {
                       fetchAdminFees();
                       fetchSummary();
                     }}
+                    onExportClick={() => setIsAdminFeeExportOpen(true)}
                   />
                   <div className="border-t border-[#dbe0e6] dark:border-gray-700">
                     <Pagination
@@ -1059,6 +1102,17 @@ export default function PaymentList() {
             title="Export Tagihan Harian"
             description="Generate laporan seluruh tagihan harian (semua driver)."
             columns={dailyExportColumns}
+          />
+
+          {/* Export admin payment — fee membership */}
+          <ModalExport
+            isOpen={isAdminFeeExportOpen}
+            onClose={() => setIsAdminFeeExportOpen(false)}
+            onExport={handleExportAdminFee}
+            totalRows={adminFeeMeta.total || adminFees.length}
+            title="Export Fee Membership"
+            description="Generate laporan seluruh fee membership driver."
+            columns={adminFeeExportColumns}
           />
         </div>
       </div>
