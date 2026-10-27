@@ -12,10 +12,10 @@ export default function DashboardPage() {
   const { user, isLoading } = useAuth();
 
   // Driver punya dashboard sendiri (portal driver).
-  const isDriverPortal = canAccess(
-    user?.permissions,
-    "driver_portal.dashboard",
-  );
+  // Penting: wajib punya driver_id (terhubung ke tabel drivers) supaya
+  // admin/owner/field officer/finans tidak ikut masuk ke portal driver.
+  const isDriverPortal =
+    !!user?.driver_id && canAccess(user.permissions, "driver_portal.dashboard");
   // Supervisor hanya punya driver.read.own (tanpa read.all former admin/owner).
   const isSupervisor =
     canAccess(user?.permissions, "driver.read.own") &&
