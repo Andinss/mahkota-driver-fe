@@ -16,6 +16,7 @@ interface DailyPaymentTableProps {
   payments: DailyPaymentItem[];
   /** Dipanggil setelah verifikasi / penolakan supaya daftar di-refresh. */
   onChanged?: () => void;
+  onExportClick?: () => void;
 }
 
 const formatCurrency = (value: number) => {
@@ -31,7 +32,11 @@ const formatDateOnly = (value?: string) => {
   if (!value) return "-";
   const d = new Date(value);
   if (isNaN(d.getTime())) return "-";
-  return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  return d.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 const formatTimeOnly = (value?: string) => {
@@ -44,7 +49,8 @@ const formatTimeOnly = (value?: string) => {
 const statusColor: Record<string, string> = {
   paid: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
   unpaid: "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400",
-  pending: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
+  pending:
+    "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
   rejected: "bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400",
 };
 
@@ -65,17 +71,21 @@ const methodLabel: Record<string, string> = {
 export const DailyPaymentTable = ({
   payments,
   onChanged,
+  onExportClick,
 }: DailyPaymentTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Dialog penolakan — berisi alasan opsional yang dikirim ke driver.
-  const [rejectTarget, setRejectTarget] = useState<DailyPaymentItem | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<DailyPaymentItem | null>(
+    null,
+  );
   const [rejectReason, setRejectReason] = useState("");
 
   const totalResults = payments.length;
   const totalPages = Math.max(1, Math.ceil(totalResults / itemsPerPage));
-  const startEntry = totalResults === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const startEntry =
+    totalResults === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endEntry = Math.min(currentPage * itemsPerPage, totalResults);
 
   const paginatedPayments = payments.slice(startEntry - 1, endEntry);
@@ -128,7 +138,11 @@ export const DailyPaymentTable = ({
     setRejectReason("");
     setIsSubmitting(true);
     try {
-      await financeApi.updateDailyPaymentStatus(item.id, "rejected", reason || undefined);
+      await financeApi.updateDailyPaymentStatus(
+        item.id,
+        "rejected",
+        reason || undefined,
+      );
       toastSuccess(
         "Pembayaran ditolak — driver dapat mengajukan ulang pembayaran",
       );
@@ -144,7 +158,9 @@ export const DailyPaymentTable = ({
   if (totalResults === 0) {
     return (
       <div className="p-8 text-center text-slate-500 dark:text-slate-400">
-        <span className="material-symbols-outlined text-4xl mb-2 block">receipt_long</span>
+        <span className="material-symbols-outlined text-4xl mb-2 block">
+          receipt_long
+        </span>
         <p>Belum ada tagihan hari ini</p>
       </div>
     );
@@ -169,6 +185,14 @@ export const DailyPaymentTable = ({
             </p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={() => onExportClick?.()}
+          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
+        >
+          <span className="material-symbols-outlined text-base">download</span>
+          Export
+        </button>
       </div>
 
       {/* Table */}
@@ -243,7 +267,10 @@ export const DailyPaymentTable = ({
                         </p>
                       )}
                       {item.payment_notes && (
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-[180px]" title={item.payment_notes}>
+                        <p
+                          className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-[180px]"
+                          title={item.payment_notes}
+                        >
                           Catatan: {item.payment_notes}
                         </p>
                       )}
@@ -252,12 +279,16 @@ export const DailyPaymentTable = ({
                           className="text-xs text-rose-500 dark:text-rose-400 mt-0.5 max-w-[180px]"
                           title={item.rejection_reason || undefined}
                         >
-                          Ditolak{item.rejection_reason ? `: ${item.rejection_reason}` : ""}
+                          Ditolak
+                          {item.rejection_reason
+                            ? `: ${item.rejection_reason}`
+                            : ""}
                         </p>
                       )}
                       {item.payment_method && (
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate max-w-[180px]">
-                          {methodLabel[item.payment_method] || item.payment_method}
+                          {methodLabel[item.payment_method] ||
+                            item.payment_method}
                           {item.method_payment
                             ? ` → ${item.method_payment.name}`
                             : ""}

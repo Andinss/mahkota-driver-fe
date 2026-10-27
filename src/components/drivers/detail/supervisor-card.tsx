@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select } from "@/components/ui/select";
-import { toastError, toastSuccess, confirmToast } from "@/components/ui/toast-provider";
+import { toastError, toastSuccess } from "@/components/ui/toast-provider";
 import { driverApi } from "@/lib/api/driver";
 import type { DriverItem, SupervisorOption } from "@/lib/types/driver";
 import { getErrorMessage } from "@/lib/utils/error-message";
@@ -21,6 +22,7 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
   const [selectedId, setSelectedId] = useState(driver.supervisor_id ?? "");
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUnassignOpen, setIsUnassignOpen] = useState(false);
 
   useEffect(() => {
     setSelectedId(driver.supervisor_id ?? "");
@@ -69,18 +71,6 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const unassign = async () => {
-    const confirmed = await confirmToast({
-      title: "Lepas Penunjukan Supervisor?",
-      message: `Lepas penunjukan supervisor untuk ${driver.first_name} ${driver.last_name}? Driver ini akan menjadi "belum ditunjuk".`,
-      confirmText: "Lepas",
-      cancelText: "Batal",
-      variant: "warning",
-    });
-    if (!confirmed) return;
-    await assign(null, "Penunjukan supervisor dilepas.");
   };
 
   return (
@@ -157,7 +147,7 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
                 {driver.supervisor_id && (
                   <Button
                     variant="danger"
-                    onClick={() => void unassign()}
+                    onClick={() => setIsUnassignOpen(true)}
                     disabled={isSaving}
                   >
                     Lepas
@@ -168,6 +158,20 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={isUnassignOpen}
+        onClose={() => setIsUnassignOpen(false)}
+        onConfirm={() =>
+          void assign(null, "Penunjukan supervisor dilepas.")
+        }
+        title="Lepas Penunjukan Supervisor"
+        message={`Lepas penunjukan supervisor untuk ${driver.first_name} ${driver.last_name}? Driver ini akan menjadi "belum ditunjuk".`}
+        confirmText="Lepas"
+        cancelText="Batal"
+        variant="warning"
+        disabled={isSaving}
+      />
     </>
   );
 }

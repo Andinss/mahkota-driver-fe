@@ -17,7 +17,8 @@ import { AdditionalChargeModal } from "@/components/finance/payment-list/additio
 import { FeeBillDetailModal } from "@/components/finance/fee-bill-detail-modal";
 import { PageHeader } from "@/components/page-header";
 import { useSearchParams, useRouter } from "next/navigation";
-import type { ExportOptions } from "@/components/ui/export";
+import { ModalExport } from "@/components/ui/export";
+import type { ExportColumn, ExportOptions } from "@/components/ui/export";
 import { FinanceTabFilters } from "@/components/finance/payment-list/finance-tab-filters";
 import { financeApi } from "@/lib/api/finances";
 import { koinApi } from "@/lib/api/koin";
@@ -44,6 +45,49 @@ const tabConfig: { key: FinanceTab; label: string }[] = [
   { key: "koin", label: "Koin" },
 ];
 
+/** Kolom export admin daily payment (termasuk Nama Driver). */
+const dailyExportColumns: ExportColumn[] = [
+  { id: "referenceNumber", label: "No. Tagihan", defaultChecked: true },
+  { id: "driverName", label: "Nama Driver", defaultChecked: true },
+  { id: "rentalNumber", label: "No. Rental", defaultChecked: false },
+  { id: "vehicle", label: "Kendaraan", defaultChecked: true },
+  { id: "licensePlate", label: "Plat Nomor", defaultChecked: true },
+  { id: "vendor", label: "Vendor", defaultChecked: true },
+  { id: "amount", label: "Jumlah", defaultChecked: true },
+  { id: "status", label: "Status", defaultChecked: true },
+  { id: "billDate", label: "Tanggal Tagihan", defaultChecked: true },
+  { id: "createdAt", label: "Tanggal Dibuat", defaultChecked: false },
+  { id: "paidAt", label: "Tanggal Bayar", defaultChecked: true },
+];
+
+/** Kolom export admin payment (fee membership). */
+const adminFeeExportColumns: ExportColumn[] = [
+  { id: "reference_number", label: "No. Referensi", defaultChecked: true },
+  { id: "payer", label: "Payer / Driver", defaultChecked: true },
+  { id: "vehicle", label: "Kendaraan", defaultChecked: true },
+  { id: "licensePlate", label: "Plat Nomor", defaultChecked: true },
+  { id: "fee_admin_join", label: "Fee Membership", defaultChecked: true },
+  { id: "paid_amount", label: "Sudah Dibayar", defaultChecked: true },
+  { id: "remaining_amount", label: "Sisa Tagihan", defaultChecked: true },
+  { id: "status", label: "Status", defaultChecked: true },
+  { id: "payment_method", label: "Metode Pembayaran", defaultChecked: true },
+  { id: "created_at", label: "Tanggal Dibuat", defaultChecked: false },
+];
+
+/** Kolom export transaksi koin. */
+const koinExportColumns: ExportColumn[] = [
+  { id: "referenceNumber", label: "No. Referensi", defaultChecked: true },
+  { id: "driverName", label: "Driver", defaultChecked: true },
+  { id: "driverEmployeeId", label: "ID Karyawan", defaultChecked: false },
+  { id: "type", label: "Tipe", defaultChecked: true },
+  { id: "amount", label: "Jumlah", defaultChecked: true },
+  { id: "balanceBefore", label: "Saldo Sebelum", defaultChecked: false },
+  { id: "balanceAfter", label: "Saldo Sesudah", defaultChecked: false },
+  { id: "reason", label: "Alasan", defaultChecked: true },
+  { id: "notes", label: "Catatan", defaultChecked: false },
+  { id: "createdAt", label: "Tanggal", defaultChecked: true },
+];
+
 export default function PaymentList() {
   const router = useRouter();
   const { user } = useAuth();
@@ -52,23 +96,52 @@ export default function PaymentList() {
 
   const [finances, setFinances] = useState<FinanceItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+  const [meta, setMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  });
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
 
   const [dailyPayments, setDailyPayments] = useState<DailyPaymentItem[]>([]);
-  const [dailyTablePayments, setDailyTablePayments] = useState<DailyPaymentItem[] | null>(null);
-  const [dailyMeta, setDailyMeta] = useState({ total: 0, page: 1, limit: 50, totalPages: 1 });
+  const [dailyTablePayments, setDailyTablePayments] = useState<
+    DailyPaymentItem[] | null
+  >(null);
+  const [dailyMeta, setDailyMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 50,
+    totalPages: 1,
+  });
 
   const [adminFees, setAdminFees] = useState<FinanceItem[]>([]);
-  const [adminFeeMeta, setAdminFeeMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+  const [adminFeeMeta, setAdminFeeMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  });
   const [adminFeeDetailId, setAdminFeeDetailId] = useState<string | null>(null);
 
   const [additionalCharges, setAdditionalCharges] = useState<FinanceItem[]>([]);
-  const [additionalMeta, setAdditionalMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+  const [additionalMeta, setAdditionalMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  });
   const [showChargeModal, setShowChargeModal] = useState(false);
 
-  const [koinTransactions, setKoinTransactions] = useState<KoinTransaction[]>([]);
-  const [koinMeta, setKoinMeta] = useState({ total: 0, page: 1, limit: 10, totalPages: 1 });
+  const [koinTransactions, setKoinTransactions] = useState<KoinTransaction[]>(
+    [],
+  );
+  const [koinMeta, setKoinMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+  });
   const [koinSummary, setKoinSummary] = useState<KoinSummary | null>(null);
 
   const [searchValue, setSearchValue] = useState("");
@@ -82,6 +155,9 @@ export default function PaymentList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDailyExportOpen, setIsDailyExportOpen] = useState(false);
+  const [isAdminFeeExportOpen, setIsAdminFeeExportOpen] = useState(false);
+  const [isKoinExportOpen, setIsKoinExportOpen] = useState(false);
   const toastShownRef = useRef(false);
 
   useEffect(() => {
@@ -235,7 +311,9 @@ export default function PaymentList() {
     }
   }, []);
 
-  useEffect(() => { fetchSummary(); }, [fetchSummary]);
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
 
   useEffect(() => {
     if (activeTab === "daily") {
@@ -248,7 +326,14 @@ export default function PaymentList() {
       fetchKoinTransactions();
       fetchKoinSummary();
     }
-  }, [activeTab, fetchDailyPayments, fetchAdminFees, fetchAdditionalCharges, fetchKoinTransactions, fetchKoinSummary]);
+  }, [
+    activeTab,
+    fetchDailyPayments,
+    fetchAdminFees,
+    fetchAdditionalCharges,
+    fetchKoinTransactions,
+    fetchKoinSummary,
+  ]);
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -266,7 +351,9 @@ export default function PaymentList() {
   const handleExport = async (options?: ExportOptions) => {
     if (!options) return;
     const params: Record<string, string | number | undefined> = {
-      format: options.format, columns: options.columns.join(","), type: options.type,
+      format: options.format,
+      columns: options.columns.join(","),
+      type: options.type,
     };
     if (options.type === "filtered") {
       if (searchValue) params.search = searchValue;
@@ -281,28 +368,121 @@ export default function PaymentList() {
       await financeApi.exportData(params);
     } catch (err) {
       console.error("Gagal mengekspor data keuangan:", err);
-      toastError(getErrorMessage(err, "Gagal mengekspor data keuangan. Silakan coba lagi."));
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal mengekspor data keuangan. Silakan coba lagi.",
+        ),
+      );
+    }
+  };
+
+  /**
+   * Handler export admin daily payment.
+   * Full data — hanya `format`, `columns`, dan `dateRange` (opsional dari
+   * ModalExport) yang dikirim ke BE. Filter aktif (status/search) TIDAK
+   * dikirim, sesuai kesepakatan "full export data".
+   */
+  const handleExportDaily = async (options?: ExportOptions) => {
+    if (!options) return;
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+    };
+    if (options.dateRange?.start) params.start_date = options.dateRange.start;
+    if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    try {
+      await financeApi.exportAdminDailyPayments(params);
+    } catch (err) {
+      console.error("Gagal mengekspor tagihan harian:", err);
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal mengekspor tagihan harian. Silakan coba lagi.",
+        ),
+      );
+    }
+  };
+
+  /**
+   * Handler export admin payment (fee membership).
+   * Full data — memakai endpoint generic `/finances/export` dengan
+   * `exclude_fee_kind=additional_charge` (agar tagihan tambahan tidak ikut,
+   * konsisten dengan list di tab Admin Payment).
+   */
+  const handleExportAdminFee = async (options?: ExportOptions) => {
+    if (!options) return;
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+      exclude_fee_kind: "additional_charge",
+    };
+    if (options.dateRange?.start) params.start_date = options.dateRange.start;
+    if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    try {
+      await financeApi.exportData(params);
+    } catch (err) {
+      console.error("Gagal mengekspor fee membership:", err);
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal mengekspor fee membership. Silakan coba lagi.",
+        ),
+      );
+    }
+  };
+
+  const handleExportKoin = async (options?: ExportOptions) => {
+    if (!options) return;
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+    };
+    if (options.dateRange?.start) params.start_date = options.dateRange.start;
+    if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    try {
+      await koinApi.exportTransactions(params);
+    } catch (err) {
+      console.error("Gagal mengekspor transaksi koin:", err);
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal mengekspor transaksi koin. Silakan coba lagi.",
+        ),
+      );
     }
   };
 
   const handleDelete = async (finance: FinanceItem) => {
     const base = `Are you sure you want to delete ${finance.reference_number}?`;
-    const message = finance.payment_method === "saldo"
-      ? base
-      : `${base}\n\nDeleting this finance will not affect the driver's koin.`;
+    const message =
+      finance.payment_method === "saldo"
+        ? base
+        : `${base}\n\nDeleting this finance will not affect the driver's koin.`;
     const confirmed = await confirmToast({
-      title: "Delete Payment", message, confirmText: "Yes, Delete",
-      cancelText: "Cancel", variant: "danger",
+      title: "Delete Payment",
+      message,
+      confirmText: "Yes, Delete",
+      cancelText: "Cancel",
+      variant: "danger",
     });
     if (!confirmed) return;
     setIsDeleting(true);
     try {
       await financeApi.delete(finance.id);
-      toastSuccess(`Finance ${finance.reference_number} has been deleted successfully`);
-      fetchAdminFees(); fetchSummary();
+      toastSuccess(
+        `Finance ${finance.reference_number} has been deleted successfully`,
+      );
+      fetchAdminFees();
+      fetchSummary();
     } catch (err) {
       console.error("Gagal menghapus data pembayaran:", err);
-      toastError(getErrorMessage(err, "Gagal menghapus data pembayaran. Silakan coba lagi."));
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal menghapus data pembayaran. Silakan coba lagi.",
+        ),
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -313,10 +493,12 @@ export default function PaymentList() {
   };
 
   const handleSearchChange = (value: string) => {
-    setSearchValue(value); setCurrentPage(1);
+    setSearchValue(value);
+    setCurrentPage(1);
   };
   const handlePaymentMethodChange = (value: string) => {
-    setPaymentMethod(value); setCurrentPage(1);
+    setPaymentMethod(value);
+    setCurrentPage(1);
   };
   const handlePageChange = (page: number) => {
     const maxPage =
@@ -341,7 +523,11 @@ export default function PaymentList() {
   const dailyBasePayments = dailyTablePayments ?? dailyPayments;
 
   const filteredDailyPayments = dailyBasePayments.filter((dp) => {
-    if (dailyDateFilter === "today" && !isToday(dp.payment_date) && !isToday(dp.created_at)) {
+    if (
+      dailyDateFilter === "today" &&
+      !isToday(dp.payment_date) &&
+      !isToday(dp.created_at)
+    ) {
       return false;
     }
     if (dailyStatusFilter && dp.status !== dailyStatusFilter) return false;
@@ -367,7 +553,8 @@ export default function PaymentList() {
     if (additionalStatusFilter === "rejected") {
       return f.status === "rejected" || f.status === "cancelled";
     }
-    if (additionalStatusFilter && f.status !== additionalStatusFilter) return false;
+    if (additionalStatusFilter && f.status !== additionalStatusFilter)
+      return false;
     return true;
   });
 
@@ -375,59 +562,212 @@ export default function PaymentList() {
     if (koinTypeFilter && tx.type !== koinTypeFilter) return false;
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
-      const hay = `${tx.driver_name || ""} ${tx.reference_number || ""} ${tx.notes || ""}`.toLowerCase();
+      const hay =
+        `${tx.driver_name || ""} ${tx.reference_number || ""} ${tx.notes || ""}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
   });
 
-  const totalDailyAmount = dailyPayments.reduce((sum, dp) => sum + (Number(dp.amount) || 0), 0);
-  const unpaidDailyCount = dailyPayments.filter((dp) => dp.status === "unpaid").length;
-  const paidDailyCount = dailyPayments.filter((dp) => dp.status === "paid").length;
+  const totalDailyAmount = dailyPayments.reduce(
+    (sum, dp) => sum + (Number(dp.amount) || 0),
+    0,
+  );
+  const unpaidDailyCount = dailyPayments.filter(
+    (dp) => dp.status === "unpaid",
+  ).length;
+  const paidDailyCount = dailyPayments.filter(
+    (dp) => dp.status === "paid",
+  ).length;
 
   const renderDailyCards = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <PaymentCard title="Total Tagihan Hari Ini" value={`Rp ${totalDailyAmount.toLocaleString("id-ID")}`} icon="payments" iconColor="text-primary"
-        trend={{ value: `${dailyPayments.length} tagihan`, color: "text-primary", icon: "trending_up" }} />
-      <PaymentCard title="Sudah Dibayar" value={`Rp ${dailyPayments.filter((dp) => dp.status === "paid").reduce((s, dp) => s + Number(dp.amount), 0).toLocaleString("id-ID")}`} icon="check_circle" iconColor="text-emerald-500"
-        trend={{ value: `${paidDailyCount} dibayar`, color: "text-emerald-500", icon: "trending_up" }} />
-      <PaymentCard title="Belum Dibayar" value={`Rp ${dailyPayments.filter((dp) => dp.status === "unpaid").reduce((s, dp) => s + Number(dp.amount), 0).toLocaleString("id-ID")}`} icon="schedule" iconColor="text-amber-500"
-        trend={{ value: `${unpaidDailyCount} belum dibayar`, color: "text-amber-500", icon: "info" }} />
-      <PaymentCard title="Hari Ini" value={new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "short" })} icon="today" iconColor="text-blue-500"
-        trend={{ value: `${dailyPayments.length} total tagihan aktif`, color: "text-blue-500", icon: "info" }} />
+      <PaymentCard
+        title="Total Tagihan Hari Ini"
+        value={`Rp ${totalDailyAmount.toLocaleString("id-ID")}`}
+        icon="payments"
+        iconColor="text-primary"
+        trend={{
+          value: `${dailyPayments.length} tagihan`,
+          color: "text-primary",
+          icon: "trending_up",
+        }}
+      />
+      <PaymentCard
+        title="Sudah Dibayar"
+        value={`Rp ${dailyPayments
+          .filter((dp) => dp.status === "paid")
+          .reduce((s, dp) => s + Number(dp.amount), 0)
+          .toLocaleString("id-ID")}`}
+        icon="check_circle"
+        iconColor="text-emerald-500"
+        trend={{
+          value: `${paidDailyCount} dibayar`,
+          color: "text-emerald-500",
+          icon: "trending_up",
+        }}
+      />
+      <PaymentCard
+        title="Belum Dibayar"
+        value={`Rp ${dailyPayments
+          .filter((dp) => dp.status === "unpaid")
+          .reduce((s, dp) => s + Number(dp.amount), 0)
+          .toLocaleString("id-ID")}`}
+        icon="schedule"
+        iconColor="text-amber-500"
+        trend={{
+          value: `${unpaidDailyCount} belum dibayar`,
+          color: "text-amber-500",
+          icon: "info",
+        }}
+      />
+      <PaymentCard
+        title="Hari Ini"
+        value={new Date().toLocaleDateString("id-ID", {
+          weekday: "long",
+          day: "numeric",
+          month: "short",
+        })}
+        icon="today"
+        iconColor="text-blue-500"
+        trend={{
+          value: `${dailyPayments.length} total tagihan aktif`,
+          color: "text-blue-500",
+          icon: "info",
+        }}
+      />
     </div>
   );
 
-  const totalAdminFeeAmount = adminFees.reduce((sum, f) => sum + (Number(f.fee_admin_join) || 0), 0);
+  const totalAdminFeeAmount = adminFees.reduce(
+    (sum, f) => sum + (Number(f.fee_admin_join) || 0),
+    0,
+  );
   const paidAdminFeeCount = adminFees.filter((f) => f.status === "paid").length;
 
   const renderAdminFeeCards = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <PaymentCard title="Total Fee Membership" value={`Rp ${totalAdminFeeAmount.toLocaleString("id-ID")}`} icon="admin_panel_settings" iconColor="text-amber-500"
-        trend={{ value: `${adminFees.length} total`, color: "text-amber-500", icon: "trending_up" }} />
-      <PaymentCard title="Sudah Dibayar" value={`Rp ${adminFees.filter((f) => f.status === "paid").reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0).toLocaleString("id-ID")}`} icon="check_circle" iconColor="text-emerald-500"
-        trend={{ value: `${paidAdminFeeCount} dibayar`, color: "text-emerald-500", icon: "trending_up" }} />
-      <PaymentCard title="Belum Dibayar" value={`Rp ${adminFees.filter((f) => f.status !== "paid").reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0).toLocaleString("id-ID")}`} icon="schedule" iconColor="text-red-500"
-        trend={{ value: `${adminFees.length - paidAdminFeeCount} belum dibayar`, color: "text-red-500", icon: "info" }} />
-      <PaymentCard title="Premium (Rp 700K)" value={String(adminFees.filter((f) => f.fee_kind !== "membership_fee" && (Number(f.fee_admin_join) || 0) >= 700000).length)} icon="star" iconColor="text-violet-500"
-        trend={{ value: `Reguler: ${adminFees.filter((f) => f.fee_kind !== "membership_fee" && (Number(f.fee_admin_join) || 0) > 0 && (Number(f.fee_admin_join) || 0) < 700000).length} · Fee Membership: ${adminFees.filter((f) => f.fee_kind === "membership_fee").length} (Rp ${adminFees.filter((f) => f.fee_kind === "membership_fee").reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0).toLocaleString("id-ID")})`, color: "text-violet-500", icon: "info" }} />
+      <PaymentCard
+        title="Total Fee Membership"
+        value={`Rp ${totalAdminFeeAmount.toLocaleString("id-ID")}`}
+        icon="admin_panel_settings"
+        iconColor="text-amber-500"
+        trend={{
+          value: `${adminFees.length} total`,
+          color: "text-amber-500",
+          icon: "trending_up",
+        }}
+      />
+      <PaymentCard
+        title="Sudah Dibayar"
+        value={`Rp ${adminFees
+          .filter((f) => f.status === "paid")
+          .reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0)
+          .toLocaleString("id-ID")}`}
+        icon="check_circle"
+        iconColor="text-emerald-500"
+        trend={{
+          value: `${paidAdminFeeCount} dibayar`,
+          color: "text-emerald-500",
+          icon: "trending_up",
+        }}
+      />
+      <PaymentCard
+        title="Belum Dibayar"
+        value={`Rp ${adminFees
+          .filter((f) => f.status !== "paid")
+          .reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0)
+          .toLocaleString("id-ID")}`}
+        icon="schedule"
+        iconColor="text-red-500"
+        trend={{
+          value: `${adminFees.length - paidAdminFeeCount} belum dibayar`,
+          color: "text-red-500",
+          icon: "info",
+        }}
+      />
+      <PaymentCard
+        title="Premium (Rp 700K)"
+        value={String(
+          adminFees.filter(
+            (f) =>
+              f.fee_kind !== "membership_fee" &&
+              (Number(f.fee_admin_join) || 0) >= 700000,
+          ).length,
+        )}
+        icon="star"
+        iconColor="text-violet-500"
+        trend={{
+          value: `Reguler: ${adminFees.filter((f) => f.fee_kind !== "membership_fee" && (Number(f.fee_admin_join) || 0) > 0 && (Number(f.fee_admin_join) || 0) < 700000).length} · Fee Membership: ${adminFees.filter((f) => f.fee_kind === "membership_fee").length} (Rp ${adminFees
+            .filter((f) => f.fee_kind === "membership_fee")
+            .reduce((s, f) => s + (Number(f.fee_admin_join) || 0), 0)
+            .toLocaleString("id-ID")})`,
+          color: "text-violet-500",
+          icon: "info",
+        }}
+      />
     </div>
   );
 
-  const totalAdditionalAmount = additionalCharges.reduce((sum, f) => sum + (Number(f.fee_admin_join) || 0), 0);
-  const paidAdditionalAmount = additionalCharges.reduce((sum, f) => sum + (Number(f.paid_amount) || 0), 0);
-  const remainingAdditionalAmount = additionalCharges.reduce((sum, f) => sum + (Number(f.remaining_amount) || 0), 0);
+  const totalAdditionalAmount = additionalCharges.reduce(
+    (sum, f) => sum + (Number(f.fee_admin_join) || 0),
+    0,
+  );
+  const paidAdditionalAmount = additionalCharges.reduce(
+    (sum, f) => sum + (Number(f.paid_amount) || 0),
+    0,
+  );
+  const remainingAdditionalAmount = additionalCharges.reduce(
+    (sum, f) => sum + (Number(f.remaining_amount) || 0),
+    0,
+  );
 
   const renderAdditionalCards = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <PaymentCard title="Total Tagihan Tambahan" value={`Rp ${totalAdditionalAmount.toLocaleString("id-ID")}`} icon="receipt_long" iconColor="text-orange-500"
-        trend={{ value: `${additionalCharges.length} tagihan`, color: "text-orange-500", icon: "trending_up" }} />
-      <PaymentCard title="Sudah Dibayar" value={`Rp ${paidAdditionalAmount.toLocaleString("id-ID")}`} icon="check_circle" iconColor="text-emerald-500"
-        trend={{ value: `${additionalCharges.filter((f) => f.status === "paid").length} lunas`, color: "text-emerald-500", icon: "trending_up" }} />
-      <PaymentCard title="Sisa Tagihan" value={`Rp ${remainingAdditionalAmount.toLocaleString("id-ID")}`} icon="schedule" iconColor="text-amber-500"
-        trend={{ value: `${additionalCharges.filter((f) => Number(f.remaining_amount) > 0).length} belum lunas`, color: "text-amber-500", icon: "info" }} />
-      <PaymentCard title="Menunggu Verifikasi" value={`${additionalCharges.reduce((s, f) => s + (Number(f.pending_amount) > 0 ? 1 : 0), 0)}`} icon="pending_actions" iconColor="text-blue-500"
-        trend={{ value: `${additionalCharges.filter((f) => f.status === "cancelled").length} dibatalkan`, color: "text-blue-500", icon: "info" }} />
+      <PaymentCard
+        title="Total Tagihan Tambahan"
+        value={`Rp ${totalAdditionalAmount.toLocaleString("id-ID")}`}
+        icon="receipt_long"
+        iconColor="text-orange-500"
+        trend={{
+          value: `${additionalCharges.length} tagihan`,
+          color: "text-orange-500",
+          icon: "trending_up",
+        }}
+      />
+      <PaymentCard
+        title="Sudah Dibayar"
+        value={`Rp ${paidAdditionalAmount.toLocaleString("id-ID")}`}
+        icon="check_circle"
+        iconColor="text-emerald-500"
+        trend={{
+          value: `${additionalCharges.filter((f) => f.status === "paid").length} lunas`,
+          color: "text-emerald-500",
+          icon: "trending_up",
+        }}
+      />
+      <PaymentCard
+        title="Sisa Tagihan"
+        value={`Rp ${remainingAdditionalAmount.toLocaleString("id-ID")}`}
+        icon="schedule"
+        iconColor="text-amber-500"
+        trend={{
+          value: `${additionalCharges.filter((f) => Number(f.remaining_amount) > 0).length} belum lunas`,
+          color: "text-amber-500",
+          icon: "info",
+        }}
+      />
+      <PaymentCard
+        title="Menunggu Verifikasi"
+        value={`${additionalCharges.reduce((s, f) => s + (Number(f.pending_amount) > 0 ? 1 : 0), 0)}`}
+        icon="pending_actions"
+        iconColor="text-blue-500"
+        trend={{
+          value: `${additionalCharges.filter((f) => f.status === "cancelled").length} dibatalkan`,
+          color: "text-blue-500",
+          icon: "info",
+        }}
+      />
     </div>
   );
 
@@ -437,14 +777,54 @@ export default function PaymentList() {
 
   const renderKoinCards = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <PaymentCard title="Total Koin" value={koinSummary ? `Rp ${Number(koinSummary.total_balance).toLocaleString("id-ID")}` : "Rp 0"} icon="account_balance_wallet" iconColor="text-primary"
-        trend={{ value: `${koinSummary?.total_drivers_with_koin ?? 0} driver`, color: "text-primary", icon: "trending_up" }} />
-      <PaymentCard title="Total Top Up Koin" value={`Rp ${totalKoinTopUp.toLocaleString("id-ID")}`} icon="add_circle" iconColor="text-green-500"
-        trend={{ value: `${koinTransactions.filter((tx) => tx.type === "top_up").length} transaksi`, color: "text-green-500", icon: "trending_up" }} />
-      <PaymentCard title="Total Refund" value={`Rp ${koinSummary ? Number(koinSummary.total_refunds).toLocaleString("id-ID") : "Rp 0"}`} icon="replay" iconColor="text-orange-500"
-        trend={{ value: `${koinTransactions.filter((tx) => tx.type === "refund").length} refund`, color: "text-orange-500", icon: "trending_up" }} />
-      <PaymentCard title="Koin Masuk" value={`${koinTransactions.filter((tx) => tx.type === "top_up" || tx.type === "refund").length}`} icon="check_circle" iconColor="text-emerald-500"
-        trend={{ value: `Total transaksi: ${koinTransactions.length}`, color: "text-emerald-500", icon: "info" }} />
+      <PaymentCard
+        title="Total Koin"
+        value={
+          koinSummary
+            ? `Rp ${Number(koinSummary.total_balance).toLocaleString("id-ID")}`
+            : "Rp 0"
+        }
+        icon="account_balance_wallet"
+        iconColor="text-primary"
+        trend={{
+          value: `${koinSummary?.total_drivers_with_koin ?? 0} driver`,
+          color: "text-primary",
+          icon: "trending_up",
+        }}
+      />
+      <PaymentCard
+        title="Total Top Up Koin"
+        value={`Rp ${totalKoinTopUp.toLocaleString("id-ID")}`}
+        icon="add_circle"
+        iconColor="text-green-500"
+        trend={{
+          value: `${koinTransactions.filter((tx) => tx.type === "top_up").length} transaksi`,
+          color: "text-green-500",
+          icon: "trending_up",
+        }}
+      />
+      <PaymentCard
+        title="Total Refund"
+        value={`Rp ${koinSummary ? Number(koinSummary.total_refunds).toLocaleString("id-ID") : "Rp 0"}`}
+        icon="replay"
+        iconColor="text-orange-500"
+        trend={{
+          value: `${koinTransactions.filter((tx) => tx.type === "refund").length} refund`,
+          color: "text-orange-500",
+          icon: "trending_up",
+        }}
+      />
+      <PaymentCard
+        title="Koin Masuk"
+        value={`${koinTransactions.filter((tx) => tx.type === "top_up" || tx.type === "refund").length}`}
+        icon="check_circle"
+        iconColor="text-emerald-500"
+        trend={{
+          value: `Total transaksi: ${koinTransactions.length}`,
+          color: "text-emerald-500",
+          icon: "info",
+        }}
+      />
     </div>
   );
 
@@ -511,14 +891,17 @@ export default function PaymentList() {
                   <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-blue-500 text-xl">today</span>
+                        <span className="material-symbols-outlined text-blue-500 text-xl">
+                          today
+                        </span>
                       </div>
                       <div>
                         <h3 className="font-bold text-slate-800 dark:text-white text-base">
                           Tagihan Hari Berjalan + Unpaid
                         </h3>
                         <p className="text-xs text-slate-400">
-                          Menampilkan tagihan hari ini dan tagihan sebelumnya yang belum dibayar
+                          Menampilkan tagihan hari ini dan tagihan sebelumnya
+                          yang belum dibayar
                         </p>
                       </div>
                     </div>
@@ -531,12 +914,15 @@ export default function PaymentList() {
                       fetchDailyPayments();
                       fetchFilteredDailyPayments();
                     }}
+                    onExportClick={() => setIsDailyExportOpen(true)}
                   />
                 </div>
               </>
             )}
             {activeTab === "daily" && isLoading && (
-              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">Loading...</div>
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">
+                Loading...
+              </div>
             )}
 
             {activeTab === "admin-koin" && !isLoading && (
@@ -569,15 +955,28 @@ export default function PaymentList() {
                       fetchAdminFees();
                       fetchSummary();
                     }}
+                    onExportClick={() => setIsAdminFeeExportOpen(true)}
                   />
                   <div className="border-t border-[#dbe0e6] dark:border-gray-700">
-                    <Pagination currentPage={adminFeeMeta.page} totalPages={adminFeeMeta.totalPages} totalResults={adminFeeMeta.total} resultsPerPage={itemsPerPage} onPageChange={handlePageChange} onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }} />
+                    <Pagination
+                      currentPage={adminFeeMeta.page}
+                      totalPages={adminFeeMeta.totalPages}
+                      totalResults={adminFeeMeta.total}
+                      resultsPerPage={itemsPerPage}
+                      onPageChange={handlePageChange}
+                      onPageSizeChange={(size) => {
+                        setItemsPerPage(size);
+                        setCurrentPage(1);
+                      }}
+                    />
                   </div>
                 </div>
               </>
             )}
             {activeTab === "admin-koin" && isLoading && (
-              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">Loading...</div>
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">
+                Loading...
+              </div>
             )}
 
             {activeTab === "additional" && !isLoading && (
@@ -606,19 +1005,26 @@ export default function PaymentList() {
                   <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-orange-500 text-xl">receipt_long</span>
+                        <span className="material-symbols-outlined text-orange-500 text-xl">
+                          receipt_long
+                        </span>
                       </div>
                       <div>
                         <h2 className="font-bold text-slate-800 dark:text-white text-base">
                           Tagihan Tambahan ke Driver
                         </h2>
                         <p className="text-xs text-slate-400">
-                          Ganti rugi kendaraan, kecelakaan, kehilangan STNK, dan tagihan manual lainnya
+                          Ganti rugi kendaraan, kecelakaan, kehilangan STNK, dan
+                          tagihan manual lainnya
                         </p>
                       </div>
                     </div>
                     <PermissionGuard permission="finance.create">
-                      <Button icon="add" variant="primary" onClick={() => setShowChargeModal(true)}>
+                      <Button
+                        icon="add"
+                        variant="primary"
+                        onClick={() => setShowChargeModal(true)}
+                      >
                         Tambah Tagihan Tambahan
                       </Button>
                     </PermissionGuard>
@@ -632,13 +1038,25 @@ export default function PaymentList() {
                     }}
                   />
                   <div className="border-t border-[#dbe0e6] dark:border-gray-700">
-                    <Pagination currentPage={additionalMeta.page} totalPages={additionalMeta.totalPages} totalResults={additionalMeta.total} resultsPerPage={itemsPerPage} onPageChange={handlePageChange} onPageSizeChange={(size) => { setItemsPerPage(size); setCurrentPage(1); }} />
+                    <Pagination
+                      currentPage={additionalMeta.page}
+                      totalPages={additionalMeta.totalPages}
+                      totalResults={additionalMeta.total}
+                      resultsPerPage={itemsPerPage}
+                      onPageChange={handlePageChange}
+                      onPageSizeChange={(size) => {
+                        setItemsPerPage(size);
+                        setCurrentPage(1);
+                      }}
+                    />
                   </div>
                 </div>
               </>
             )}
             {activeTab === "additional" && isLoading && (
-              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">Loading...</div>
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">
+                Loading...
+              </div>
             )}
 
             {activeTab === "koin" && !isLoading && (
@@ -673,21 +1091,38 @@ export default function PaymentList() {
                         <h2 className="font-bold text-slate-800 dark:text-white text-base">
                           Koin Transactions
                         </h2>
-                        <p className="text-xs text-slate-400">{filteredKoinTransactions.length} transaksi koin tercatat</p>
+                        <p className="text-xs text-slate-400">
+                          {filteredKoinTransactions.length} transaksi koin
+                          tercatat
+                        </p>
                       </div>
                     </div>
-                    <Link href="/dashboard/finances/koin">
-                      <Button icon="add" variant="primary">
-                        Buat Top Up
-                      </Button>
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link href="/dashboard/finances/koin">
+                        <Button icon="add" variant="primary">
+                          Buat Top Up
+                        </Button>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setIsKoinExportOpen(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
+                      >
+                        <span className="material-symbols-outlined text-base">
+                          download
+                        </span>
+                        Export
+                      </button>
+                    </div>
                   </div>
                   <KoinTable transactions={filteredKoinTransactions} />
                 </div>
               </>
             )}
             {activeTab === "koin" && isLoading && (
-              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">Loading...</div>
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-[#dbe0e6] dark:border-gray-700 rounded-xl shadow-sm">
+                Loading...
+              </div>
             )}
           </div>
 
@@ -705,6 +1140,39 @@ export default function PaymentList() {
               fetchAdditionalCharges();
               fetchSummary();
             }}
+          />
+
+          {/* Export admin daily payment (full data) */}
+          <ModalExport
+            isOpen={isDailyExportOpen}
+            onClose={() => setIsDailyExportOpen(false)}
+            onExport={handleExportDaily}
+            totalRows={dailyMeta.total || dailyPayments.length}
+            title="Export Tagihan Harian"
+            description="Generate laporan seluruh tagihan harian (semua driver)."
+            columns={dailyExportColumns}
+          />
+
+          {/* Export admin payment — fee membership */}
+          <ModalExport
+            isOpen={isAdminFeeExportOpen}
+            onClose={() => setIsAdminFeeExportOpen(false)}
+            onExport={handleExportAdminFee}
+            totalRows={adminFeeMeta.total || adminFees.length}
+            title="Export Fee Membership"
+            description="Generate laporan seluruh fee membership driver."
+            columns={adminFeeExportColumns}
+          />
+
+          {/* Export transaksi koin */}
+          <ModalExport
+            isOpen={isKoinExportOpen}
+            onClose={() => setIsKoinExportOpen(false)}
+            onExport={handleExportKoin}
+            totalRows={koinMeta.total || koinTransactions.length}
+            title="Export Transaksi Koin"
+            description="Generate laporan seluruh transaksi koin driver."
+            columns={koinExportColumns}
           />
         </div>
       </div>
