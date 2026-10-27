@@ -2,9 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select } from "@/components/ui/select";
-import { toastError, toastSuccess } from "@/components/ui/toast-provider";
+import {
+  toastError,
+  toastSuccess,
+  confirmToast,
+} from "@/components/ui/toast-provider";
 import { driverApi } from "@/lib/api/driver";
 import type { DriverItem, SupervisorOption } from "@/lib/types/driver";
 import { getErrorMessage } from "@/lib/utils/error-message";
@@ -17,12 +20,15 @@ interface SupervisorCardProps {
   onChanged?: (driver: DriverItem) => void;
 }
 
-export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardProps) {
+export function SupervisorCard({
+  driver,
+  canAssign,
+  onChanged,
+}: SupervisorCardProps) {
   const [options, setOptions] = useState<SupervisorOption[]>([]);
   const [selectedId, setSelectedId] = useState(driver.supervisor_id ?? "");
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isUnassignOpen, setIsUnassignOpen] = useState(false);
 
   useEffect(() => {
     setSelectedId(driver.supervisor_id ?? "");
@@ -57,7 +63,10 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
 
   const hasChanges = selectedId !== (driver.supervisor_id ?? "");
 
-  const assign = async (supervisorId: string | null, successMessage: string) => {
+  const assign = async (
+    supervisorId: string | null,
+    successMessage: string,
+  ) => {
     setIsSaving(true);
     try {
       const res = await driverApi.assignSupervisor(driver.id, supervisorId);
@@ -67,10 +76,24 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
         onChanged?.(res.data);
       }
     } catch (err) {
-      toastError(getErrorMessage(err, "Gagal menyimpan penunjukan supervisor."));
+      toastError(
+        getErrorMessage(err, "Gagal menyimpan penunjukan supervisor."),
+      );
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const unassign = async () => {
+    const confirmed = await confirmToast({
+      title: "Lepas Penunjukan Supervisor?",
+      message: `Lepas penunjukan supervisor untuk ${driver.first_name} ${driver.last_name}? Driver ini akan menjadi "belum ditunjuk".`,
+      confirmText: "Lepas",
+      cancelText: "Batal",
+      variant: "warning",
+    });
+    if (!confirmed) return;
+    await assign(null, "Penunjukan supervisor dilepas.");
   };
 
   return (
@@ -114,7 +137,9 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
                   onChange={(e) => setSelectedId(e.target.value)}
                 >
                   <option value="">
-                    {isLoadingOptions ? "Memuat supervisor..." : "Belum ditunjuk"}
+                    {isLoadingOptions
+                      ? "Memuat supervisor..."
+                      : "Belum ditunjuk"}
                   </option>
                   {options.map((option) => {
                     const isFull = option.remaining <= 0;
@@ -125,8 +150,8 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
                         value={option.id}
                         disabled={isFull && !isCurrent}
                       >
-                        {option.fullname || option.username} ({option.driver_count}/
-                        {option.max_drivers}
+                        {option.fullname || option.username} (
+                        {option.driver_count}/{option.max_drivers}
                         {isFull && !isCurrent ? " - penuh" : ""})
                       </option>
                     );
@@ -135,7 +160,14 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
               </div>
               <div className="flex gap-2">
                 <Button
-                  onClick={() => void assign(selectedId || null, selectedId ? "Supervisor berhasil ditunjuk." : "Penunjukan supervisor dilepas.")}
+                  onClick={() =>
+                    void assign(
+                      selectedId || null,
+                      selectedId
+                        ? "Supervisor berhasil ditunjuk."
+                        : "Penunjukan supervisor dilepas.",
+                    )
+                  }
                   disabled={
                     isSaving ||
                     (!hasChanges && Boolean(driver.supervisor_id)) ||
@@ -147,7 +179,7 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
                 {driver.supervisor_id && (
                   <Button
                     variant="danger"
-                    onClick={() => setIsUnassignOpen(true)}
+                    onClick={() => void unassign()}
                     disabled={isSaving}
                   >
                     Lepas
@@ -158,20 +190,6 @@ export function SupervisorCard({ driver, canAssign, onChanged }: SupervisorCardP
           )}
         </div>
       </div>
-
-      <ConfirmDialog
-        isOpen={isUnassignOpen}
-        onClose={() => setIsUnassignOpen(false)}
-        onConfirm={() =>
-          void assign(null, "Penunjukan supervisor dilepas.")
-        }
-        title="Lepas Penunjukan Supervisor"
-        message={`Lepas penunjukan supervisor untuk ${driver.first_name} ${driver.last_name}? Driver ini akan menjadi "belum ditunjuk".`}
-        confirmText="Lepas"
-        cancelText="Batal"
-        variant="warning"
-        disabled={isSaving}
-      />
     </>
   );
 }
