@@ -1,11 +1,10 @@
-import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
 
 export interface DriverHeaderData {
   name: string;
   imageUrl: string;
   employeeId: string;
-  totalTrips: number;
+  membershipName: string | null;
   joinedDate: string;
   status: "Active" | "On Leave" | "Inactive";
 }
@@ -32,76 +31,73 @@ export function DriverHeader({ driver, children }: DriverHeaderProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
-      <div className="p-8 flex flex-col md:flex-row items-center gap-8">
-        <div className="relative">
-          {driver.imageUrl ? (
-            <img
-              alt={driver.name}
-              className="w-32 h-32 rounded-2xl object-cover ring-4 ring-slate-50 dark:ring-slate-800"
-              src={driver.imageUrl}
-            />
-          ) : (
-            <div className="w-32 h-32 rounded-2xl ring-4 ring-slate-50 dark:ring-slate-800 bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-              <span className="material-symbols-outlined text-4xl text-slate-400">
-                person
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+      <div
+        className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex items-center ${children ? "xl:col-span-2" : "xl:col-span-3"}`}
+      >
+        <div className="p-6 md:p-8 flex flex-col md:flex-row items-center justify-start gap-6 md:gap-8 w-full">
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            {driver.imageUrl ? (
+              <img
+                alt={driver.name}
+                className="w-28 h-28 md:w-32 md:h-32 rounded-2xl object-cover ring-4 ring-slate-50 dark:ring-slate-800 shadow-md"
+                src={driver.imageUrl}
+              />
+            ) : (
+              <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl ring-4 ring-slate-50 dark:ring-slate-800 bg-slate-200 dark:bg-slate-700 flex items-center justify-center shadow-md">
+                <span className="material-symbols-outlined text-5xl text-slate-400">
+                  person
+                </span>
+              </div>
+            )}
+            <span className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-1.5 rounded-lg border-4 border-white dark:border-slate-900 shadow-sm">
+              <span className="material-symbols-outlined text-base block">
+                verified
+              </span>
+            </span>
+          </div>
+
+          {/* Info Driver */}
+          <div className="text-center md:text-left flex flex-col items-center md:items-start flex-1">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
+                {driver.name}
+              </h2>
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold w-fit ${statusColors[driver.status]}`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${statusDotColors[driver.status]}`}
+                ></span>
+                {driver.status}
               </span>
             </div>
-          )}
-          <span className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-1 rounded-lg border-4 border-white dark:border-slate-900">
-            <span className="material-symbols-outlined text-sm block">
-              verified
-            </span>
-          </span>
-        </div>
-        <div className="flex-1 text-center md:text-left">
-          <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-              {driver.name}
-            </h2>
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold w-fit mx-auto md:mx-0 ${statusColors[driver.status]}`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${statusDotColors[driver.status]}`}
-              ></span>
-              {driver.status}
-            </span>
+
+            <div className="flex flex-wrap justify-center md:justify-start items-center gap-x-6 gap-y-2 text-sm text-slate-500 dark:text-slate-400 mt-2">
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="material-symbols-outlined text-lg text-blue-500">
+                  badge
+                </span>
+                {driver.employeeId}
+              </span>
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="material-symbols-outlined text-lg text-amber-500">
+                  workspace_premium
+                </span>
+                {driver.membershipName || "Tanpa Membership"}
+              </span>
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="material-symbols-outlined text-lg text-violet-500">
+                  calendar_today
+                </span>
+                {driver.joinedDate}
+              </span>
+            </div>
           </div>
-          <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm text-slate-500 dark:text-slate-400">
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="material-symbols-outlined text-lg text-slate-400">
-                badge
-              </span>
-              {driver.employeeId}
-            </span>
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="material-symbols-outlined text-lg text-slate-400">
-                route
-              </span>
-              {driver.totalTrips} Total Trips
-            </span>
-            <span className="flex items-center gap-1.5 font-medium">
-              <span className="material-symbols-outlined text-lg text-slate-400">
-                calendar_today
-              </span>
-              {driver.joinedDate}
-            </span>
-          </div>
-        </div>
-        <div className="flex gap-3">
-          <button className="p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400">
-            <span className="material-symbols-outlined">edit</span>
-          </button>
-          <Button variant="primary">Assign New Vehicle</Button>
         </div>
       </div>
-
-      {children && (
-        <div className="px-8 py-3 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800">
-          {children}
-        </div>
-      )}
+      {children && <div className="xl:col-span-1">{children}</div>}
     </div>
   );
 }

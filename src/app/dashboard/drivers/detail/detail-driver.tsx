@@ -222,7 +222,7 @@ const DetailDriverPage = () => {
           `${driver.first_name || ""} ${driver.last_name || ""}`.trim() || "-",
         imageUrl: buildUrl(driver.profile_photo || ""),
         employeeId: driver.employee_id || "-",
-        totalTrips: stats?.total_trips ?? 0,
+        membershipName: driver.membership?.name || null,
         joinedDate: driver.created_at
           ? new Date(driver.created_at).toLocaleDateString("id-ID", {
               year: "numeric",
@@ -235,7 +235,7 @@ const DetailDriverPage = () => {
         name: "-",
         imageUrl: "",
         employeeId: "-",
-        totalTrips: 0,
+        membershipName: null,
         joinedDate: "-",
         status: "Active",
       };
@@ -294,6 +294,7 @@ const DetailDriverPage = () => {
         fallbackPermission="driver.read.own"
       >
         <div className="p-7">
+          {/* Header & Supervisor */}
           <DriverHeader driver={driverHeader}>
             <SupervisorCard
               driver={driver}
@@ -302,6 +303,7 @@ const DetailDriverPage = () => {
             />
           </DriverHeader>
 
+          {/* Statistik Card */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 mt-6">
             {/* Total Perjalanan */}
             <DriverStatsCard

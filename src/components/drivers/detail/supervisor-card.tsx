@@ -14,9 +14,7 @@ import { getErrorMessage } from "@/lib/utils/error-message";
 
 interface SupervisorCardProps {
   driver: DriverItem;
-  /** Hanya Administrator & Owner (driver.assign_supervisor) yang boleh mengubah. */
   canAssign: boolean;
-  /** Dipanggil dengan data driver terbaru agar UI langsung ter-update. */
   onChanged?: (driver: DriverItem) => void;
 }
 
@@ -97,36 +95,45 @@ export function SupervisorCard({
   };
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
-      <div className="flex items-center gap-2 shrink-0">
-        <span className="material-symbols-outlined text-indigo-500 text-lg">
-          supervisor_account
-        </span>
-        <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">
-          Supervisor:
-        </span>
-        {supervisorName ? (
-          <span className="text-sm font-bold text-slate-900 dark:text-white">
-            {supervisorName}
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-full overflow-hidden">
+      {/* Header Card */}
+      <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0">
+          <span className="material-symbols-outlined text-indigo-500 text-xl">
+            supervisor_account
           </span>
-        ) : (
-          <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
-            Belum ditunjuk
-          </span>
-        )}
+        </div>
+        <div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            Penanggung Jawab
+          </p>
+          {supervisorName ? (
+            <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+              {supervisorName}
+            </p>
+          ) : (
+            <p className="text-sm font-bold text-amber-600 dark:text-amber-400 leading-tight">
+              Belum ditunjuk
+            </p>
+          )}
+        </div>
       </div>
 
+      {/* Body Card (Form) */}
       {canAssign && (
-        <div className="flex items-center gap-2 w-full md:max-w-md md:ml-auto">
-          <div className="flex-1">
+        <div className="p-4 md:p-6 flex-1 flex flex-col justify-end gap-3 bg-slate-50/50 dark:bg-slate-800/20">
+          <div>
+            <label className="text-[11px] font-semibold text-slate-500 mb-1.5 block">
+              Tunjuk / Ganti Supervisor
+            </label>
             <Select
               value={selectedId}
               disabled={isLoadingOptions || isSaving}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="h-9 text-sm" // Sedikit lebih kecil agar pas di header
+              className="h-10 text-sm w-full"
             >
               <option value="">
-                {isLoadingOptions ? "Memuat..." : "Pilih Supervisor"}
+                {isLoadingOptions ? "Memuat supervisor..." : "Belum ditunjuk"}
               </option>
               {options.map((option) => {
                 const isFull = option.remaining <= 0;
@@ -139,40 +146,52 @@ export function SupervisorCard({
                   >
                     {option.fullname || option.username} ({option.driver_count}/
                     {option.max_drivers}
-                    {isFull && !isCurrent ? " - penuh" : ""})
+                    {isFull && !isCurrent ? " - Penuh" : ""})
                   </option>
                 );
               })}
             </Select>
           </div>
-          <Button
-            onClick={() =>
-              void assign(
-                selectedId || null,
-                selectedId
-                  ? "Supervisor berhasil ditunjuk."
-                  : "Penunjukan supervisor dilepas.",
-              )
-            }
-            disabled={
-              isSaving ||
-              (!hasChanges && Boolean(driver.supervisor_id)) ||
-              (!driver.supervisor_id && !selectedId)
-            }
-            className="h-9 px-3 text-sm shrink-0"
-          >
-            {isSaving ? "..." : "Simpan"}
-          </Button>
-          {driver.supervisor_id && (
+
+          <div className="flex gap-2 w-full">
             <Button
-              variant="danger"
-              onClick={() => void unassign()}
-              disabled={isSaving}
-              className="h-9 px-3 text-sm shrink-0"
+              onClick={() =>
+                void assign(
+                  selectedId || null,
+                  selectedId
+                    ? "Supervisor berhasil ditunjuk."
+                    : "Penunjukan supervisor dilepas.",
+                )
+              }
+              disabled={
+                isSaving ||
+                (!hasChanges && Boolean(driver.supervisor_id)) ||
+                (!driver.supervisor_id && !selectedId)
+              }
+              className="flex-1 h-10 text-sm"
             >
-              Lepas
+              {isSaving ? "Menyimpan..." : "Simpan"}
             </Button>
-          )}
+            {driver.supervisor_id && (
+              <Button
+                variant="danger"
+                onClick={() => void unassign()}
+                disabled={isSaving}
+                className="h-10 px-4 text-sm shrink-0"
+              >
+                Lepas
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Jika tidak punya akses edit, tampilkan info saja */}
+      {!canAssign && (
+        <div className="p-4 md:p-6 flex-1 bg-slate-50/50 dark:bg-slate-800/20 text-sm text-slate-500">
+          {supervisorName
+            ? `Email: ${driver.supervisor?.email || "-"}`
+            : "Supervisor belum ditunjuk oleh Administrator."}
         </div>
       )}
     </div>
