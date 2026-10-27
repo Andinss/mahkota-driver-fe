@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
@@ -19,6 +20,8 @@ import {
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { DriverQuickActions } from "./driver-quick-actions";
+import { useRouter } from "next/navigation";
+import { canAccess } from "@/lib/can-access";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -100,7 +103,21 @@ const rentalBadgeConfig: Record<
 };
 
 export function DriverDashboardPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authIsLoading } = useAuth();
+  const router = useRouter();
+
+  // Hanya user yang benar-benar punya data driver (driver_id) yang boleh
+  // masuk ke portal driver. Admin/owner/supervisor/finans tidak boleh.
+  const hasDriverPortalAccess =
+    !!user?.driver_id &&
+    canAccess(user?.permissions, "driver_portal.dashboard");
+
+  useEffect(() => {
+    if (!authIsLoading && user && !hasDriverPortalAccess) {
+      router.replace("/dashboard");
+    }
+  }, [authIsLoading, user, hasDriverPortalAccess, router]);
+
   const driverId = user?.driver_id ?? null;
 
   const driverQuery = useQuery({
@@ -157,6 +174,9 @@ export function DriverDashboardPage() {
   const fullName = driver
     ? `${driver.first_name} ${driver.last_name}`.trim()
     : user?.driver_name || user?.username || "Driver";
+  const supervisorName = driver?.supervisor
+    ? (driver.supervisor.fullname || driver.supervisor.username) || null
+    : null;
   // Riwayat pemakaian unit (aktif + selesai), urut dari yang terbaru.
   const rentalHistory = [...(driver?.rentals ?? [])].sort(
     (a, b) =>
@@ -212,7 +232,11 @@ export function DriverDashboardPage() {
         <div className="w-full flex flex-col gap-8 pb-10">
           <PageHeader
             title={`Selamat Datang, ${fullName}`}
-            description="Selamat datang di portal mitra driver Mahkota Fleet"
+            description={
+              supervisorName
+                ? `Selamat datang di portal mitra driver Mahkota Fleet — Supervisor: ${supervisorName}`
+                : "Selamat datang di portal mitra driver Mahkota Fleet"
+            }
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
