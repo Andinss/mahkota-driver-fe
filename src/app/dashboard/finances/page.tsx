@@ -60,6 +60,7 @@ const dailyExportColumns: ExportColumn[] = [
   { id: "paidAt", label: "Tanggal Bayar", defaultChecked: true },
 ];
 
+/** Kolom export admin payment (fee membership). */
 const adminFeeExportColumns: ExportColumn[] = [
   { id: "reference_number", label: "No. Referensi", defaultChecked: true },
   { id: "payer", label: "Payer / Driver", defaultChecked: true },
@@ -71,6 +72,20 @@ const adminFeeExportColumns: ExportColumn[] = [
   { id: "status", label: "Status", defaultChecked: true },
   { id: "payment_method", label: "Metode Pembayaran", defaultChecked: true },
   { id: "created_at", label: "Tanggal Dibuat", defaultChecked: false },
+];
+
+/** Kolom export transaksi koin. */
+const koinExportColumns: ExportColumn[] = [
+  { id: "referenceNumber", label: "No. Referensi", defaultChecked: true },
+  { id: "driverName", label: "Driver", defaultChecked: true },
+  { id: "driverEmployeeId", label: "ID Karyawan", defaultChecked: false },
+  { id: "type", label: "Tipe", defaultChecked: true },
+  { id: "amount", label: "Jumlah", defaultChecked: true },
+  { id: "balanceBefore", label: "Saldo Sebelum", defaultChecked: false },
+  { id: "balanceAfter", label: "Saldo Sesudah", defaultChecked: false },
+  { id: "reason", label: "Alasan", defaultChecked: true },
+  { id: "notes", label: "Catatan", defaultChecked: false },
+  { id: "createdAt", label: "Tanggal", defaultChecked: true },
 ];
 
 export default function PaymentList() {
@@ -142,6 +157,7 @@ export default function PaymentList() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDailyExportOpen, setIsDailyExportOpen] = useState(false);
   const [isAdminFeeExportOpen, setIsAdminFeeExportOpen] = useState(false);
+  const [isKoinExportOpen, setIsKoinExportOpen] = useState(false);
   const toastShownRef = useRef(false);
 
   useEffect(() => {
@@ -411,6 +427,27 @@ export default function PaymentList() {
         getErrorMessage(
           err,
           "Gagal mengekspor fee membership. Silakan coba lagi.",
+        ),
+      );
+    }
+  };
+
+  const handleExportKoin = async (options?: ExportOptions) => {
+    if (!options) return;
+    const params: Record<string, string | number | undefined> = {
+      format: options.format,
+      columns: options.columns.join(","),
+    };
+    if (options.dateRange?.start) params.start_date = options.dateRange.start;
+    if (options.dateRange?.end) params.end_date = options.dateRange.end;
+    try {
+      await koinApi.exportTransactions(params);
+    } catch (err) {
+      console.error("Gagal mengekspor transaksi koin:", err);
+      toastError(
+        getErrorMessage(
+          err,
+          "Gagal mengekspor transaksi koin. Silakan coba lagi.",
         ),
       );
     }
@@ -1060,11 +1097,23 @@ export default function PaymentList() {
                         </p>
                       </div>
                     </div>
-                    <Link href="/dashboard/finances/koin">
-                      <Button icon="add" variant="primary">
-                        Buat Top Up
-                      </Button>
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link href="/dashboard/finances/koin">
+                        <Button icon="add" variant="primary">
+                          Buat Top Up
+                        </Button>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setIsKoinExportOpen(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm font-medium text-slate-600 dark:text-slate-300"
+                      >
+                        <span className="material-symbols-outlined text-base">
+                          download
+                        </span>
+                        Export
+                      </button>
+                    </div>
                   </div>
                   <KoinTable transactions={filteredKoinTransactions} />
                 </div>
@@ -1113,6 +1162,17 @@ export default function PaymentList() {
             title="Export Fee Membership"
             description="Generate laporan seluruh fee membership driver."
             columns={adminFeeExportColumns}
+          />
+
+          {/* Export transaksi koin */}
+          <ModalExport
+            isOpen={isKoinExportOpen}
+            onClose={() => setIsKoinExportOpen(false)}
+            onExport={handleExportKoin}
+            totalRows={koinMeta.total || koinTransactions.length}
+            title="Export Transaksi Koin"
+            description="Generate laporan seluruh transaksi koin driver."
+            columns={koinExportColumns}
           />
         </div>
       </div>
