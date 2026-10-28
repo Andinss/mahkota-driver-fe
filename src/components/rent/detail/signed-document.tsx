@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { toastError, toastSuccess } from "@/components/ui/toast-provider";
+import { getErrorMessage } from "@/lib/utils/error-message";
 
 interface DocumentSignProps {
   documentUrl?: string;
   checklistPreUrl?: string;
   checklistPostUrl?: string;
-  onUploadPost?: (file: File) => void;
+  onUploadPost?: (file: File) => Promise<void>;
 }
 
 const DocumentSign = ({
@@ -17,24 +18,21 @@ const DocumentSign = ({
   onUploadPost,
 }: DocumentSignProps) => {
   const [isUploading, setIsUploading] = useState(false);
-  const [mockPostUrl, setMockPostUrl] = useState<string | null>(null);
 
   const hasContract = !!documentUrl;
   const hasPre = !!checklistPreUrl;
-  const currentPostUrl = mockPostUrl || checklistPostUrl;
-  const hasPost = !!currentPostUrl;
+  const hasPost = !!checklistPostUrl;
 
   const imageBase = (
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
   ).replace(/\/api\/?$/, "");
   const resolveUrl = (path?: string) => {
     if (!path) return "";
-    return path.startsWith("http")
-      ? path
-      : `${imageBase}/${path.replace(/^\//, "")}`;
+    if (path.startsWith("http") || path.startsWith("blob:")) return path;
+    return `${imageBase}/${path.replace(/^\//, "")}`;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -44,14 +42,18 @@ const DocumentSign = ({
     }
 
     setIsUploading(true);
-
-    setTimeout(() => {
-      const objectUrl = URL.createObjectURL(file);
-      setMockPostUrl(objectUrl);
-      onUploadPost?.(file);
+    try {
+      await onUploadPost?.(file);
+      toastSuccess("Checklist Post-Rental berhasil diunggah.");
+    } catch (err) {
+      console.error(err);
+      toastError(
+        getErrorMessage(err, "Gagal mengunggah checklist post-rental."),
+      );
+    } finally {
       setIsUploading(false);
-      toastSuccess("Checklist Post-Rental berhasil diunggah (Mode Simulasi).");
-    }, 1000);
+      e.target.value = "";
+    }
   };
 
   return (
@@ -211,7 +213,7 @@ const DocumentSign = ({
           <div className="flex items-center gap-2">
             {hasPost ? (
               <a
-                href={resolveUrl(currentPostUrl)}
+                href={resolveUrl(checklistPostUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-primary transition-all"

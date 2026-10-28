@@ -204,11 +204,20 @@ const DetailRentPage = () => {
               documentUrl={rental.document_contract}
               checklistPreUrl={rental.checklist_pre}
               checklistPostUrl={rental.checklist_post}
-              onUploadPost={(file) => {
-                console.log(
-                  "File checklist post-rental siap dikirim ke API:",
+              onUploadPost={async (file) => {
+                const res = await rentalApi.uploadChecklistPost(
+                  rental.id,
                   file,
                 );
+                if (res.data) {
+                  setRental(res.data);
+                } else {
+                  setRental((prev) =>
+                    prev ? { ...prev, checklist_post: "uploaded" } : null,
+                  );
+                  const refreshRes = await rentalApi.getDetail(rental.id);
+                  if (refreshRes.data) setRental(refreshRes.data);
+                }
               }}
             />
           </div>
