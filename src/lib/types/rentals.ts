@@ -19,7 +19,7 @@ export interface VehicleBrief {
   merk: string;
   model: string;
   license_plate: string;
-  engine_status?: 'on' | 'off';
+  engine_status?: "on" | "off";
   vendor?: VendorBrief | null;
 }
 
@@ -35,9 +35,11 @@ export interface RentalTransaction {
   total_duration: number;
   daily_rate: number;
   document_contract?: string;
-  rental_duration: 'harian' | 'mingguan' | 'bulanan' | 'tahunan';
-  rental_service: 'lepas kunci' | 'pakai supir';
-  status?: 'active' | 'stopped';
+  checklist_pre?: string;
+  checklist_post?: string;
+  rental_duration: "harian" | "mingguan" | "bulanan" | "tahunan";
+  rental_service: "lepas kunci" | "pakai supir";
+  status?: "active" | "stopped";
   stopped_at?: string | null;
   finances?: any[];
   late_payments?: any[];
@@ -52,7 +54,7 @@ export interface OngoingRental {
   vehicle_id: string;
   start_date: string;
   end_date: string;
-  status?: 'active' | 'stopped';
+  status?: "active" | "stopped";
 }
 
 export interface RentalSummary {
@@ -68,5 +70,5 @@ export interface RentalListParams {
   search?: string;
   rental_duration?: string;
   rental_service?: string;
-  status?: 'all' | 'active' | 'upcoming' | 'completed' | 'stopped';
+  status?: "all" | "active" | "upcoming" | "completed" | "stopped";
 }
