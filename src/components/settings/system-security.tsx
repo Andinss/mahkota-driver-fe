@@ -1,12 +1,9 @@
 "use client";
-import { useState } from "react";
 
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 
 const SecurityCard = () => {
-  const [mfaEnabled, setMfaEnabled] = useState(true);
-  const [autoUpdated, setAutoUpdated] = useState(false);
   return (
     <div>
       <section
@@ -25,25 +22,12 @@ const SecurityCard = () => {
           </h3>
         </div>
         <div className="space-y-5">
-          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
-            <div>
-              <p className="font-semibold text-gray-900 dark:text-white">
-                Multi-Factor Authentication
-              </p>
-              <p className="text-xs text-gray-600 dark:text-slate-400">
-                Enforce MFA for all admin accounts
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                id="mfa-toggle"
-                type="checkbox"
-                checked={mfaEnabled}
-                onChange={(e) => setMfaEnabled(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-300 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+            <p className="text-xs text-blue-700 dark:text-blue-300">
+              Autentikasi dua faktor (MFA) diatur per akun pada panel{" "}
+              <span className="font-bold">Autentikasi Dua Faktor (MFA)</span> di
+              halaman ini.
+            </p>
           </div>
           <div>
             <Select

@@ -4,6 +4,7 @@ export interface UserItem {
   email: string;
   fullname: string;
   is_active: boolean;
+  mfa_enabled?: boolean;
   phoneNumber?: string | null;
   role_id?: string;
   role?: {

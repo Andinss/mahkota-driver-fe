@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
-import type { User } from "./types/auth";
+import type { LoginResponse, MfaChallengeResponse, User } from "./types/auth";
 import {
   getAccessToken,
   clearTokens,
@@ -19,7 +19,8 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string, turnstileToken?: string, remember?: boolean) => Promise<User | null>;
+  login: (email: string, password: string, turnstileToken?: string, remember?: boolean) => Promise<User | MfaChallengeResponse>;
+  completeMfaLogin: (mfaToken: string, code: string, remember?: boolean) => Promise<User>;
   logout: () => void;
 }
 
@@ -147,17 +148,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [startIdleTimer, clearIdleTimers, resetIdleTimer]);
 
-  const login = useCallback(
-    async (
-      email: string,
-      password: string,
-      turnstileToken?: string,
-      remember?: boolean,
-    ): Promise<User | null> => {
-      const result = await authApi.login(
-        { email, password, turnstile_token: turnstileToken },
-        remember ?? true,
-      );
+  const applySession = useCallback(
+    (result: LoginResponse): User => {
       const raw = result.user as unknown as Record<string, unknown>;
       const permissions =
         Array.isArray(raw.permissions) && raw.permissions.length
@@ -172,6 +164,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return userData;
     },
     [startIdleTimer],
+  );
+
+  const login = useCallback(
+    async (
+      email: string,
+      password: string,
+      turnstileToken?: string,
+      remember?: boolean,
+    ): Promise<User | MfaChallengeResponse> => {
+      const result = await authApi.login(
+        { email, password, turnstile_token: turnstileToken },
+        remember ?? true,
+      );
+
+      if ("mfa_required" in result) {
+        return result;
+      }
+
+      return applySession(result);
+    },
+    [applySession],
+  );
+
+  const completeMfaLogin = useCallback(
+    async (mfaToken: string, code: string, remember?: boolean): Promise<User> => {
+      const result = await authApi.verifyMfa(
+        { mfa_token: mfaToken, code },
+        remember ?? true,
+      );
+      return applySession(result);
+    },
+    [applySession],
   );
 
   const logout = useCallback(() => {
@@ -189,6 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         login,
+        completeMfaLogin,
         logout,
       }}
     >
