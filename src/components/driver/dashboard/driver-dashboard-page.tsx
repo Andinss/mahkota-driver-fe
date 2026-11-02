@@ -130,9 +130,9 @@ export function DriverDashboardPage() {
   });
 
   const feeQuery = useQuery({
-    queryKey: financeKeys.myList({ limit: 10 }),
+    queryKey: financeKeys.myList({ limit: 5 }),
     queryFn: async () => {
-      const res = await financeApi.getMyFinances({ limit: 10 });
+      const res = await financeApi.getMyFinances({ limit: 5 });
       return Array.isArray(res?.data) ? res.data : [];
     },
     enabled: !!driverId,
@@ -151,9 +151,9 @@ export function DriverDashboardPage() {
   });
 
   const dailyQuery = useQuery({
-    queryKey: financeKeys.myDailyPayments({ limit: 10 }),
+    queryKey: financeKeys.myDailyPayments({ limit: 5 }),
     queryFn: async () => {
-      const res = await financeApi.getMyDailyPayments({ limit: 10 });
+      const res = await financeApi.getMyDailyPayments({ limit: 5 });
       const data = (res as { data?: unknown })?.data ?? res;
       const items = Array.isArray(data)
         ? data
@@ -222,7 +222,7 @@ export function DriverDashboardPage() {
     })),
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 10);
+    .slice(0, 5);
 
   return (
     <div className="m-8">
@@ -448,7 +448,7 @@ export function DriverDashboardPage() {
                       Tagihan Saya
                     </h2>
                     <p className="text-xs text-slate-400">
-                      {billRows.length} tagihan tercatat
+                      {billRows.length} tagihan terbaru
                     </p>
                   </div>
                 </div>

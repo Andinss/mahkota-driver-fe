@@ -1,18 +1,15 @@
 "use client";
 
-import { useState } from "react";
-
 import CardBrandUpload from "@/components/settings/card-brand";
 // import GeneralParamaters from "@/components/settings/general-parameters";
 import SecurityCard from "@/components/settings/system-security";
+import MfaSettings from "@/components/settings/mfa-settings";
 import { Button } from "@/components/ui/button";
 import { confirmToast, toastSuccess } from "@/components/ui/toast-provider";
 import { PermissionGuard } from "@/components/auth-guard-permission";
 import { usePalette } from "@/lib/palette-context";
 
 const SettingPage = () => {
-  const [mfaEnabled, setMfaEnabled] = useState(true);
-  const [autoUpdated, setAutoUpdated] = useState(false);
   const { commitPalette } = usePalette();
 
   return (
@@ -22,6 +19,7 @@ const SettingPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-5">
             <div className="lg:col-span-7 space-y-8">
               <CardBrandUpload />
+              <MfaSettings />
               {/* <GeneralParamaters /> */}
             </div>
 

@@ -41,6 +41,9 @@ export const usersApi = {
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/users/delete/${id}`),
 
+  resetMfa: (id: string) =>
+    api.post<{ success: boolean; message: string }>(`/users/reset-mfa/${id}`),
+
   exportData: async (params: Record<string, string | number | undefined>) => {
     const { blob, filename } = await api.download("/users/export", params);
     triggerDownload(blob, filename);
