@@ -92,6 +92,17 @@ export interface DriverSummary {
   gender_breakdown: Record<string, number>;
 }
 
+export interface DriverStats {
+  total_trips: number;
+  active_trips: number;
+  total_earnings: number;
+  koin_balance: number;
+  late_payment_count: number;
+  late_payment_approved: number;
+  late_payment_pending: number;
+  membership_name: string | null;
+}
+
 export interface DriverListParams {
   page?: number;
   limit?: number;

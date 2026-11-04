@@ -9,6 +9,7 @@ import AccountDetails from "@/components/user/detail-user/account-details";
 import ContactInformation from "@/components/user/detail-user/contact-information";
 import ActivityLog from "@/components/user/detail-user/log";
 import ProfileCard from "@/components/user/detail-user/profile-card";
+import MfaSecurity from "@/components/user/detail-user/mfa-security";
 import { usersApi } from "@/lib/api/users";
 import type { UserItem } from "@/lib/types/user";
 
@@ -68,6 +69,15 @@ const UserDetailPage = () => {
           <ContactInformation user={user} />
           {/* Account Details */}
           <AccountDetails user={user} />
+          {/* MFA Security */}
+          <MfaSecurity
+            user={user}
+            onReset={() =>
+              setUser((prev) =>
+                prev ? { ...prev, mfa_enabled: false } : prev,
+              )
+            }
+          />
           {/* Activity Log */}
           <ActivityLog user={user} />
         </div>

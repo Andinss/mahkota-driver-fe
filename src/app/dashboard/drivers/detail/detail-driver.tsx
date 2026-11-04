@@ -26,7 +26,7 @@ import { rentalApi } from "@/lib/api/rentals";
 import { financeApi } from "@/lib/api/finances";
 import { useAuth } from "@/lib/auth-context";
 import { canAccess } from "@/lib/can-access";
-import type { DriverItem } from "@/lib/types/driver";
+import type { DriverItem, DriverStats } from "@/lib/types/driver";
 import type { RentalTransaction } from "@/lib/types/rentals";
 import type { HistorySetoran } from "@/lib/types/history";
 import type { FinanceItem } from "@/lib/types/finances";
@@ -44,11 +44,18 @@ const mapFinanceToHistory = (f: FinanceItem): HistorySetoran => ({
   rental_number: f.rentals?.[0]?.rental_number,
 });
 
+const formatRupiah = (value: number) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+
 const DetailDriverPage = () => {
   const searchParams = useSearchParams();
   const driverId = searchParams.get("id");
   const { user } = useAuth();
-  // Supervisor hanya punya driver.read.own → pakai endpoint /supervisor/drivers.
   const isSupervisor =
     canAccess(user?.permissions, "driver.read.own") &&
     !canAccess(user?.permissions, "driver.read.all");
@@ -58,14 +65,24 @@ const DetailDriverPage = () => {
   );
 
   const [driver, setDriver] = useState<DriverItem | null>(null);
-  const [currentRental, setCurrentRental] = useState<RentalTransaction | null>(null);
+  const [stats, setStats] = useState<DriverStats | null>(null);
+  const [currentRental, setCurrentRental] = useState<RentalTransaction | null>(
+    null,
+  );
   const [driverRentals, setDriverRentals] = useState<RentalTransaction[]>([]);
   const [depositHistory, setDepositHistory] = useState<HistorySetoran[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
-  const buildUrl = (path: string) => path ? (path.startsWith("http") ? path : `${imageBase}/${path.replace(/^\//, "")}`) : "";
+  const imageBase = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+  ).replace(/\/api\/?$/, "");
+  const buildUrl = (path: string) =>
+    path
+      ? path.startsWith("http")
+        ? path
+        : `${imageBase}/${path.replace(/^\//, "")}`
+      : "";
 
   useEffect(() => {
     if (!driverId) {
@@ -86,7 +103,10 @@ const DetailDriverPage = () => {
             toastError("Data driver tidak ditemukan atau tidak lengkap.");
           }
         } catch (err) {
-          const msg = getErrorMessage(err, "Gagal memuat data driver. Silakan coba lagi.");
+          const msg = getErrorMessage(
+            err,
+            "Gagal memuat data driver. Silakan coba lagi.",
+          );
           toastError(msg);
           setDriver(null);
         }
@@ -101,7 +121,10 @@ const DetailDriverPage = () => {
           return;
         }
       } catch (err) {
-        const msg = getErrorMessage(err, "Gagal memuat data driver. Silakan coba lagi.");
+        const msg = getErrorMessage(
+          err,
+          "Gagal memuat data driver. Silakan coba lagi.",
+        );
         toastError(msg);
         setDriver(null);
         return;
@@ -117,9 +140,26 @@ const DetailDriverPage = () => {
           toastError("Data driver tidak ditemukan atau tidak lengkap.");
         }
       } catch (err) {
-        const msg = getErrorMessage(err, "Gagal memuat detail driver. Silakan coba lagi.");
+        const msg = getErrorMessage(
+          err,
+          "Gagal memuat detail driver. Silakan coba lagi.",
+        );
         toastError(msg);
         setDriver(null);
+      }
+    };
+
+    const fetchStats = async () => {
+      if (isSupervisor) {
+        setStats(null);
+        return;
+      }
+      try {
+        const res = await driverApi.getStats(driverId);
+        setStats(res.data ?? null);
+      } catch (err) {
+        console.error("Failed to load driver stats:", err);
+        setStats(null);
       }
     };
 
@@ -129,7 +169,11 @@ const DetailDriverPage = () => {
         const rentals = res.data ?? [];
         const driverRentalsList = rentals
           .filter((r: RentalTransaction) => r.driver_id === driverId)
-          .sort((a: RentalTransaction, b: RentalTransaction) => new Date(b.created_at || b.start_date).getTime() - new Date(a.created_at || a.start_date).getTime());
+          .sort(
+            (a: RentalTransaction, b: RentalTransaction) =>
+              new Date(b.created_at || b.start_date).getTime() -
+              new Date(a.created_at || a.start_date).getTime(),
+          );
 
         setDriverRentals(driverRentalsList);
 
@@ -146,38 +190,55 @@ const DetailDriverPage = () => {
     const fetchHistory = async () => {
       setIsLoadingHistory(true);
       try {
-        const res = await financeApi.getList({ driver_id: driverId, limit: 1000 });
+        const res = await financeApi.getList({
+          driver_id: driverId,
+          limit: 1000,
+        });
         setDepositHistory(res.data.map(mapFinanceToHistory));
       } catch (err) {
-        console.error("Failed to load deposit history:", err instanceof Error ? err.message : err);
+        console.error(
+          "Failed to load deposit history:",
+          err instanceof Error ? err.message : err,
+        );
         setDepositHistory([]);
-        toastError(getErrorMessage(err, "Gagal memuat riwayat setoran driver."));
+        toastError(
+          getErrorMessage(err, "Gagal memuat riwayat setoran driver."),
+        );
       } finally {
         setIsLoadingHistory(false);
       }
     };
 
-    fetchDriver().then(fetchRental).finally(() => setIsLoading(false));
+    fetchDriver()
+      .then(fetchRental)
+      .finally(() => setIsLoading(false));
+    fetchStats();
     fetchHistory();
   }, [driverId, isSupervisor]);
 
-  const driverHeader: DriverHeaderData = driver ? {
-    name: `${driver.first_name || ""} ${driver.last_name || ""}`.trim() || "-",
-    imageUrl: buildUrl(driver.profile_photo || ""),
-    employeeId: driver.employee_id || "-",
-    totalTrips: 0,
-    joinedDate: driver.created_at
-      ? new Date(driver.created_at).toLocaleDateString("id-ID", { year: "numeric", month: "long" })
-      : "-",
-    status: driver.is_active !== false ? "Active" : "Inactive",
-  } : {
-    name: "-",
-    imageUrl: "",
-    employeeId: "-",
-    totalTrips: 0,
-    joinedDate: "-",
-    status: "Active",
-  };
+  const driverHeader: DriverHeaderData = driver
+    ? {
+        name:
+          `${driver.first_name || ""} ${driver.last_name || ""}`.trim() || "-",
+        imageUrl: buildUrl(driver.profile_photo || ""),
+        employeeId: driver.employee_id || "-",
+        membershipName: driver.membership?.name || null,
+        joinedDate: driver.created_at
+          ? new Date(driver.created_at).toLocaleDateString("id-ID", {
+              year: "numeric",
+              month: "long",
+            })
+          : "-",
+        status: driver.is_active !== false ? "Active" : "Inactive",
+      }
+    : {
+        name: "-",
+        imageUrl: "",
+        employeeId: "-",
+        membershipName: null,
+        joinedDate: "-",
+        status: "Active",
+      };
 
   const [activeTab, setActiveTab] = useState<TabValue>("overview");
 
@@ -197,15 +258,23 @@ const DetailDriverPage = () => {
         vendorName: r.vehicle?.vendor?.name || "-",
         createdAt: r.created_at || "",
         documentContract: r.document_contract || undefined,
-        status: new Date(r.end_date) > new Date() ? ("Current" as const) : ("Previous" as const),
+        status:
+          new Date(r.end_date) > new Date()
+            ? ("Current" as const)
+            : ("Previous" as const),
       })),
     [driverRentals],
   );
 
+  const lateRateText = (() => {
+    if (!stats || stats.late_payment_count === 0) return "0";
+    return `${stats.late_payment_approved}`;
+  })();
+
   if (isLoading) {
     return (
       <div className="p-7 flex items-center justify-center min-h-[400px]">
-        <p className="text-slate-500">Loading driver details...</p>
+        <p className="text-slate-500">Memuat detail driver...</p>
       </div>
     );
   }
@@ -213,87 +282,121 @@ const DetailDriverPage = () => {
   if (!driver) {
     return (
       <div className="p-7 flex items-center justify-center min-h-[400px]">
-        <p className="text-slate-500">Driver not found</p>
+        <p className="text-slate-500">Driver tidak ditemukan</p>
       </div>
     );
   }
 
   return (
     <>
-    <PermissionGuard permission="driver.read.all" fallbackPermission="driver.read.own">
-    <div className="p-7">
-      <DriverHeader driver={driverHeader} />
+      <PermissionGuard
+        permission="driver.read.all"
+        fallbackPermission="driver.read.own"
+      >
+        <div className="p-7">
+          {/* Header & Supervisor */}
+          <DriverHeader driver={driverHeader}>
+            <SupervisorCard
+              driver={driver}
+              canAssign={canAssignSupervisor}
+              onChanged={(updated) => setDriver(updated)}
+            />
+          </DriverHeader>
 
-      <SupervisorCard
-        driver={driver}
-        canAssign={canAssignSupervisor}
-        onChanged={(updated) => setDriver(updated)}
-      />
+          {/* Statistik Card */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 mt-6">
+            {/* Total Perjalanan */}
+            <DriverStatsCard
+              title="Total Perjalanan"
+              value={stats ? String(stats.total_trips) : "—"}
+              icon="route"
+              iconBgColor="bg-emerald-50 dark:bg-emerald-900/20"
+              iconColor="text-emerald-500"
+              badge={
+                stats
+                  ? stats.active_trips > 0
+                    ? `${stats.active_trips} aktif`
+                    : "Tidak ada yang aktif"
+                  : undefined
+              }
+              badgeColor="text-emerald-500"
+            />
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <DriverStatsCard
-          title="Performance Rating"
-          value="4.8/5"
-          icon="star"
-          iconBgColor="bg-amber-50 dark:bg-amber-900/20"
-          iconColor="text-amber-500"
-          badge="+0.2 from last month"
-          badgeColor="text-emerald-500"
-        />
-        <DriverStatsCard
-          title="Total Earnings"
-          value="Rp 12.450.000"
-          icon="payments"
-          iconBgColor="bg-blue-50 dark:bg-blue-900/20"
-          iconColor="text-blue-500"
-          badge="Total YTD"
-          badgeColor="text-slate-400"
-        />
-        <DriverStatsCard
-          title="License Validity"
-          value="Sep 2026"
-          icon="assignment_ind"
-          iconBgColor="bg-emerald-50 dark:bg-emerald-900/20"
-          iconColor="text-emerald-500"
-          badge="Validated"
-          badgeColor="text-emerald-500 italic"
-        />
-        <DriverStatsCard
-          title="End date contract"
-          value="Dec 2025"
-          icon="event_available"
-          iconBgColor="bg-red-50 dark:bg-red-900/20"
-          iconColor="text-red-500"
-          badge="18 Months left"
-          badgeColor="text-slate-400"
-        />
-      </div>
+            {/* Total Pendapatan */}
+            <DriverStatsCard
+              title="Total Pendapatan"
+              value={stats ? formatRupiah(stats.total_earnings) : "—"}
+              icon="payments"
+              iconBgColor="bg-blue-50 dark:bg-blue-900/20"
+              iconColor="text-blue-500"
+              badge="Sejak bergabung"
+              badgeColor="text-slate-400"
+            />
 
-      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+            {/* Saldo Koin */}
+            <DriverStatsCard
+              title="Saldo Koin"
+              value={stats ? formatRupiah(stats.koin_balance) : "—"}
+              icon="account_balance_wallet"
+              iconBgColor="bg-amber-50 dark:bg-amber-900/20"
+              iconColor="text-amber-500"
+              badge={stats ? "Saldo saat ini" : undefined}
+              badgeColor="text-slate-400"
+            />
 
-      {activeTab === "overview" && <DriverOverview driver={driver} buildUrl={buildUrl} rental={currentRental} />}
+            {/* Izin Telat */}
+            <DriverStatsCard
+              title="Izin Telat"
+              value={stats ? lateRateText : "—"}
+              icon="schedule"
+              iconBgColor="bg-rose-50 dark:bg-rose-900/20"
+              iconColor="text-rose-500"
+              badge={
+                stats
+                  ? stats.late_payment_pending > 0
+                    ? `${stats.late_payment_pending} menunggu`
+                    : `${stats.late_payment_count} total`
+                  : undefined
+              }
+              badgeColor={
+                stats && stats.late_payment_pending > 0
+                  ? "text-amber-500"
+                  : "text-slate-400"
+              }
+            />
+          </div>
 
-      {activeTab === "vehicle-history" && (
-        <VehicleHistoryList vehicles={vehicleHistoryList} />
-      )}
+          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {activeTab === "deposit-history" && (
-        <div>
-          {isLoadingHistory ? (
-            <div className="py-20 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-              Loading daily payment history...
+          {activeTab === "overview" && (
+            <DriverOverview
+              driver={driver}
+              buildUrl={buildUrl}
+              rental={currentRental}
+            />
+          )}
+
+          {activeTab === "vehicle-history" && (
+            <VehicleHistoryList vehicles={vehicleHistoryList} />
+          )}
+
+          {activeTab === "deposit-history" && (
+            <div>
+              {isLoadingHistory ? (
+                <div className="py-20 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+                  Memuat riwayat pembayaran harian...
+                </div>
+              ) : (
+                <DepositHistoryList history={depositHistory} />
+              )}
             </div>
-          ) : (
-            <DepositHistoryList history={depositHistory} />
+          )}
+
+          {activeTab === "koin-history" && driverId && (
+            <KoinHistoryList driverId={driverId} />
           )}
         </div>
-      )}
-
-      {activeTab === "koin-history" && driverId && (
-        <KoinHistoryList driverId={driverId} />
-      )}
-    </div>
-    </PermissionGuard>
+      </PermissionGuard>
     </>
   );
 };

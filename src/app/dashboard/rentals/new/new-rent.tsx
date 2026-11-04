@@ -11,6 +11,7 @@ import FinancialRental from "@/components/rent/new-rent/financial-rental";
 import Period from "@/components/rent/new-rent/rental-period";
 import SelectionForm from "@/components/rent/new-rent/selection";
 import { DocumentsForm } from "@/components/rent/new-rent/upload-document";
+import { ChecklistForm } from "@/components/rent/new-rent/checklist-form"; // Import Baru
 import ContractPreview from "./contract-preview";
 import { rentalApi } from "@/lib/api/rentals";
 import { HttpClientError } from "@/lib/api-http";
@@ -43,6 +44,7 @@ interface RentalData {
   dailyRate: number;
   totalAmount: number;
   documents?: File[];
+  checklistPre?: File | null;
   rentalDuration?: string;
   rentalService?: string;
 }
@@ -83,7 +85,9 @@ const NewRentPage = () => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
+  const [serverErrors, setServerErrors] = useState<Record<string, string[]>>(
+    {},
+  );
   const [generalError, setGeneralError] = useState<string>("");
 
   const [allDrivers, setAllDrivers] = useState<DriverItem[]>([]);
@@ -91,8 +95,6 @@ const NewRentPage = () => {
   const [ongoingRentals, setOngoingRentals] = useState<OngoingRental[]>([]);
 
   const { user } = useAuth();
-  // Cek berbasis permission (bukan kode role) agar tetap benar walau kode
-  // role supervisor diubah.
   const isSupervisor =
     canAccess(user?.permissions, "driver.read.own") &&
     !canAccess(user?.permissions, "driver.read.all");
@@ -102,31 +104,33 @@ const NewRentPage = () => {
   }, []);
 
   useEffect(() => {
-    // Backend hanya mengembalikan driver & kendaraan aktif (is_active=true)
-    // kecuali diminta eksplisit; limit besar agar semua opsi termuat.
     const fetchDrivers = isSupervisor
       ? supervisorApi.getList()
       : driverApi.getList({ limit: 9999, is_active: "true" });
-    fetchDrivers.then((res: any) => {
-      const items = Array.isArray(res.data) ? res.data : [];
-      setAllDrivers(items.filter((d: DriverItem) => d.is_active !== false));
-    }).catch((err) => {
-      toastError(getErrorMessage(err, "Gagal memuat daftar driver."));
-    });
+    fetchDrivers
+      .then((res: any) => {
+        const items = Array.isArray(res.data) ? res.data : [];
+        setAllDrivers(items.filter((d: DriverItem) => d.is_active !== false));
+      })
+      .catch((err) => {
+        toastError(getErrorMessage(err, "Gagal memuat daftar driver."));
+      });
 
-    vehicleApi.getList({ limit: 9999, is_active: "true" }).then((res) => {
-      const items = Array.isArray(res.data) ? res.data : [];
-      setAllVehicles(
-        items.filter(
-          (v: VehicleItem) => v.is_active !== false && v.status === "Available",
-        ),
-      );
-    }).catch((err) => {
-      toastError(getErrorMessage(err, "Gagal memuat daftar kendaraan."));
-    });
+    vehicleApi
+      .getList({ limit: 9999, is_active: "true" })
+      .then((res) => {
+        const items = Array.isArray(res.data) ? res.data : [];
+        setAllVehicles(
+          items.filter(
+            (v: VehicleItem) =>
+              v.is_active !== false && v.status === "Available",
+          ),
+        );
+      })
+      .catch((err) => {
+        toastError(getErrorMessage(err, "Gagal memuat daftar kendaraan."));
+      });
 
-    // Rental yang belum dihentikan dan periodenya belum habis → driver &
-    // kendaraan ini tidak boleh dipilih lagi untuk sewa baru.
     rentalApi
       .getOngoing()
       .then((res) => {
@@ -137,8 +141,6 @@ const NewRentPage = () => {
       });
   }, [isSupervisor]);
 
-  // Rentang periode sewa yang sedang dipilih. Bila belum diisi, pakai hari
-  // ini agar driver/kendaraan yang sedang tersewa langsung tersembunyi.
   const selectedRange = useMemo(() => {
     const today = getTodayLocal();
     return {
@@ -163,13 +165,18 @@ const NewRentPage = () => {
   }, [ongoingRentals, selectedRange, rentalData.rentalId]);
 
   const driverOptions = useMemo<SelectOption[]>(() => {
-    const imageBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+    const imageBase = (
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+    ).replace(/\/api\/?$/, "");
     return allDrivers
-      // Driver yang masih punya sewa berjalan disembunyikan dari pilihan.
       .filter((d) => !busyIds.drivers.has(d.id))
       .map((d) => {
         const photo = d.profile_photo || "";
-        const image = photo ? (photo.startsWith("http") ? photo : `${imageBase}/${photo.replace(/^\//, "")}`) : "";
+        const image = photo
+          ? photo.startsWith("http")
+            ? photo
+            : `${imageBase}/${photo.replace(/^\//, "")}`
+          : "";
         return {
           label: `${d.first_name} ${d.last_name}`,
           value: d.id,
@@ -177,21 +184,14 @@ const NewRentPage = () => {
           badges: d.membership?.name ? [d.membership.name] : [],
         };
       });
-    }, [allDrivers, busyIds]);
+  }, [allDrivers, busyIds]);
 
   const vehicleOptions = useMemo<SelectOption[]>(() => {
-    // Kendaraan hanya tampil setelah driver dipilih.
-    // Akses berdasar level membership (1 = terendah): kendaraan tampil bila
-    // minimal satu membership-nya berlevel <= level driver (driver level
-    // lebih tinggi mengakses semua kendaraan di bawahnya).
-    // Badge hanya menampilkan tier yang berlevel <= level driver,
-    // sehingga driver Regular tidak "membaca" tier Premium/atasnya.
     const driver = allDrivers.find((d) => d.id === rentalData.driverId);
     const driverLevel = driver?.membership?.level;
     if (!rentalData.driverId || !driverLevel) return [];
     return allVehicles
       .filter((v) => (v.memberships ?? []).some((m) => m.level <= driverLevel))
-      // Kendaraan yang masih disewa pada periode ini disembunyikan.
       .filter((v) => !busyIds.vehicles.has(v.id))
       .map((v) => ({
         label: `${v.license_plate} - ${v.merk} ${v.model}`,
@@ -226,7 +226,10 @@ const NewRentPage = () => {
     if (!rentalData.endDate) {
       newErrors.endDate = "Tanggal selesai wajib diisi";
       isValid = false;
-    } else if (rentalData.startDate && new Date(rentalData.endDate) <= new Date(rentalData.startDate)) {
+    } else if (
+      rentalData.startDate &&
+      new Date(rentalData.endDate) <= new Date(rentalData.startDate)
+    ) {
       newErrors.endDate = "Tanggal selesai harus setelah tanggal mulai";
       isValid = false;
     }
@@ -252,48 +255,57 @@ const NewRentPage = () => {
     return isValid;
   };
 
-  const isFormInvalid = hasSubmitted && (
-    !rentalData.vehicleId ||
-    !rentalData.driverId ||
-    !rentalData.startDate ||
-    !rentalData.endDate ||
-    !rentalData.dailyRate ||
-    !rentalData.totalAmount ||
-    !rentalData.rentalDuration ||
-    !rentalData.rentalService
-  );
+  const isFormInvalid =
+    hasSubmitted &&
+    (!rentalData.vehicleId ||
+      !rentalData.driverId ||
+      !rentalData.startDate ||
+      !rentalData.endDate ||
+      !rentalData.dailyRate ||
+      !rentalData.totalAmount ||
+      !rentalData.rentalDuration ||
+      !rentalData.rentalService);
 
-  // Load data when in edit mode
   useEffect(() => {
     if (idParam) {
       setMode("edit");
-      rentalApi.getById(idParam).then((res) => {
-        const rental = (res as any)?.data ?? (res as any);
-        if (!rental?.id) { setMode("add"); return; }
-        setRentalData({
-          rentalId: rental.id,
-          vehicleId: rental.vehicle_id,
-          driverId: rental.driver_id,
-          startDate: rental.start_date || "",
-          endDate: rental.end_date || "",
-          duration: rental.total_duration || 0,
-          dailyRate: Number(rental.daily_rate) || 0,
-          totalAmount: Number(rental.daily_rate) * (rental.total_duration || 0),
-          rentalDuration: rental.rental_duration || "",
-          rentalService: rental.rental_service || "",
+      rentalApi
+        .getById(idParam)
+        .then((res) => {
+          const rental = (res as any)?.data ?? (res as any);
+          if (!rental?.id) {
+            setMode("add");
+            return;
+          }
+          setRentalData({
+            rentalId: rental.id,
+            vehicleId: rental.vehicle_id,
+            driverId: rental.driver_id,
+            startDate: rental.start_date || "",
+            endDate: rental.end_date || "",
+            duration: rental.total_duration || 0,
+            dailyRate: Number(rental.daily_rate) || 0,
+            totalAmount:
+              Number(rental.daily_rate) * (rental.total_duration || 0),
+            rentalDuration: rental.rental_duration || "",
+            rentalService: rental.rental_service || "",
+          });
+          setFormValues({
+            vehicleId: rental.vehicle_id || "",
+            driverId: rental.driver_id || "",
+            startDate: rental.start_date || "",
+            endDate: rental.end_date || "",
+            dailyRate: Number(rental.daily_rate) || 0,
+            totalAmount:
+              Number(rental.daily_rate) * (rental.total_duration || 0),
+          });
+        })
+        .catch((err) => {
+          setMode("add");
+          toastError(
+            getErrorMessage(err, "Gagal memuat data sewa yang akan diedit."),
+          );
         });
-        setFormValues({
-          vehicleId: rental.vehicle_id || "",
-          driverId: rental.driver_id || "",
-          startDate: rental.start_date || "",
-          endDate: rental.end_date || "",
-          dailyRate: Number(rental.daily_rate) || 0,
-          totalAmount: Number(rental.daily_rate) * (rental.total_duration || 0),
-        });
-      }).catch((err) => {
-        setMode("add");
-        toastError(getErrorMessage(err, "Gagal memuat data sewa yang akan diedit."));
-      });
     } else {
       setMode("add");
       setRentalData({
@@ -308,69 +320,69 @@ const NewRentPage = () => {
     }
   }, [idParam]);
 
-  const handleSelectionChange = useCallback((data: {
-    vehicleId?: string;
-    driverId?: string;
-    driverType?: string;
-  }) => {
-    let dailyRate = 0;
-    if (data.vehicleId) {
-      const selectedVehicle = vehicleOptions.find((v) => v.value === data.vehicleId);
-      if (selectedVehicle?.dailyRate) {
-        dailyRate = selectedVehicle.dailyRate;
+  const handleSelectionChange = useCallback(
+    (data: { vehicleId?: string; driverId?: string; driverType?: string }) => {
+      let dailyRate = 0;
+      if (data.vehicleId) {
+        const selectedVehicle = vehicleOptions.find(
+          (v) => v.value === data.vehicleId,
+        );
+        if (selectedVehicle?.dailyRate) {
+          dailyRate = selectedVehicle.dailyRate;
+        }
       }
-    }
-    setRentalData((prev) => ({
-      ...prev,
-      ...data,
-      dailyRate,
-      totalAmount: dailyRate * prev.duration,
-    }));
-    setFormValues((prev) => ({
-      ...prev,
-      vehicleId: data.vehicleId ?? prev.vehicleId,
-      driverId: data.driverId ?? prev.driverId,
-      dailyRate,
-      totalAmount: dailyRate * rentalData.duration,
-    }));
-  }, [vehicleOptions, rentalData.duration]);
-
-  const handlePeriodChange = useCallback((data: {
-    startDate: string;
-    endDate: string;
-    duration: number;
-  }) => {
-    setRentalData((prev) => {
-      const total = prev.dailyRate * data.duration;
-      return {
+      setRentalData((prev) => ({
         ...prev,
         ...data,
-        totalAmount: total,
-      };
-    });
-    setFormValues((prev) => ({
-      ...prev,
-      startDate: data.startDate,
-      endDate: data.endDate,
-      totalAmount: prev.dailyRate * data.duration,
-    }));
-  }, []);
+        dailyRate,
+        totalAmount: dailyRate * prev.duration,
+      }));
+      setFormValues((prev) => ({
+        ...prev,
+        vehicleId: data.vehicleId ?? prev.vehicleId,
+        driverId: data.driverId ?? prev.driverId,
+        dailyRate,
+        totalAmount: dailyRate * rentalData.duration,
+      }));
+    },
+    [vehicleOptions, rentalData.duration],
+  );
 
-  const handleFinancialChange = useCallback((data: {
-    dailyRate: number;
-    totalAmount: number;
-  }) => {
-    setRentalData((prev) => ({
-      ...prev,
-      dailyRate: data.dailyRate,
-      totalAmount: data.totalAmount,
-    }));
-    setFormValues((prev) => ({
-      ...prev,
-      dailyRate: data.dailyRate,
-      totalAmount: data.totalAmount,
-    }));
-  }, []);
+  const handlePeriodChange = useCallback(
+    (data: { startDate: string; endDate: string; duration: number }) => {
+      setRentalData((prev) => {
+        const total = prev.dailyRate * data.duration;
+        return {
+          ...prev,
+          ...data,
+          totalAmount: total,
+        };
+      });
+      setFormValues((prev) => ({
+        ...prev,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        totalAmount: prev.dailyRate * data.duration,
+      }));
+    },
+    [],
+  );
+
+  const handleFinancialChange = useCallback(
+    (data: { dailyRate: number; totalAmount: number }) => {
+      setRentalData((prev) => ({
+        ...prev,
+        dailyRate: data.dailyRate,
+        totalAmount: data.totalAmount,
+      }));
+      setFormValues((prev) => ({
+        ...prev,
+        dailyRate: data.dailyRate,
+        totalAmount: data.totalAmount,
+      }));
+    },
+    [],
+  );
 
   const handleDocumentsChange = useCallback((data: { documents?: File[] }) => {
     setRentalData((prev) => ({
@@ -379,15 +391,25 @@ const NewRentPage = () => {
     }));
   }, []);
 
-  const handleRentalTypeChange = useCallback((data: {
-    rentalDuration?: string;
-    rentalService?: string;
-  }) => {
-    setRentalData((prev) => ({
-      ...prev,
-      ...data,
-    }));
-  }, []);
+  const handleChecklistChange = useCallback(
+    (data: { checklistPre?: File | null }) => {
+      setRentalData((prev) => ({
+        ...prev,
+        ...data,
+      }));
+    },
+    [],
+  );
+
+  const handleRentalTypeChange = useCallback(
+    (data: { rentalDuration?: string; rentalService?: string }) => {
+      setRentalData((prev) => ({
+        ...prev,
+        ...data,
+      }));
+    },
+    [],
+  );
 
   const handleSubmit = async () => {
     setHasSubmitted(true);
@@ -427,12 +449,19 @@ const NewRentPage = () => {
       formData.append("total_duration", String(totalDuration));
       formData.append("daily_rate", String(dailyRate));
       formData.append("rental_duration", rentalData.rentalDuration || "harian");
-      formData.append("rental_service", rentalData.rentalService || "lepas kunci");
+      formData.append(
+        "rental_service",
+        rentalData.rentalService || "lepas kunci",
+      );
 
       if (rentalData.documents && rentalData.documents.length > 0) {
         rentalData.documents.forEach((file) => {
           formData.append("document_contract", file);
         });
+      }
+
+      if (rentalData.checklistPre) {
+        formData.append("checklist_pre", rentalData.checklistPre);
       }
 
       if (mode === "edit" && rentalData.rentalId) {
@@ -444,7 +473,9 @@ const NewRentPage = () => {
       setIsSubmitting(false);
       const action = mode === "edit" ? "updated" : "registered";
       const rentName = rentalData.vehicleId || "New Rental";
-      router.push(`/dashboard/rentals?success=${action}&rent=${encodeURIComponent(rentName)}`);
+      router.push(
+        `/dashboard/rentals?success=${action}&rent=${encodeURIComponent(rentName)}`,
+      );
     } catch (err) {
       console.error("Failed to save rental:", err);
       setIsSubmitting(false);
@@ -461,7 +492,10 @@ const NewRentPage = () => {
         }
         setErrors((prev) => ({ ...prev, ...newErrors }));
 
-        const message = getErrorMessage(err, "Gagal menyimpan rental. Silakan coba lagi.");
+        const message = getErrorMessage(
+          err,
+          "Gagal menyimpan rental. Silakan coba lagi.",
+        );
         setGeneralError(message);
         toastError(message);
       } else {
@@ -476,7 +510,6 @@ const NewRentPage = () => {
     router.push("/dashboard/rentals");
   };
 
-  // Label driver & kendaraan terpilih untuk ditampilkan di card preview.
   const selectedDriverLabel = driverOptions.find(
     (option) => option.value === rentalData.driverId,
   )?.label;
@@ -486,119 +519,129 @@ const NewRentPage = () => {
 
   return (
     <PermissionGuard permission="rental.create">
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleCancel}
-              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
-            >
-              <span className="material-symbols-outlined text-slate-500">arrow_back</span>
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                {mode === "add" ? "Tambah Sewa Baru" : "Edit Sewa"}
-              </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {mode === "add" ? "Lengkapi form di bawah untuk membuat sewa" : "Perbarui informasi sewa"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Error Alert */}
-        {generalError && (
-          <div className="mb-6 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-3">
-            <span className="material-symbols-outlined text-red-500">error</span>
-            <p className="text-sm text-red-600 dark:text-red-400 font-medium">{generalError}</p>
-          </div>
-        )}
-
-        {/* Form (kiri) + Preview Kontrak (kanan) */}
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
-          <div className="xl:col-span-3 space-y-6">
-            <SelectionForm
-              key={"sel-" + (rentalData.rentalId || "add")}
-              onDataChange={handleSelectionChange}
-              initialData={{
-                vehicleId: rentalData.vehicleId,
-                driverId: rentalData.driverId,
-              }}
-              error={hasSubmitted ? errors : undefined}
-              driverOptions={driverOptions}
-              vehicleOptions={vehicleOptions}
-              serverErrors={serverErrors}
-            />
-
-            <Period
-              key={"per-" + (rentalData.rentalId || "add")}
-              onDataChange={handlePeriodChange}
-              initialData={{
-                startDate: rentalData.startDate,
-                endDate: rentalData.endDate,
-              }}
-              error={hasSubmitted ? errors : undefined}
-            />
-
-            <FinancialRental
-              key={"fin-" + (rentalData.rentalId || "add")}
-              onDataChange={handleFinancialChange}
-              initialData={{
-                dailyRate: rentalData.dailyRate,
-                totalAmount: rentalData.totalAmount,
-                rentalDuration: rentalData.rentalDuration,
-                rentalService: rentalData.rentalService,
-              }}
-              onRentalTypeChange={handleRentalTypeChange}
-              duration={rentalData.duration}
-              error={hasSubmitted ? errors : undefined}
-            />
-
-            <DocumentsForm onDataChange={handleDocumentsChange} />
-
-            {/* Submit Button */}
-            <div className="flex items-center justify-end gap-3 pt-4">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <div className="flex items-center gap-3">
               <button
                 onClick={handleCancel}
-                disabled={isSubmitting}
-                className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
               >
-                Batal
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting || isFormInvalid}
-                className="px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center gap-2 text-sm"
-              >
-                <span className="material-symbols-outlined text-xl">
-                  {isSubmitting ? "hourglass_empty" : "check_circle"}
+                <span className="material-symbols-outlined text-slate-500">
+                  arrow_back
                 </span>
-                {isSubmitting ? "Menyimpan..." : mode === "add" ? "Simpan Sewa" : "Update Sewa"}
               </button>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {mode === "add" ? "Tambah Sewa Baru" : "Edit Sewa"}
+                </h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {mode === "add"
+                    ? "Lengkapi form di bawah untuk membuat sewa"
+                    : "Perbarui informasi sewa"}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Preview kontrak sesuai driver & kendaraan yang dipilih */}
-          <div className="xl:col-span-2 xl:sticky xl:top-6">
-            <ContractPreview
-              rentalId={rentalData.rentalId}
-              driverId={rentalData.driverId}
-              vehicleId={rentalData.vehicleId}
-              driverLabel={selectedDriverLabel}
-              vehicleLabel={selectedVehicleLabel}
-              startDate={rentalData.startDate}
-              endDate={rentalData.endDate}
-              duration={rentalData.duration}
-              dailyRate={rentalData.dailyRate}
-              rentalDuration={rentalData.rentalDuration}
-              rentalService={rentalData.rentalService}
-            />
+          {generalError && (
+            <div className="mb-6 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center gap-3">
+              <span className="material-symbols-outlined text-red-500">
+                error
+              </span>
+              <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                {generalError}
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+            <div className="xl:col-span-3 space-y-6">
+              <SelectionForm
+                key={"sel-" + (rentalData.rentalId || "add")}
+                onDataChange={handleSelectionChange}
+                initialData={{
+                  vehicleId: rentalData.vehicleId,
+                  driverId: rentalData.driverId,
+                }}
+                error={hasSubmitted ? errors : undefined}
+                driverOptions={driverOptions}
+                vehicleOptions={vehicleOptions}
+                serverErrors={serverErrors}
+              />
+
+              <Period
+                key={"per-" + (rentalData.rentalId || "add")}
+                onDataChange={handlePeriodChange}
+                initialData={{
+                  startDate: rentalData.startDate,
+                  endDate: rentalData.endDate,
+                }}
+                error={hasSubmitted ? errors : undefined}
+              />
+
+              <FinancialRental
+                key={"fin-" + (rentalData.rentalId || "add")}
+                onDataChange={handleFinancialChange}
+                initialData={{
+                  dailyRate: rentalData.dailyRate,
+                  totalAmount: rentalData.totalAmount,
+                  rentalDuration: rentalData.rentalDuration,
+                  rentalService: rentalData.rentalService,
+                }}
+                onRentalTypeChange={handleRentalTypeChange}
+                duration={rentalData.duration}
+                error={hasSubmitted ? errors : undefined}
+              />
+
+              <DocumentsForm onDataChange={handleDocumentsChange} />
+
+              {/* Checklist Form */}
+              <ChecklistForm onDataChange={handleChecklistChange} />
+
+              <div className="flex items-center justify-end gap-3 pt-4">
+                <button
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                  className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || isFormInvalid}
+                  className="px-6 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-400 disabled:shadow-none flex items-center gap-2 text-sm"
+                >
+                  <span className="material-symbols-outlined text-xl">
+                    {isSubmitting ? "hourglass_empty" : "check_circle"}
+                  </span>
+                  {isSubmitting
+                    ? "Menyimpan..."
+                    : mode === "add"
+                      ? "Simpan Sewa"
+                      : "Update Sewa"}
+                </button>
+              </div>
+            </div>
+
+            <div className="xl:col-span-2 xl:sticky xl:top-6">
+              <ContractPreview
+                rentalId={rentalData.rentalId}
+                driverId={rentalData.driverId}
+                vehicleId={rentalData.vehicleId}
+                driverLabel={selectedDriverLabel}
+                vehicleLabel={selectedVehicleLabel}
+                startDate={rentalData.startDate}
+                endDate={rentalData.endDate}
+                duration={rentalData.duration}
+                dailyRate={rentalData.dailyRate}
+                rentalDuration={rentalData.rentalDuration}
+                rentalService={rentalData.rentalService}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </PermissionGuard>
   );
 };

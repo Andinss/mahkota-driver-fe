@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
@@ -19,6 +20,8 @@ import {
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { DriverQuickActions } from "./driver-quick-actions";
+import { useRouter } from "next/navigation";
+import { canAccess } from "@/lib/can-access";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -100,7 +103,21 @@ const rentalBadgeConfig: Record<
 };
 
 export function DriverDashboardPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authIsLoading } = useAuth();
+  const router = useRouter();
+
+  // Hanya user yang benar-benar punya data driver (driver_id) yang boleh
+  // masuk ke portal driver. Admin/owner/supervisor/finans tidak boleh.
+  const hasDriverPortalAccess =
+    !!user?.driver_id &&
+    canAccess(user?.permissions, "driver_portal.dashboard");
+
+  useEffect(() => {
+    if (!authIsLoading && user && !hasDriverPortalAccess) {
+      router.replace("/dashboard");
+    }
+  }, [authIsLoading, user, hasDriverPortalAccess, router]);
+
   const driverId = user?.driver_id ?? null;
 
   const driverQuery = useQuery({
@@ -113,9 +130,9 @@ export function DriverDashboardPage() {
   });
 
   const feeQuery = useQuery({
-    queryKey: financeKeys.myList({ limit: 10 }),
+    queryKey: financeKeys.myList({ limit: 5 }),
     queryFn: async () => {
-      const res = await financeApi.getMyFinances({ limit: 10 });
+      const res = await financeApi.getMyFinances({ limit: 5 });
       return Array.isArray(res?.data) ? res.data : [];
     },
     enabled: !!driverId,
@@ -134,9 +151,9 @@ export function DriverDashboardPage() {
   });
 
   const dailyQuery = useQuery({
-    queryKey: financeKeys.myDailyPayments({ limit: 10 }),
+    queryKey: financeKeys.myDailyPayments({ limit: 5 }),
     queryFn: async () => {
-      const res = await financeApi.getMyDailyPayments({ limit: 10 });
+      const res = await financeApi.getMyDailyPayments({ limit: 5 });
       const data = (res as { data?: unknown })?.data ?? res;
       const items = Array.isArray(data)
         ? data
@@ -157,6 +174,9 @@ export function DriverDashboardPage() {
   const fullName = driver
     ? `${driver.first_name} ${driver.last_name}`.trim()
     : user?.driver_name || user?.username || "Driver";
+  const supervisorName = driver?.supervisor
+    ? driver.supervisor.fullname || driver.supervisor.username || null
+    : null;
   // Riwayat pemakaian unit (aktif + selesai), urut dari yang terbaru.
   const rentalHistory = [...(driver?.rentals ?? [])].sort(
     (a, b) =>
@@ -180,10 +200,8 @@ export function DriverDashboardPage() {
         f.fee_kind === "additional_charge"
           ? f.charge_name || "Tagihan Tambahan"
           : "-",
-      subLabel:
-        f.fee_kind === "additional_charge" ? "Tagihan Tambahan" : null,
-      subTitle:
-        f.fee_kind === "additional_charge" ? f.reason || null : null,
+      subLabel: f.fee_kind === "additional_charge" ? "Tagihan Tambahan" : null,
+      subTitle: f.fee_kind === "additional_charge" ? f.reason || null : null,
       amount: Number(f.fee_admin_join) || 0,
       status: f.status,
       href: `/dashboard/driver/payment/form?id=${f.id}`,
@@ -204,7 +222,7 @@ export function DriverDashboardPage() {
     })),
   ]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 10);
+    .slice(0, 5);
 
   return (
     <div className="m-8">
@@ -212,7 +230,11 @@ export function DriverDashboardPage() {
         <div className="w-full flex flex-col gap-8 pb-10">
           <PageHeader
             title={`Selamat Datang, ${fullName}`}
-            description="Selamat datang di portal mitra driver Mahkota Fleet"
+            description={
+              supervisorName
+                ? `Selamat datang di portal mitra driver Mahkota Fleet — Supervisor: ${supervisorName}`
+                : "Selamat datang di portal mitra driver Mahkota Fleet"
+            }
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -426,7 +448,7 @@ export function DriverDashboardPage() {
                       Tagihan Saya
                     </h2>
                     <p className="text-xs text-slate-400">
-                      {billRows.length} tagihan tercatat
+                      {billRows.length} tagihan terbaru
                     </p>
                   </div>
                 </div>

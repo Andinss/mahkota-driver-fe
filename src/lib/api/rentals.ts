@@ -1,6 +1,11 @@
 import { api } from "../api-http";
 import type { SuccessResponse, SuccessResponsePaginated } from "../types/api";
-import type { RentalTransaction, RentalListParams, RentalSummary, OngoingRental } from "../types/rentals.ts";
+import type {
+  RentalTransaction,
+  RentalListParams,
+  RentalSummary,
+  OngoingRental,
+} from "../types/rentals.ts";
 
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -20,8 +25,7 @@ export const rentalApi = {
       params as Record<string, string | number | undefined>,
     ),
 
-  getSummary: () =>
-    api.get<SuccessResponse<RentalSummary>>("/rentals/summary"),
+  getSummary: () => api.get<SuccessResponse<RentalSummary>>("/rentals/summary"),
 
   getById: (id: string) =>
     api.get<SuccessResponse<RentalTransaction>>(`/rentals/${id}`),
@@ -30,9 +34,13 @@ export const rentalApi = {
     api.get<SuccessResponse<RentalTransaction>>(`/rentals/detail/${id}`),
 
   getDriverRentalCount: (driverId: string) =>
-    api.get<SuccessResponse<{ driver_id: string; rental_count: number; is_first_rental: boolean }>>(
-      `/rentals/driver/${driverId}/rental-count`,
-    ),
+    api.get<
+      SuccessResponse<{
+        driver_id: string;
+        rental_count: number;
+        is_first_rental: boolean;
+      }>
+    >(`/rentals/driver/${driverId}/rental-count`),
 
   getOngoing: () =>
     api.get<SuccessResponse<OngoingRental[]>>("/rentals/ongoing"),
@@ -45,6 +53,15 @@ export const rentalApi = {
       `/rentals/update/${id}`,
       payload,
     ),
+
+  uploadChecklistPost: (id: string, file: File) => {
+    const formData = new FormData();
+    formData.append("checklist_post", file);
+    return api.upload<SuccessResponse<RentalTransaction>>(
+      `/rentals/${id}/checklist-post`,
+      formData,
+    );
+  },
 
   delete: (id: string) =>
     api.delete<SuccessResponse<void>>(`/rentals/delete/${id}`),
